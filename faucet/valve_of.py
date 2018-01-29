@@ -409,6 +409,9 @@ def match_from_dict(match_dict):
             assert False, '%s cannot be type %s' % (match, type(field))
         kwargs[match] = encoded_field
 
+    if 'vlan_vid' in kwargs and kwargs['vlan_vid'] == 4101:
+        kwargs['vlan_vid'] = (0x1000, 0x1000)
+
     return parser.OFPMatch(**kwargs)
 
 

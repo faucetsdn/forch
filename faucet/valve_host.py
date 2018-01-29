@@ -159,10 +159,14 @@ class ValveHostManager(object):
             idle_timeout=src_rule_idle_timeout))
 
         # Output packets for this MAC to specified port.
+        actions = []
+        if vlan.vid >= 600 and not port.stack:
+            actions.append(valve_of.pop_vlan())
+        actions = actions + vlan.output_port(port)
         ofmsgs.append(self.eth_dst_table.flowmod(
             self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
             priority=self.host_priority,
-            inst=[valve_of.apply_actions(vlan.output_port(port))],
+            inst=[valve_of.apply_actions(actions)],
             idle_timeout=dst_rule_idle_timeout))
 
         # If port is in hairpin mode, install a special rule

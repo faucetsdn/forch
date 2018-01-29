@@ -57,9 +57,15 @@ class ValveFloodManager(object):
             lags = vlan.lags()
             exclude_ports = lags[in_port.lacp]
         tagged_ports = vlan.tagged_flood_ports(exclude_unicast)
+        untagged_ports = vlan.untagged_flood_ports(exclude_unicast)
+
+        # Run a quick experiment for stripping tags from tagged vlans.
+        if vlan.vid >= 600:
+            untagged_ports = untagged_ports + tagged_ports
+            tagged_ports = []
+
         flood_acts.extend(valve_of.flood_tagged_port_outputs(
             tagged_ports, in_port, exclude_ports=exclude_ports))
-        untagged_ports = vlan.untagged_flood_ports(exclude_unicast)
         flood_acts.extend(valve_of.flood_untagged_port_outputs(
             untagged_ports, in_port, exclude_ports=exclude_ports))
         return flood_acts
@@ -352,6 +358,16 @@ class ValveFloodStackManager(ValveFloodManager):
                     host = other_dp_host_cache[eth_src]
                     if host.port.stack is None:
                         return other_valve.dp
+
+        if vlan_vid >= 600 or vlan_vid == 197:
+            for other_valve in other_valves:
+                for vlan_vid in other_valve.dp.vlans:
+                    other_dp_host_cache = other_valve.dp.vlans[vlan_vid].dyn_host_cache
+                    if eth_src in other_dp_host_cache:
+                        host = other_dp_host_cache[eth_src]
+                        if host.port.stack is None:
+                            return other_valve.dp
+
         return None
 
     def edge_learn_port(self, other_valves, pkt_meta):
