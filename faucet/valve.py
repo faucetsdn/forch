@@ -446,7 +446,10 @@ class Valve(object):
         return ofmsgs
 
     def _port_add_vlan_untagged(self, port, vlan, forwarding_table, mirror_act):
-        push_vlan_act = mirror_act + valve_of.push_vlan_act(vlan.vid)
+        if vlan.vid == 197:
+            push_vlan_act = valve_of.push_vlan_act(vlan.vid) + mirror_act
+        else:
+            push_vlan_act = mirror_act + valve_of.push_vlan_act(vlan.vid)
         push_vlan_inst = [
             valve_of.apply_actions(push_vlan_act),
             valve_of.goto_table(forwarding_table)

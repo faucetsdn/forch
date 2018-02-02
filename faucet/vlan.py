@@ -324,13 +324,13 @@ class VLAN(Conf):
     def untagged_flood_ports(self, exclude_unicast):
         return self.flood_ports(self.untagged, exclude_unicast)
 
-    def output_port(self, port, hairpin=False):
+    def output_port(self, port, hairpin=False, force_pop=False):
         actions = []
         # If port should mirror add output to mirror ports
         if port.mirror is not None:
             for mirror_port in port.mirror:
                 actions.append(valve_of.output_port(mirror_port))
-        if self.port_is_untagged(port):
+        if self.port_is_untagged(port) or force_pop:
             actions.append(valve_of.pop_vlan())
         if hairpin:
             actions.append(valve_of.output_port(valve_of.OFP_IN_PORT))
