@@ -138,6 +138,10 @@ class ValveHostManager(object):
         """Return flows that implement learning a host on a port."""
         ofmsgs = []
 
+        internal_vlan = vlan.vid >= 600 and not port.stack
+        if internal_vlan:
+            vlan = None
+
         if port.permanent_learn:
             # Antispoofing rule for this MAC.
             ofmsgs.append(self.eth_src_table.flowdrop(
@@ -159,12 +163,20 @@ class ValveHostManager(object):
             idle_timeout=src_rule_idle_timeout))
 
         # Output packets for this MAC to specified port.
-        force_pop = vlan.vid >= 600 and not port.stack
-        ofmsgs.append(self.eth_dst_table.flowmod(
-            self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
-            priority=self.host_priority,
-            inst=[valve_of.apply_actions(vlan.output_port(port,force_pop=force_pop))],
-            idle_timeout=dst_rule_idle_timeout))
+        if internal_vlan:
+            for vlan in port.tagged_vlans:
+                if vlan.vid >= 600:
+                    ofmsgs.append(self.eth_dst_table.flowmod(
+                        self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
+                        priority=self.host_priority,
+                        inst=[valve_of.apply_actions(vlan.output_port(port,force_pop=True))],
+                        idle_timeout=dst_rule_idle_timeout))
+        else:
+            ofmsgs.append(self.eth_dst_table.flowmod(
+                self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
+                priority=self.host_priority,
+                inst=[valve_of.apply_actions(vlan.output_port(port))],
+                idle_timeout=dst_rule_idle_timeout))
 
         # If port is in hairpin mode, install a special rule
         # that outputs packets destined to this MAC back out the same
