@@ -721,7 +721,8 @@ class Valve(object):
         if learn_port is not None:
             learn_flows = self.host_manager.learn_host_on_vlan_ports(
                 learn_port, pkt_meta.vlan, pkt_meta.eth_src,
-                last_dp_coldstart_time=self.dp.dyn_last_coldstart_time)
+                last_dp_coldstart_time=self.dp.dyn_last_coldstart_time,
+                dp_vlans=list(self.dp.vlans.values()))
             if learn_flows:
                 self.logger.info(
                     'L2 learned %s (L2 type 0x%4.4x, L3 src %s) on %s on VLAN %u (%u hosts total)' % (
