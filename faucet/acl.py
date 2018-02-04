@@ -56,7 +56,7 @@ The output action contains a dictionary with the following elements:
 """
 
     # Resolved port numbers which are mirror action destinations.
-    mirror_destinations = set() # type: set
+    mirror_destinations = None
     rules = None
     exact_match = None
     defaults = {
@@ -99,6 +99,7 @@ The output action contains a dictionary with the following elements:
             assert 'rules' in conf, 'no rules found for ACL %s' % _id
             rules = conf['rules']
         self.rules = []
+        self.mirror_destinations = set()
         assert isinstance(rules, list)
         for match_fields in (MATCH_FIELDS, OLD_MATCH_FIELDS):
             for match in list(match_fields.keys()):
