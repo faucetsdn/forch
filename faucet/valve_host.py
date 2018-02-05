@@ -163,13 +163,7 @@ class ValveHostManager(object):
             idle_timeout=src_rule_idle_timeout))
 
         # Output packets for this MAC to specified port.
-        if not internal_vlan:
-            ofmsgs.append(self.eth_dst_table.flowmod(
-                self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
-                priority=self.host_priority,
-                inst=[valve_of.apply_actions(vlan.output_port(port))],
-                idle_timeout=dst_rule_idle_timeout))
-        else:
+        if internal_vlan:
             force_pop = not port.stack
             if port.stack:
                 vlan_list=dp_vlans
@@ -182,6 +176,12 @@ class ValveHostManager(object):
                         priority=self.host_priority,
                         inst=[valve_of.apply_actions(vlan_x.output_port(port,force_pop=force_pop))],
                         idle_timeout=dst_rule_idle_timeout))
+        else:
+            ofmsgs.append(self.eth_dst_table.flowmod(
+                self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
+                priority=self.host_priority,
+                inst=[valve_of.apply_actions(vlan.output_port(port))],
+                idle_timeout=dst_rule_idle_timeout))
 
         # If port is in hairpin mode, install a special rule
         # that outputs packets destined to this MAC back out the same
