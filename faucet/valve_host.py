@@ -164,7 +164,6 @@ class ValveHostManager(object):
 
         # Output packets for this MAC to specified port.
         if not internal_vlan:
-            self.logger.info('normal vlan %s' % vlan.vid)
             ofmsgs.append(self.eth_dst_table.flowmod(
                 self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
                 priority=self.host_priority,

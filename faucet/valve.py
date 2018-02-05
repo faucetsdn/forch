@@ -423,6 +423,7 @@ class Valve(object):
         in_port_match = acl_table.match(in_port=port.number)
         if cold_start:
             ofmsgs.extend(acl_table.flowdel(in_port_match))
+        # Shunt to eth_src table for pre-approved VLANs?
         acl_allow_inst = valve_of.goto_table(self.dp.tables['vlan'])
         if port.acls_in:
             ofmsgs.extend(valve_acl.build_acl_ofmsgs(
