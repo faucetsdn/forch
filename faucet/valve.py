@@ -494,7 +494,6 @@ class Valve:
                 now - self._last_fast_advertise_sec < self.dp.fast_advertise_interval):
             return {}
         self._last_fast_advertise_sec = now
-        self.logger.info('fast_advertise at %s' % str(now))
         ofmsgs = []
         for port in self.dp.lacp_active_ports:
             if port.running():
@@ -1005,7 +1004,7 @@ class Valve:
              lldp_pkt, self.dp.faucet_dp_mac)
 
         if remote_dp_id and remote_port_id:
-            self.logger.info('FAUCET LLDP from %s (remote %s, port %u)' % (
+            self.logger.debug('FAUCET LLDP from %s (remote %s, port %u)' % (
                 pkt_meta.log(), valve_util.dpid_log(remote_dp_id), remote_port_id))
             self._verify_stack_lldp(
                 port, now, other_valves,
