@@ -494,7 +494,7 @@ class Valve:
                 now - self._last_fast_advertise_sec < self.dp.fast_advertise_interval):
             return {}
         self._last_fast_advertise_sec = now
-
+        self.logger.info('fast_advertise at %s', now)
         ofmsgs = []
         for port in self.dp.lacp_active_ports:
             if port.running():
@@ -859,11 +859,13 @@ class Valve:
         ofmsgs.append(vlan_table.flowdel(
             match=vlan_table.match(in_port=port.number),
             priority=self.dp.high_priority, strict=True))
+        if port.dyn_lacp_up != 0:
+            self.logger.info('LAG %u port %s up (previous state %s)' % (
+                port.lacp, port, port.dyn_lacp_up))
         port.dyn_lacp_up = 1
         for vlan in port.vlans():
             ofmsgs.extend(self.flood_manager.build_flood_rules(vlan))
         self._reset_lacp_status(port)
-        self.logger.info('LAG %s port %s up' % (port.lacp, port.number))
         return ofmsgs
 
     def _lacp_pkt(self, lacp_pkt, port):
