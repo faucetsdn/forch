@@ -494,7 +494,7 @@ class Valve:
                 now - self._last_fast_advertise_sec < self.dp.fast_advertise_interval):
             return {}
         self._last_fast_advertise_sec = now
-        self.logger.info('fast_advertise at %s', now)
+        self.logger.info('fast_advertise at %s', str(now))
         ofmsgs = []
         for port in self.dp.lacp_active_ports:
             if port.running():
