@@ -115,7 +115,7 @@ ETH_SRC_DEFAULT_CONFIG = ValveTableConfig(
     next_tables=(('ipv4_fib', 'ipv6_fib') + _NEXT_VIP),
     match_types=(('eth_dst', True), ('eth_src', False), ('eth_type', False),
                  ('in_port', False), ('vlan_vid', False)),
-    set_fields=('vlan_vid', 'eth_dst', 'vlan_pcp'),
+    set_fields=('vlan_vid', 'eth_dst'),
     vlan_port_scale=4.1,
     )
 IPV4_FIB_DEFAULT_CONFIG = _fib_table(4, ETH_SRC_DEFAULT_CONFIG.table_id + 1)
@@ -140,8 +140,7 @@ ETH_DST_DEFAULT_CONFIG = ValveTableConfig(
     ETH_DST_HAIRPIN_DEFAULT_CONFIG.table_id + 1,
     exact_match=True,
     miss_goto='flood',
-    match_types=(('eth_dst', False), ('vlan_vid', False), ('vlan_pcp', False)),
-    set_fields=('vlan_pcp',),
+    match_types=(('eth_dst', False), ('vlan_vid', False)),
     next_tables=('egress',),
     vlan_port_scale=4.1,
     metadata_write=EGRESS_METADATA_MASK
