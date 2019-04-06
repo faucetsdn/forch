@@ -20,6 +20,7 @@
 import random
 
 from faucet import valve_of
+from faucet import faucet_pipeline
 from faucet.valve_manager_base import ValveManagerBase
 
 
@@ -197,20 +198,25 @@ class ValveHostManager(ValveManagerBase):
         src_match = self.eth_src_table.match(
             in_port=port.number, vlan=vlan, eth_src=eth_src)
         src_priority = self.host_priority - 1
-        inst = self.eth_src_table.goto(self.output_table)
+        vlan_pcp=0 if port.loop_protect_external else 1
+        inst = [self.eth_src_table.goto(self.output_table),
+                valve_of.apply_actions([self.eth_src_table.set_field(vlan_pcp=vlan_pcp)])]
 
         if port.override_output_port:
-            inst = valve_of.apply_actions([
-                valve_of.output_port(port.override_output_port.number)])
+            inst = [valve_of.apply_actions([
+                valve_of.output_port(port.override_output_port.number)])]
 
         loop_protect_field = None
-        if port.tagged_vlans and port.loop_protect_external and self.stack:
-            loop_protect_field = 0
+        if port.tagged_vlans:
+            if port.loop_protect_external and self.stack:
+                loop_protect_field = 0
+            else:
+                loop_protect_field = 1
 
         ofmsgs.append(self.eth_src_table.flowmod(
             match=src_match,
             priority=src_priority,
-            inst=[inst],
+            inst=inst,
             hard_timeout=src_rule_hard_timeout,
             idle_timeout=src_rule_idle_timeout))
 
@@ -222,10 +228,17 @@ class ValveHostManager(ValveManagerBase):
 
         # Output packets for this MAC to specified port.
         ofmsgs.append(self.eth_dst_table.flowmod(
-            self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src),
+            self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src, vlan_pcp=1),
             priority=self.host_priority,
             inst=self.pipeline.output(port, vlan, loop_protect_field=loop_protect_field),
             idle_timeout=dst_rule_idle_timeout))
+
+        if not port.loop_protect_external:
+            ofmsgs.append(self.eth_dst_table.flowmod(
+                self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src, vlan_pcp=0),
+                priority=self.host_priority,
+                inst=self.pipeline.output(port, vlan, loop_protect_field=loop_protect_field),
+                idle_timeout=dst_rule_idle_timeout))
 
         # If port is in hairpin mode, install a special rule
         # that outputs packets destined to this MAC back out the same

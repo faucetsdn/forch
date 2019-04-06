@@ -460,10 +460,10 @@ configuration.
             table_configs[name] = table_config
 
         # Stacking with external ports, so need loop protection field.
+        flood_table = table_configs['flood']
+        flood_table.set_fields = (faucet_pipeline.STACK_LOOP_PROTECT_FIELD,)
+        flood_table.match_types += ((faucet_pipeline.STACK_LOOP_PROTECT_FIELD, False),)
         if self.stack and self.stack.get('externals', False):
-            flood_table = table_configs['flood']
-            flood_table.set_fields = (faucet_pipeline.STACK_LOOP_PROTECT_FIELD,)
-            flood_table.match_types += ((faucet_pipeline.STACK_LOOP_PROTECT_FIELD, False),)
             vlan_table = table_configs['vlan']
             vlan_table.set_fields += (faucet_pipeline.STACK_LOOP_PROTECT_FIELD,)
             vlan_table.match_types += ((faucet_pipeline.STACK_LOOP_PROTECT_FIELD, False),)
