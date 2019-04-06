@@ -318,9 +318,11 @@ class ValveFloodStackManager(ValveFloodManager):
             if port_peer_distance > my_root_distance]
         self.stack_size = self.stack.get('longest_path_to_root_len', None)
         self.externals = self.stack.get('externals', False)
-        #if self.externals:
-        self.ext_flood_needed = [self._set_ext_flag(self.EXT_PORT_FLAG)]
-        self.ext_flood_not_needed = [self._set_ext_flag(self.NONEXT_PORT_FLAG)]
+        self.ext_flood_needed = []
+        self.ext_flood_not_needed = []
+        if self.externals:
+            self.ext_flood_needed = [self._set_ext_flag(self.EXT_PORT_FLAG)]
+            self.ext_flood_not_needed = [self._set_ext_flag(self.NONEXT_PORT_FLAG)]
 
     def _flood_actions_size2(self, in_port, external_ports,
                              away_flood_actions, toward_flood_actions, local_flood_actions):
@@ -363,7 +365,6 @@ class ValveFloodStackManager(ValveFloodManager):
 
             if in_port:
                 if in_port in self.away_from_root_stack_ports:
-                    self.logger.info('in_port %s' % in_port)
                     # Packet from a non-root switch, flood locally and to all non-root switches
                     # (reflect it).
                     flood_actions = (
@@ -371,7 +372,7 @@ class ValveFloodStackManager(ValveFloodManager):
                     # If we have external ports, let the non-roots know they don't have to
                     # flood externally.
                     if external_ports:
-                        flood_actions = self.ext_flood_needed + flood_actions
+                        flood_actions = self.ext_flood_not_needed + flood_actions
                     else:
                         flood_actions = self.ext_flood_needed + flood_actions
                 elif external_ports:
