@@ -27,7 +27,7 @@ class ValveFloodManager(ValveManagerBase):
     """Implement dataplane based flooding for standalone dataplanes."""
 
     # Enumerate possible eth_dst flood destinations.
-    # First bool says whether to flood this destination, if the VLAN
+    # First bool says whether to flood this destination if the VLAN
     # has unicast flooding enabled (if unicast flooding is enabled,
     # then we flood all destination eth_dsts).
     FLOOD_DSTS = (
@@ -37,6 +37,9 @@ class ValveFloodManager(ValveManagerBase):
         (False, '33:33:00:00:00:00', valve_packet.mac_byte_mask(2)), # IPv6 multicast
         (False, valve_of.mac.BROADCAST_STR, valve_packet.mac_byte_mask(6)), # eth broadcasts
     )
+
+    EXT_PORT_FLAG = 1
+    NONEXT_PORT_FLAG = 0
 
     def __init__(self, logger, flood_table, pipeline,
                  use_group_table, groups, combinatorial_port_flood):
@@ -49,6 +52,9 @@ class ValveFloodManager(ValveManagerBase):
         self.bypass_priority = self._FILTER_PRIORITY
         self.flood_priority = self._MATCH_PRIORITY
         self.classification_offset = 0x100
+
+    def _set_ext_flag(self, ext_flag):
+        return self.flood_table.set_field(**{STACK_LOOP_PROTECT_FIELD: ext_flag})
 
     def initialise_tables(self):
         """Initialise the flood table with filtering flows."""
@@ -79,10 +85,11 @@ class ValveFloodManager(ValveManagerBase):
             if (exclude_all_external or
                     in_port is not None and in_port.loop_protect_external):
                 exclude_ports |= set(external_ports)
-            else:
-                exclude_ports |= set(external_ports[1:])
-        return valve_of.flood_port_outputs(
-            vlan.tagged_flood_ports(exclude_unicast),
+        tagged_flood_ports = vlan.tagged_flood_ports(exclude_unicast)
+        has_external = vlan.loop_protect_external_ports() and tagged_flood_ports
+        pcp_prefix = [self._set_ext_flag(EXT_PORT_FLAG)] if has_external else []
+        return pcp_prefix + valve_of.flood_port_outputs(
+            tagged_flood_ports,
             vlan.untagged_flood_ports(exclude_unicast),
             in_port=in_port,
             exclude_ports=exclude_ports)
@@ -280,9 +287,6 @@ class ValveFloodManager(ValveManagerBase):
 class ValveFloodStackManager(ValveFloodManager):
     """Implement dataplane based flooding for stacked dataplanes."""
 
-    EXT_PORT_FLAG = 1
-    NONEXT_PORT_FLAG = 0
-
     def __init__(self, logger, flood_table, pipeline, # pylint: disable=too-many-arguments
                  use_group_table, groups,
                  combinatorial_port_flood,
@@ -300,10 +304,6 @@ class ValveFloodStackManager(ValveFloodManager):
         self._flood_actions_func = self._flood_actions
         if self.stack_size == 2:
             self._flood_actions_func = self._flood_actions_size2
-
-
-    def _set_ext_flag(self, ext_flag):
-        return self.flood_table.set_field(**{STACK_LOOP_PROTECT_FIELD: ext_flag})
 
     def _reset_peer_distances(self):
         """Reset distances to/from root for this DP."""
