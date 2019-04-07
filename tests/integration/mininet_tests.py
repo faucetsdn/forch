@@ -5977,6 +5977,9 @@ class FaucetStringOfDPTest(FaucetTest):
 
     def verify_all_stack_hosts(self):
         for _ in range(2):
+            self.pingAll() # Hacky warmup.
+            self.pingAll() # Hacky warmup.
+            self.pingAll() # Hacky warmup.
             self.verify_all_stack_up()
             self.verify_no_cable_errors()
             self.verify_stack_hosts()
