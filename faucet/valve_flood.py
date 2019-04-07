@@ -53,9 +53,6 @@ class ValveFloodManager(ValveManagerBase):
         self.flood_priority = self._MATCH_PRIORITY
         self.classification_offset = 0x100
 
-    def _set_ext_flag(self, ext_flag):
-        return self.flood_table.set_field(**{STACK_LOOP_PROTECT_FIELD: ext_flag})
-
     def initialise_tables(self):
         """Initialise the flood table with filtering flows."""
         ofmsgs = []
@@ -71,6 +68,9 @@ class ValveFloodManager(ValveManagerBase):
     def _mask_flood_priority(self, eth_dst_mask):
         return self.flood_priority + valve_packet.mac_mask_bits(eth_dst_mask)
 
+    def _set_ext_flag(self, ext_flag):
+        return self.flood_table.set_field(**{STACK_LOOP_PROTECT_FIELD: ext_flag})
+
     @staticmethod
     def _vlan_all_ports(vlan, exclude_unicast):
         """Return list of all ports that should be flooded to on a VLAN."""
@@ -85,17 +85,17 @@ class ValveFloodManager(ValveManagerBase):
             if (exclude_all_external or
                     in_port is not None and in_port.loop_protect_external):
                 exclude_ports |= set(external_ports)
-        tagged_flood_ports = vlan.tagged_flood_ports(exclude_unicast)
-        has_external = vlan.loop_protect_external_ports() and tagged_flood_ports
-        pcp_prefix = [self._set_ext_flag(EXT_PORT_FLAG)] if has_external else []
-        return pcp_prefix + valve_of.flood_port_outputs(
-            tagged_flood_ports,
+        return valve_of.flood_port_outputs(
+            vlan.tagged_flood_ports(exclude_unicast),
             vlan.untagged_flood_ports(exclude_unicast),
             in_port=in_port,
             exclude_ports=exclude_ports)
 
     def _build_flood_rule_actions(self, vlan, exclude_unicast, in_port, exclude_all_external=False):
-        return self._build_flood_local_rule_actions(
+        tagged_flood_ports = vlan.tagged_flood_ports(exclude_unicast)
+        has_external = vlan.loop_protect_external_ports() and tagged_flood_ports
+        pcp_prefix = [self._set_ext_flag(self.EXT_PORT_FLAG)] if has_external else []
+        return pcp_prefix + self._build_flood_local_rule_actions(
             vlan, exclude_unicast, in_port, exclude_all_external)
 
     def _build_flood_rule(self, match, command, flood_acts, flood_priority):
