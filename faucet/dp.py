@@ -311,6 +311,7 @@ configuration.
         self.lldp_beacon = {}
         self.table_sizes = {}
         self.dyn_up_port_nos = set()
+        self.has_externals = None
 
         #tunnel_id: int
         #   ID of the tunnel, for now this will be the VLAN ID
