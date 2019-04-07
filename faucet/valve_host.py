@@ -46,6 +46,7 @@ class ValveHostManager(ValveManagerBase):
         self.output_table = self.eth_dst_table
         self.idle_dst = idle_dst
         self.stack = stack
+        self.has_externals = self._has_externals(vlans)
         if self.eth_dst_hairpin_table:
             self.output_table = self.eth_dst_hairpin_table
 
@@ -117,14 +118,11 @@ class ValveHostManager(ValveManagerBase):
 
     def initialise_tables(self):
         ofmsgs = []
-        has_externals = False
         for vlan in self.vlans.values():
             ofmsgs.append(self.eth_src_table.flowcontroller(
                 match=self.eth_src_table.match(vlan=vlan),
                 priority=self.low_priority,
                 inst=[self.eth_src_table.goto(self.output_table)]))
-            has_externals = has_externals | bool(vlan.loop_protect_external_ports())
-        self.has_externals = has_externals
         return ofmsgs
 
     def _temp_ban_host_learning(self, match):
@@ -184,6 +182,13 @@ class ValveHostManager(ValveManagerBase):
         if not self.idle_dst:
             dst_rule_idle_timeout = 0
         return (src_rule_idle_timeout, src_rule_hard_timeout, dst_rule_idle_timeout)
+
+    def _has_externals(self, vlans):
+        has_externals = False
+        for vlan in vlans.values():
+            has_externals = has_externals | bool(vlan.loop_protect_external_ports())
+        self.logger.info('has_externals = %s' % has_externals)
+        return has_externals
 
     def learn_host_on_vlan_port_flows(self, port, vlan, eth_src,
                                       delete_existing, refresh_rules,
