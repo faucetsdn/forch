@@ -5943,7 +5943,7 @@ class FaucetStringOfDPTest(FaucetTest):
             host.cmd(mininet_test_util.timeout_cmd(
                 'tcpdump -U -n -c 1 -i %s -w %s ether proto 0x88CC &' % (
                     host.defaultIntf(), lldp_cap_file), 60))
-        self.retry_net_ping(retries=retries)
+        self.retry_net_ping(retries=retries, required_loss=40)
         # hosts should see no LLDP probes
         self.verify_empty_caps(lldp_cap_files)
         # should not flood LLDP from hosts

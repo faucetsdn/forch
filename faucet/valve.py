@@ -1067,7 +1067,7 @@ class Valve:
                 if pkt_meta.l3_pkt is None:
                     pkt_meta.reparse_ip()
                 self.logger.info(
-                    'L2 learned %s %s (%u hosts total)' % (
+                    'L2 TAP learned %s %s (%u hosts total)' % (
                         pkt_meta.log(), port_move_text, pkt_meta.vlan.hosts_count()))
                 self._notify(
                     {'L2_LEARN': {
