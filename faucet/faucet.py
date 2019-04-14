@@ -94,7 +94,7 @@ class Faucet(RyuAppBase):
         EventFaucetStateExpire: ('state_expire', 5),
         EventFaucetFastStateExpire: ('fast_state_expire', 2),
         EventFaucetAdvertise: ('advertise', 15),
-        EventFaucetFastAdvertise: ('fast_advertise', 1),
+        EventFaucetFastAdvertise: ('fast_advertise', 5),
     }
     logname = 'faucet'
     exc_logname = logname + '.exception'
