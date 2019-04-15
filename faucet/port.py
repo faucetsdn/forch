@@ -58,6 +58,8 @@ class Port(Conf):
         # if non 0 (LAG ID), experimental LACP support enabled on this port.
         'lacp_active': False,
         # experimental active LACP
+        'lacp_peer': None,
+        # If set, link the lacp state of this port to the stack state of peer port.
         'loop_protect': False,
         # if True, do simple (host/access port) loop protection on this port.
         'loop_protect_external': False,
@@ -76,6 +78,8 @@ class Port(Conf):
         # threshold before marking a stack port as down
         'dot1x': False,
         # If true, block this port until a successful 802.1x auth
+        'dot1x_acl': False,
+        # If true, expects authentication and default ACLs for 802.1x auth
     }
 
     defaults_types = {
@@ -96,6 +100,7 @@ class Port(Conf):
         'hairpin_unicast': bool,
         'lacp': int,
         'lacp_active': bool,
+        'lacp_peer': int,
         'loop_protect': bool,
         'loop_protect_external': bool,
         'output_only': bool,
@@ -104,6 +109,7 @@ class Port(Conf):
         'receive_lldp': bool,
         'override_output_port': (str, int),
         'dot1x': bool,
+        'dot1x_acl': bool,
         'max_lldp_lost': int,
     }
 
@@ -130,12 +136,14 @@ class Port(Conf):
         self.acls_in = None
         self.description = None
         self.dot1x = None
+        self.dot1x_acl = None
         self.dp_id = None
         self.enabled = None
         self.hairpin = None
         self.hairpin_unicast = None
         self.lacp = None
         self.lacp_active = None
+        self.lacp_peer = None
         self.loop_protect = None
         self.loop_protect_external = None
         self.max_hosts = None
@@ -194,6 +202,9 @@ class Port(Conf):
         if self.dot1x:
             test_config_condition(self.number > 65535, (
                 '802.1x not supported on ports > 65535'))
+        if self.dot1x_acl:
+            test_config_condition(not self.dot1x, (
+                '802.1x_ACL requires dot1x to be enabled also'))
         if self.mirror:
             test_config_condition(self.tagged_vlans or self.native_vlan, (
                 'mirror port %s cannot have any VLANs assigned' % self))
