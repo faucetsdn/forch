@@ -876,7 +876,7 @@ class Valve:
     def _lacp_pkt(self, lacp_pkt, port):
         lacp_peer = self.dp.ports.get(port.lacp_peer, None)
         if lacp_peer and lacp_peer.is_stack_down():
-            self.logger.warning('suppressing LACP %s on %s, peer %s stack is down' % (pkt, port, lacp_peer))
+            self.logger.warning('suppressing LACP LAG %s on %s, peer %s stack is down' % (port.lacp, port, lacp_peer))
             return None
         actor_state_activity = 0
         if port.lacp_active:
