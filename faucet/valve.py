@@ -530,7 +530,7 @@ class Valve:
 
         if not stack_correct:
             if not port.is_stack_down():
-`                next_state = port.stack_down
+                next_state = port.stack_down
                 self.logger.error('Stack %s DOWN, incorrect cabling' % port)
         elif num_lost_lldp > port.max_lldp_lost:
             if not port.is_stack_down():
