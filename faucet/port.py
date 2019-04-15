@@ -58,7 +58,7 @@ class Port(Conf):
         # if non 0 (LAG ID), experimental LACP support enabled on this port.
         'lacp_active': False,
         # experimental active LACP
-        'lacp_peer': None,
+        'lacp_peers': None,
         # If set, link the lacp state of this port to the stack state of peer port.
         'loop_protect': False,
         # if True, do simple (host/access port) loop protection on this port.
@@ -100,7 +100,7 @@ class Port(Conf):
         'hairpin_unicast': bool,
         'lacp': int,
         'lacp_active': bool,
-        'lacp_peer': int,
+        'lacp_peers': list,
         'loop_protect': bool,
         'loop_protect_external': bool,
         'output_only': bool,
@@ -143,7 +143,7 @@ class Port(Conf):
         self.hairpin_unicast = None
         self.lacp = None
         self.lacp_active = None
-        self.lacp_peer = None
+        self.lacp_peers = None
         self.loop_protect = None
         self.loop_protect_external = None
         self.max_hosts = None
