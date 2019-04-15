@@ -501,7 +501,7 @@ class Valve:
         ofmsgs = []
         for port in self.dp.lacp_active_ports:
             if port.running():
-                pkt = self._lacp_pkt(port.dyn_last_lacp_pkt, port)
+                pkt = self._lacp_pkt(port.dyn_last_lacp_pkt, port, now)
                 if pkt:
                     ofmsgs.append(valve_of.packetout(port.number, pkt.data))
 
@@ -729,7 +729,7 @@ class Valve:
             if port.lacp:
                 ofmsgs.extend(self.lacp_down(port, cold_start=cold_start))
                 if port.lacp_active:
-                    pkt = self._lacp_pkt(port.dyn_last_lacp_pkt, port)
+                    pkt = self._lacp_pkt(port.dyn_last_lacp_pkt, port, None)
                     if pkt:
                         ofmsgs.append(valve_of.packetout(port.number, pkt.data))
 
@@ -864,7 +864,7 @@ class Valve:
         ofmsgs.append(vlan_table.flowdel(
             match=vlan_table.match(in_port=port.number),
             priority=self.dp.high_priority, strict=True))
-        if port.dyn_lacp_up != 0:
+        if not port.dyn_lacp_up:
             self.logger.info('LAG %u port %s up (previous state %s)' % (
                 port.lacp, port, port.dyn_lacp_up))
         port.dyn_lacp_up = 1
@@ -873,11 +873,16 @@ class Valve:
         self._reset_lacp_status(port)
         return ofmsgs
 
-    def _lacp_pkt(self, lacp_pkt, port):
-        lacp_peer = self.dp.ports.get(port.lacp_peer, None)
-        if lacp_peer and lacp_peer.is_stack_down():
-            self.logger.warning('suppressing LACP %s on %s, peer %s stack is down' % (pkt, port, lacp_peer))
-            return None
+    def _lacp_pkt(self, lacp_pkt, port, now):
+        if port.lacp_peers:
+            for peer_num in port.lacp_peers:
+                lacp_peer = self.dp.ports.get(peer_num, None)
+                peer_beacon = lacp_peer.dyn_last_lldp_beacon_time if lacp_peer else 0
+                now_time = now if now else 0
+                delta_time = now_time - peer_beacon
+                if delta_time > 15 or delta_time <= 0:
+                    self.logger.warning('suppressing LACP LAG %s on %s, peer %s link is down' % (port.lacp, port, lacp_peer))
+                    return None
         actor_state_activity = 0
         if port.lacp_active:
             actor_state_activity = 1
@@ -945,7 +950,7 @@ class Valve:
                         ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port))
                 # TODO: make LACP response rate limit configurable.
                 if lacp_pkt_change or (age is not None and age > 1):
-                    pkt = self._lacp_pkt(lacp_pkt, pkt_meta.port)
+                    pkt = self._lacp_pkt(lacp_pkt, pkt_meta.port, now)
                     if pkt:
                         ofmsgs_by_valve[self].append(valve_of.packetout(pkt_meta.port.number, pkt.data))
                 pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
@@ -1014,6 +1019,8 @@ class Valve:
          remote_port_id, remote_port_state) = valve_packet.parse_faucet_lldp(
              lldp_pkt, self.dp.faucet_dp_mac)
 
+        port.dyn_last_lldp_beacon_time = now
+
         if remote_dp_id and remote_port_id:
             self.logger.debug('FAUCET LLDP from %s (remote %s, port %u)' % (
                 pkt_meta.log(), valve_util.dpid_log(remote_dp_id), remote_port_id))
@@ -1021,7 +1028,8 @@ class Valve:
                 port, now, other_valves,
                 remote_dp_id, remote_dp_name,
                 remote_port_id, remote_port_state)
-        self.logger.debug('LLDP from %s: %s' % (pkt_meta.log(), str(lldp_pkt)))
+        else:
+            self.logger.debug('LLDP from %s: %s' % (pkt_meta.log(), str(lldp_pkt)))
 
     @staticmethod
     def _control_plane_handler(now, pkt_meta, route_manager):
