@@ -499,7 +499,8 @@ class Valve:
         for port in self.dp.lacp_active_ports:
             if port.running():
                 pkt = self._lacp_pkt(port.dyn_last_lacp_pkt, port)
-                ofmsgs.append(valve_of.packetout(port.number, pkt.data))
+                if pkt:
+                    ofmsgs.append(valve_of.packetout(port.number, pkt.data))
 
         ports = self.dp.lldp_beacon_send_ports(now)
         ofmsgs.extend([self._send_lldp_beacon_on_port(port, now) for port in ports])
@@ -526,7 +527,7 @@ class Valve:
 
         if not stack_correct:
             if not port.is_stack_down():
-                next_state = port.stack_down
+`                next_state = port.stack_down
                 self.logger.error('Stack %s DOWN, incorrect cabling' % port)
         elif num_lost_lldp > port.max_lldp_lost:
             if not port.is_stack_down():
@@ -726,7 +727,8 @@ class Valve:
                 ofmsgs.extend(self.lacp_down(port, cold_start=cold_start))
                 if port.lacp_active:
                     pkt = self._lacp_pkt(port.dyn_last_lacp_pkt, port)
-                    ofmsgs.append(valve_of.packetout(port.number, pkt.data))
+                    if pkt:
+                        ofmsgs.append(valve_of.packetout(port.number, pkt.data))
 
             if self.dp.dot1x:
                 nfv_sw_port = self.dp.ports[self.dp.dot1x['nfv_sw_port']]
@@ -869,6 +871,10 @@ class Valve:
         return ofmsgs
 
     def _lacp_pkt(self, lacp_pkt, port):
+        lacp_peer = self.dp.ports.get(port.lacp_peer, None)
+        if lacp_peer and lacp_peer.is_stack_down():
+            self.logger.warning('suppressing LACP %s on %s, peer %s stack is down' % (pkt, port, lacp_peer))
+            return None
         actor_state_activity = 0
         if port.lacp_active:
             actor_state_activity = 1
@@ -937,7 +943,8 @@ class Valve:
                 # TODO: make LACP response rate limit configurable.
                 if lacp_pkt_change or (age is not None and age > 1):
                     pkt = self._lacp_pkt(lacp_pkt, pkt_meta.port)
-                    ofmsgs_by_valve[self].append(valve_of.packetout(pkt_meta.port.number, pkt.data))
+                    if pkt:
+                        ofmsgs_by_valve[self].append(valve_of.packetout(pkt_meta.port.number, pkt.data))
                 pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
                 pkt_meta.port.dyn_lacp_updated_time = now
                 other_lag_ports = [
