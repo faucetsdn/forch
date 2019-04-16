@@ -860,7 +860,7 @@ acls:
             actions:
                 allow: False
         - rule:
-            dl_type: 0x0806     # ARP Packets 
+            dl_type: 0x0806     # ARP Packets
             actions:
                 allow: True
     """
