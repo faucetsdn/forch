@@ -1026,14 +1026,14 @@ class Valve:
         port.dyn_lldp_beacon_recv_time = now
 
         if remote_dp_id and remote_port_id:
-            self.logger.info('FAUCET LLDP from %s (remote %s, port %u)' % (
+            self.logger.debug('FAUCET LLDP from %s (remote %s, port %u)' % (
                 pkt_meta.log(), valve_util.dpid_log(remote_dp_id), remote_port_id))
             self._verify_stack_lldp(
                 port, now, other_valves,
                 remote_dp_id, remote_dp_name,
                 remote_port_id, remote_port_state)
         else:
-            self.logger.info('LLDP from %s: %s' % (pkt_meta.log(), str(lldp_pkt)))
+            self.logger.debug('LLDP from %s: %s' % (pkt_meta.log(), str(lldp_pkt)))
 
     @staticmethod
     def _control_plane_handler(now, pkt_meta, route_manager):
