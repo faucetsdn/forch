@@ -877,10 +877,12 @@ class Valve:
         if port.lacp_peers:
             for peer_num in port.lacp_peers:
                 lacp_peer = self.dp.ports.get(peer_num, None)
-                peer_valid = lacp_peer and lacp_peer.dyn_last_lldp_beacon_time
-                peer_beacon = lacp_peer.dyn_last_lldp_beacon_time if peer_valid else 0
+                peer_valid = lacp_peer and lacp_peer.dyn_lldp_beacon_recv_time
+                peer_beacon = lacp_peer.dyn_lldp_beacon_recv_time if peer_valid else 0
                 now_time = now if now else 0
                 delta_time = now_time - peer_beacon
+                self.logger.debug('checking LACP LAG %s on %s, peer %s link with %s' %
+                                  (port.lacp, port, lacp_peer, peer_beacon))
                 if delta_time > 15 or delta_time <= 0:
                     self.logger.warning('suppressing LACP LAG %s on %s, peer %s link is down' %
                                         (port.lacp, port, lacp_peer))
@@ -1021,7 +1023,7 @@ class Valve:
          remote_port_id, remote_port_state) = valve_packet.parse_faucet_lldp(
              lldp_pkt, self.dp.faucet_dp_mac)
 
-        port.dyn_last_lldp_beacon_time = now
+        port.dyn_lldp_beacon_recv_time = now
 
         if remote_dp_id and remote_port_id:
             self.logger.debug('FAUCET LLDP from %s (remote %s, port %u)' % (
