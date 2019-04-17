@@ -34,7 +34,7 @@ from faucet import valve_util
 from faucet import valve_pipeline
 
 from faucet.faucet_pipeline import STACK_LOOP_PROTECT_FIELD
-from faucet.port import STACK_STATE_INIT, STACK_STATE_UP, STACK_STATE_DOWN
+from faucet.port import STACK_STATE_INIT, STACK_STATE_UP, STACK_STATE_DOWN, STACK_STATE_FAILOVER
 from faucet.vlan import NullVLAN
 
 
@@ -587,9 +587,9 @@ class Valve:
             self._update_stack_link_state(port, now, other_valves)
         for port in self.dp.ports.values():
             delta_time = now - port.dyn_lldp_beacon_recv_time
-            if delta_time > 15 and port.dyn_lldp_beacon_recv_state:
+            if delta_time > 15 and port.dyn_lldp_beacon_recv_state != STACK_STATE_DOWN:
                 self.logger.info('LLDP for port %s inactive after %s' % (port, delta_time))
-                port.dyn_lldp_beacon_recv_state = False
+                port.dyn_lldp_beacon_recv_state = STACK_STATE_DOWN
         return {}
 
     def _reset_dp_status(self):
@@ -880,12 +880,21 @@ class Valve:
 
     def _lacp_pkt(self, lacp_pkt, port, now):
         if port.lacp_peers:
+            failover_state = False
+            down_state = False
             for peer_num in port.lacp_peers:
                 lacp_peer = self.dp.ports.get(peer_num, None)
-                if lacp_peer and not lacp_peer.dyn_lldp_beacon_recv_state:
-                    self.logger.warning('suppressing LACP LAG %s on %s, peer %s link is down' %
-                                        (port.lacp, port, lacp_peer))
-                    return None
+                if lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_DOWN:
+                    down_state = True
+                elif lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_FAILOVER:
+                    failover_state = True
+            if failover_state:
+                self.logger.warning('failover LACP LAG %s on %s, peer %s link is failover' %
+                                    (port.lacp, port, lacp_peer))
+            elif down_state:
+                self.logger.warning('suppressing LACP LAG %s on %s, peer %s link is down' %
+                                    (port.lacp, port, lacp_peer))
+                return None
         actor_state_activity = 0
         if port.lacp_active:
             actor_state_activity = 1
@@ -1023,13 +1032,14 @@ class Valve:
              lldp_pkt, self.dp.faucet_dp_mac)
 
         port.dyn_lldp_beacon_recv_time = now
-        if not port.dyn_lldp_beacon_recv_state:
-            self.logger.info('LLDP for port %s active' % port)
-            port.dyn_lldp_beacon_recv_state = True
+        remote_lldp_state = remote_port_state if remote_port_state else STACK_STATE_INIT
+        if port.dyn_lldp_beacon_recv_state != remote_lldp_state:
+            self.logger.info('LLDP for port %s active with %s' % (port, remote_lldp_state))
+            port.dyn_lldp_beacon_recv_state = remote_lldp_state
 
         if remote_dp_id and remote_port_id:
-            self.logger.debug('FAUCET LLDP from %s (remote %s, port %u)' % (
-                pkt_meta.log(), valve_util.dpid_log(remote_dp_id), remote_port_id))
+            self.logger.debug('FAUCET LLDP from %s is %s (remote %s, port %u)' % (
+                pkt_meta.log(), remote_port_state, valve_util.dpid_log(remote_dp_id), remote_port_id))
             self._verify_stack_lldp(
                 port, now, other_valves,
                 remote_dp_id, remote_dp_name,
