@@ -23,7 +23,7 @@ STACK_STATE_ADMIN_DOWN = 0
 STACK_STATE_INIT = 1
 STACK_STATE_DOWN = 2
 STACK_STATE_UP = 3
-
+STACK_STATE_FAILOVER = 4
 
 class Port(Conf):
     """Stores state for ports, including the configuration."""
@@ -68,6 +68,8 @@ class Port(Conf):
         # if True, all packets input from this port are dropped.
         'lldp_beacon': {},
         # LLDP beacon configuration for this port.
+        'lldp_failover': None,
+        # LLDP failover port for this port.
         'opstatus_reconf': True,
         # If True, configure pipeline if operational status of port changes.
         'receive_lldp': False,
@@ -105,6 +107,7 @@ class Port(Conf):
         'loop_protect_external': bool,
         'output_only': bool,
         'lldp_beacon': dict,
+        'lldp_failover': int,
         'opstatus_reconf': bool,
         'receive_lldp': bool,
         'override_output_port': (str, int),
@@ -148,6 +151,7 @@ class Port(Conf):
         self.loop_protect_external = None
         self.max_hosts = None
         self.max_lldp_lost = None
+        self.lldp_failover = None
         self.mirror = None
         self.name = None
         self.native_vlan = None
@@ -327,6 +331,10 @@ class Port(Conf):
     def stack_down(self):
         """Change the current stack state to DOWN."""
         self.dyn_stack_current_state = STACK_STATE_DOWN
+
+    def stack_failover(self):
+        """Change the current stack state to FAILOVER."""
+        self.dyn_stack_current_state = STACK_STATE_FAILOVER
 
     def stack_admin_down(self):
         """Change the current stack state to ADMIN_DOWN."""
