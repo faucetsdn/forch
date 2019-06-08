@@ -653,9 +653,9 @@ class Valve:
             actions.extend(valve_of.push_vlan_act(
                 vlan_table, vlan.vid))
             match_vlan = NullVLAN()
-        elif self.dp.stack and self.dp.stack.get('externals', False) and port.loop_protect_external:
-            # Ensure loop protection field cleared on external port.
-            actions.append(valve_of.set_field(**{STACK_LOOP_PROTECT_FIELD: 0}))
+        if vlan.loop_protect_external_ports():
+            vlan_pcp = 0 if port.loop_protect_external else 1
+            actions.append(valve_of.set_field(**{STACK_LOOP_PROTECT_FIELD: vlan_pcp}))
         inst = [
             valve_of.apply_actions(actions),
             vlan_table.goto(self._find_forwarding_table(vlan))]
