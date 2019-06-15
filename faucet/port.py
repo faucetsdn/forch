@@ -173,7 +173,7 @@ class Port(Conf):
         self.dyn_last_ban_time = None
         self.dyn_last_lacp_pkt = None
         self.dyn_last_lldp_beacon_time = None
-        self.dyn_lldp_beacon_recv_state = None
+        self.dyn_lldp_beacon_recv_state = STACK_STATE_DOWN
         self.dyn_lldp_beacon_recv_time = None
         self.dyn_learn_ban_count = 0
         self.dyn_phys_up = False
