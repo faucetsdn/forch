@@ -75,6 +75,8 @@ class Port(Conf):
         # If True, configure pipeline if operational status of port changes.
         'receive_lldp': False,
         # If True, receive LLDP on this port.
+        'lldp_peer_mac': None,
+        # If set, validates src MAC address of incoming LLDP packets
         'override_output_port': None,
         # If set, packets are sent to this other port.
         'max_lldp_lost': 3,
@@ -111,6 +113,7 @@ class Port(Conf):
         'lldp_failover': int,
         'opstatus_reconf': bool,
         'receive_lldp': bool,
+        'lldp_peer_mac': str,
         'override_output_port': (str, int),
         'dot1x': bool,
         'dot1x_acl': bool,
@@ -163,6 +166,7 @@ class Port(Conf):
         self.override_output_port = None
         self.permanent_learn = None
         self.receive_lldp = None
+        self.lldp_peer_mac = None
         self.stack = {}
         self.unicast_flood = None
 
