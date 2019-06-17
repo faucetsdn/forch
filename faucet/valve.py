@@ -896,13 +896,13 @@ class Valve:
                     down_state = lacp_peer
                 elif lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_FAILOVER:
                     failover_state = lacp_peer
-            if failover_state:
+            if down_state:
+                if not failover_state:
+                    self.logger.warning('Suppressing LACP LAG %s on %s, peer %s is down' %
+                                        (port.lacp, port, down_state))
+                    return []
                 self.logger.warning('Failover LACP LAG %s on %s, peer %s failover' %
                                     (port.lacp, port, failover_state))
-            elif down_state:
-                self.logger.warning('Suppressing LACP LAG %s on %s, peer %s is down' %
-                                    (port.lacp, port, down_state))
-                return []
         actor_state_activity = 0
         if port.lacp_active:
             actor_state_activity = 1
