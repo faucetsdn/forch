@@ -5209,8 +5209,6 @@ acls:
 """
 
     def _verify_link(self, hosts=None, expected=True, p=0):
-        self.verify_broadcast(hosts, expected)
-        self.verify_unicast(hosts, expected)
         from_port=hosts[0]
         to_port=hosts[1]
         tcpdump_filter = 'ether dst %s' % to_port.MAC()
@@ -5218,27 +5216,20 @@ acls:
             to_port, tcpdump_filter, [
                 lambda: from_port.cmd(
                     'ping -c3 %s' % to_port.IP())], root_intf=True, packets=1)
-        print('_verify_link %s %s\n%s\n' % (expected, p, tcpdump_txt))
         if expected:
             self.assertTrue(re.search('vlan 100, p %d,' % p, tcpdump_txt))
         else:
             self.assertFalse(re.search('vlan 100', tcpdump_txt))
+        self.verify_broadcast(hosts, expected)
+        self.verify_unicast(hosts, expected)
 
     def test_tagged(self):
         ext_port1, ext_port2, int_port1, int_port2 = self.net.hosts
-        self._verify_link(hosts=(ext_port1, ext_port2), expected=False, p=1)
-        self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=1)
-        self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=1)
-        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=1)
-        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=1)
-
-    def test_unlearned(self):
-        ext_port1, ext_port2, int_port1, int_port2 = self.net.hosts
-        self._verify_link(hosts=(ext_port1, ext_port2), expected=False, p=1)
-        self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=1)
-        self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=1)
-        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=1)
-        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=1)
+        self._verify_link(hosts=(ext_port1, ext_port2), expected=False)
+        self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=0)
+        self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=0)
+        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=0)
+        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=0)
 
 
 class FaucetTaggedWithUntaggedTest(FaucetTaggedTest):
