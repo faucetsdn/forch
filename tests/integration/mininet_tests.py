@@ -5194,6 +5194,7 @@ acls:
                 allow: 1
 """
     CONFIG = """
+        timeout: 10
         interfaces:
             %(port_1)d:
                 tagged_vlans: [100]
@@ -5208,53 +5209,37 @@ acls:
                 tagged_vlans: [100]
 """
 
-    def _verify_link(self, hosts=None, expected=True):
+    def _verify_link(self, hosts=None, expected=True, p=0):
         self.verify_broadcast(hosts, expected)
         self.verify_unicast(hosts, expected)
+        from_port=hosts[0]
+        to_port=hosts[1]
+        tcpdump_filter = 'ether dst %s' % to_port
+        tcpdump_txt = self.tcpdump_helper(
+            to_port, tcpdump_filter, [
+                lambda: from_port.cmd(
+                    'ping -c3 %s' % to_port.IP())], root_intf=True, packets=1)
+        print('_verify_link %s %s\n%s\n' % (expected, p, tcpdump_txt))
+        if expected:
+            self.assertTrue(re.search('vlan 100, p %d,' % p, tcpdump_txt))
+        else:
+            self.assertFalse(re.search('vlan 100', tcpdump_txt))
 
     def test_tagged(self):
         ext_port1, ext_port2, int_port1, int_port2 = self.net.hosts
-        self._verify_link(hosts=(ext_port1, ext_port2), expected=False)
-        self._verify_link(hosts=(ext_port1, int_port1), expected=True)
-        self._verify_link(hosts=(int_port1, ext_port1), expected=True)
-        self._verify_link(hosts=(int_port1, int_port2), expected=True)
-        #self.one_ipv4_ping(ext_port1, int_port2.IP())
-        tcpdump_filter = 'ether dst %s' % int_port2.MAC()
-        tcpdump_txt = self.tcpdump_helper(
-            int_port2, tcpdump_filter, [
-                lambda: ext_port2.cmd(
-                    'ping -c3 %s' % int_port2.IP())], root_intf=True, packets=1)
-        self.assertTrue(re.search('vlan 100, p 1,', tcpdump_txt))
-        tcpdump_txt = self.tcpdump_helper(
-            int_port2, tcpdump_filter, [
-                lambda: int_port1.cmd(
-                    'ping -c3 %s' % int_port2.IP())], root_intf=True, packets=1)
-        self.assertTrue(re.search('vlan 100, p 1,', tcpdump_txt))
-        tcpdump_txt = self.tcpdump_helper(
-            ext_port1, tcpdump_filter, [
-                lambda: int_port2.cmd(
-                    'ping -c3 %s' % ext_port1.IP())], root_intf=True, packets=1)
-        self.assertTrue(re.search('vlan 100, p 0,', tcpdump_txt))
+        self._verify_link(hosts=(ext_port1, ext_port2), expected=False, p=1)
+        self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=1)
+        self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=1)
+        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=0)
+        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=0)
 
-    def _test_unlearned(self):
+    def test_unlearned(self):
         ext_port1, ext_port2, int_port1, int_port2 = self.net.hosts
-        self.one_ipv4_ping(ext_port2, int_port1.IP())
-        self.one_ipv4_ping(ext_port2, ext_port1.IP())
-        #self.wait_until_no_matching_flow(
-        #    {'eth_src': self.eapol1_host.MAC(),
-        #     'vlan_vid': vid},
-        #    table_id=self._ETH_SRC_TABLE)
-        tcpdump_filter = 'ether dst %s' % int_port2.MAC()
-        tcpdump_txt = self.tcpdump_helper(
-            int_port1, tcpdump_filter, [
-                lambda: ext_port2.cmd(
-                    'ping -c3 %s' % int_port1.IP())], root_intf=True, packets=1)
-        self.assertTrue(re.search('vlan 100, p 1,', tcpdump_txt))
-        tcpdump_txt = self.tcpdump_helper(
-            ext_port1, tcpdump_filter, [
-                lambda: ext_port2.cmd(
-                    'ping -c3 %s' % ext_port1.IP())], root_intf=True, packets=1)
-        self.assertTrue(re.search('vlan 100, p 0,', tcpdump_txt))
+        self._verify_link(hosts=(ext_port1, ext_port2), expected=False, p=1)
+        self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=1)
+        self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=1)
+        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=0)
+        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=0)
 
 
 class FaucetTaggedWithUntaggedTest(FaucetTaggedTest):
