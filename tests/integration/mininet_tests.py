@@ -5194,7 +5194,6 @@ acls:
                 allow: 1
 """
     CONFIG = """
-        timeout: 10
         interfaces:
             %(port_1)d:
                 tagged_vlans: [100]
@@ -5214,7 +5213,7 @@ acls:
         self.verify_unicast(hosts, expected)
         from_port=hosts[0]
         to_port=hosts[1]
-        tcpdump_filter = 'ether dst %s' % to_port
+        tcpdump_filter = 'ether dst %s' % to_port.MAC()
         tcpdump_txt = self.tcpdump_helper(
             to_port, tcpdump_filter, [
                 lambda: from_port.cmd(
