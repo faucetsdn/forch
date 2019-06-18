@@ -95,7 +95,7 @@ class ValveFloodManager(ValveManagerBase):
     def _build_flood_rule_actions(self, vlan, exclude_unicast, in_port, exclude_all_external=False):
         tagged_flood_ports = vlan.tagged_flood_ports(exclude_unicast)
         has_external = vlan.loop_protect_external_ports() and tagged_flood_ports
-        pcp_prefix = [self._set_ext_flag(self.NONEXT_PORT_FLAG)] if has_external else []
+        pcp_prefix = [self._set_ext_flag(self.EXT_PORT_FLAG)] if has_external else []
         return pcp_prefix + self._build_flood_local_rule_actions(
             vlan, exclude_unicast, in_port, exclude_all_external)
 

@@ -5182,18 +5182,17 @@ class FaucetTaggedBroadcastTest(FaucetTaggedTest):
 
 class FaucetTaggedExtLoopProtectTest(FaucetTaggedTest):
 
-    CONFIG_GLOBAL = """
-acls:
-    1:
-        - rule:
-            vlan_vid: 100
-            actions:
-                output:
-                    set_fields:
-                        - vlan_pcp: 1
-                allow: 1
-"""
+
     CONFIG = """
+        acls:
+            pcp_force:
+                - rule:
+                    vlan_vid: 100
+                    actions:
+                        output:
+                            set_fields:
+                                - vlan_pcp: 1
+                        allow: 1
         interfaces:
             %(port_1)d:
                 tagged_vlans: [100]
@@ -5201,7 +5200,7 @@ acls:
             %(port_2)d:
                 tagged_vlans: [100]
                 loop_protect_external: True
-                acl_in: 1
+                acl_in: pcp_force
             %(port_3)d:
                 tagged_vlans: [100]
             %(port_4)d:

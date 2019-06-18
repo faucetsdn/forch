@@ -234,7 +234,7 @@ class ValveHostManager(ValveManagerBase):
         if port.tagged_vlans and port.loop_protect_external and self.stack:
             loop_protect_field = 0
         elif mark_port:
-            loop_protect_field = 0
+            loop_protect_field = 1
 
         # Output packets for this MAC to specified port.
         vlan_pcp = 1 if self.has_externals else None
