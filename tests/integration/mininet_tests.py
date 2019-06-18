@@ -5218,8 +5218,7 @@ acls:
         self._verify_link(hosts=(ext_port1, int_port1), expected=True)
         self._verify_link(hosts=(int_port1, ext_port1), expected=True)
         self._verify_link(hosts=(int_port1, int_port2), expected=True)
-        self.one_ipv4_ping(ext_port1, int_port2.IP())
-        self.one_ipv4_ping(ext_port2, int_port2.IP())
+        #self.one_ipv4_ping(ext_port1, int_port2.IP())
         tcpdump_filter = 'ether dst %s' % int_port2.MAC()
         tcpdump_txt = self.tcpdump_helper(
             int_port2, tcpdump_filter, [
@@ -5239,16 +5238,22 @@ acls:
 
     def _test_unlearned(self):
         ext_port1, ext_port2, int_port1, int_port2 = self.net.hosts
-        self.one_ipv4_ping(ext_port1, int_port2.IP())
+        self.one_ipv4_ping(ext_port2, int_port1.IP())
+        self.one_ipv4_ping(ext_port2, ext_port1.IP())
         #self.wait_until_no_matching_flow(
         #    {'eth_src': self.eapol1_host.MAC(),
         #     'vlan_vid': vid},
         #    table_id=self._ETH_SRC_TABLE)
         tcpdump_filter = 'ether dst %s' % int_port2.MAC()
         tcpdump_txt = self.tcpdump_helper(
-            int_port2, tcpdump_filter, [
-                lambda: ext_port1.cmd(
-                    'ping -c3 %s' % int_port2.IP())], root_intf=True, packets=1)
+            int_port1, tcpdump_filter, [
+                lambda: ext_port2.cmd(
+                    'ping -c3 %s' % int_port1.IP())], root_intf=True, packets=1)
+        self.assertTrue(re.search('vlan 100, p 1,', tcpdump_txt))
+        tcpdump_txt = self.tcpdump_helper(
+            ext_port1, tcpdump_filter, [
+                lambda: ext_port2.cmd(
+                    'ping -c3 %s' % ext_port1.IP())], root_intf=True, packets=1)
         self.assertTrue(re.search('vlan 100, p 0,', tcpdump_txt))
 
 
