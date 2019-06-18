@@ -5229,16 +5229,16 @@ acls:
         self._verify_link(hosts=(ext_port1, ext_port2), expected=False, p=1)
         self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=1)
         self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=1)
-        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=0)
-        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=0)
+        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=1)
+        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=1)
 
     def test_unlearned(self):
         ext_port1, ext_port2, int_port1, int_port2 = self.net.hosts
         self._verify_link(hosts=(ext_port1, ext_port2), expected=False, p=1)
         self._verify_link(hosts=(ext_port1, int_port2), expected=True, p=1)
         self._verify_link(hosts=(ext_port2, int_port2), expected=True, p=1)
-        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=0)
-        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=0)
+        self._verify_link(hosts=(int_port1, ext_port2), expected=True, p=1)
+        self._verify_link(hosts=(int_port1, int_port2), expected=True, p=1)
 
 
 class FaucetTaggedWithUntaggedTest(FaucetTaggedTest):
