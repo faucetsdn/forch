@@ -5219,7 +5219,7 @@ acls:
         self._verify_link(hosts=(int_port1, ext_port1), expected=True)
         self._verify_link(hosts=(int_port1, int_port2), expected=True)
         self.one_ipv4_ping(ext_port1, int_port2.IP())
-        #self.one_ipv4_ping(ext_port2, int_port2.IP())
+        self.one_ipv4_ping(ext_port2, int_port2.IP())
         tcpdump_filter = 'ether dst %s' % int_port2.MAC()
         tcpdump_txt = self.tcpdump_helper(
             int_port2, tcpdump_filter, [
