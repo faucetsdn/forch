@@ -110,6 +110,8 @@ configuration.
         # whether proactive learning is enabled for IPv6 nexthops
         'use_idle_timeout': False,
         # Turn on/off the use of idle timeout for src_table, default OFF.
+        'use_hard_timeout': False,
+        # Turn on/off the use of hard timeout for dst_table, default OFF.
         'lldp_beacon': {},
         # Config for LLDP beacon service.
         'metrics_rate_limit_sec': 0,
@@ -179,6 +181,7 @@ configuration.
         'proactive_learn_v4': bool,
         'proactive_learn_v6': bool,
         'use_idle_timeout': bool,
+        'use_hard_timeout': bool,
         'lldp_beacon': dict,
         'metrics_rate_limit_sec': int,
         'faucet_dp_mac': str,
@@ -290,6 +293,7 @@ configuration.
         self.timeout = None
         self.unicast_flood = None
         self.use_idle_timeout = None
+        self.use_hard_timeout = None
         self.vlans = None
         self.min_wildcard_table_size = None
         self.max_wildcard_table_size = None

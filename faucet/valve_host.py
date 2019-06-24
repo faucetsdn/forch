@@ -28,7 +28,7 @@ class ValveHostManager(ValveManagerBase):
 
     def __init__(self, logger, ports, vlans, eth_src_table, eth_dst_table,
                  eth_dst_hairpin_table, pipeline, learn_timeout, learn_jitter,
-                 learn_ban_timeout, cache_update_guard_time, idle_dst, stack):
+                 learn_ban_timeout, cache_update_guard_time, idle_dst, stack, hard_timeout):
         self.logger = logger
         self.ports = ports
         self.vlans = vlans
@@ -44,6 +44,7 @@ class ValveHostManager(ValveManagerBase):
         self.cache_update_guard_time = cache_update_guard_time
         self.output_table = self.eth_dst_table
         self.idle_dst = idle_dst
+        self.hard_timeout = hard_timeout
         self.stack = stack
         self.has_externals = self._has_externals(vlans)
         if self.eth_dst_hairpin_table:
@@ -236,20 +237,30 @@ class ValveHostManager(ValveManagerBase):
         elif mark_port:
             loop_protect_field = 1
 
+        # Use hard timeout for dst flows, so that if the controller is down the flows will
+        # always expire (otherwise they might live forever with idle timeouts). Ideally this
+        # would delete the dst flows on relearn, but that doesn't seem to work, so instead
+        # make the dst rule expire first. May result in some unicast flooding.
+        if self.hard_timeout:
+            dst_rule_hard_timeout = src_rule_hard_timeout - 1
+            dst_rule_idle_timeout = 0
+        else:
+            dst_rule_hard_timeout = 0
+
         # Output packets for this MAC to specified port.
         vlan_pcp = 1 if self.has_externals else None
         ofmsgs.append(self.eth_dst_table.flowmod(
             self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src, vlan_pcp=vlan_pcp),
             priority=self.host_priority,
             inst=self.pipeline.output(port, vlan, loop_protect_field=loop_protect_field),
-            idle_timeout=dst_rule_idle_timeout))
+            idle_timeout=dst_rule_idle_timeout, hard_timeout=dst_rule_hard_timeout))
 
         if self.has_externals and not port.loop_protect_external:
             ofmsgs.append(self.eth_dst_table.flowmod(
                 self.eth_dst_table.match(vlan=vlan, eth_dst=eth_src, vlan_pcp=0),
                 priority=self.host_priority,
                 inst=self.pipeline.output(port, vlan, loop_protect_field=loop_protect_field),
-                idle_timeout=dst_rule_idle_timeout))
+                idle_timeout=dst_rule_idle_timeout, hard_timeout=dst_rule_hard_timeout))
 
         # If port is in hairpin mode, install a special rule
         # that outputs packets destined to this MAC back out the same
@@ -260,7 +271,7 @@ class ValveHostManager(ValveManagerBase):
                 self.eth_dst_hairpin_table.match(in_port=port.number, vlan=vlan, eth_dst=eth_src),
                 priority=self.host_priority,
                 inst=self.pipeline.output(port, vlan, hairpin=True),
-                idle_timeout=dst_rule_idle_timeout))
+                idle_timeout=dst_rule_idle_timeout, hard_timeout=dst_rule_hard_timeout))
 
         return ofmsgs
 

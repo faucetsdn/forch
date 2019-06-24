@@ -207,7 +207,8 @@ class Valve:
             self.dp.vlans, self.dp.tables['eth_src'],
             self.dp.tables['eth_dst'], eth_dst_hairpin_table, self.pipeline,
             self.dp.timeout, self.dp.learn_jitter, self.dp.learn_ban_timeout,
-            self.dp.cache_update_guard_time, self.dp.idle_dst, self.dp.stack)
+            self.dp.cache_update_guard_time, self.dp.idle_dst, self.dp.stack,
+            self.dp.use_hard_timeout)
         if any(t in self.dp.tables for t in ('port_acl', 'vlan_acl', 'egress_acl'))\
                 or self.dp.tunnel_acls:
             self.acl_manager = valve_acl.ValveAclManager(
@@ -892,7 +893,10 @@ class Valve:
             down_state = False
             for peer_num in port.lacp_passthrough:
                 lacp_peer = self.dp.ports.get(peer_num, None)
-                if not lacp_peer.dyn_lacp_up:
+                lacp_down = lacp_peer.lacp and not lacp_peer.dyn_lacp_up
+                lldp_down = lacp_peer.receive_lldp and \
+                            lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_DOWN
+                if lacp_down or lldp_down:
                     down_state = lacp_peer
                 elif lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_FAILOVER:
                     failover_state = lacp_peer
@@ -1051,7 +1055,7 @@ class Valve:
         peer_mac_src = self.dp.ports[port.number].lldp_peer_mac
         if peer_mac_src and peer_mac_src != pkt_meta.eth_src:
             self.logger.warning('Unexpected LLDP peer. Received pkt from %s instead of %s' % (pkt_meta.eth_src, peer_mac_src))
-        
+
         ofmsgs_by_valve = {}
         if remote_dp_id and remote_port_id:
             self.logger.debug('FAUCET LLDP on %s from %s (remote %s, port %u)' % (
