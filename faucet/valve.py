@@ -891,6 +891,8 @@ class Valve:
         if port.lacp_passthrough:
             failover_state = False
             down_state = False
+            crosslink_up = False
+            no_switch_up = True
             for peer_num in port.lacp_passthrough:
                 lacp_peer = self.dp.ports.get(peer_num, None)
                 lacp_down = lacp_peer.lacp and not lacp_peer.dyn_lacp_up
@@ -900,11 +902,19 @@ class Valve:
                     down_state = lacp_peer
                 elif lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_FAILOVER:
                     failover_state = lacp_peer
+                if lacp_peer.lldp_peer_mac in self.dp.dps_by_mac:
+                    lacp_peer_dp = self.dp.dps_by_mac[lacp_peer.lldp_peer_mac]
+                    no_switch_up = no_switch_up and not lacp_peer_dp.dyn_running
+                    if not (lacp_down or lldp_down) and not lacp_peer_dp.dyn_running:
+                        crosslink_up = True
             if down_state:
                 if not failover_state:
-                    self.logger.warning('Suppressing LACP LAG %s on %s, peer %s is down' %
-                                        (port.lacp, port, down_state))
-                    return []
+                    if not (crosslink_up and no_switch_up):
+                        self.logger.warning('Suppressing LACP LAG %s on %s, peer %s is down' %
+                                (port.lacp, port, down_state))
+                        return []
+                    else:
+                        self.logger.warning('Not suppressing LACP LAG %s on %s. Local-peer switch is down. ' % (port.lacp, port))
                 self.logger.warning('Failover LACP LAG %s on %s, peer %s failover' %
                                     (port.lacp, port, failover_state))
         actor_state_activity = 0

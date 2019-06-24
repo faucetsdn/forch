@@ -288,6 +288,7 @@ configuration.
         self.proactive_learn_v6 = None
         self.proactive_nd_limit = None
         self.routers = None
+        self.dps_by_mac = None
         self.stack = None
         self.tables = None
         self.timeout = None
@@ -307,6 +308,7 @@ configuration.
         self.vlans = {}
         self.ports = {}
         self.routers = {}
+        self.dps_by_mac = []
         self.stack_ports = []
         self.hairpin_ports = []
         self.output_only_ports = []
@@ -1157,6 +1159,7 @@ configuration.
 
         test_config_condition(not self.vlans, 'no VLANs referenced by interfaces in %s' % self.name)
         dp_by_name = {dp.name: dp for dp in dps}
+        self.dps_by_mac = {dp.faucet_dp_mac: dp for dp in dps}
         vlan_by_name = {vlan.name: vlan for vlan in self.vlans.values()}
         vlans_with_external_ports = {
             vlan for vlan in self.vlans.values() if vlan.loop_protect_external_ports()}
