@@ -28,7 +28,8 @@ class ValveHostManager(ValveManagerBase):
 
     def __init__(self, logger, ports, vlans, eth_src_table, eth_dst_table,
                  eth_dst_hairpin_table, pipeline, learn_timeout, learn_jitter,
-                 learn_ban_timeout, cache_update_guard_time, idle_dst, stack, hard_timeout):
+                 learn_ban_timeout, cache_update_guard_time, idle_dst, stack,
+                 use_hard_timeout):
         self.logger = logger
         self.ports = ports
         self.vlans = vlans
@@ -44,7 +45,7 @@ class ValveHostManager(ValveManagerBase):
         self.cache_update_guard_time = cache_update_guard_time
         self.output_table = self.eth_dst_table
         self.idle_dst = idle_dst
-        self.hard_timeout = hard_timeout
+        self.use_hard_timeout = use_hard_timeout
         self.stack = stack
         self.has_externals = self._has_externals(vlans)
         if self.eth_dst_hairpin_table:
@@ -241,7 +242,7 @@ class ValveHostManager(ValveManagerBase):
         # always expire (otherwise they might live forever with idle timeouts). Ideally this
         # would delete the dst flows on relearn, but that doesn't seem to work, so instead
         # make the dst rule expire first. May result in some unicast flooding.
-        if self.hard_timeout:
+        if self.use_hard_timeout:
             dst_rule_hard_timeout = src_rule_hard_timeout - 1
             dst_rule_idle_timeout = 0
         else:
