@@ -18,6 +18,7 @@
 
 from faucet.conf import Conf, InvalidConfigError, test_config_condition
 from faucet import valve_of
+import netaddr
 
 STACK_STATE_ADMIN_DOWN = 0
 STACK_STATE_INIT = 1
@@ -61,6 +62,8 @@ class Port(Conf):
         # experimental active LACP
         'lacp_passthrough': None,
         # If set, fail the lacp on this port if any of the peer ports are down.
+        'lacp_resp_interval': 1,
+        # Min time since last LACP response. Used to control rate of responce for LACP
         'loop_protect': False,
         # if True, do simple (host/access port) loop protection on this port.
         'loop_protect_external': False,
@@ -106,6 +109,7 @@ class Port(Conf):
         'lacp': int,
         'lacp_active': bool,
         'lacp_passthrough': list,
+        'lacp_resp_interval': int,
         'loop_protect': bool,
         'loop_protect_external': bool,
         'output_only': bool,
@@ -151,6 +155,7 @@ class Port(Conf):
         self.lacp = None
         self.lacp_active = None
         self.lacp_passthrough = None
+        self.lacp_resp_interval = None
         self.loop_protect = None
         self.loop_protect_external = None
         self.max_hosts = None
@@ -244,6 +249,12 @@ class Port(Conf):
             self.receive_lldp = True
             if not self.lldp_beacon_enabled():
                 self.lldp_beacon.update({'enable': True})
+        if self.lacp_resp_interval is not None:
+            test_config_condition(self.lacp_resp_interval > 65535 or self.lacp_resp_interval < 0.3, 
+                    ('interval must be atleast 0.3 and less than 65536'))
+        if self.lldp_peer_mac:
+            test_config_condition(not netaddr.valid_mac(self.lldp_peer_mac), (
+                'invalid MAC address %s' % self.lldp_peer_mac))
 
         if self.lldp_beacon:
             self._check_conf_types(

@@ -982,8 +982,7 @@ class Valve:
                         ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port))
                     else:
                         ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port))
-                # TODO: make LACP response rate limit configurable.
-                if lacp_pkt_change or (age is not None and age > 1):
+                if lacp_pkt_change or (age is not None and age > self.dp.ports[pkt_meta.port.number].lacp_resp_interval):
                     ofmsgs_by_valve[self].extend(self._lacp_actions(lacp_pkt, pkt_meta.port, now))
                     pkt_meta.port.dyn_lacp_last_resp_time = now
                 pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
@@ -1065,7 +1064,7 @@ class Valve:
         peer_mac_src = self.dp.ports[port.number].lldp_peer_mac
         if peer_mac_src and peer_mac_src != pkt_meta.eth_src:
             self.logger.warning('Unexpected LLDP peer. Received pkt from %s instead of %s' % (pkt_meta.eth_src, peer_mac_src))
-
+        
         ofmsgs_by_valve = {}
         if remote_dp_id and remote_port_id:
             self.logger.debug('FAUCET LLDP on %s from %s (remote %s, port %u)' % (
@@ -1539,30 +1538,6 @@ class Valve:
             self.logger.info('%s starting' % restart_type)
         self._notify({'CONFIG_CHANGE': {'restart_type': restart_type}})
         return ofmsgs
-
-    def add_authed_mac(self, port_num, mac):
-        """Add authed mac address"""
-        # TODO: track dynamic auth state.
-        return self.acl_manager.add_authed_mac(port_num, mac)
-
-    def del_authed_mac(self, port_num, mac=None):
-        return self.acl_manager.del_authed_mac(port_num, mac)
-
-    def del_port_acl(self, acl, port_num, mac=None):
-        """Return ACL openflow rules for removing port with acl"""
-        return self.acl_manager.del_port_acl(acl, port_num, mac)
-
-    def add_port_acl(self, acl, port_num, mac=None):
-        """Return ACL openflow rules for port with acl"""
-        return self.acl_manager.add_port_acl(acl, port_num, mac)
-
-    def create_dot1x_flow_pair(self, port_num, nfv_sw_port_num, mac):
-        """Return flowmods for creating dot1x flow pair"""
-        return self.acl_manager.create_dot1x_flow_pair(port_num, nfv_sw_port_num, mac)
-
-    def del_dot1x_flow_pair(self, port_num, nfv_sw_port_num, mac):
-        """Return flowmods for deleting dot1x flow pair"""
-        return self.acl_manager.del_dot1x_flow_pair(port_num, nfv_sw_port_num, mac)
 
     def _del_native_vlan(self, port):
         vlan_table = self.dp.tables['vlan']
