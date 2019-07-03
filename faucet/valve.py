@@ -902,11 +902,12 @@ class Valve:
                     down_state = lacp_peer
                 elif lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_FAILOVER:
                     failover_state = lacp_peer
+                lacp_peer_dp = None
                 if lacp_peer.lldp_peer_mac in self.dp.dps_by_mac:
                     lacp_peer_dp = self.dp.dps_by_mac[lacp_peer.lldp_peer_mac]
                     no_switch_up = no_switch_up and not lacp_peer_dp.dyn_running
-                    if not (lacp_down or lldp_down) and not lacp_peer_dp.dyn_running:
-                        crosslink_up = True
+                if not (lacp_down or lldp_down) and not (lacp_peer_dp and lacp_peer_dp.dyn_running):
+                    crosslink_up = True
             if down_state:
                 if not failover_state:
                     if not (crosslink_up and no_switch_up):
