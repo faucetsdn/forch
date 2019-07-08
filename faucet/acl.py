@@ -67,10 +67,12 @@ The output action contains a dictionary with the following elements:
     defaults = {
         'rules': None,
         'exact_match': False,
+        'dot1x_assigned': False,
     }
     defaults_types = {
         'rules': list,
         'exact_match': bool,
+        'dot1x_assigned': bool,
     }
     rule_types = {
         'cookie': int,
@@ -105,6 +107,7 @@ The output action contains a dictionary with the following elements:
     def __init__(self, _id, dp_id, conf):
         self.rules = []
         self.exact_match = None
+        self.dot1x_assigned = None
         self.meter = False
         self.matches = {}
         self.set_fields = set()
@@ -428,10 +431,16 @@ The output action contains a dictionary with the following elements:
                 rule_conf['actions'] = resolved_actions
 
 
-# TODO: 802.1x steals the port ACL table.
+# NOTE: 802.1x steals the port ACL table.
 PORT_ACL_8021X = ACL(
     'port_acl_8021x', 0,
     {'rules': [{'eth_type': 1, 'eth_src': '01:02:03:04:05:06', 'actions': {
         'output': {'set_fields': [
             {'eth_src': '01:02:03:04:05:06'}, {'eth_dst': '01:02:03:04:05:06'}]}}}]})
 PORT_ACL_8021X.build({}, None, 1)
+
+MAB_ACL_8021X = ACL(
+    'mab_acl_8021x', 0,
+    {'rules': [{'eth_type': valve_of.ether.ETH_TYPE_IP, 'eth_src': '01:02:03:04:05:06',
+                'ip_proto': valve_of.inet.IPPROTO_UDP, 'udp_src': 68, 'udp_dst': 67, }]})
+MAB_ACL_8021X.build({}, None, 1)

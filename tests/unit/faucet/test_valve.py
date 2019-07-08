@@ -69,6 +69,7 @@ FAUCET_MAC = '0e:00:00:00:00:01'
 # (ie. do not output to in_port)
 BASE_DP1_CONFIG = """
         dp_id: 1
+        hardware: 'GenericTFM'
         egress_pipeline: True
         ignore_learn_ins: 100
         ofchannel_log: '/dev/null'
@@ -88,7 +89,6 @@ IDLE_DP1_CONFIG = """
 
 GROUP_DP1_CONFIG = """
         group_table: True
-        combinatorial_port_flood: False
 """ + BASE_DP1_CONFIG
 
 DOT1X_CONFIG = """
@@ -114,7 +114,6 @@ DOT1X_ACL_CONFIG = """
 CONFIG = """
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         interfaces:
             p1:
@@ -144,14 +143,14 @@ dps:
                 tagged_vlans: [v300]
 
     s2:
-        hardware: 'Open vSwitch'
+        hardware: 'GenericTFM'
         dp_id: 0xdeadbeef
         interfaces:
             p1:
                 number: 1
                 native_vlan: v100
     s3:
-        hardware: 'Open vSwitch'
+        hardware: 'GenericTFM'
         combinatorial_port_flood: True
         dp_id: 0x3
         stack:
@@ -175,7 +174,7 @@ dps:
                     dp: s4
                     port: 5
     s4:
-        hardware: 'Open vSwitch'
+        hardware: 'GenericTFM'
         dp_id: 0x4
         interfaces:
             p1:
@@ -352,7 +351,8 @@ class ValveTestBases:
         V200 = 0x200|ofp.OFPVID_PRESENT
         V300 = 0x300|ofp.OFPVID_PRESENT
         LOGNAME = 'faucet'
-        ICMP_PAYLOAD = bytes('A'*8, encoding='UTF-8')
+        ICMP_PAYLOAD = bytes('A'*64, encoding='UTF-8') # must support 64b payload.
+        REQUIRE_TFM = True
 
         def __init__(self, *args, **kwargs):
             self.dot1x = None
@@ -387,7 +387,7 @@ class ValveTestBases:
             self.bgp = faucet_bgp.FaucetBgp(
                 self.logger, logfile, self.metrics, self.send_flows_to_dp_by_id)
             self.dot1x = faucet_dot1x.FaucetDot1x(
-                self.logger, self.metrics, self.send_flows_to_dp_by_id)
+                self.logger, logfile, self.metrics, self.send_flows_to_dp_by_id)
             self.valves_manager = valves_manager.ValvesManager(
                 self.LOGNAME, self.logger, self.metrics, self.notifier,
                 self.bgp, self.dot1x, self.send_flows_to_dp_by_id)
@@ -410,6 +410,12 @@ class ValveTestBases:
 
         def tearDown(self):
             self.teardown_valve()
+
+        def apply_ofmsgs(self, ofmsgs):
+            """Postprocess flows before sending to simulated DP."""
+            final_ofmsgs = self.valve.prepare_send_flows(ofmsgs)
+            self.table.apply_ofmsgs(final_ofmsgs)
+            return final_ofmsgs
 
         @staticmethod
         def profile(func, sortby='cumulative', amount=20, count=1):
@@ -478,22 +484,19 @@ class ValveTestBases:
                 if reload_ofmsgs is None:
                     reload_ofmsgs = self.connect_dp()
                 else:
-                    self.table.apply_ofmsgs(reload_ofmsgs)
+                    self.apply_ofmsgs(reload_ofmsgs)
             self.assertEqual(before_dp_status, int(self.get_prom('dp_status')))
             return reload_ofmsgs
 
         def connect_dp(self):
-            """Call DP connect and set all ports to up."""
-            discovered_up_ports = {port_no for port_no in range(1, self.NUM_PORTS + 1)}
+            """Call DP connect and wth all ports up."""
+            discovered_up_ports = set(list(self.valve.dp.ports.keys())[:self.NUM_PORTS])
             connect_msgs = (
                 self.valve.switch_features(None) +
                 self.valve.datapath_connect(time.time(), discovered_up_ports))
-            self.table.apply_ofmsgs(connect_msgs)
+            self.apply_ofmsgs(connect_msgs)
             self.valves_manager.update_config_applied(sent={self.DP_ID: True})
             self.assertEqual(1, int(self.get_prom('dp_status')))
-            for port_no in discovered_up_ports:
-                if port_no in self.valve.dp.ports:
-                    self.set_port_up(port_no)
             self.assertTrue(self.valve.dp.to_conf())
             return connect_msgs
 
@@ -515,13 +518,13 @@ class ValveTestBases:
 
         def set_port_down(self, port_no):
             """Set port status of port to down."""
-            self.table.apply_ofmsgs(self.valve.port_status_handler(
+            self.apply_ofmsgs(self.valve.port_status_handler(
                 port_no, ofp.OFPPR_DELETE, ofp.OFPPS_LINK_DOWN, []).get(self.valve, []))
             self.port_expected_status(port_no, 0)
 
         def set_port_up(self, port_no):
             """Set port status of port to up."""
-            self.table.apply_ofmsgs(self.valve.port_status_handler(
+            self.apply_ofmsgs(self.valve.port_status_handler(
                 port_no, ofp.OFPPR_ADD, 0, []).get(self.valve, []))
             self.port_expected_status(port_no, 1)
 
@@ -664,7 +667,7 @@ class ValveTestBases:
                 partial(self.valves_manager.valve_packet_in, now, self.valve, msg),
                 'of_packet_ins_total')
             rcv_packet_ofmsgs = self.last_flows_to_dp[self.DP_ID]
-            self.table.apply_ofmsgs(rcv_packet_ofmsgs)
+            self.apply_ofmsgs(rcv_packet_ofmsgs)
             for valve_service in (
                     'resolve_gateways', 'advertise', 'fast_advertise', 'state_expire'):
                 self.valves_manager.valve_flow_services(
@@ -727,6 +730,7 @@ class ValveTestBases:
                 msg=type(self.valve))
             discovered_up_ports = {port_no for port_no in range(1, self.NUM_PORTS + 1)}
             flows = self.valve.datapath_connect(time.time(), discovered_up_ports)
+            self.apply_ofmsgs(flows)
             tfm_flows = [
                 flow for flow in flows if isinstance(
                     flow, valve_of.parser.OFPTableFeaturesStatsRequest)]
@@ -858,10 +862,12 @@ class ValveTestBases:
                 'vid': 0x100,
                 'ipv4_src': '10.0.0.1',
                 'ipv4_dst': '10.0.0.254',
-                'echo_request_data': bytes(
-                    'A'*8, encoding='UTF-8')}) # pytype: disable=wrong-keyword-args
-            # TODO: check ping response
-            self.assertTrue(self.packet_outs_from_flows(echo_replies))
+                'echo_request_data': self.ICMP_PAYLOAD})
+            packet_outs = self.packet_outs_from_flows(echo_replies)
+            self.assertTrue(packet_outs)
+            data = packet_outs[0].data
+            self.assertTrue(data.endswith(self.ICMP_PAYLOAD), msg=data)
+
 
         def test_unresolved_route(self):
             """Test unresolved route tries to resolve."""
@@ -969,8 +975,10 @@ class ValveTestBases:
                 'ipv6_src': 'fc00::1:1',
                 'ipv6_dst': 'fc00::1:254',
                 'echo_request_data': self.ICMP_PAYLOAD})
-            # TODO: check ping response
-            self.assertTrue(self.packet_outs_from_flows(echo_replies))
+            packet_outs = self.packet_outs_from_flows(echo_replies)
+            self.assertTrue(packet_outs)
+            data = packet_outs[0].data
+            self.assertTrue(data.endswith(self.ICMP_PAYLOAD), msg=data)
 
         def test_invalid_vlan(self):
             """Test that packets with incorrect vlan tagging get dropped."""
@@ -1192,7 +1200,7 @@ class ValveTestBases:
 
             valve_vlan = self.valve.dp.vlans[match['vlan_vid'] & ~ofp.OFPVID_PRESENT]
             ofmsgs = self.valve.port_delete(port_num=1)
-            self.table.apply_ofmsgs(ofmsgs)
+            self.apply_ofmsgs(ofmsgs)
 
             # Check packets are output to each port on vlan
             for port in valve_vlan.get_ports():
@@ -1221,13 +1229,13 @@ class ValveTestBases:
             """Test that when a port is enabled packets are input correctly."""
 
             match = {'in_port': 1, 'vlan_vid': 0}
-            self.table.apply_ofmsgs(
+            self.apply_ofmsgs(
                 self.valve.port_delete(port_num=1))
             self.assertFalse(
                 self.table.is_output(match, port=2, vid=self.V100),
                 msg='Packet output after port delete')
 
-            self.table.apply_ofmsgs(
+            self.apply_ofmsgs(
                 self.valve.port_add(port_num=1))
             self.assertTrue(
                 self.table.is_output(match, port=2, vid=self.V100),
@@ -1238,7 +1246,6 @@ class ValveTestBases:
             acl_config = """
 dps:
     s1:
-        hardware: 'Open vSwitch'
         dp_acls: [drop_non_ospf_ipv4]
 %s
         interfaces:
@@ -1304,7 +1311,6 @@ meters:
             acl_config = """
 dps:
     s1:
-        hardware: 'Open vSwitch'
 %s
         interfaces:
             p2:
@@ -1379,7 +1385,7 @@ meters:
         def test_port_modify(self):
             """Set port status modify."""
             for port_status in (0, 1):
-                self.table.apply_ofmsgs(self.valve.port_status_handler(
+                self.apply_ofmsgs(self.valve.port_status_handler(
                     1, ofp.OFPPR_MODIFY, port_status, [])[self.valve])
 
         def test_unknown_port_status(self):
@@ -1529,7 +1535,6 @@ class ValveDot1xSmokeTestCase(ValveTestBases.ValveTestSmall):
     CONFIG = """
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         interfaces:
             p1:
@@ -1588,7 +1593,6 @@ acls:
 {}
 dps:
     s1:
-        hardware: 'GenericTFM'
 {}
         interfaces:
             p1:
@@ -1607,8 +1611,79 @@ vlans:
         dot1x_assigned: True
 """.format(ACL_CONFIG, DOT1X_ACL_CONFIG)
 
+
+class ValveDot1xMABSmokeTestCase(ValveDot1xSmokeTestCase):
+    """Smoke test to check dot1x can be initialized."""
+
+    CONFIG = """
+dps:
+    s1:
+{}
+        interfaces:
+            p1:
+                number: 1
+                native_vlan: v100
+                dot1x: true
+                dot1x_mab: True
+            p2:
+                number: 2
+                output_only: True
+vlans:
+    v100:
+        vid: 0x100
+""".format(DOT1X_CONFIG)
+
+
+class ValveDot1xDynACLSmokeTestCase(ValveDot1xSmokeTestCase):
+    """Smoke test to check dot1x can be initialized."""
+    CONFIG = """
+acls:
+    accept_acl:
+        dot1x_assigned: True
+        rules:
+        - rule:
+            dl_type: 0x800      # Allow ICMP / IPv4
+            ip_proto: 1
+            actions:
+                allow: True
+        - rule:
+            dl_type: 0x0806     # ARP Packets
+            actions:
+                allow: True
+dps:
+    s1:
+%s
+        interfaces:
+            p1:
+                number: 1
+                native_vlan: v100
+                dot1x: true
+                dot1x_dyn_acl: True
+
+            p2:
+                number: 2
+                output_only: True
+vlans:
+    v100:
+        vid: 0x100
+""" % DOT1X_CONFIG
+
     def setUp(self):
         self.setup_valve(self.CONFIG)
+
+    def test_handlers(self):
+        valve_index = self.dot1x.dp_id_to_valve_index[self.DP_ID]
+        port_no = 1
+        vlan_name = None
+        filter_id = 'accept_acl'
+        for handler in (
+                self.dot1x.logoff_handler,
+                self.dot1x.failure_handler):
+            handler(
+                '0e:00:00:00:00:ff', faucet_dot1x.get_mac_str(valve_index, port_no))
+        self.dot1x.auth_handler(
+            '0e:00:00:00:00:ff', faucet_dot1x.get_mac_str(valve_index, port_no),
+            vlan_name=vlan_name, filter_id=filter_id)
 
 
 class ValveChangePortTestCase(ValveTestBases.ValveTestSmall):
@@ -1996,7 +2071,6 @@ class ValveACLTestCase(ValveTestBases.ValveTestSmall):
         acl_config = """
 dps:
     s1:
-        hardware: 'Open vSwitch'
 %s
         interfaces:
             p1:
@@ -2077,7 +2151,6 @@ class ValveEgressACLTestCase(ValveTestBases.ValveTestSmall):
         acl_config = """
 dps:
     s1:
-        hardware: 'Open vSwitch'
 {dp1_config}
         interfaces:
             p1:
@@ -2297,7 +2370,7 @@ dps:
                 description: p3
                 native_vlan: v100
     s2:
-        hardware: 'Open vSwitch'
+        hardware: 'GenericTFM'
         dp_id: 0x2
         lldp_beacon:
             send_interval: 5
@@ -2323,6 +2396,7 @@ dps:
                 native_vlan: v100
     s3:
         dp_id: 0x3
+        hardware: 'GenericTFM'
         interfaces:
             1:
                 description: p1
@@ -2474,7 +2548,7 @@ dps:
             partial(self.update_config, self.CONFIG, reload_type='cold'))
         total_tt_prop = pstats_out.total_tt / self.baseline_total_tt # pytype: disable=attribute-error
         # must not be 50x slower, to ingest config for 100 interfaces than 1.
-        self.assertTrue(total_tt_prop < 50, msg=pstats_text)
+        self.assertLessEqual(total_tt_prop, 50, msg=pstats_text)
 
 
 
@@ -2570,6 +2644,7 @@ class ValveTestConfigApplied(ValveTestBases.ValveTestSmall):
 dps:
     s1:
         dp_id: 0x1
+        hardware: 'GenericTFM'
         interfaces:
             p1:
                 number: 1
@@ -2631,6 +2706,7 @@ vlans:
 dps:
     s1:
         dp_id: 0x1
+        hardware: 'GenericTFM'
         stack:
             priority: 1
         interfaces:
@@ -2749,24 +2825,6 @@ dps:
         self.assertEqual(len(self.get_valve(0x2).get_tunnel_flowmods()), 1)
         self.assertEqual(len(self.get_valve(0x3).get_tunnel_flowmods()), 2)
 
-    def test_tunnel_flowmods(self):
-        """Test flowmod push and pop tunnel id as VID"""
-        src_table = FakeOFTable(self.NUM_TABLES)
-        fwd_table = FakeOFTable(self.NUM_TABLES)
-        dst_table = FakeOFTable(self.NUM_TABLES)
-        src_packet = {'in_port': 1, 'eth_src': self.P1_V100_MAC, 'eth_dst': self.P2_V200_MAC,
-                      'ipv4_src': '10.0.0.2', 'ipv4_dst': '10.0.0.3'}
-        self.all_stack_up()
-        self.update_all_flowrules()
-        src_table.apply_ofmsgs(self.get_valve(0x2).get_tunnel_flowmods())
-        self.assertTrue(src_table.is_output(src_packet, None, self.TUNNEL_ID))
-        tun_packet = src_table.apply_instructions_to_packet(src_packet)
-        fwd_table.apply_ofmsgs(self.get_valve(0x1).get_tunnel_flowmods())
-        self.assertTrue(fwd_table.is_output(tun_packet, None, self.TUNNEL_ID))
-        tun_packet = fwd_table.apply_instructions_to_packet(tun_packet)
-        dst_table.apply_ofmsgs(self.get_valve(0x3).get_tunnel_flowmods())
-        self.assertTrue(dst_table.is_output(tun_packet, None, 0))
-
 
 class ValveGroupTestCase(ValveTestBases.ValveTestSmall):
     """Tests for datapath with group support."""
@@ -2774,7 +2832,6 @@ class ValveGroupTestCase(ValveTestBases.ValveTestSmall):
     CONFIG = """
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         interfaces:
             p1:
@@ -2838,7 +2895,6 @@ class ValveIdleLearnTestCase(ValveTestBases.ValveTestSmall):
     CONFIG = """
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         interfaces:
             p1:
@@ -2889,7 +2945,6 @@ class ValveLACPTestCase(ValveTestBases.ValveTestSmall):
     CONFIG = """
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         lacp_timeout: 5
         interfaces:
@@ -2991,7 +3046,6 @@ class ValveActiveLACPTestCase(ValveTestBases.ValveTestSmall):
     CONFIG = """
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         lacp_timeout: 5
         interfaces:
@@ -3077,7 +3131,6 @@ acls:
                 allow: 1
 dps:
     s1:
-        hardware: 'GenericTFM'
 %s
         interfaces:
             p1:

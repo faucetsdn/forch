@@ -91,9 +91,10 @@ def build_output_actions(acl_table, output_dict):
 
 # TODO: change this, maybe this can be rewritten easily
 # possibly replace with a class for ACLs
-def build_acl_entry(acl_table, rule_conf, meters,
-                    acl_allow_inst, acl_force_port_vlan_inst,
-                    port_num=None, vlan_vid=None):
+def build_acl_entry(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
+        acl_table, rule_conf, meters,
+        acl_allow_inst, acl_force_port_vlan_inst,
+        port_num=None, vlan_vid=None):
     """Build flow/groupmods for one ACL rule entry."""
     acl_inst = []
     acl_act = []
@@ -180,7 +181,7 @@ def build_acl_ofmsgs(acls, acl_table,
     return ofmsgs
 
 
-def build_acl_port_of_msgs(acl, vid, port_num, acl_table, goto_table):
+def build_acl_port_of_msgs(acl, vid, port_num, acl_table, goto_table, priority):
     '''A Helper function for building Openflow Mod Messages for Port ACLs'''
     ofmsgs = None
     if acl.rules:
@@ -188,7 +189,7 @@ def build_acl_port_of_msgs(acl, vid, port_num, acl_table, goto_table):
             [acl], acl_table,
             [valve_of.goto_table(goto_table)],
             [valve_of.goto_table(goto_table)],
-            2 ** 16 - 1, acl.meter, acl.exact_match,
+            priority, acl.meter, acl.exact_match,
             vlan_vid=vid, port_num=port_num)
     return ofmsgs
 
@@ -215,9 +216,11 @@ class ValveAclManager(ValveManagerBase):
         self.vlan_acl_table = vlan_acl_table
         self.egress_acl_table = egress_acl_table
         self.pipeline = pipeline
+        # TODO Rename priorities
         self.acl_priority = self._FILTER_PRIORITY
         self.dot1x_static_rules_priority = self.acl_priority + 1
         self.auth_priority = self._HIGH_PRIORITY
+        self.dot1x_low_priority = self.auth_priority - 1
         self.meters = meters
 
     def initialise_tables(self):
@@ -297,17 +300,17 @@ class ValveAclManager(ValveManagerBase):
             priority=self.auth_priority,
             inst=self.pipeline.accept_to_vlan())]
 
-    def del_authed_mac(self, port_num, mac=None):
+    def del_authed_mac(self, port_num, mac=None, strict=True):
         """remove authed mac address"""
         if mac:
             return [self.port_acl_table.flowdel(
                 self.port_acl_table.match(in_port=port_num, eth_src=mac),
                 priority=self.auth_priority,
-                strict=True)]
+                strict=strict)]
         return [self.port_acl_table.flowdel(
             self.port_acl_table.match(in_port=port_num),
             priority=self.auth_priority,
-            strict=True)]
+            strict=strict)]
 
     def del_port_acl(self, acl, port_num, mac=None):
         """Delete ACL rules for Port"""
@@ -321,7 +324,7 @@ class ValveAclManager(ValveManagerBase):
 
         pipeline_vlan_table = self.pipeline.vlan_table
         flowmods = build_acl_port_of_msgs(acl, None, port_num, self.port_acl_table,
-                                          pipeline_vlan_table)
+                                          pipeline_vlan_table, self.auth_priority)
         for flow in flowmods:
             flow.match = add_mac_address_to_match(flow.match, mac)
 
@@ -330,8 +333,8 @@ class ValveAclManager(ValveManagerBase):
     def add_port_acl(self, acl, port_num, mac=None):
         """Create ACL openflow rules for Port"""
         pipeline_vlan_table = self.pipeline.vlan_table
-        flowmods = build_acl_port_of_msgs(acl, None, port_num,
-                                          self.port_acl_table, pipeline_vlan_table)
+        flowmods = build_acl_port_of_msgs(acl, None, port_num, self.port_acl_table,
+                                          pipeline_vlan_table, self.auth_priority)
 
         for flow in flowmods:
             flow.match = add_mac_address_to_match(flow.match, mac)
@@ -363,6 +366,7 @@ class ValveAclManager(ValveManagerBase):
                 ])],
             )
         ]
+
         return ofmsgs
 
     def del_dot1x_flow_pair(self, port_num, nfv_sw_port_num, mac):
@@ -383,6 +387,54 @@ class ValveAclManager(ValveManagerBase):
                 )
             ]
         return ofmsgs
+
+    def create_mab_flow(self, port_num, nfv_sw_port_num, mac):
+        """
+        Create MAB ACL for sending IP Activity to Chewie NFV
+            Returns flowmods to send all IP traffic to Chewie
+
+        Args:
+            port_num (int): Number of port in
+            nfv_sw_port_num(int): Number of port out
+            mac(str): MAC address of the valve/port combo
+
+        """
+        return self.port_acl_table.flowmod(
+            match=self.port_acl_table.match(
+                in_port=port_num,
+                eth_type=valve_of.ether.ETH_TYPE_IP,
+                nw_proto=valve_of.inet.IPPROTO_UDP,
+                udp_src=68,
+                udp_dst=67,
+            ),
+            priority=self.dot1x_low_priority,
+            inst=[valve_of.apply_actions([
+                self.port_acl_table.set_field(eth_dst=mac),
+                valve_of.output_port(nfv_sw_port_num)])],
+        )
+
+    def del_mab_flow(self, port_num, nfv_sw_port_num, mac):
+        """
+        Remove MAB ACL for sending IP Activity to Chewie NFV
+            Returns flowmods to send all IP traffic to Chewie
+
+        Args:
+            port_num (int): Number of port in
+            nfv_sw_port_num(int): Number of port out
+            mac(str): MAC address of the valve/port combo
+
+        """
+        return [self.port_acl_table.flowdel(
+            match=self.port_acl_table.match(
+                in_port=port_num,
+                eth_type=valve_of.ether.ETH_TYPE_IP,
+                nw_proto=valve_of.inet.IPPROTO_UDP,
+                udp_src=68,
+                udp_dst=67,
+            ),
+            priority=self.dot1x_low_priority,
+            strict=True
+        )]
 
     def create_acl_tunnel(self, dp):
         """

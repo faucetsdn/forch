@@ -653,7 +653,7 @@ dps:
         self.check_config_success(config, cp.dp_parser)
 
     def test_lldp_peer_mac_valid(self):
-        """Test minimal valid LLDP config."""
+        """Verify valid lldp_peer_mac config."""
         config = """
 vlans:
     office:
@@ -1738,7 +1738,7 @@ dps:
         self.check_config_failure(config, cp.dp_parser)
 
     def test_lacp_resp_interval_too_big(self):
-        """Test DP ID is valid."""
+        """Test when lacp_resp_interval is too big."""
         config = """
 vlans:
     office:
@@ -1755,7 +1755,7 @@ dps:
         self.check_config_failure(config, cp.dp_parser)
 
     def test_lacp_resp_interval_zero(self):
-        """Test DP ID is valid."""
+        """Test when lacp_resp_interval is zero."""
         config = """
 vlans:
     office:
@@ -3006,7 +3006,7 @@ dps:
         self.check_config_failure(config, cp.dp_parser)
 
     def test_lldp_peer_mac_invalid(self):
-        """Test minimal invalid DP config."""
+        """Verify invalid MAC in lldp_peer_mac field."""
         config = """
 vlans:
     office:
@@ -3079,6 +3079,31 @@ dps:
                 output_only: True
 """
         self.check_config_success(config, cp.dp_parser)
+
+    def test_dot1x_nfv_port_config_invalid(self):
+        """Test valid dot1x."""
+        config = """
+vlans:
+    office:
+        vid: 100
+dps:
+    sw1:
+        dp_id: 0x1
+        dot1x:
+            nfv_intf: lo
+            nfv_sw_port: 2
+            radius_ip: ::1
+            radius_port: 123
+            radius_secret: SECRET
+        interfaces:
+            1:
+                native_vlan: office
+                dot1x: True
+            2:
+                output_only: False
+    """
+        self.check_config_failure(config, cp.dp_parser)
+
 
     def test_rule_acl_parse(self):
         """Test simple allow ACL."""
