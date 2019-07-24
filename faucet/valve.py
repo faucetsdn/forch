@@ -904,6 +904,9 @@ class Valve:
             no_switch_up = True
             for peer_num in port.lacp_passthrough:
                 lacp_peer = self.dp.ports.get(peer_num, None)
+                if not lacp_peer:
+                    down_state = peer_num
+                    break
                 lacp_down = lacp_peer.lacp and not lacp_peer.dyn_lacp_up
                 lldp_down = lacp_peer.receive_lldp and \
                             lacp_peer.dyn_lldp_beacon_recv_state == STACK_STATE_DOWN

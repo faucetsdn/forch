@@ -310,6 +310,9 @@ class Port(Conf):
             for acl in self.acls_in:
                 test_config_condition(not isinstance(acl, (int, str)),
                                       'ACL names must be int or str')
+        if self.lacp_passthrough:
+            for port in self.lacp_passthrough:
+                test_config_condition(not isinstance(port, int), 'lacp_passthrough needs to be a list of Integers.')
 
     def finalize(self):
         test_config_condition(not (self.vlans() or self.stack or self.output_only), (
