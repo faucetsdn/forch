@@ -1074,9 +1074,13 @@ class Valve:
             port.dyn_lldp_beacon_recv_state = remote_port_state
 
         peer_mac_src = self.dp.ports[port.number].lldp_peer_mac
-        if peer_mac_src and peer_mac_src != pkt_meta.eth_src:
-            self.logger.warning('Unexpected LLDP peer. Received pkt from %s instead of %s' % (
-                pkt_meta.eth_src, peer_mac_src))
+        self.logger.info(' peer mac is %s pkt_meta.ethrc is %s' % (peer_mac_src, pkt_meta.eth_src))
+
+        lldp_src_invalid = bool(peer_mac_src and (peer_mac_src != pkt_meta.eth_src))
+        self._set_var('port_lldp_src_invalid', lldp_src_invalid, labels=self.dp.port_labels(port.number))
+        if lldp_src_invalid:
+            self.logger.warning('Unexpected LLDP peer. Received pkt from %s on %s instead of %s' % (
+                pkt_meta.eth_src, port, peer_mac_src))
         ofmsgs_by_valve = {}
         if remote_dp_id and remote_port_id:
             self.logger.debug('FAUCET LLDP on %s from %s (remote %s, port %u)' % (

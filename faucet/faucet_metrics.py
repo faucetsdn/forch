@@ -145,6 +145,10 @@ class FaucetMetrics(PromClient):
             'port_lacp_status',
             'status of LACP on port',
             self.PORT_REQUIRED_LABELS)
+        self.port_lldp_src_invalid = self._gauge(
+            'port_lldp_src_invalid',
+            'Does LLDP source MAC received differ from what is expected',
+            self.PORT_REQUIRED_LABELS)
         self.dp_status = self._dpid_gauge(
             'dp_status',
             'status of datapaths')
