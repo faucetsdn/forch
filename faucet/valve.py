@@ -1074,7 +1074,6 @@ class Valve:
             port.dyn_lldp_beacon_recv_state = remote_port_state
 
         peer_mac_src = self.dp.ports[port.number].lldp_peer_mac
-        self.logger.info(' peer mac is %s pkt_meta.ethrc is %s' % (peer_mac_src, pkt_meta.eth_src))
 
         lldp_src_invalid = bool(peer_mac_src and (peer_mac_src != pkt_meta.eth_src))
         self._set_var('port_lldp_src_invalid', lldp_src_invalid, labels=self.dp.port_labels(port.number))
