@@ -1,7 +1,9 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
+from datetime import datetime
 import logging
 import os
+import time
 import sys
 import yaml
 
@@ -21,10 +23,13 @@ class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""
 
+    _DETAIL_FORMAT = '%s is %s: %s'
+
     def __init__(self, config):
         self._config = config
         self._faucet_events = None
         self._server = None
+        self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_collector = FaucetStateCollector()
         self._local_collector = LocalStateCollector()
         self._cpn_collector = CPNStateCollector()
@@ -92,14 +97,69 @@ class Forchestrator:
     def get_system_state(self, path, params):
         """Get an overview of the system state"""
         # TODO: These are all placeholder values, so need to be replaced.
+        state_summary = self._get_state_summary()
         overview = {
             'peer_controller_url': self._get_peer_controller_url(),
-            'processes': self._local_collector.get_process_overview(),
-            'dataplane': self._faucet_collector.get_dataplane_state(),
-            'site_name': self._config['site']['name']
+            'state_summary_sources': state_summary,
+            'site_name': self._config['site']['name'],
+            'controller_hostname': os.getenv('HOSTNAME')
         }
-        overview.update(self._faucet_collector.get_controller_state())
+        overview.update(self._distill_summary(state_summary))
         return overview
+
+    def _distill_summary(self, summary):
+        try:
+            state_summary = {
+                'state_summary': 'monkey'
+            }
+            start_time = self._start_time
+            change_counts = list(map(lambda subsystem:
+                                     subsystem.get('change_count', 0), summary.values()))
+            last_changes = list(map(lambda subsystem:
+                                    subsystem.get('last_change', start_time), summary.values()))
+            last_updates = list(map(lambda subsystem:
+                                    subsystem.get('last_update', start_time), summary.values()))
+            state_summary.update({
+                'state_summary_change_count': sum(change_counts),
+                'state_summary_last_change': max(last_changes),
+                'state_summary_last_update': max(last_updates)
+            })
+            summary, detail = self._get_combined_summary(summary)
+            state_summary['state_summary'] = summary
+            state_summary['state_summary_detail'] = detail
+        except Exception as e:
+            state_summary.update({
+                'state_summary': 'error',
+                'state_summary_detail': str(e)
+            })
+        return state_summary
+
+    def _get_combined_summary(self, summary):
+        has_error = False
+        has_warning = False
+        for subsystem_name in summary:
+            subsystem = summary[subsystem_name]
+            state = subsystem.get('state', 'error')
+            detail = subsystem.get('detail', 'unknown')
+            if state == 'broken':
+                has_error = True
+                error_detail = self._DETAIL_FORMAT % (subsystem_name, state, detail)
+            elif state != 'healthy':
+                has_warning = True
+                warning_detail = self._DETAIL_FORMAT % (subsystem_name, state, detail)
+        if has_error:
+            return 'broken', error_detail
+        elif has_warning:
+            return 'damaged', warning_detail
+        return 'healthy', None
+
+    def _get_state_summary(self):
+        return {
+            'cpn': self._cpn_collector.get_cpn_summary(),
+            'process': self._local_collector.get_process_summary(),
+            'dataplane': self._faucet_collector.get_dataplane_summary(),
+            'switch': self._faucet_collector.get_switch_summary()
+        }
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""

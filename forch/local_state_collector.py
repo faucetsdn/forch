@@ -21,26 +21,37 @@ class LocalStateCollector:
                               'forch':      ('python', r'forchestrator\.py'),
                               'bosun':      ('dunsel_watcher', r'bosun')}
 
-    def get_process_state(self, extended=True):
+    def get_process_summary(self):
+        """Return a summary of process table"""
+        process_state = self.get_process_state()
+        return {
+            'state': process_state.get('processes_state')
+        }
+
+    def get_process_state(self):
         """Get the information of processes in proc_set"""
-        self._process_state = {}
+
+        self._process_state.clear()
         procs = self._get_target_processes()
+        has_error = False
 
         # fill up process info
         for target_name in self._target_procs:
+            state_map = self._process_state.setdefault(target_name, {})
             if target_name in procs:
                 proc = procs[target_name]
                 if proc:
-                    self._fill_process_state(target_name, proc)
+                    state_map.update(self._extract_process_state(proc))
                 else:
-                    state_map = self._process_state.setdefault(target_name, {})
-                    state_map['status'] = 'error'
+                    state_map['state'] = 'broken'
                     state_map['detail'] = 'Multiple processes found'
+                    has_error = True
             else:
-                state_map = self._process_state.setdefault(target_name, {})
-                state_map['status'] = 'error'
+                state_map['state'] = 'broken'
                 state_map['detail'] = 'Process not found'
+                has_error = True
 
+        self._process_state['processes_state'] = 'broken' if has_error else 'healthy'
         return self._process_state
 
     def _get_target_processes(self):
@@ -59,10 +70,9 @@ class LocalStateCollector:
                     procs[target_name] = proc
         return procs
 
-    def _fill_process_state(self, target_name, proc):
+    def _extract_process_state(self, proc):
         """Fill process state"""
         proc_map = {}
-        self._process_state[target_name] = proc_map
 
         proc_map['cmd_line'] = ' '.join(proc.cmdline())
         proc_map['create_time'] = datetime.fromtimestamp(proc.create_time()).isoformat()
@@ -76,7 +86,4 @@ class LocalStateCollector:
         proc_map['memory_info_mb'] = {}
         proc_map['memory_info_mb']['rss'] = proc.memory_info().rss / 1e6
         proc_map['memory_info_mb']['vms'] = proc.memory_info().vms / 1e6
-
-    def get_process_overview(self):
-        """Get process overview (limited details)"""
-        return self.get_process_state(extended=False)
+        return proc_map
