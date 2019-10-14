@@ -9,7 +9,7 @@ import re
 import threading
 import yaml
 
-import ping_manager
+import forch.ping_manager
 
 LOGGER = logging.getLogger('cpn')
 
@@ -44,7 +44,7 @@ class CPNStateCollector:
                         node_state_map[KEY_CPN_ATTRIBUTES] = copy.copy(attr_map)
                         self._hosts_ip[node] = attr_map['cpn_ip']
 
-                    self._ping_manager = ping_manager.PingManager(self._hosts_ip)
+                    self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip)
 
             except OSError as e:
                 LOGGER.warning(e)

@@ -5,27 +5,25 @@ import os
 import sys
 import yaml
 
-import configurator
-import faucet_event_client
-import http_server
+import forch.faucet_event_client
+import forch.http_server
 
-from cpn_state_collector import CPNStateCollector
-from faucet_state_collector import FaucetStateCollector
-from local_state_collector import LocalStateCollector
+from forch.cpn_state_collector import CPNStateCollector
+from forch.faucet_state_collector import FaucetStateCollector
+from forch.local_state_collector import LocalStateCollector
 
 LOGGER = logging.getLogger('forch')
 
+
+_FCONFIG_DEFAULT = 'forch.yaml'
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""
 
-    _FCONFIG_DEFAULT = 'forch.yaml'
-
-    def __init__(self, dconfig):
-        self._dconfig = dconfig
+    def __init__(self, config):
+        self._config = config
         self._faucet_events = None
-        self._oconfig = None
         self._server = None
         self._faucet_collector = FaucetStateCollector()
         self._local_collector = LocalStateCollector()
@@ -33,14 +31,9 @@ class Forchestrator:
 
     def initialize(self):
         """Initialize forchestrator instance"""
-        config_root = os.getenv('FORCH_CONFIG_DIR', '.')
-        config_file = self._dconfig.get('forch_config', self._FCONFIG_DEFAULT)
-        config_path = os.path.join(config_root, config_file)
-        LOGGER.info('Reading config file %s', os.path.abspath(config_path))
-        with open(config_path, 'r') as stream:
-            self._oconfig = yaml.safe_load(stream)
         LOGGER.info('Attaching event channel...')
-        self._faucet_events = faucet_event_client.FaucetEventClient(self._dconfig)
+        self._faucet_events = forch.faucet_event_client.FaucetEventClient(
+            self._config.get('event_client', {}))
         self._faucet_events.connect()
 
     def main_loop(self):
@@ -103,7 +96,7 @@ class Forchestrator:
             'peer_controller_url': self._get_peer_controller_url(),
             'processes': self._local_collector.get_process_overview(),
             'dataplane': self._faucet_collector.get_dataplane_state(),
-            'site_name': self._oconfig['site']['name']
+            'site_name': self._config['site']['name']
         }
         overview.update(self._faucet_collector.get_controller_state())
         return overview
@@ -131,12 +124,19 @@ class Forchestrator:
         return self._local_collector.get_process_state()
 
 
+def load_config():
+    config_root = os.getenv('FORCH_CONFIG_DIR', '.')
+    config_path = os.path.join(config_root, _FCONFIG_DEFAULT)
+    LOGGER.info('Reading config file %s', os.path.abspath(config_path))
+    with open(config_path, 'r') as stream:
+        return yaml.safe_load(stream)
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    CONFIG = configurator.Configurator().parse_args(sys.argv)
+    CONFIG = load_config()
     FORCH = Forchestrator(CONFIG)
     FORCH.initialize()
-    HTTP = http_server.HttpServer(CONFIG)
+    HTTP = forch.http_server.HttpServer(CONFIG.get('http', {}))
     HTTP.map_request('system_state', FORCH.get_system_state)
     HTTP.map_request('dataplane_state', FORCH.get_dataplane_state)
     HTTP.map_request('switch_state', FORCH.get_switch_state)
