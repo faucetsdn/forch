@@ -1,0 +1,45 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+RESULTS=build/lint_results.txt
+PYLINTRC=$ROOT/.pylintrc
+VENV_PYTHON=venv/lib/python3.6/site-packages/
+
+cd $ROOT
+mkdir -p build
+
+export PYTHONPATH=forch:$VENV_PYTHON
+
+if [ -d venv ]; then
+    source venv/bin/activate
+    if [ ! -d $VENV_PYTHON ]; then
+        echo Missing python env directory.
+        false
+    fi
+fi
+
+which pylint
+pylint --version
+
+echo Saving complete results to $RESULTS
+rm -f $RESULTS
+
+failure=
+results=
+count=0
+for file in forch/*.py; do
+    echo Checking file $file... | tee -a $RESULTS
+    pylint --rcfile=$PYLINTRC $file >> $RESULTS && count=$((count+1)) || true
+done
+
+results=$(egrep "Your code has been rated" $RESULTS || true)
+numresults=$(echo "$results" | wc -l)
+errors=$(echo "$results" | egrep -v "10.00/10" | wc -l)
+
+if [ $errors -ne 0 -o $numresults -ne $count ]; then
+    echo pylint detected errors:
+    cat $RESULTS
+    false
+fi
+
+echo Success.

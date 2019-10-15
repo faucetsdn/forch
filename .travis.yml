@@ -1,0 +1,16 @@
+sudo: required
+dist: bionic
+language: python
+python:
+  - "3.7"
+addons:
+  apt:
+    update: true
+install:
+  - pip3 install -r etc/requirements.txt
+script:
+  - set -e
+  - bin/check_style
+branches:
+  except:
+  - /^release-\d+\.\d+(\.\d+)?$/

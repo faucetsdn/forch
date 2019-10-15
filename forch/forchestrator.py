@@ -4,7 +4,6 @@ from datetime import datetime
 import logging
 import os
 import time
-import sys
 import yaml
 
 import forch.faucet_event_client
@@ -149,7 +148,7 @@ class Forchestrator:
                 warning_detail = self._DETAIL_FORMAT % (subsystem_name, state, detail)
         if has_error:
             return 'broken', error_detail
-        elif has_warning:
+        if has_warning:
             return 'damaged', warning_detail
         return 'healthy', None
 
@@ -185,6 +184,7 @@ class Forchestrator:
 
 
 def load_config():
+    """Load configuration from the configuration file"""
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
     config_path = os.path.join(config_root, _FCONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
