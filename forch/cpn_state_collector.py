@@ -66,27 +66,36 @@ class CPNStateCollector:
         if self._ping_manager:
             self._ping_manager.start_loop(self._handle_ping_result)
 
+    def get_cpn_summary(self):
+        """Get summary of cpn info"""
+        return {
+            'state': 'broken',
+            'detail': 'not implemented',
+            'change_count': 1
+        }
+
     def get_cpn_state(self):
         """Get CPN state"""
-        ret_map = {}
+        cpn_nodes = {}
 
         with self._lock:
             for cpn_node, node_state in self._nodes_state.items():
-                ret_node_map = ret_map.setdefault(cpn_node, {})
-                ret_node_map['attributes'] = copy.copy(node_state.get(KEY_NODE_ATTRIBUTES, {}))
-                ret_node_map['status'] = node_state.get(KEY_NODE_STATUS, None)
+                cpn_node_map = cpn_nodes.setdefault(cpn_node, {})
+                cpn_node_map['attributes'] = copy.copy(node_state.get(KEY_NODE_ATTRIBUTES, {}))
+                cpn_node_map['status'] = node_state.get(KEY_NODE_STATUS, None)
                 ping_result = node_state.get(KEY_NODE_PING_RES, {}).get('stdout', None)
-                ret_node_map['ping_results'] = CPNStateCollector._get_ping_summary(ping_result)
-                ret_node_map['status_change_count'] = node_state.get(KEY_NODE_STATUS_COUNT, None)
-                ret_node_map['status_last_updated'] = node_state.get(KEY_NODE_STATUS_UPDATE_TS, None)
-                ret_node_map['status_last_changed'] = node_state.get(KEY_NODE_STATUS_CHANGE_TS, None)
+                cpn_node_map['ping_results'] = CPNStateCollector._get_ping_summary(ping_result)
+                cpn_node_map['status_change_count'] = node_state.get(KEY_NODE_STATUS_COUNT, None)
+                cpn_node_map['status_last_updated'] = node_state.get(KEY_NODE_STATUS_UPDATE_TS, None)
+                cpn_node_map['status_last_changed'] = node_state.get(KEY_NODE_STATUS_CHANGE_TS, None)
 
-            ret_map['cpn_state'] = self._cpn_state.get(KEY_CPN_STATE, None)
-            ret_map['cpn_state_change_count'] = self._cpn_state.get(KEY_CPN_STATE_COUNT, None)
-            ret_map['cpn_state_last_update'] = self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS, None)
-            ret_map['cpn_state_last_changed'] = self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS, None)
-
-        return ret_map
+            return {
+                'cpn_nodes': cpn_nodes,
+                'cpn_state': self._cpn_state.get(KEY_CPN_STATE, None),
+                'cpn_state_change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT, None),
+                'cpn_state_last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS, None),
+                'cpn_state_last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS, None)
+            }
 
     def _handle_ping_result(self, ping_res_future):
         """Handle ping result for hosts"""
