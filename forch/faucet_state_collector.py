@@ -218,6 +218,13 @@ class FaucetStateCollector:
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)['path']
 
+    @staticmethod
+    def _make_key(start_dp, start_port, peer_dp, peer_port):
+        subkey1 = start_dp+":"+start_port
+        subkey2 = peer_dp+":"+peer_port
+        keep_order = subkey1 < subkey2
+        return subkey1+"@"+subkey2 if keep_order else subkey2+"@"+subkey1
+
     def _get_stack_topo(self):
         """Returns formatted topology object"""
         topo_map = {}
@@ -230,10 +237,7 @@ class FaucetStateCollector:
                     peer_port = str(iface_obj.get("stack", {}).get("port"))
                     if peer_dp and peer_port:
                         link_obj = {}
-                        subkey1 = start_dp+":"+start_port
-                        subkey2 = peer_dp+":"+peer_port
-                        keep_order = subkey1 < subkey2
-                        key = subkey1+"@"+subkey2 if keep_order else subkey2+"@"+subkey1
+                        key = self._make_key(start_dp, start_port, peer_dp, peer_port)
                         if key in topo_map:
                             continue
                         topo_map[key] = link_obj

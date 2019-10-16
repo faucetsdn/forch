@@ -76,7 +76,6 @@ class LocalStateCollector:
 
         proc_map['cmd_line'] = ' '.join(proc.cmdline())
         proc_map['create_time'] = datetime.fromtimestamp(proc.create_time()).isoformat()
-        proc_map['status'] = proc.status()
         proc_map['cpu_times_s'] = {}
         proc_map['cpu_times_s']['user'] = proc.cpu_times().user
         proc_map['cpu_times_s']['system'] = proc.cpu_times().system

@@ -1,9 +1,9 @@
 """Manages ping task"""
 
 import asyncio
+from asyncio.subprocess import PIPE
 import logging
 import threading
-from asyncio.subprocess import PIPE
 from collections import namedtuple
 
 

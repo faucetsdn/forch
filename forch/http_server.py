@@ -81,8 +81,7 @@ class HttpServer():
                     return result if isinstance(result, str) else json.dumps(result)
             return str(self._paths)
         except Exception as e:
-            LOGGER.error('Handling request %s: %s', request_path, str(e))
-            return str(e)
+            LOGGER.exception('Handling request %s: %s', request_path, str(e))
 
     def read_file(self, path, ext_path):
         """Read a file based on some path munging and return the entire contents"""
