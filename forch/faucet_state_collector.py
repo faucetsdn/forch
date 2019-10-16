@@ -4,6 +4,7 @@ import copy
 from datetime import datetime
 import json
 import logging
+import os
 from threading import RLock
 
 LOGGER = logging.getLogger('fstate')
@@ -110,6 +111,12 @@ class FaucetStateCollector:
             'switches_state_last_change': "2019-10-11T15:23:21.382479",
             'switches': switch_data
         }
+
+    def get_hosts_list(self, eth_src):
+        """Return a list of learned access devices"""
+        if eth_src:
+            return self._get_learned_macs(False, eth_src)
+        return self._get_learned_macs(True)
 
     def _fill_egress_state(self, dplane_map):
         """Return egress state obj"""
@@ -294,21 +301,31 @@ class FaucetStateCollector:
                             break
                     res['path'].append(hop)
                 elif hop['switch'] == self.topo_state.get(TOPOLOGY_ROOT):
+                    hop['egress'] = self._get_egress_port(hop['switch'])
                     res['path'].append(hop)
                     break
                 hop = next_hop
         return res
 
-    def get_host_path(self, src_mac, dst_mac=None):
+    def get_host_path(self, src_mac, dst_mac, to_egress):
         """Given two MAC addresses in the core network, find the active path between them"""
-        res = {'src_ip': None, 'dst_ip': None, 'path': []}
-        if not dst_mac:
-            return self.get_active_egress_path(src_mac)
-        if src_mac not in self.learned_macs or dst_mac not in self.learned_macs:
-            return res
+        if not src_mac:
+            return {'error': 'Empty eth_src. Please use list_hosts to get a list of hosts'}
+        if not dst_mac and not to_egress:
+            return {'error': 'Empty eth_dst. Please use list_hosts to get a list of hosts'}
+        if src_mac not in self.learned_macs or dst_mac and dst_mac not in self.learned_macs:
+            error_msg = 'MAC address cannot be found. Please use list_hosts to get a list of hosts'
+            return {'error': error_msg}
 
-        res['src_ip'] = self.learned_macs[src_mac].get(KEY_MAC_LEARNING_IP, None)
-        res['dst_ip'] = self.learned_macs[dst_mac].get(KEY_MAC_LEARNING_IP, None)
+        if to_egress:
+            ret_map = self.get_active_egress_path(src_mac)
+            src_ip = self.learned_macs.get(src_mac, {}).get(KEY_MAC_LEARNING_IP)
+            ret_map['src_ip'] = src_ip
+            return ret_map
+
+        res = {'src_ip': self.learned_macs[src_mac].get(KEY_MAC_LEARNING_IP),
+               'dst_ip': self.learned_macs[dst_mac].get(KEY_MAC_LEARNING_IP),
+               'path': []}
 
         src_learned_switches = self.learned_macs[src_mac].get(KEY_MAC_LEARNING_SWITCH, {})
         dst_learned_switches = self.learned_macs[dst_mac].get(KEY_MAC_LEARNING_SWITCH, {})
@@ -460,6 +477,30 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
+    def _get_learned_macs(self, fill_src, src_mac=None):
+        """Get access devices"""
+        ret_map = {}
+        for mac, mac_state in self.learned_macs.items():
+            if src_mac and mac == src_mac:
+                continue
+            switch, port = self._get_access_switch(mac)
+            if not switch or not port:
+                continue
+            ret_mac_map = ret_map.setdefault(mac, {})
+            ret_mac_map['access_switch'] = switch
+            ret_mac_map['access_port'] = port
+            ret_mac_map['learned_ip'] = mac_state.get(KEY_MAC_LEARNING_IP)
+
+            host_name = FaucetStateCollector._get_host_name()
+            url = f"http://{host_name}:9019/"
+            if fill_src:
+                url += f"list_hosts?eth_src={mac}"
+            else:
+                url += f"host_path?eth_src={src_mac}&eth_dst={mac}"
+            ret_mac_map['url'] = url
+
+        return ret_map
+
     def _get_graph(self, src_mac, dst_mac):
         """Get a graph consists of links only used by src and dst MAC"""
         graph = {}
@@ -475,14 +516,14 @@ class FaucetStateCollector:
     def _get_port_attributes(self, switch, port):
         """Get the attributes of a port: description, type, peer_switch, peer_port"""
         ret_attr = {}
-        cfg_switch = self.system_states.get(FAUCET_CONFIG, {}).get(DPS_CFG, {}).get(switch, None)
+        cfg_switch = self.system_states.get(FAUCET_CONFIG, {}).get(DPS_CFG, {}).get(switch)
         if not cfg_switch:
             return ret_attr
 
         port = str(port)
         if port in cfg_switch.get('interfaces', {}):
             port_map = cfg_switch['interfaces'][port]
-            ret_attr['description'] = port_map.get('description', None)
+            ret_attr['description'] = port_map.get('description')
             if 'stack' in port_map:
                 ret_attr['type'] = 'stack'
                 ret_attr['peer_switch'] = port_map['stack']['dp']
@@ -496,8 +537,24 @@ class FaucetStateCollector:
             start_port = int(port_range.split('-')[0])
             end_port = int(port_range.split('-')[1])
             if start_port <= int(port) <= end_port:
-                ret_attr['description'] = port_map.get('description', None)
+                ret_attr['description'] = port_map.get('description')
                 ret_attr['type'] = 'access'
                 return ret_attr
 
         return ret_attr
+
+    def _get_egress_port(self, switch):
+        """Get egress port of a switch"""
+        for port in self.switch_states.get(switch, {}).get(KEY_PORTS, {}):
+            port_attr = self._get_port_attributes(switch, port)
+            if port_attr.get('type') == 'egress':
+                return port
+        return None
+
+    @staticmethod
+    def _get_host_name():
+        """Get current host name"""
+        host_name = os.getenv('HOSTNAME')
+        if host_name:
+            return host_name
+        return '0.0.0.0'
