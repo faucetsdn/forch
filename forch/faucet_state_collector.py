@@ -7,6 +7,8 @@ import logging
 import os
 from threading import RLock
 
+import forch.constants as constants
+
 LOGGER = logging.getLogger('fstate')
 
 def dump_states(func):
@@ -132,14 +134,13 @@ class FaucetStateCollector:
         with self.lock:
             for switch, switch_state in self.switch_states.items():
                 switch_map[switch] = {}
-                switch_map[switch]["status"] = switch_state.get(SW_STATE, "")
-        return switch_map
+                switch_map[switch]["state"] = switch_state.get(SW_STATE, "")
+            return switch_map
 
     def _get_switch(self, switch_name):
         """lock protect get_switch_raw"""
         with self.lock:
-            switches = self._get_switch_raw(switch_name)
-        return switches
+            return self._get_switch_raw(switch_name)
 
     def _get_switch_raw(self, switch_name):
         """get switches state"""
@@ -231,6 +232,8 @@ class FaucetStateCollector:
         with self.lock:
             config_obj = self.system_states.get(FAUCET_CONFIG, {}).get(DPS_CFG, {})
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
+            if not dps or not config_obj:
+                return topo_map
             for start_dp, dp_obj in config_obj.items():
                 for start_port, iface_obj in dp_obj.get("interfaces", {}).items():
                     peer_dp = iface_obj.get("stack", {}).get("dp")
@@ -241,13 +244,13 @@ class FaucetStateCollector:
                         if key in topo_map:
                             continue
                         topo_map[key] = link_obj
-                        if (dps.get(start_dp)['root_hop_port'] == int(start_port) or
-                                dps.get(peer_dp)['root_hop_port'] == int(peer_port)):
-                            link_obj["status"] = "ACTIVE"
+                        if (dps.get(start_dp, {}).get('root_hop_port') == int(start_port) or
+                                dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
+                            link_obj["state"] = constants.STATE_ACTIVE
                         elif self._is_link_up(key):
-                            link_obj["status"] = "UP"
+                            link_obj["status"] = constants.STATE_UP
                         else:
-                            link_obj["status"] = "DOWN"
+                            link_obj["status"] = constants.STATE_DOWN
 
         return topo_map
 
@@ -287,7 +290,7 @@ class FaucetStateCollector:
                 hop['in'] = src_port
             while hop:
                 next_hop = {}
-                egress_port = dps.get(hop['switch'])['root_hop_port']
+                egress_port = dps.get(hop['switch'], {}).get('root_hop_port')
                 if egress_port:
                     hop['out'] = egress_port
                     for link_map in link_list:

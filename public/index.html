@@ -1,0 +1,61 @@
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/5.32.5/jsoneditor.css" rel="stylesheet" type="text/css"></link>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/5.32.5/jsoneditor.js"></script>
+    <script src="main.js"></script>
+    <link href="styles.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body onload="initialize()">
+  <h1>Faucet-Core Troubleshooting Data Viewer</h1>
+  <h2>Raw API Data</h2>
+  <div id="viewer_container">
+  </div>
+
+  <h2>Network Table Overview</h2>
+  <div id="switch_table">
+    <table>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <template id="switch_dist_row_template">
+    <tr>
+      <td class="switch_legend">
+        <div class="right_justify">Distribution switches:</div>
+        <div>&nbsp;</div>
+        <div>Access switches:</div>
+      </td>
+      <td class="dist_switch">
+        <div>${switch_left}</div>
+        <div>${data.switches[switch_left].last_restart_timestamp}</div>
+        <div>Change Count: ${data.switches[switch_left].config_change_count}</div>
+      </td>
+      <td class="dist_switch">
+        <div>${switch_right}</div>
+        <div>${data.switches[switch_right].last_restart_timestamp}</div>
+        <div>Change Count: ${data.switches[switch_right].config_change_count}</div>
+      </td>
+    </tr>
+  </template>
+
+  <template id="switch_access_row_template">
+    <tr>
+      <td class="access_switch">
+        <div>${switch_name}</div>
+        <div>${data.switches[switch_name].last_restart_timestamp}</div>
+        <div>Change Count: ${data.switches[switch_name].config_change_count}</div>
+        <div>Learned Hosts: ${Object.keys(data.switches[switch_name].learned_macs).length}</div>
+        <span class="hidden">${is_47_up=data.switches[switch_name].ports['47'].is_up}</span>
+        <span class="hidden">${is_48_up=data.switches[switch_name].ports['48'].is_up}</span>
+      </td>
+      <td class="stack_link is_up_${is_47_up}">
+        <div>is up: ${is_47_up}</div>
+        <div>changes: ${data.switches[switch_name].ports['47'].change_count}</div>
+      </td>
+      <td class="stack_link is_up_${is_48_up}">
+        <div>is up: ${is_48_up}</div>
+        <div>changes: ${data.switches[switch_name].ports['48'].change_count}</div>
+      </td>
+    </tr>
+  </template>
+</body>

@@ -48,7 +48,7 @@ class HttpServer():
         self._config = config
         self._paths = {}
         self._server = None
-        self._root_path = config.get('http_root', 'forch_public')
+        self._root_path = config.get('http_root', 'public')
 
     def start_server(self):
         """Start serving thread"""
@@ -78,7 +78,9 @@ class HttpServer():
                 if request_path.startswith(a_path):
                     path_remain = request_path[len(a_path):]
                     result = self._paths[a_path](path_remain, params)
-                    return result if isinstance(result, str) else json.dumps(result)
+                    if isinstance(result, (bytes, str)):
+                        return result
+                    return json.dumps(result)
             return str(self._paths)
         except Exception as e:
             LOGGER.exception('Handling request %s: %s', request_path, str(e))
@@ -90,7 +92,9 @@ class HttpServer():
             full_path = os.path.join(full_path, ext_path)
         if os.path.isdir(full_path):
             full_path = os.path.join(full_path, self._DEFAULT_FILE)
-        with open(full_path, 'r') as in_file:
+        binary = full_path.endswith('.ico')
+        mode = 'rb' if binary else 'r'
+        with open(full_path, mode) as in_file:
             return in_file.read()
 
     def static_file(self, path):

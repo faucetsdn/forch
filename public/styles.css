@@ -1,0 +1,36 @@
+#switch_table table {
+  width: 80%;
+}
+
+#switch_table td {
+  border: 1px solid black;
+}
+
+.right_justify {
+  text-align: right
+}
+
+.hidden {
+  display: none;
+}
+
+.access_switch {
+  background-color: lightgreen;
+}
+
+.switch_legend {
+  background-color: white;
+}
+
+.dist_switch {
+  background-color: lightgrey;
+}
+
+.stack_link {
+  background-color: lightblue;
+}
+
+.is_up_false {
+  background-color: red;
+  color: white;
+}

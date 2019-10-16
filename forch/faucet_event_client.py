@@ -211,7 +211,7 @@ class FaucetEventClient():
             return (None, None, None)
         root = event['STACK_TOPO_CHANGE']['stack_root']
         graph = event['STACK_TOPO_CHANGE']['graph']
-        dps = event['STACK_TOPO_CHANGE']['dps']
+        dps = event['STACK_TOPO_CHANGE'].get('dps')
         return (root, graph, dps)
 
     def as_dp_change(self, event):

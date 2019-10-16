@@ -1,0 +1,27 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
+if [ -n "$1" ]; then
+    FDIR=$1
+    shift
+else
+    FDIR=$PWD
+fi
+
+if [ -f venv/bin/python ]; then
+    PYTHON=venv/bin/python
+else
+    PYTHON=python3
+fi
+
+FSOCK=faucet_event.sock
+
+sudo \
+    FAUCET_EVENT_SOCK=$FDIR/$FSOCK \
+    FORCH_CONFIG_DIR=$FDIR \
+    FORCH_RUN_DIR=$FDIR \
+    HOSTNAME=$(hostname) \
+    PYTHONPATH=$PYTHONPATH \
+    $PYTHON -m forch.forchestrator
