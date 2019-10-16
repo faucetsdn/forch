@@ -13,14 +13,10 @@ LOGGER = logging.getLogger('localstate')
 class LocalStateCollector:
     """Storing local system states"""
 
-    def __init__(self):
+    def __init__(self, config):
         self._state = {'processes': {}}
         self._process_state = self._state['processes']
-        self._target_procs = {'faucet':     ('ryu-manager', r'faucet\.faucet'),
-                              'gauge':      ('ryu-manager', r'faucet\.gauge'),
-                              'keepalived': ('keepalived', r'keepalived'),
-                              'forch':      ('python', r'forchestrator\.py'),
-                              'bosun':      ('dunsel_watcher', r'bosun')}
+        self._target_procs = config.get('processes', {})
 
     def get_process_summary(self):
         """Return a summary of process table"""
@@ -65,7 +61,9 @@ class LocalStateCollector:
         """Get target processes"""
         procs = {}
         for proc in psutil.process_iter():
-            for target_name, (target_cmd, target_regex) in self._target_procs.items():
+            for target_name, target_map in self._target_procs.items():
+                target_cmd = target_map['proc_name']
+                target_regex = target_map['regex']
                 if proc.name() != target_cmd:
                     continue
                 cmd_line_str = ''.join(proc.cmdline())

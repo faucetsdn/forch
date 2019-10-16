@@ -30,7 +30,7 @@ class Forchestrator:
         self._server = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_collector = FaucetStateCollector()
-        self._local_collector = LocalStateCollector()
+        self._local_collector = LocalStateCollector(config)
         self._cpn_collector = CPNStateCollector()
 
     def initialize(self):
