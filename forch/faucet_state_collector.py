@@ -5,9 +5,11 @@ from datetime import datetime
 import json
 import logging
 import os
+import time
 from threading import RLock
 
 import forch.constants as constants
+
 
 LOGGER = logging.getLogger('fstate')
 
@@ -22,18 +24,20 @@ def dump_states(func):
     def wrapped(self, *args, **kwargs):
         res = func(self, *args, **kwargs)
         with self.lock:
-            LOGGER.debug(json.dumps(self.system_states, default=_set_default))
+            LOGGER.debug(json.dumps(self.switch_states, default=_set_default))
         return res
 
     return wrapped
 
 
+SWITCH_CONNECTED = "CONNECTED"
+
 KEY_SWITCH = "dpids"
 KEY_DP_ID = "dp_id"
 KEY_PORTS = "ports"
-KEY_PORT_STATUS_COUNT = "change_count"
-KEY_PORT_STATUS_TS = "timestamp"
-KEY_PORT_STATUS_UP = "status_up"
+KEY_PORT_STATE_COUNT = "change_count"
+KEY_PORT_STATE_TS = "timestamp"
+KEY_PORT_STATE_UP = "state_up"
 KEY_LEARNED_MACS = "learned_macs"
 KEY_MAC_LEARNING_SWITCH = "switches"
 KEY_MAC_LEARNING_PORT = "port"
@@ -41,8 +45,8 @@ KEY_MAC_LEARNING_IP = "ip_address"
 KEY_MAC_LEARNING_TS = "timestamp"
 KEY_CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
-SW_STATE_CH_TS = "switch_state_last_change"
-SW_STATE_CH_COUNT = "switch_state_change_count"
+SW_STATE_LAST_CHANGE = "switch_state_last_change"
+SW_STATE_CHANGE_COUNT = "switch_state_change_count"
 KEY_CONFIG_CHANGE_TYPE = "config_change_type"
 KEY_CONFIG_CHANGE_TS = "config_change_timestamp"
 TOPOLOGY_ENTRY = "topology"
@@ -57,61 +61,68 @@ TOPOLOGY_ROOT = "active_root"
 DPS_CFG = "dps_config"
 DPS_CFG_CHANGE_COUNT = "config_change_count"
 DPS_CFG_CHANGE_TS = "config_change_timestamp"
-FAUCET_CONFIG = "faucet_config"
 EGRESS_PORT = "port"
-EGRESS_TS = "timestamp"
 EGRESS_STATE = "egress_state"
-EGRESS_LAST_CHG = "egress_state_last_change"
+EGRESS_DETAIL = "egress_state_detail"
+EGRESS_LAST_CHANGE = "egress_state_last_change"
 EGRESS_CHANGE_COUNT = "egress_state_change_count"
+
 
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
     def __init__(self):
-        self.system_states = \
-                {KEY_SWITCH: {}, TOPOLOGY_ENTRY: {}, KEY_LEARNED_MACS: {}, FAUCET_CONFIG: {}}
-        self.switch_states = self.system_states[KEY_SWITCH]
-        self.topo_state = self.system_states[TOPOLOGY_ENTRY]
+        self.switch_states = {}
+        self.topo_state = {}
+        self.learned_macs = {}
+        self.faucet_config = {}
         self.lock = RLock()
-        self.learned_macs = self.system_states[KEY_LEARNED_MACS]
-
-    def get_system(self):
-        """get the system states"""
-        return self.system_states
+        self.process_lag_state(time.time(), None, None, False)
 
     def get_dataplane_summary(self):
         """Get summary of dataplane"""
+        dplane_state = self.get_dataplane_state()
         return {
-            'state': 'broken',
-            'detail': 'not implemented',
-            'change_count': 1
+            'state': dplane_state.get(EGRESS_STATE),
+            'detail': dplane_state.get(EGRESS_DETAIL),
+            'change_count': dplane_state.get(EGRESS_CHANGE_COUNT),
+            'last_change': dplane_state.get(EGRESS_LAST_CHANGE)
         }
 
     def get_dataplane_state(self):
         """get the topology state"""
-        dplane_map = {}
-        dplane_map[TOPOLOGY_DP_MAP] = self._get_switch_map()
-        dplane_map[TOPOLOGY_LINK_MAP] = self._get_stack_topo()
-        self._fill_egress_state(dplane_map)
-        return dplane_map
+        dplane_state = {}
+        dplane_state[TOPOLOGY_DP_MAP] = self._get_switch_map()
+        dplane_state[TOPOLOGY_LINK_MAP] = self._get_stack_topo()
+        self._fill_egress_state(dplane_state)
+        return dplane_state
 
     def get_switch_summary(self):
         """Get summary of switch state"""
+        switch_state = self.get_switch_state(None)
         return {
-            'state': 'broken',
-            'detail': 'not implemented',
-            'change_count': 1
+            'state': switch_state['switches_state'],
+            'detail': switch_state['switches_state_detail'],
+            'change_count': switch_state['switches_state_change_count'],
+            'last_change': switch_state['switches_state_last_change']
         }
 
-    def get_switch_state(self):
+    def get_switch_state(self, switch):
         """get a set of all switches"""
-        switch_data = {}
+        switches_data = {}
+        broken = []
         for switch_name in self.switch_states:
-            switch_data[switch_name] = self._get_switch(switch_name)
+            switch_data = self._get_switch(switch_name)
+            switches_data[switch_name] = switch_data
+            if switch_data[SW_STATE] != SWITCH_CONNECTED:
+                broken.append(switch_name)
+        if switch:
+            switches_data = {switch: switches_data[switch]}
         return {
-            'switches_state': 'monkey',
+            'switches_state': constants.STATE_BROKEN if broken else constants.STATE_HEALTHY,
+            'switches_state_detail': ', '.join(broken),
             'switches_state_change_count': 1,
             'switches_state_last_change': "2019-10-11T15:23:21.382479",
-            'switches': switch_data
+            'switches': switches_data
         }
 
     def get_hosts_list(self, eth_src):
@@ -120,13 +131,14 @@ class FaucetStateCollector:
             return self._get_learned_macs(False, eth_src)
         return self._get_learned_macs(True)
 
-    def _fill_egress_state(self, dplane_map):
+    def _fill_egress_state(self, dplane_state):
         """Return egress state obj"""
         with self.lock:
             egress_obj = self.topo_state.get(EGRESS_STATE, {})
-            dplane_map[EGRESS_STATE] = egress_obj.get(EGRESS_STATE)
-            dplane_map[EGRESS_LAST_CHG] = egress_obj.get(EGRESS_TS)
-            dplane_map[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+            if egress_obj:
+                dplane_state[EGRESS_STATE] = egress_obj.get(EGRESS_STATE)
+                dplane_state[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
+                dplane_state[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
 
     def _get_switch_map(self):
         """returns switch map for topology overview"""
@@ -149,17 +161,16 @@ class FaucetStateCollector:
         switch_states = self.switch_states.get(str(switch_name), {})
         attributes_map = switch_map.setdefault("attributes", {})
         attributes_map["name"] = switch_name
-        attributes_map["dp_id"] = switch_states.get(KEY_DP_ID, "")
-        attributes_map["description"] = None
+        attributes_map["dp_id"] = switch_states.get(KEY_DP_ID)
 
         # filling switch dynamics
-        switch_map["config_change_count"] = switch_states.get(KEY_CONFIG_CHANGE_COUNT, "")
-        switch_map["config_change_type"] = switch_states.get(KEY_CONFIG_CHANGE_TYPE, "")
-        switch_map["config_change_timestamp"] = switch_states.get(KEY_CONFIG_CHANGE_TS, "")
+        switch_map["config_change_count"] = switch_states.get(KEY_CONFIG_CHANGE_COUNT)
+        switch_map["config_change_type"] = switch_states.get(KEY_CONFIG_CHANGE_TYPE)
+        switch_map["config_change_timestamp"] = switch_states.get(KEY_CONFIG_CHANGE_TS)
 
-        switch_map[SW_STATE] = switch_states.get(SW_STATE, "")
-        switch_map[SW_STATE_CH_TS] = switch_states.get(SW_STATE_CH_TS, "")
-        switch_map[SW_STATE_CH_COUNT] = switch_states.get(SW_STATE_CH_COUNT, "")
+        switch_map[SW_STATE] = switch_states.get(SW_STATE)
+        switch_map[SW_STATE_LAST_CHANGE] = switch_states.get(SW_STATE_LAST_CHANGE)
+        switch_map[SW_STATE_CHANGE_COUNT] = switch_states.get(SW_STATE_CHANGE_COUNT)
 
         switch_port_map = switch_map.setdefault("ports", {})
 
@@ -175,9 +186,9 @@ class FaucetStateCollector:
             switch_port_attributes_map["stack_peer_port"] = port_attr.get('peer_port', None)
 
             # port dynamics
-            port_map["status_up"] = port_states.get(KEY_PORT_STATUS_UP, "")
-            port_map["status_timestamp"] = port_states.get(KEY_PORT_STATUS_TS, "")
-            port_map["status_count"] = port_states.get(KEY_PORT_STATUS_COUNT, "")
+            port_map["state_up"] = port_states.get(KEY_PORT_STATE_UP, "")
+            port_map["state_timestamp"] = port_states.get(KEY_PORT_STATE_TS, "")
+            port_map["state_count"] = port_states.get(KEY_PORT_STATE_COUNT, "")
             port_map["packet_count"] = None
 
         self._fill_learned_macs(switch_name, switch_map)
@@ -230,7 +241,7 @@ class FaucetStateCollector:
         """Returns formatted topology object"""
         topo_map = {}
         with self.lock:
-            config_obj = self.system_states.get(FAUCET_CONFIG, {}).get(DPS_CFG, {})
+            config_obj = self.faucet_config.get(DPS_CFG, {})
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
             if not dps or not config_obj:
                 return topo_map
@@ -248,9 +259,9 @@ class FaucetStateCollector:
                                 dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
                             link_obj["state"] = constants.STATE_ACTIVE
                         elif self._is_link_up(key):
-                            link_obj["status"] = constants.STATE_UP
+                            link_obj["state"] = constants.STATE_UP
                         else:
-                            link_obj["status"] = constants.STATE_DOWN
+                            link_obj["state"] = constants.STATE_DOWN
 
         return topo_map
 
@@ -267,7 +278,7 @@ class FaucetStateCollector:
         """Check if port is up"""
         with self.lock:
             return self.switch_states.get(str(switch), {})\
-                    .get(KEY_PORTS, {}).get(port, {}).get('status_up', False)
+                    .get(KEY_PORTS, {}).get(port, {}).get('state_up', False)
 
     def get_active_egress_path(self, src_mac):
         """Given a MAC address return active route to egress."""
@@ -358,7 +369,7 @@ class FaucetStateCollector:
         return res
 
     @dump_states
-    def process_port_state(self, timestamp, name, port, status):
+    def process_port_state(self, timestamp, name, port, state):
         """process port state event"""
         with self.lock:
             port_table = self.switch_states\
@@ -366,22 +377,22 @@ class FaucetStateCollector:
                 .setdefault(KEY_PORTS, {})\
                 .setdefault(port, {})
 
-            port_table[KEY_PORT_STATUS_UP] = status
-            port_table[KEY_PORT_STATUS_TS] = datetime.fromtimestamp(timestamp).isoformat()
+            port_table[KEY_PORT_STATE_UP] = state
+            port_table[KEY_PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
 
-            port_table[KEY_PORT_STATUS_COUNT] = port_table.setdefault(KEY_PORT_STATUS_COUNT, 0) + 1
+            port_table[KEY_PORT_STATE_COUNT] = port_table.setdefault(KEY_PORT_STATE_COUNT, 0) + 1
 
     @dump_states
-    def process_lag_state(self, timestamp, name, port, status):
+    def process_lag_state(self, timestamp, name, port, state):
         """process lag change event"""
         topo_state = self.topo_state
         with self.lock:
-            egress_table = topo_state.setdefault(EGRESS_STATE, {})
-            if status or name == egress_table.get(EGRESS_STATE):
-                egress_table[EGRESS_STATE] = name if status else "DOWN"
-                egress_table[EGRESS_PORT] = port if status else None
-                egress_table[EGRESS_TS] = datetime.fromtimestamp(timestamp).isoformat()
-                egress_table[EGRESS_CHANGE_COUNT] = egress_table.get(EGRESS_CHANGE_COUNT, 0) + 1
+            egress_state = topo_state.setdefault(EGRESS_STATE, {})
+            if state or name == egress_state.get(EGRESS_STATE):
+                egress_state[EGRESS_STATE] = name if state else "DOWN"
+                egress_state[EGRESS_PORT] = port if state else None
+                egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+                egress_state[EGRESS_CHANGE_COUNT] = egress_state.get(EGRESS_CHANGE_COUNT, 0) + 1
 
     @dump_states
     # pylint: disable=too-many-arguments
@@ -421,7 +432,7 @@ class FaucetStateCollector:
 
     @dump_states
     def process_dp_change(self, timestamp, dp_name, connected):
-        """process dp_change to get dp status"""
+        """process dp_change to get dp state"""
         with self.lock:
             if not dp_name:
                 return
@@ -430,14 +441,14 @@ class FaucetStateCollector:
             state = "CONNECTED" if connected else "DOWN"
             if dp_state.get(SW_STATE, "") != state:
                 dp_state[SW_STATE] = state
-                dp_state[SW_STATE_CH_TS] = datetime.fromtimestamp(timestamp).isoformat()
-                dp_state[SW_STATE_CH_COUNT] = dp_state.get(SW_STATE_CH_COUNT, 0) + 1
+                dp_state[SW_STATE_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+                dp_state[SW_STATE_CHANGE_COUNT] = dp_state.get(SW_STATE_CHANGE_COUNT, 0) + 1
 
     @dump_states
     def process_dataplane_config_change(self, timestamp, dps_config):
         """Handle config data sent through event channel """
         with self.lock:
-            cfg_state = self.system_states[FAUCET_CONFIG]
+            cfg_state = self.faucet_config
             cfg_state[DPS_CFG] = dps_config
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = cfg_state.setdefault(DPS_CFG_CHANGE_COUNT, 0) + 1
@@ -523,7 +534,7 @@ class FaucetStateCollector:
     def _get_port_attributes(self, switch, port):
         """Get the attributes of a port: description, type, peer_switch, peer_port"""
         ret_attr = {}
-        cfg_switch = self.system_states.get(FAUCET_CONFIG, {}).get(DPS_CFG, {}).get(switch)
+        cfg_switch = self.faucet_config.get(DPS_CFG, {}).get(switch)
         if not cfg_switch:
             return ret_attr
 
