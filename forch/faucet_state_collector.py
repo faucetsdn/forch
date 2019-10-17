@@ -106,14 +106,14 @@ class FaucetStateCollector:
             'last_change': switch_state['switches_state_last_change']
         }
 
-    def get_switch_state(self, switch, port):
+    def get_switch_state(self, switch, port=None):
         """get a set of all switches"""
         switches_data = {}
         broken = []
         for switch_name in self.switch_states:
             switch_data = self._get_switch(switch_name, port)
             switches_data[switch_name] = switch_data
-            if switch_data[SW_STATE] != SWITCH_CONNECTED:
+            if switch_data[SW_STATE] != constants.STATE_ACTIVE:
                 broken.append(switch_name)
         result = {
             'switches_state': constants.STATE_BROKEN if broken else constants.STATE_HEALTHY,
@@ -144,7 +144,14 @@ class FaucetStateCollector:
         with self.lock:
             for switch, switch_state in self.switch_states.items():
                 switch_map[switch] = {}
-                switch_map[switch]["state"] = switch_state.get(SW_STATE, "")
+                current_state = switch_state.get(SW_STATE)
+                if not current_state:
+                    switch_map[switch]['state'] = None
+                elif current_state == SWITCH_CONNECTED:
+                    switch_map[switch]['state'] = constants.STATE_ACTIVE
+                else:
+                    switch_map[switch]['state'] = constants.STATE_DOWN
+
             return switch_map
 
     def _get_switch(self, switch_name, port):
@@ -161,9 +168,9 @@ class FaucetStateCollector:
         attributes_map["dp_id"] = switch_states.get(KEY_DP_ID)
 
         # filling switch dynamics
-        switch_map["config_change_count"] = switch_states.get(KEY_CONFIG_CHANGE_COUNT)
-        switch_map["config_change_type"] = switch_states.get(KEY_CONFIG_CHANGE_TYPE)
-        switch_map["config_change_timestamp"] = switch_states.get(KEY_CONFIG_CHANGE_TS)
+        switch_map["restart_type_event_count"] = switch_states.get(KEY_CONFIG_CHANGE_COUNT)
+        switch_map["restart_type"] = switch_states.get(KEY_CONFIG_CHANGE_TYPE)
+        switch_map["restart_type_last_change"] = switch_states.get(KEY_CONFIG_CHANGE_TS)
 
         if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
             switch_map[SW_STATE] = constants.STATE_ACTIVE
