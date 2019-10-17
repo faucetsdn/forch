@@ -16,12 +16,16 @@ else
     PYTHON=python3
 fi
 
+if [ -z "$HOSTNAME" ]; then
+    HOSTNAME=$(hostname)
+fi
+
 FSOCK=faucet_event.sock
 
 sudo \
     FAUCET_EVENT_SOCK=$FDIR/$FSOCK \
     FORCH_CONFIG_DIR=$FDIR \
     FORCH_RUN_DIR=$FDIR \
-    HOSTNAME=$(hostname) \
+    HOSTNAME=$HOSTNAME \
     PYTHONPATH=$PYTHONPATH \
     $PYTHON -m forch.forchestrator
