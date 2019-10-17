@@ -165,8 +165,7 @@ class Forchestrator:
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""
-        switch = params.get('switch')
-        return self._faucet_collector.get_switch_state(switch)
+        return self._faucet_collector.get_switch_state(params.get('switch'))
 
     def get_dataplane_state(self, path, params):
         """Get the dataplane state overview"""
@@ -176,13 +175,13 @@ class Forchestrator:
         """Get active host path"""
         eth_src = params.get('eth_src')
         eth_dst = params.get('eth_dst')
-        to_egress = params.get('to_egress') == 'yes'
+        to_egress = params.get('to_egress') == 'true'
         return self._faucet_collector.get_host_path(eth_src, eth_dst, to_egress)
 
-    def list_hosts(self, path, params):
+    def get_list_hosts(self, path, params):
         """List learned access devices"""
         eth_src = params.get('eth_src')
-        return self._faucet_collector.get_hosts_list(eth_src)
+        return self._faucet_collector.get_list_hosts(eth_src)
 
     def get_cpn_state(self, path, params):
         """Get CPN state"""
@@ -213,7 +212,7 @@ if __name__ == '__main__':
     HTTP.map_request('cpn_state', FORCH.get_cpn_state)
     HTTP.map_request('process_state', FORCH.get_process_state)
     HTTP.map_request('host_path', FORCH.get_host_path)
-    HTTP.map_request('list_hosts', FORCH.list_hosts)
+    HTTP.map_request('list_hosts', FORCH.get_list_hosts)
     HTTP.map_request('', HTTP.static_file(''))
     HTTP.start_server()
     FORCH.main_loop()
