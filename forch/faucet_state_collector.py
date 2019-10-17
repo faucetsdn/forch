@@ -552,9 +552,13 @@ class FaucetStateCollector:
                 ret_attr['type'] = 'stack'
                 ret_attr['peer_switch'] = port_map['stack']['dp']
                 ret_attr['peer_port'] = port_map['stack']['port']
-            elif 'loop_protect_external' in port_map:
-                ret_attr['type'] = 'egress'
+                return ret_attr
 
+            if 'loop_protect_external' in port_map:
+                ret_attr['type'] = 'egress'
+                return ret_attr
+
+            ret_attr['type'] = 'access'
             return ret_attr
 
         for port_range, port_map in cfg_switch.get('interface_ranges', {}).items():
