@@ -106,12 +106,12 @@ class FaucetStateCollector:
             'last_change': switch_state['switches_state_last_change']
         }
 
-    def get_switch_state(self, switch):
+    def get_switch_state(self, switch, port):
         """get a set of all switches"""
         switches_data = {}
         broken = []
         for switch_name in self.switch_states:
-            switch_data = self._get_switch(switch_name)
+            switch_data = self._get_switch(switch_name, port)
             switches_data[switch_name] = switch_data
             if switch_data[SW_STATE] != SWITCH_CONNECTED:
                 broken.append(switch_name)
@@ -147,18 +147,17 @@ class FaucetStateCollector:
                 switch_map[switch]["state"] = switch_state.get(SW_STATE, "")
             return switch_map
 
-    def _get_switch(self, switch_name):
+    def _get_switch(self, switch_name, port):
         """lock protect get_switch_raw"""
         with self.lock:
-            return self._get_switch_raw(switch_name)
+            return self._get_switch_raw(switch_name, port)
 
-    def _get_switch_raw(self, switch_name):
+    def _get_switch_raw(self, switch_name, port):
         """get switches state"""
         switch_map = {}
         # filling switch attributes
         switch_states = self.switch_states.get(str(switch_name), {})
         attributes_map = switch_map.setdefault("attributes", {})
-        attributes_map["name"] = switch_name
         attributes_map["dp_id"] = switch_states.get(KEY_DP_ID)
 
         # filling switch dynamics
@@ -166,33 +165,52 @@ class FaucetStateCollector:
         switch_map["config_change_type"] = switch_states.get(KEY_CONFIG_CHANGE_TYPE)
         switch_map["config_change_timestamp"] = switch_states.get(KEY_CONFIG_CHANGE_TS)
 
-        switch_map[SW_STATE] = switch_states.get(SW_STATE)
+        if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
+            switch_map[SW_STATE] = constants.STATE_ACTIVE
+        else:
+            switch_map[SW_STATE] = constants.STATE_DOWN
         switch_map[SW_STATE_LAST_CHANGE] = switch_states.get(SW_STATE_LAST_CHANGE)
         switch_map[SW_STATE_CHANGE_COUNT] = switch_states.get(SW_STATE_CHANGE_COUNT)
 
-        switch_port_map = switch_map.setdefault("ports", {})
-
         # filling port information
-        for port_id, port_states in switch_states.get(KEY_PORTS, {}).items():
-            port_map = switch_port_map.setdefault(port_id, {})
-            # port attributes
-            port_attr = self._get_port_attributes(switch_name, port_id)
-            switch_port_attributes_map = port_map.setdefault("attributes", {})
-            switch_port_attributes_map["description"] = port_attr.get('description', None)
-            switch_port_attributes_map["port_type"] = port_attr.get('type', None)
-            switch_port_attributes_map["stack_peer_switch"] = port_attr.get('peer_switch', None)
-            switch_port_attributes_map["stack_peer_port"] = port_attr.get('peer_port', None)
-
-            # port dynamics
-            port_map["state_up"] = port_states.get(KEY_PORT_STATE_UP, "")
-            port_map["state_timestamp"] = port_states.get(KEY_PORT_STATE_TS, "")
-            port_map["state_count"] = port_states.get(KEY_PORT_STATE_COUNT, "")
-            port_map["packet_count"] = None
+        switch_port_map = switch_map.setdefault('ports', {})
+        if port:
+            port = int(port)
+            switch_port_map[port] = self._get_port_state(switch_name, port)
+            switch_port_map['port_restrict'] = port
+        else:
+            for port_id in switch_states.get(KEY_PORTS, {}):
+                switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
 
         return switch_map
+
+    def _get_port_state(self, switch: str, port: int):
+        """Get port state"""
+        # port attributes
+        if port not in self.switch_states.get(str(switch), {}).get(KEY_PORTS, {}):
+            return None
+        port_states = self.switch_states[str(switch)][KEY_PORTS][port]
+        port_map = {}
+        port_attr = self._get_port_attributes(switch, port)
+        switch_port_attributes_map = port_map.setdefault("attributes", {})
+        switch_port_attributes_map["description"] = port_attr.get('description')
+        switch_port_attributes_map["port_type"] = port_attr.get('type')
+        switch_port_attributes_map["stack_peer_switch"] = port_attr.get('peer_switch')
+        switch_port_attributes_map["stack_peer_port"] = port_attr.get('peer_port')
+
+        # port dynamics
+        if KEY_PORT_STATE_UP in port_states:
+            active = port_states[KEY_PORT_STATE_UP]
+            port_map["state"] = constants.STATE_ACTIVE if active else constants.STATE_DOWN
+        else:
+            port_map["state"] = None
+        port_map["state_last_change"] = port_states.get(KEY_PORT_STATE_TS)
+        port_map["state_change_count"] = port_states.get(KEY_PORT_STATE_COUNT)
+
+        return port_map
 
     def _fill_learned_macs(self, switch_name, switch_map):
         """fills learned macs"""

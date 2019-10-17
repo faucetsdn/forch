@@ -165,7 +165,9 @@ class Forchestrator:
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""
-        return self._faucet_collector.get_switch_state(params.get('switch'))
+        switch = params.get('switch')
+        port = params.get('port')
+        return self._faucet_collector.get_switch_state(switch, port)
 
     def get_dataplane_state(self, path, params):
         """Get the dataplane state overview"""
