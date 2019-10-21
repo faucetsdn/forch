@@ -63,7 +63,7 @@ class LocalStateCollector:
         for proc in psutil.process_iter():
             for target_name, target_map in self._target_procs.items():
                 target_regex = target_map['regex']
-                cmd_line_str = ''.join(proc.cmdline())
+                cmd_line_str = ' '.join(proc.cmdline())
                 if re.search(target_regex, cmd_line_str):
                     if target_name in procs:
                         LOGGER.error("Duplicate process: %s", str(procs[target_name]))
