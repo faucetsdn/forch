@@ -290,6 +290,7 @@ class FaucetStateCollector:
 
     def _is_link_up(self, key):
         """iterates through links in graph obj and returns if link with key is in graph"""
+        key = key.replace('@', '-')
         with self.lock:
             links = self.topo_state.get(TOPOLOGY_GRAPH, {}).get("links", [])
             for link in links:
