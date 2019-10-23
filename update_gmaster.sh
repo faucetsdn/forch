@@ -10,7 +10,7 @@ BASE_SH=$BASE/update_gmaster.sh
 VTEMP=/tmp/GVERSION
 VFILE=$BASE/$PROJ/GVERSION
 date > $VTEMP
-REPO=sso://perry-internal/faucet
+#REPO=sso://perry-internal/faucet
 
 if [ $0 != $TMP_SH ]; then
     echo Running out of $TMP_SH to mask local churn...
@@ -34,10 +34,10 @@ fi
 
 ORIGIN=`git remote -v | egrep ^origin | fgrep fetch | awk '{print $2}'`
 echo origin $ORIGIN >> $VTEMP
-if [ "$ORIGIN" != "$REPO" ]; then
-    echo git origin $ORIGIN does not match expected $REPO
-    false
-fi
+#if [ "$ORIGIN" != "$REPO" ]; then
+#   echo git origin $ORIGIN does not match expected $REPO
+#    false
+#fi
 
 echo Fetching remote repos...
 git fetch origin
