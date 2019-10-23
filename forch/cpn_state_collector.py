@@ -116,6 +116,7 @@ class CPNStateCollector:
                 last_state = node_state_map.get(KEY_NODE_STATE)
                 new_state = CPNStateCollector._get_node_state(res_map)
                 if not last_state or new_state != last_state:
+                    LOGGER.info('cpn_state %s changed %s to %s', host_name, last_state, new_state)
                     node_state_map[KEY_NODE_STATE] = new_state
                     node_state_map[KEY_NODE_STATE_COUNT] = last_state_count + 1
                     node_state_map[KEY_NODE_STATE_CHANGE_TS] = current_time
