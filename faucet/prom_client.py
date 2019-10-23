@@ -25,6 +25,8 @@ from pbr.version import VersionInfo
 from prometheus_client import Gauge as PromGauge
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, REGISTRY
 
+from wsgiref.simple_server import make_server, WSGIRequestHandler
+import threading
 
 # Ryu's WSGI implementation doesn't always set QUERY_STRING
 def make_wsgi_app(registry):
@@ -69,9 +71,6 @@ class PromClient: # pylint: disable=too-few-public-methods
         if not self.server:
             app = make_wsgi_app(self._reg)
             if use_test_thread:
-                from wsgiref.simple_server import make_server, WSGIRequestHandler
-                import threading
-
                 class NoLoggingWSGIRequestHandler(WSGIRequestHandler):
                     """Don't log requests."""
 
