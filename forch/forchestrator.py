@@ -58,7 +58,7 @@ class Forchestrator:
     # pylint: disable=too-many-locals
     def _handle_faucet_events(self):
         while self._faucet_events:
-            event = self._faucet_events.next_event()
+            event = self._faucet_events.next_event(blocking=True)
             if not event:
                 return True
             timestamp = event.get("time")
