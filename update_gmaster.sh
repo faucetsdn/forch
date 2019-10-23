@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
-# Update this to reflect the feature branches that should be merged in.
-PROJ=forch
-BRANCHES="blocking"
+source update_gmaster.cfg
 
 TMP_SH=/tmp/update_gmaster.sh
 BASE=`git rev-parse --show-toplevel`
