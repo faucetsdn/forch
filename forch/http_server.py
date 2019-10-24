@@ -30,12 +30,12 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path[1:]
+        host = self.headers.get('Host')
         opts = {}
         opt_pairs = urllib.parse.parse_qsl(parsed.query)
         for pair in opt_pairs:
             opts[pair[0]] = pair[1]
-        message = str(self._context.get_data(path, opts))
+        message = str(self._context.get_data(host, parsed.path[1:], opts))
         self.wfile.write(message.encode())
 
 
@@ -49,17 +49,22 @@ class HttpServer():
         self._paths = {}
         self._server = None
         self._root_path = config.get('http_root', 'public')
+        self._port = int(config.get('http_port', 9109))
+        self._host = '0.0.0.0'
 
     def start_server(self):
         """Start serving thread"""
-        address = ('0.0.0.0', 9019)
-        LOGGER.info('Starting http server on http://%s:%s', address[0], address[1])
+        LOGGER.info('Starting http server on %s', self._get_url_base())
+        address = (self._host, self._port)
         handler = functools.partial(RequestHandler, self)
         self._server = ThreadedHTTPServer(address, handler)
 
         thread = threading.Thread(target=self._server.serve_forever)
         thread.deamon = False
         thread.start()
+
+    def _get_url_base(self):
+        return 'http://%s:%s' % (self._host, self._port)
 
     def stop_server(self):
         """Stop and clean up server"""
@@ -71,32 +76,35 @@ class HttpServer():
         """Register a request mapping"""
         self._paths[path] = target
 
-    def get_data(self, request_path, params):
+    def get_data(self, host, path, params):
         """Get data for a particular request path and query params"""
         try:
             for a_path in self._paths:
-                if request_path.startswith(a_path):
-                    path_remain = request_path[len(a_path):]
-                    result = self._paths[a_path](path_remain, params)
+                if path.startswith(a_path):
+                    full_path = host + '/' + path
+                    result = self._paths[a_path](full_path, params)
                     if isinstance(result, (bytes, str)):
                         return result
                     return json.dumps(result)
             return str(self._paths)
         except Exception as e:
-            LOGGER.exception('Handling request %s: %s', request_path, str(e))
+            LOGGER.exception('Handling request %s: %s', path, str(e))
 
-    def read_file(self, path, ext_path):
-        """Read a file based on some path munging and return the entire contents"""
-        full_path = os.path.join(self._root_path, path)
-        if ext_path:
-            full_path = os.path.join(full_path, ext_path)
-        if os.path.isdir(full_path):
-            full_path = os.path.join(full_path, self._DEFAULT_FILE)
+    def read_file(self, full_path):
+        """Read a file and return the entire contents"""
         binary = full_path.endswith('.ico')
         mode = 'rb' if binary else 'r'
         with open(full_path, mode) as in_file:
             return in_file.read()
 
-    def static_file(self, path):
+    def _split_request(self, base_path, req_path):
+        slash = req_path.find('/') + 1
+        path = req_path[slash:]
+        full_path = os.path.join(self._root_path, path)
+        if os.path.isdir(full_path):
+            full_path = os.path.join(full_path, self._DEFAULT_FILE)
+        return self.read_file(full_path)
+
+    def static_file(self, base_path):
         """Map a static file handler to a simple request"""
-        return lambda path_remain, params: self.read_file(path, path_remain)
+        return lambda req_path, params: self._split_request(base_path, req_path)

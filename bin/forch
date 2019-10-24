@@ -10,7 +10,7 @@ else
 fi
 
 if [ -z "$HOSTNAME" ]; then
-    HOSTNAME=$(hostname)
+    HOSTNAME=$(hostname -s)
 fi
 
 FSOCK=faucet_event.sock
