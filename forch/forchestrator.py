@@ -95,15 +95,18 @@ class Forchestrator:
     def _get_peer_controller_url(self):
         return 'http://google.com'
 
+    def _get_hostname(self):
+        return os.getenv('HOSTNAME')
+
     def get_system_state(self, path, params):
         """Get an overview of the system state"""
         # TODO: These are all placeholder values, so need to be replaced.
-        state_summary = self._get_state_summary()
+        state_summary = self._get_state_summary(path)
         overview = {
             'peer_controller_url': self._get_peer_controller_url(),
             'state_summary_sources': state_summary,
             'site_name': self._config.get('site', {}).get('name', 'unknown'),
-            'controller_hostname': os.getenv('HOSTNAME')
+            'controller_hostname': self._get_hostname()
         }
         overview.update(self._distill_summary(state_summary))
         return overview
@@ -155,43 +158,71 @@ class Forchestrator:
             return 'damaged', warning_detail
         return 'healthy', None
 
-    def _get_state_summary(self):
-        return {
-            'cpn': self._cpn_collector.get_cpn_summary(),
-            'process': self._local_collector.get_process_summary(),
-            'dataplane': self._faucet_collector.get_dataplane_summary(),
-            'switch': self._faucet_collector.get_switch_summary()
+    def _get_state_summary(self, path):
+        states = {
+            'cpn_state': self._cpn_collector.get_cpn_summary(),
+            'process_state': self._local_collector.get_process_summary(),
+            'dataplane_state': self._faucet_collector.get_dataplane_summary(),
+            'switch_state': self._faucet_collector.get_switch_summary(),
+            'list_hosts': self._faucet_collector.get_host_summary()
         }
+        url_base = self._extract_url_base(path)
+        for state in states:
+            summary = states[state]
+            summary['url'] = f'{url_base}/?{state}'
+        return states
+
+    def _extract_url_base(self, path):
+        slash = path.find('/')
+        host = path[:slash]
+        return f'http://{host}'
+
+    def _augment_state_reply(self, reply, path):
+        url = self._extract_url_base(path)
+        reply['system_state_url'] = url
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""
         switch = params.get('switch')
         port = params.get('port')
-        return self._faucet_collector.get_switch_state(switch, port)
+        reply = self._faucet_collector.get_switch_state(switch, port)
+        self._augment_state_reply(reply, path)
+        return reply
 
     def get_dataplane_state(self, path, params):
         """Get the dataplane state overview"""
-        return self._faucet_collector.get_dataplane_state()
+        reply = self._faucet_collector.get_dataplane_state()
+        self._augment_state_reply(reply, path)
+        return reply
 
     def get_host_path(self, path, params):
         """Get active host path"""
         eth_src = params.get('eth_src')
         eth_dst = params.get('eth_dst')
         to_egress = params.get('to_egress') == 'true'
-        return self._faucet_collector.get_host_path(eth_src, eth_dst, to_egress)
+        reply = self._faucet_collector.get_host_path(eth_src, eth_dst, to_egress)
+        self._augment_state_reply(reply, path)
+        return reply
 
     def get_list_hosts(self, path, params):
         """List learned access devices"""
         eth_src = params.get('eth_src')
-        return self._faucet_collector.get_list_hosts(eth_src)
+        host = self._extract_url_base(path)
+        reply = self._faucet_collector.get_list_hosts(host, eth_src)
+        self._augment_state_reply(reply, path)
+        return reply
 
     def get_cpn_state(self, path, params):
         """Get CPN state"""
-        return self._cpn_collector.get_cpn_state()
+        reply = self._cpn_collector.get_cpn_state()
+        self._augment_state_reply(reply, path)
+        return reply
 
     def get_process_state(self, path, params):
         """Get certain processes state on the controller machine"""
-        return self._local_collector.get_process_state()
+        reply = self._local_collector.get_process_state()
+        self._augment_state_reply(reply, path)
+        return reply
 
 
 def load_config():

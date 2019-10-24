@@ -4,7 +4,6 @@ import copy
 from datetime import datetime
 import json
 import logging
-import os
 import time
 from threading import RLock
 
@@ -116,6 +115,8 @@ class FaucetStateCollector:
             switches_data[switch_name] = switch_data
             if switch_data[SW_STATE] != constants.STATE_ACTIVE:
                 broken.append(switch_name)
+        if not self.switch_states:
+            broken = ['No switches defined']
         result = {
             'switches_state': constants.STATE_BROKEN if broken else constants.STATE_HEALTHY,
             'switches_state_detail': ', '.join(broken),
@@ -532,7 +533,14 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
-    def get_list_hosts(self, src_mac):
+    def get_host_summary(self):
+        """Get a summary of the learned hosts"""
+        num_hosts = len(self.learned_macs)
+        return {
+            'detail': f'{num_hosts} learned host MACs'
+        }
+
+    def get_list_hosts(self, url_base, src_mac):
         """Get access devices"""
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
@@ -549,12 +557,10 @@ class FaucetStateCollector:
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(KEY_MAC_LEARNING_IP)
 
-            host_name = FaucetStateCollector._get_host_name()
-            url = f"http://{host_name}:9019/"
             if src_mac:
-                url += f"host_path?eth_src={src_mac}&eth_dst={mac}"
+                url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
             else:
-                url += f"list_hosts?eth_src={mac}"
+                url = f"{url_base}/?list_hosts?eth_src={mac}"
             mac_deets['url'] = url
 
         key = 'eth_dsts' if src_mac else 'eth_srcs'
@@ -613,11 +619,3 @@ class FaucetStateCollector:
             if port_attr.get('type') == 'egress':
                 return port
         return None
-
-    @staticmethod
-    def _get_host_name():
-        """Get current host name"""
-        host_name = os.getenv('HOSTNAME')
-        if host_name:
-            return host_name
-        return '0.0.0.0'
