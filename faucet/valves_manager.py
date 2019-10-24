@@ -96,6 +96,7 @@ class ValvesManager:
         self.logger = logger
         self.metrics = metrics
         self.notifier = notifier
+        self.notifier.register_conn_handler(self.new_conn_handler)
         self.bgp = bgp
         self.dot1x = dot1x
         self.config_auto_revert = config_auto_revert
@@ -104,6 +105,35 @@ class ValvesManager:
         self.config_applied = {}
         self.config_watcher = ConfigWatcher()
         self.meta_dp_state = MetaDPState()
+
+    def new_conn_handler(self):
+        """called on new connection to event socket."""
+        self._dump_config_event_sock()
+        self._dump_topo_event_sock()
+
+    def _dump_config_event_sock(self):
+        self._notify({'CONFIG_CHANGE': {'success': True,
+            'dps_config': self.meta_dp_state.top_conf}})
+
+    def _dump_topo_event_sock(self):
+        notify_dps = {}
+        root = None
+        graph = None
+        for valve in self.valves.values():
+            if valve.dp.stack_root_name:
+                path_port = valve.dp.shortest_path_port(valve.dp.stack_root_name)
+                notify_dps.setdefault(valve.dp.name, {})['root_hop_port'] = \
+                        (path_port.number if path_port else None)
+                if not graph:
+                    graph = valve.dp.get_node_link_data()
+                    root = valve.dp.stack_root_name
+        if root and graph:
+            self._notify(
+                    {'STACK_TOPO_CHANGE': {
+                        'stack_root': root,
+                        'graph': graph,
+                        'dps': notify_dps
+                        }})
 
     def _stack_root_healthy(self, now, candidate_dp):
         """Return True if a candidate DP is healthy."""
