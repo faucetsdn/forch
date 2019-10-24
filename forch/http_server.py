@@ -49,7 +49,7 @@ class HttpServer():
         self._paths = {}
         self._server = None
         self._root_path = config.get('http_root', 'public')
-        self._port = int(config.get('http_port', 9109))
+        self._port = int(config.get('http_port', 9019))
         self._host = '0.0.0.0'
 
     def start_server(self):
