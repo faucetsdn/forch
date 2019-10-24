@@ -32,23 +32,24 @@ def dump_states(func):
 SWITCH_CONNECTED = "CONNECTED"
 SWITCH_DOWN = "DOWN"
 
-KEY_SWITCH = "dpids"
-KEY_DP_ID = "dp_id"
-KEY_PORTS = "ports"
-KEY_PORT_STATE_COUNT = "change_count"
-KEY_PORT_STATE_TS = "timestamp"
-KEY_PORT_STATE_UP = "state_up"
-KEY_LEARNED_MACS = "learned_macs"
-KEY_MAC_LEARNING_SWITCH = "switches"
-KEY_MAC_LEARNING_PORT = "port"
-KEY_MAC_LEARNING_IP = "ip_address"
-KEY_MAC_LEARNING_TS = "timestamp"
-KEY_CONFIG_CHANGE_COUNT = "config_change_count"
+DP_ID = "dp_id"
+PORTS = "ports"
+PORT_STATE_COUNT = "change_count"
+PORT_STATE_TS = "timestamp"
+PORT_STATE_UP = "state_up"
+PORT_STATE = "port_state"
+LEARNED_MACS = "learned_macs"
+MAC_LEARNING_SWITCH = "switches"
+MAC_LEARNING_PORT = "port"
+MAC_LEARNING_IP = "ip_address"
+MAC_LEARNING_TS = "timestamp"
+CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
 SW_STATE_LAST_CHANGE = "switch_state_last_change"
 SW_STATE_CHANGE_COUNT = "switch_state_change_count"
-KEY_CONFIG_CHANGE_TYPE = "config_change_type"
-KEY_CONFIG_CHANGE_TS = "config_change_timestamp"
+CONFIG_CHANGE_TYPE = "config_change_type"
+CONFIG_CHANGE_TS = "config_change_timestamp"
+LINK_STATE = "link_state"
 TOPOLOGY_ENTRY = "topology"
 TOPOLOGY_GRAPH = "graph_obj"
 TOPOLOGY_DPS = "dps"
@@ -110,9 +111,13 @@ class FaucetStateCollector:
         """get a set of all switches"""
         switches_data = {}
         broken = []
+        change_count = 0
+        last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
         for switch_name in self.switch_states:
             switch_data = self._get_switch(switch_name, port)
             switches_data[switch_name] = switch_data
+            change_count += switch_data.get(SW_STATE_CHANGE_COUNT, 0)
+            last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
             if switch_data[SW_STATE] != constants.STATE_ACTIVE:
                 broken.append(switch_name)
         if not self.switch_states:
@@ -120,8 +125,8 @@ class FaucetStateCollector:
         result = {
             'switches_state': constants.STATE_BROKEN if broken else constants.STATE_HEALTHY,
             'switches_state_detail': ', '.join(broken),
-            'switches_state_change_count': 1,
-            'switches_state_last_change': "2019-10-11T15:23:21.382479",
+            'switches_state_change_count': change_count,
+            'switches_state_last_change': last_change,
             'switches': switches_data
         }
         if switch:
@@ -148,11 +153,11 @@ class FaucetStateCollector:
                 switch_map[switch] = {}
                 current_state = switch_state.get(SW_STATE)
                 if not current_state:
-                    switch_map[switch]['state'] = None
+                    switch_map[switch][SW_STATE] = None
                 elif current_state == SWITCH_CONNECTED:
-                    switch_map[switch]['state'] = constants.STATE_ACTIVE
+                    switch_map[switch][SW_STATE] = constants.STATE_ACTIVE
                 else:
-                    switch_map[switch]['state'] = constants.STATE_DOWN
+                    switch_map[switch][SW_STATE] = constants.STATE_DOWN
 
             return switch_map
 
@@ -167,12 +172,12 @@ class FaucetStateCollector:
         # filling switch attributes
         switch_states = self.switch_states.get(str(switch_name), {})
         attributes_map = switch_map.setdefault("attributes", {})
-        attributes_map["dp_id"] = switch_states.get(KEY_DP_ID)
+        attributes_map["dp_id"] = switch_states.get(DP_ID)
 
         # filling switch dynamics
-        switch_map["restart_type_event_count"] = switch_states.get(KEY_CONFIG_CHANGE_COUNT)
-        switch_map["restart_type"] = switch_states.get(KEY_CONFIG_CHANGE_TYPE)
-        switch_map["restart_type_last_change"] = switch_states.get(KEY_CONFIG_CHANGE_TS)
+        switch_map["restart_type_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
+        switch_map["restart_type"] = switch_states.get(CONFIG_CHANGE_TYPE)
+        switch_map["restart_type_last_change"] = switch_states.get(CONFIG_CHANGE_TS)
 
         if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
             switch_map[SW_STATE] = constants.STATE_ACTIVE
@@ -188,7 +193,7 @@ class FaucetStateCollector:
             switch_port_map[port] = self._get_port_state(switch_name, port)
             switch_port_map['port_restrict'] = port
         else:
-            for port_id in switch_states.get(KEY_PORTS, {}):
+            for port_id in switch_states.get(PORTS, {}):
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
 
         self._fill_learned_macs(switch_name, switch_map)
@@ -199,9 +204,9 @@ class FaucetStateCollector:
     def _get_port_state(self, switch: str, port: int):
         """Get port state"""
         # port attributes
-        if port not in self.switch_states.get(str(switch), {}).get(KEY_PORTS, {}):
+        if port not in self.switch_states.get(str(switch), {}).get(PORTS, {}):
             return None
-        port_states = self.switch_states[str(switch)][KEY_PORTS][port]
+        port_states = self.switch_states[str(switch)][PORTS][port]
         port_map = {}
         port_attr = self._get_port_attributes(switch, port)
         switch_port_attributes_map = port_map.setdefault("attributes", {})
@@ -211,23 +216,23 @@ class FaucetStateCollector:
         switch_port_attributes_map["stack_peer_port"] = port_attr.get('peer_port')
 
         # port dynamics
-        if KEY_PORT_STATE_UP in port_states:
-            active = port_states[KEY_PORT_STATE_UP]
-            port_map["state"] = constants.STATE_ACTIVE if active else constants.STATE_DOWN
+        if PORT_STATE_UP in port_states:
+            active = port_states[PORT_STATE_UP]
+            port_map[PORT_STATE] = constants.STATE_ACTIVE if active else constants.STATE_DOWN
         else:
-            port_map["state"] = None
-        port_map["state_last_change"] = port_states.get(KEY_PORT_STATE_TS)
-        port_map["state_change_count"] = port_states.get(KEY_PORT_STATE_COUNT)
+            port_map[PORT_STATE] = None
+        port_map["state_last_change"] = port_states.get(PORT_STATE_TS)
+        port_map["state_change_count"] = port_states.get(PORT_STATE_COUNT)
 
         return port_map
 
     def _fill_learned_macs(self, switch_name, switch_map):
         """fills learned macs"""
         switch_states = self.switch_states.get(str(switch_name), {})
-        for mac in switch_states.get(KEY_LEARNED_MACS, set()):
+        for mac in switch_states.get(LEARNED_MACS, set()):
             mac_states = self.learned_macs.get(mac, {})
-            learned_switch = mac_states.get(KEY_MAC_LEARNING_SWITCH, {}).get(switch_name, {})
-            learned_port = learned_switch.get(KEY_MAC_LEARNING_PORT, None)
+            learned_switch = mac_states.get(MAC_LEARNING_SWITCH, {}).get(switch_name, {})
+            learned_port = learned_switch.get(MAC_LEARNING_PORT, None)
             if not learned_port:
                 continue
 
@@ -247,9 +252,9 @@ class FaucetStateCollector:
                 raise Exception('Unknown port type %s' % port_type)
 
             mac_map = switch_learned_mac_map.setdefault(mac, {})
-            mac_map["ip_address"] = mac_states.get(KEY_MAC_LEARNING_IP, None)
+            mac_map["ip_address"] = mac_states.get(MAC_LEARNING_IP, None)
             mac_map["port"] = learned_port
-            mac_map["timestamp"] = learned_switch.get(KEY_MAC_LEARNING_TS, None)
+            mac_map["timestamp"] = learned_switch.get(MAC_LEARNING_TS, None)
 
     def _fill_path_to_root(self, switch_name, switch_map):
         """populate path to root for switch_state"""
@@ -282,11 +287,11 @@ class FaucetStateCollector:
                         topo_map[key] = link_obj
                         if (dps.get(start_dp, {}).get('root_hop_port') == int(start_port) or
                                 dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
-                            link_obj["state"] = constants.STATE_ACTIVE
+                            link_obj[LINK_STATE] = constants.STATE_ACTIVE
                         elif self._is_link_up(key):
-                            link_obj["state"] = constants.STATE_UP
+                            link_obj[LINK_STATE] = constants.STATE_UP
                         else:
-                            link_obj["state"] = constants.STATE_DOWN
+                            link_obj[LINK_STATE] = constants.STATE_DOWN
 
         return topo_map
 
@@ -304,7 +309,7 @@ class FaucetStateCollector:
         """Check if port is up"""
         with self.lock:
             return self.switch_states.get(str(switch), {})\
-                    .get(KEY_PORTS, {}).get(port, {}).get('state_up', False)
+                    .get(PORTS, {}).get(port, {}).get('state_up', False)
 
     def get_active_egress_path(self, src_mac):
         """Given a MAC address return active route to egress."""
@@ -370,16 +375,16 @@ class FaucetStateCollector:
 
         if to_egress:
             ret_map = self.get_active_egress_path(src_mac)
-            src_ip = self.learned_macs.get(src_mac, {}).get(KEY_MAC_LEARNING_IP)
+            src_ip = self.learned_macs.get(src_mac, {}).get(MAC_LEARNING_IP)
             ret_map['src_ip'] = src_ip
             return ret_map
 
-        res = {'src_ip': self.learned_macs[src_mac].get(KEY_MAC_LEARNING_IP),
-               'dst_ip': self.learned_macs[dst_mac].get(KEY_MAC_LEARNING_IP),
+        res = {'src_ip': self.learned_macs[src_mac].get(MAC_LEARNING_IP),
+               'dst_ip': self.learned_macs[dst_mac].get(MAC_LEARNING_IP),
                'path': []}
 
-        src_learned_switches = self.learned_macs[src_mac].get(KEY_MAC_LEARNING_SWITCH, {})
-        dst_learned_switches = self.learned_macs[dst_mac].get(KEY_MAC_LEARNING_SWITCH, {})
+        src_learned_switches = self.learned_macs[src_mac].get(MAC_LEARNING_SWITCH, {})
+        dst_learned_switches = self.learned_macs[dst_mac].get(MAC_LEARNING_SWITCH, {})
 
         next_hops = self._get_graph(src_mac, dst_mac)
 
@@ -391,12 +396,12 @@ class FaucetStateCollector:
         next_hop = {'switch': src_switch, 'in': src_port, 'out': None}
 
         while next_hop['switch'] in next_hops:
-            next_hop['out'] = dst_learned_switches[next_hop['switch']][KEY_MAC_LEARNING_PORT]
+            next_hop['out'] = dst_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
             res['path'].append(copy.copy(next_hop))
             next_hop['switch'] = next_hops[next_hop['switch']]
-            next_hop['in'] = src_learned_switches[next_hop['switch']][KEY_MAC_LEARNING_PORT]
+            next_hop['in'] = src_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
 
-        next_hop['out'] = dst_learned_switches[next_hop['switch']][KEY_MAC_LEARNING_PORT]
+        next_hop['out'] = dst_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
         res['path'].append(copy.copy(next_hop))
 
         return res
@@ -407,12 +412,12 @@ class FaucetStateCollector:
         with self.lock:
             port_table = self.switch_states\
                 .setdefault(name, {})\
-                .setdefault(KEY_PORTS, {})\
+                .setdefault(PORTS, {})\
                 .setdefault(port, {})
 
-            port_table[KEY_PORT_STATE_UP] = state
-            port_table[KEY_PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
-            port_table[KEY_PORT_STATE_COUNT] = port_table.setdefault(KEY_PORT_STATE_COUNT, 0) + 1
+            port_table[PORT_STATE_UP] = state
+            port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
+            port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
     @dump_states
     def process_lag_state(self, timestamp, name, port, state):
@@ -437,17 +442,17 @@ class FaucetStateCollector:
             # update global mac table
             global_mac_table = self.learned_macs.setdefault(mac, {})
 
-            global_mac_table[KEY_MAC_LEARNING_IP] = src_ip
+            global_mac_table[MAC_LEARNING_IP] = src_ip
 
-            global_mac_switch_table = global_mac_table.setdefault(KEY_MAC_LEARNING_SWITCH, {})
+            global_mac_switch_table = global_mac_table.setdefault(MAC_LEARNING_SWITCH, {})
             learning_switch = global_mac_switch_table.setdefault(name, {})
-            learning_switch[KEY_MAC_LEARNING_PORT] = port
-            learning_switch[KEY_MAC_LEARNING_TS] = datetime.fromtimestamp(timestamp).isoformat()
+            learning_switch[MAC_LEARNING_PORT] = port
+            learning_switch[MAC_LEARNING_TS] = datetime.fromtimestamp(timestamp).isoformat()
 
             # update per switch mac table
             self.switch_states\
                 .setdefault(name, {})\
-                .setdefault(KEY_LEARNED_MACS, set())\
+                .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
     @dump_states
@@ -461,10 +466,10 @@ class FaucetStateCollector:
             dp_state = self.switch_states.setdefault(dp_name, {})
 
             LOGGER.info('dp_config %s change type %s', dp_id, restart_type)
-            dp_state[KEY_DP_ID] = dp_id
-            dp_state[KEY_CONFIG_CHANGE_TYPE] = restart_type
-            dp_state[KEY_CONFIG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
-            dp_state[KEY_CONFIG_CHANGE_COUNT] = dp_state.setdefault(KEY_CONFIG_CHANGE_COUNT, 0) + 1
+            dp_state[DP_ID] = dp_id
+            dp_state[CONFIG_CHANGE_TYPE] = restart_type
+            dp_state[CONFIG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
+            dp_state[CONFIG_CHANGE_COUNT] = dp_state.setdefault(CONFIG_CHANGE_COUNT, 0) + 1
 
     @dump_states
     def process_dp_change(self, timestamp, dp_name, connected):
@@ -514,20 +519,20 @@ class FaucetStateCollector:
     # pylint: disable=too-many-arguments
     def _add_link(self, src_mac, dst_mac, sw_1, port_1, sw_2, port_2, graph):
         """Insert link into graph if link is used by the src and dst"""
-        src_learned_switches = self.learned_macs[src_mac][KEY_MAC_LEARNING_SWITCH]
-        dst_learned_switches = self.learned_macs[dst_mac][KEY_MAC_LEARNING_SWITCH]
-        src_learned_port = src_learned_switches.get(sw_1, {}).get(KEY_MAC_LEARNING_PORT, "")
-        dst_learned_port = dst_learned_switches.get(sw_2, {}).get(KEY_MAC_LEARNING_PORT, "")
+        src_learned_switches = self.learned_macs[src_mac][MAC_LEARNING_SWITCH]
+        dst_learned_switches = self.learned_macs[dst_mac][MAC_LEARNING_SWITCH]
+        src_learned_port = src_learned_switches.get(sw_1, {}).get(MAC_LEARNING_PORT, "")
+        dst_learned_port = dst_learned_switches.get(sw_2, {}).get(MAC_LEARNING_PORT, "")
 
         if src_learned_port == port_1 and dst_learned_port == port_2:
             graph[sw_2] = sw_1
 
     def _get_access_switch(self, mac):
         """Get access switch and port for a given MAC"""
-        learned_switches = self.learned_macs.get(mac, {}).get(KEY_MAC_LEARNING_SWITCH)
+        learned_switches = self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH)
 
         for switch, port_map in learned_switches.items():
-            port = port_map[KEY_MAC_LEARNING_PORT]
+            port = port_map[MAC_LEARNING_PORT]
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'access':
                 return switch, port
@@ -555,7 +560,7 @@ class FaucetStateCollector:
             mac_deets = host_macs.setdefault(mac, {})
             mac_deets['switch'] = switch
             mac_deets['port'] = port
-            mac_deets['host_ip'] = mac_state.get(KEY_MAC_LEARNING_IP)
+            mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
@@ -614,7 +619,7 @@ class FaucetStateCollector:
 
     def _get_egress_port(self, switch):
         """Get egress port of a switch"""
-        for port in self.switch_states.get(switch, {}).get(KEY_PORTS, {}):
+        for port in self.switch_states.get(switch, {}).get(PORTS, {}):
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'egress':
                 return port
