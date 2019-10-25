@@ -85,6 +85,10 @@ class FaucetEventClient():
                 # Prepend events so they functionally replace the current one in the queue.
                 self._prepend_event(self._make_port_state(name, dpid, port, status[port]))
             return None
+        (name, dpid, macs, timestamp) = self.as_learned_macs(event)
+        if dpid:
+            for mac in macs:
+                self._prepend_event(self._make_l2_learn(name, dpid, mac, timestamp))
         return event
 
     def _process_state_update(self, dpid, port, active):
@@ -161,6 +165,14 @@ class FaucetEventClient():
         event['time'] = time.time()
         return event
 
+    def _make_l2_learn(self, name, dpid, entry, timestamp):
+        event = {}
+        event['dp_name'] = name
+        event['dp_id'] = dpid
+        event['L2_LEARN'] = entry
+        event['time'] = timestamp
+        return event
+
     def as_config_change(self, event):
         """Convert the event to dp change info, if applicable"""
         if not event or 'CONFIG_CHANGE' not in event:
@@ -174,6 +186,16 @@ class FaucetEventClient():
         if not event or 'PORTS_STATUS' not in event:
             return (None, None, None)
         return (event['dp_name'], event['dp_id'], event['PORTS_STATUS'])
+
+    def as_learned_macs(self, event):
+        """Convert the event to learned macs info, if applicable"""
+        if not event or 'L2_LEARNED_MACS' not in event:
+            return (None, None, None, None)
+        name = event.get('dp_name')
+        dpid = event.get('dp_id')
+        macs = event.get('L2_LEARNED_MACS')
+        timestamp = event.get('time')
+        return name, dpid, macs, timestamp
 
     def as_lag_status(self, event):
         """Convert event to lag status, if applicable"""
