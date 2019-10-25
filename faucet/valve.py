@@ -141,9 +141,10 @@ class Valve:
 
     def new_conn_handler(self):
         """Dumps valve specific state to event sock on new client connection"""
-        self._dump_ports_status_event_sock()
         self._dump_dp_of_status_event_sock()
         self._dump_lag_status_event_sock()
+        self._dump_ports_status_event_sock()
+        self._dump_learned_hosts_event_sock()
 
     def _dump_ports_status_event_sock(self):
         port_status = {
@@ -163,6 +164,18 @@ class Valve:
                         {'LAG_CHANGE': {
                             'port_no': port.number,
                             'status': port.dyn_lacp_up}})
+
+    def _dump_learned_hosts_event_sock(self):
+        learned_macs = []
+        for vlan in self.dp.vlans.values():
+            for host in vlan.dyn_host_cache.values():
+                mac_obj = {}
+                mac_obj['port_no'] = host.port.number
+                mac_obj['eth_src'] = host.eth_src
+                mac_obj['l3_src_ip'] = str(host.l3_src_ip)
+                mac_obj['vid'] = vlan.vid
+                learned_macs.append(mac_obj)
+        self._notify({'L2_LEARNED_MACS': learned_macs})
 
     def dp_init(self, new_dp=None):
         """Initialize datapath state at connection/re/config time."""
@@ -1243,9 +1256,9 @@ class Valve:
                 now, learn_port, pkt_meta.vlan, pkt_meta.eth_src,
                 last_dp_coldstart_time=self.dp.dyn_last_coldstart_time)
             if update_cache:
-                pkt_meta.vlan.add_cache_host(pkt_meta.eth_src, learn_port, now)
                 if pkt_meta.l3_pkt is None:
                     pkt_meta.reparse_ip()
+                pkt_meta.vlan.add_cache_host(pkt_meta.eth_src, learn_port, now, pkt_meta.l3_src)
                 learn_log = 'L2 learned on %s %s (%u hosts total)' % (
                     learn_port, pkt_meta.log(), pkt_meta.vlan.hosts_count())
                 if pkt_meta.port.stack:
