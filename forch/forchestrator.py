@@ -39,6 +39,7 @@ class Forchestrator:
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
             self._config.get('event_client', {}))
         self._faucet_events.connect()
+        self._local_collector.initialize()
         self._cpn_collector.initialize()
 
     def main_loop(self):
