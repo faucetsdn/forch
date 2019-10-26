@@ -44,12 +44,12 @@ class HttpServer():
 
     _DEFAULT_FILE = 'index.html'
 
-    def __init__(self, config):
+    def __init__(self, config, port):
         self._config = config
         self._paths = {}
         self._server = None
         self._root_path = config.get('http_root', 'public')
-        self._port = int(config.get('http_port', 9019))
+        self._port = port
         self._host = '0.0.0.0'
 
     def start_server(self):
