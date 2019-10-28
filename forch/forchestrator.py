@@ -17,6 +17,7 @@ LOGGER = logging.getLogger('forch')
 
 
 _FCONFIG_DEFAULT = 'forch.yaml'
+_DEFAULT_PORT = 9019
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -30,7 +31,7 @@ class Forchestrator:
         self._server = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_collector = FaucetStateCollector()
-        self._local_collector = LocalStateCollector(config)
+        self._local_collector = LocalStateCollector(config.get('process'))
         self._cpn_collector = CPNStateCollector()
 
     def initialize(self):
@@ -39,7 +40,9 @@ class Forchestrator:
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
             self._config.get('event_client', {}))
         self._faucet_events.connect()
+        self._local_collector.initialize()
         self._cpn_collector.initialize()
+        LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
     def main_loop(self):
         """Main event processing loop"""
@@ -92,8 +95,41 @@ class Forchestrator:
                 self._faucet_collector.process_dp_change(timestamp, name, connected)
         return False
 
+    def _get_controller_info(self, target):
+        controllers = self._config.get('site', {}).get('controllers', {})
+        if target not in controllers:
+            return (f'missing_target_{target}', _DEFAULT_PORT)
+        controller = controllers[target]
+        controller = controller if controller else {}
+        port = controller.get('port', _DEFAULT_PORT)
+        return (target, port)
+
+    def get_local_port(self):
+        """Get the local port for this instance"""
+        info = self._get_controller_info(self._get_hostname())
+        LOGGER.info('Local controller is at %s on %s', info[0], info[1])
+        return int(info[1])
+
+    def _make_controller_url(self, info):
+        return f'http://{info[0]}:{info[1]}'
+
+    def _get_local_controller_url(self):
+        return self._make_controller_url(self._get_controller_info(self._get_hostname()))
+
+    def _get_peer_controller_info(self):
+        hostname = self._get_hostname()
+        controllers = self._config.get('site', {}).get('controllers', {})
+        if hostname not in controllers:
+            return (f'missing_hostname_{hostname}', _DEFAULT_PORT)
+        if len(controllers) != 2:
+            return ('num_controllers_%s' % len(controllers), _DEFAULT_PORT)
+        things = set(controllers.keys())
+        things.remove(hostname)
+        peer = list(things)[0]
+        return self._get_controller_info(peer)
+
     def _get_peer_controller_url(self):
-        return 'http://google.com'
+        return self._make_controller_url(self._get_peer_controller_info())
 
     def _get_hostname(self):
         return os.getenv('HOSTNAME')
@@ -238,7 +274,8 @@ if __name__ == '__main__':
     CONFIG = load_config()
     FORCH = Forchestrator(CONFIG)
     FORCH.initialize()
-    HTTP = forch.http_server.HttpServer(CONFIG.get('http', {}))
+    HTTP = forch.http_server.HttpServer(CONFIG.get('http', {}),
+                                        FORCH.get_local_port())
     HTTP.map_request('system_state', FORCH.get_system_state)
     HTTP.map_request('dataplane_state', FORCH.get_dataplane_state)
     HTTP.map_request('switch_state', FORCH.get_switch_state)

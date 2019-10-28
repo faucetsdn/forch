@@ -191,7 +191,7 @@ class FaucetStateCollector:
         if port:
             port = int(port)
             switch_port_map[port] = self._get_port_state(switch_name, port)
-            switch_port_map['port_restrict'] = port
+            switch_map['ports_restrict'] = port
         else:
             for port_id in switch_states.get(PORTS, {}):
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
