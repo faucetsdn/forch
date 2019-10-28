@@ -15,13 +15,15 @@ LOGGER = logging.getLogger('localstate')
 class LocalStateCollector:
     """Storing local system states"""
 
-    def __init__(self, config, process_interval: int = 60):
+    def __init__(self, config):
         self._state = {'processes': {}}
         self._process_state = self._state['processes']
         self._target_procs = config.get('processes', {})
         self._current_time = None
-        self._process_interval = process_interval
+        self._process_interval = int(config.get('scan_interval_sec', 60))
         self._process_lock = threading.Lock()
+        LOGGER.info('Scanning %s processes every %ds',
+                    len(self._target_procs), self._process_interval)
 
     def initialize(self):
         """Initialize LocalStateCollector"""
@@ -98,7 +100,8 @@ class LocalStateCollector:
         proc_map = {}
         old_proc_map = self._process_state.get(proc_name, {})
 
-        proc_map['cmd_line'] = ' '.join(proc_list[0].cmdline())
+        cmd_line = ' '.join(proc_list[0].cmdline()) if len(proc_list) == 1 else 'multiple'
+        proc_map['cmd_line'] = cmd_line
         create_time = max(proc.create_time() for proc in proc_list)
         proc_map['create_time'] = datetime.fromtimestamp(create_time).isoformat()
         proc_map['create_time_last_update'] = self._current_time
