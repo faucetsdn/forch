@@ -542,6 +542,7 @@ class FaucetStateCollector:
         """Get a summary of the learned hosts"""
         num_hosts = len(self.learned_macs)
         return {
+            'state': constants.STATE_HEALTHY,
             'detail': f'{num_hosts} learned host MACs'
         }
 
