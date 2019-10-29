@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="forch",
-    version="1.0",
+    version="0.3",
     description="Faucet orchestrator",
     long_description=long_description,
     long_description_content_type="text/markdown",
