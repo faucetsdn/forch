@@ -6,6 +6,7 @@ import os
 import time
 import yaml
 
+import forch.constants as constants
 import forch.faucet_event_client
 import forch.http_server
 
@@ -106,7 +107,7 @@ class Forchestrator:
 
     def get_local_port(self):
         """Get the local port for this instance"""
-        info = self._get_controller_info(self._get_hostname())
+        info = self._get_controller_info(self._get_controller_name())
         LOGGER.info('Local controller is at %s on %s', info[0], info[1])
         return int(info[1])
 
@@ -114,25 +115,25 @@ class Forchestrator:
         return f'http://{info[0]}:{info[1]}'
 
     def _get_local_controller_url(self):
-        return self._make_controller_url(self._get_controller_info(self._get_hostname()))
+        return self._make_controller_url(self._get_controller_info(self._get_controller_name()))
 
     def _get_peer_controller_info(self):
-        hostname = self._get_hostname()
+        name = self._get_controller_name()
         controllers = self._config.get('site', {}).get('controllers', {})
-        if hostname not in controllers:
-            return (f'missing_hostname_{hostname}', _DEFAULT_PORT)
+        if name not in controllers:
+            return (f'missing_controller_name_{name}', _DEFAULT_PORT)
         if len(controllers) != 2:
             return ('num_controllers_%s' % len(controllers), _DEFAULT_PORT)
         things = set(controllers.keys())
-        things.remove(hostname)
+        things.remove(name)
         peer = list(things)[0]
         return self._get_controller_info(peer)
 
     def _get_peer_controller_url(self):
         return self._make_controller_url(self._get_peer_controller_info())
 
-    def _get_hostname(self):
-        return os.getenv('HOSTNAME')
+    def _get_controller_name(self):
+        return os.getenv('CONTROLLER_NAME')
 
     def get_system_state(self, path, params):
         """Get an overview of the system state"""
@@ -142,7 +143,7 @@ class Forchestrator:
             'peer_controller_url': self._get_peer_controller_url(),
             'state_summary_sources': state_summary,
             'site_name': self._config.get('site', {}).get('name', 'unknown'),
-            'controller_hostname': self._get_hostname()
+            'controller_name': self._get_controller_name()
         }
         overview.update(self._distill_summary(state_summary))
         return overview
@@ -178,21 +179,23 @@ class Forchestrator:
     def _get_combined_summary(self, summary):
         has_error = False
         has_warning = False
+        details = []
         for subsystem_name in summary:
             subsystem = summary[subsystem_name]
-            state = subsystem.get('state', 'error')
+            state = subsystem.get('state', constants.STATE_BROKEN)
             detail = subsystem.get('detail', 'unknown')
-            if state == 'broken':
+            if state in (constants.STATE_DOWN, constants.STATE_BROKEN):
                 has_error = True
-                error_detail = self._DETAIL_FORMAT % (subsystem_name, state, detail)
-            elif state != 'healthy':
+                details.append(subsystem_name)
+            elif state != constants.STATE_HEALTHY:
                 has_warning = True
-                warning_detail = self._DETAIL_FORMAT % (subsystem_name, state, detail)
+                details.append(subsystem_name)
+        detail = ', '.join(details)
         if has_error:
-            return 'broken', error_detail
+            return constants.STATE_BROKEN, detail
         if has_warning:
-            return 'damaged', warning_detail
-        return 'healthy', None
+            return constants.STATE_DAMAGED, detail
+        return constants.STATE_HEALTHY, detail
 
     def _get_state_summary(self, path):
         states = {
