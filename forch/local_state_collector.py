@@ -74,7 +74,8 @@ class LocalStateCollector:
         state = constants.STATE_BROKEN if broken else constants.STATE_HEALTHY
         process_state['processes_state'] = state
         process_state['processes_state_last_update'] = self._current_time
-        process_state['processes_state_detail'] = ', '.join(broken)
+        state_detail = 'Processes in broken state: ' + ', '.join(broken) if broken else ''
+        process_state['processes_state_detail'] = state_detail
         if state != old_state:
             process_state['processes_state_last_change'] = self._current_time
             state_change_count = process_state.get('processes_state_change_count', 0) + 1

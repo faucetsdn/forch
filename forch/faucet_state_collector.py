@@ -120,11 +120,17 @@ class FaucetStateCollector:
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
             if switch_data[SW_STATE] != constants.STATE_ACTIVE:
                 broken.append(switch_name)
+
         if not self.switch_states:
-            broken = ['No switches defined']
+            state_detail = 'No switches connected'
+        elif broken:
+            state_detail = 'Switches in broken state: ' + ', '.join(broken)
+        else:
+            state_detail = ''
+
         result = {
             'switches_state': constants.STATE_BROKEN if broken else constants.STATE_HEALTHY,
-            'switches_state_detail': ', '.join(broken),
+            'switches_state_detail': state_detail,
             'switches_state_change_count': change_count,
             'switches_state_last_change': last_change,
             'switches': switches_data
