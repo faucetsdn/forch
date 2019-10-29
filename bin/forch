@@ -9,8 +9,11 @@ else
     PYTHON=python3
 fi
 
-if [ -z "$HOSTNAME" ]; then
-    HOSTNAME=$(hostname -s)
+if [ -z "$CONTROLLER_NAME" ]; then
+    CONTROLLER_NAME=$(hostname -s)
+    echo Setting controller name to $CONTROLLER_NAME
+else
+    echo Using existing controller name $CONTROLLER_NAME
 fi
 
 FSOCK=faucet_event.sock
@@ -19,6 +22,6 @@ sudo \
     FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK} \
     FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet} \
     FORCH_RUN_DIR=${FORCH_RUN_DIR:-/var/run/faucet} \
-    HOSTNAME=$HOSTNAME \
+    CONTROLLER_NAME=$CONTROLLER_NAME \
     PYTHONPATH=$PYTHONPATH \
     $PYTHON -m forch.forchestrator

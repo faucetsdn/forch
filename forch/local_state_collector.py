@@ -47,7 +47,7 @@ class LocalStateCollector:
     def _get_process_info(self):
         """Get the raw information of processes"""
 
-        process_state = {}
+        process_state = self._process_state
         procs = self._get_target_processes()
         broken = []
 
@@ -70,16 +70,15 @@ class LocalStateCollector:
                 LOGGER.error(err_detail)
                 broken.append(target_name)
 
+        old_state = process_state.get('processes_state')
         state = constants.STATE_BROKEN if broken else constants.STATE_HEALTHY
         process_state['processes_state'] = state
         process_state['processes_state_last_update'] = self._current_time
         process_state['processes_state_detail'] = ', '.join(broken)
-        if state != self._process_state.get('processes_state'):
+        if state != old_state:
             process_state['processes_state_last_change'] = self._current_time
-            state_change_count = self._process_state.get('processes_state_change_count', 0) + 1
+            state_change_count = process_state.get('processes_state_change_count', 0) + 1
             process_state['processes_state_change_count'] = state_change_count
-
-        self._process_state = process_state
 
     def _get_target_processes(self):
         """Get target processes"""
@@ -97,8 +96,8 @@ class LocalStateCollector:
 
     def _extract_process_state(self, proc_name, proc_list):
         """Fill process state for a single process"""
-        proc_map = {}
         old_proc_map = self._process_state.get(proc_name, {})
+        proc_map = copy.deepcopy(old_proc_map)
 
         cmd_line = ' '.join(proc_list[0].cmdline()) if len(proc_list) == 1 else 'multiple'
         proc_map['cmd_line'] = cmd_line
