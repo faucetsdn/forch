@@ -3,10 +3,13 @@
 import copy
 from datetime import datetime
 import logging
+import os
 import re
+import signal
 import threading
 
 import psutil
+import yaml
 
 import forch.constants as constants
 
@@ -16,17 +19,21 @@ class LocalStateCollector:
     """Storing local system states"""
 
     def __init__(self, config):
-        self._state = {'processes': {}}
+        self._state = {'processes': {}, 'vrrp': {}}
         self._process_state = self._state['processes']
+        self._vrrp_state = self._state['vrrp']
         self._target_procs = config.get('processes', {})
+        self._check_vrrp = config.get('check_vrrp', False)
         self._current_time = None
         self._process_interval = int(config.get('scan_interval_sec', 60))
-        self._process_lock = threading.Lock()
+        self._lock = threading.Lock()
         LOGGER.info('Scanning %s processes every %ds',
                     len(self._target_procs), self._process_interval)
 
     def initialize(self):
         """Initialize LocalStateCollector"""
+        if not self._check_vrrp:
+            self._vrrp_state['is_master'] = True
         self.start_process_loop()
 
     def get_process_summary(self):
@@ -39,10 +46,13 @@ class LocalStateCollector:
 
     def get_process_state(self):
         """Get the states of processes"""
-        process_state = None
-        with self._process_lock:
-            process_state = copy.deepcopy(self._process_state)
-        return process_state
+        with self._lock:
+            return copy.deepcopy(self._process_state)
+
+    def get_vrrp_state(self):
+        """Get the local VRRP state"""
+        with self._lock:
+            return copy.deepcopy(self._vrrp_state)
 
     def _get_process_info(self):
         """Get the raw information of processes"""
@@ -140,11 +150,57 @@ class LocalStateCollector:
 
         return proc_map
 
+    def _get_vrrp_info(self):
+        """Get vrrp info"""
+        try:
+            with open('/var/run/keepalived.pid') as pid_file:
+                pid = int(pid_file.readline())
+            os.kill(pid, signal.SIGUSR2)
+            with open('/tmp/keepalived.stats') as stats_file:
+                stats_file.readline()
+                stats = yaml.safe_load(stats_file)
+
+                self._vrrp_state = self._extract_vrrp_state(stats)
+
+        except Exception as e:
+            LOGGER.error("Cannot get VRRF info: %s", e)
+
+    def _extract_vrrp_state(self, stats):
+        """Extract vrrp state from keepalived stats data"""
+        vrrp_map = {'state': constants.STATE_HEALTHY}
+        vrrp_erros = []
+        old_vrrp_map = self._state.get('vrrp', {})
+
+        became_master = int(stats['Became master'])
+        released_master = int(stats['Released master'])
+        vrrp_map['is_master'] = became_master > released_master
+        vrrp_map['is_master_last_update'] = self._current_time
+        if vrrp_map['is_master'] != old_vrrp_map.get('is_master'):
+            vrrp_map['is_master_last_change'] = self._current_time
+            is_master_change_count = old_vrrp_map.get('is_master_change_count', 0) + 1
+            vrrp_map['is_master_change_count'] = is_master_change_count
+
+        for error_type in ['Packet Errors', 'Authentication Errors']:
+            for error_key, error_count in stats.get(error_type, {}).items():
+                if int(error_count) > 0:
+                    vrrp_map['state'] = constants.STATE_BROKEN
+                    vrrp_erros.append(error_key)
+
+        vrrp_map['state_last_update'] = self._current_time
+        if vrrp_map['state'] != old_vrrp_map.get('state'):
+            vrrp_map['state_last_change'] = self._current_time
+            is_master_change_count = old_vrrp_map.get('state_change_count', 0) + 1
+            vrrp_map['state_change_count'] = is_master_change_count
+
+        return vrrp_map
+
     def _periodic_get_process_info(self):
         """Periodically gather the processes info"""
-        with self._process_lock:
+        with self._lock:
             self._current_time = datetime.now().isoformat()
             self._get_process_info()
+            if self._check_vrrp:
+                self._get_vrrp_info()
         threading.Timer(self._process_interval, self._periodic_get_process_info).start()
 
     def start_process_loop(self):

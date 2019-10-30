@@ -1,6 +1,7 @@
 """Various constants for use throuought forch"""
 
 STATE_ACTIVE = 'active'
+STATE_INACTIVE = 'inactive'
 STATE_HEALTHY = 'healthy'
 STATE_DAMAGED = 'damaged'
 STATE_UP = 'up'
