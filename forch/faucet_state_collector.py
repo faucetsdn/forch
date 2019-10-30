@@ -180,7 +180,7 @@ class FaucetStateCollector:
         """returns switch map for topology overview"""
         switch_map = {}
         if not self.switch_states:
-            return None
+            return {}
         with self.lock:
             for switch, switch_state in self.switch_states.items():
                 switch_map[switch] = {}
@@ -307,7 +307,7 @@ class FaucetStateCollector:
             config_obj = self.faucet_config.get(DPS_CFG, {})
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
             if not dps or not config_obj:
-                return None
+                return {}
             for start_dp, dp_obj in config_obj.items():
                 for start_port, iface_obj in dp_obj.get("interfaces", {}).items():
                     peer_dp = iface_obj.get("stack", {}).get("dp")
