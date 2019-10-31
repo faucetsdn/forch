@@ -2,6 +2,7 @@
 
 STATE_ACTIVE = 'active'
 STATE_INACTIVE = 'inactive'
+STATE_SPLIT = 'split'
 STATE_HEALTHY = 'healthy'
 STATE_DAMAGED = 'damaged'
 STATE_UP = 'up'

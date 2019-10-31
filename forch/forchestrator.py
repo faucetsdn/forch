@@ -197,9 +197,19 @@ class Forchestrator:
             detail += '. Faucet disconnected.'
 
         vrrp_state = self._local_collector.get_vrrp_state()
+        peer_controller = self._get_peer_controller_info()[0]
+        cpn_nodes = self._cpn_collector.get_cpn_state().get('cpn_nodes', {})
+        peer_controller_state = cpn_nodes.get(peer_controller, {}).get('state')
+
+        if not peer_controller_state:
+            LOGGER.error('Cannot get peer controller state: %s', peer_controller)
+
         if not vrrp_state.get('is_master'):
             detail = 'This controller is inactive. Please view peer controller.'
             return constants.STATE_INACTIVE, detail
+        if not peer_controller_state == constants.STATE_HEALTHY:
+            detail = 'Lost reachability to peer controller.'
+            return constants.STATE_SPLIT, detail
         if has_error:
             return constants.STATE_BROKEN, detail
         if has_warning:
