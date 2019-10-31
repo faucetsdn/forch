@@ -233,7 +233,8 @@ class Forchestrator:
         """Get the state of the switches"""
         switch = params.get('switch')
         port = params.get('port')
-        reply = self._faucet_collector.get_switch_state(switch, port)
+        host = self._extract_url_base(path)
+        reply = self._faucet_collector.get_switch_state(switch, port, host)
         self._augment_state_reply(reply, path)
         return reply
 

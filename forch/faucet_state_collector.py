@@ -126,7 +126,7 @@ class FaucetStateCollector:
 
     def get_switch_summary(self):
         """Get summary of switch state"""
-        switch_state = self.get_switch_state(None)
+        switch_state = self.get_switch_state(None, None)
         return {
             'state': switch_state['switches_state'],
             'detail': switch_state['switches_state_detail'],
@@ -134,7 +134,7 @@ class FaucetStateCollector:
             'last_change': switch_state['switches_state_last_change']
         }
 
-    def get_switch_state(self, switch, port=None):
+    def get_switch_state(self, switch, port, url_base=None):
         """get a set of all switches"""
         switches_data = {}
         broken = []
@@ -147,6 +147,9 @@ class FaucetStateCollector:
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
             if switch_data[SW_STATE] != constants.STATE_ACTIVE:
                 broken.append(switch_name)
+            if url_base:
+                for mac, mac_data in switch_data.get('access_port_macs', {}).items():
+                    mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
         if not self.switch_states:
             state_detail = 'No switches connected'
@@ -165,6 +168,7 @@ class FaucetStateCollector:
         if switch:
             result['switches'] = {switch: switches_data[switch]}
             result['switches_restrict'] = switch
+
         return result
 
     def _fill_egress_state(self, dplane_state):
