@@ -145,6 +145,7 @@ class Valve:
         self._dump_lag_status_event_sock()
         self._dump_ports_status_event_sock()
         self._dump_learned_hosts_event_sock()
+        self._notify({'CONFIG_CHANGE': {'restart_type': 'reconnect'}})
 
     def _dump_ports_status_event_sock(self):
         port_status = {
