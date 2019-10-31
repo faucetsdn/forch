@@ -143,7 +143,7 @@ class Forchestrator:
             'peer_controller_url': self._get_peer_controller_url(),
             'summary_sources': system_summary,
             'site_name': self._config.get('site', {}).get('name', 'unknown'),
-            'controller_name': self._get_controller_name()
+            'controller_name': self._get_controller_name(),
         }
         overview.update(self._distill_summary(system_summary))
         return overview
@@ -191,6 +191,10 @@ class Forchestrator:
             detail = 'broken subsystems: ' + ', '.join(details)
         else:
             detail = 'n/a'
+
+        if not self._faucet_events.event_socket_connected:
+            has_error = True
+            detail += '. Faucet disconnected.'
 
         vrrp_state = self._local_collector.get_vrrp_state()
         if not vrrp_state.get('is_master'):
