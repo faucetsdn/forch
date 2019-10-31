@@ -156,13 +156,16 @@ class FaucetStateCollector:
 
         if not self.switch_states:
             state_detail = 'No switches connected'
+            switches_state = constants.STATE_BROKEN
         elif broken:
             state_detail = 'Switches in broken state: ' + ', '.join(broken)
+            switches_state = constants.STATE_BROKEN
         else:
             state_detail = ''
+            switches_state = constants.STATE_HEALTHY
 
         result = {
-            'switches_state': constants.STATE_BROKEN if broken else constants.STATE_HEALTHY,
+            'switches_state': switches_state,
             'switches_state_detail': state_detail,
             'switches_state_change_count': change_count,
             'switches_state_last_change': last_change,
