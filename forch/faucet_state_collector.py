@@ -93,6 +93,9 @@ class FaucetStateCollector:
         if broken_links:
             state = constants.STATE_BROKEN
             detail.append("broken links: " + str(broken_links))
+        if dplane_state.get(EGRESS_STATE) == constants.STATE_DOWN:
+            state = constants.STATE_BROKEN
+            detail.append("Egress is down")
         return {
             'state': state,
             'detail': "; ".join(detail),
