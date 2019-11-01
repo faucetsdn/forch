@@ -177,6 +177,12 @@ class FaucetStateCollector:
 
         return result
 
+    def cleanup(self):
+        """Clean up internal data"""
+        self.learned_macs.clear()
+        for switch_data in self.switch_states.values():
+            switch_data.pop(LEARNED_MACS, None)
+
     def _fill_egress_state(self, dplane_state):
         """Return egress state obj"""
         with self.lock:

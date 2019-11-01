@@ -18,7 +18,7 @@ LOGGER = logging.getLogger('localstate')
 class LocalStateCollector:
     """Storing local system states"""
 
-    def __init__(self, config):
+    def __init__(self, config, cleanup_handler):
         self._state = {'processes': {}, 'vrrp': {}}
         self._process_state = self._state['processes']
         self._vrrp_state = self._state['vrrp']
@@ -27,6 +27,7 @@ class LocalStateCollector:
         self._current_time = None
         self._process_interval = int(config.get('scan_interval_sec', 60))
         self._lock = threading.Lock()
+        self._cleanup_handler = cleanup_handler
         LOGGER.info('Scanning %s processes every %ds',
                     len(self._target_procs), self._process_interval)
 
@@ -179,6 +180,8 @@ class LocalStateCollector:
             vrrp_map['is_master_last_change'] = self._current_time
             is_master_change_count = old_vrrp_map.get('is_master_change_count', 0) + 1
             vrrp_map['is_master_change_count'] = is_master_change_count
+            if not vrrp_map['is_master']:
+                self._cleanup_handler()
 
         for error_type in ['Packet Errors', 'Authentication Errors']:
             for error_key, error_count in stats.get(error_type, {}).items():
