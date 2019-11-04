@@ -1,8 +1,10 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
 from datetime import datetime
+import functools
 import logging
 import os
+import sys
 import time
 import yaml
 
@@ -29,14 +31,19 @@ class Forchestrator:
     def __init__(self, config):
         self._config = config
         self._faucet_events = None
-        self._server = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
-        self._faucet_collector = FaucetStateCollector()
-        self._local_collector = LocalStateCollector(config.get('process'), self.cleanup)
-        self._cpn_collector = CPNStateCollector()
+
+        self._faucet_collector = None
+        self._local_collector = None
+        self._cpn_collector = None
+        self._initialized = False
 
     def initialize(self):
         """Initialize forchestrator instance"""
+        self._faucet_collector = FaucetStateCollector()
+        self._local_collector = LocalStateCollector(self._config.get('process'), self.cleanup)
+        self._cpn_collector = CPNStateCollector()
+
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
             self._config.get('event_client', {}))
@@ -44,6 +51,11 @@ class Forchestrator:
         self._local_collector.initialize()
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
+        self._initialized = True
+
+    def initialized(self):
+        """If forch is initialized or not"""
+        return self._initialized
 
     def main_loop(self):
         """Main event processing loop"""
@@ -295,25 +307,53 @@ def load_config():
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
     config_path = os.path.join(config_root, _FCONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
-    with open(config_path, 'r') as stream:
-        return yaml.safe_load(stream)
+    try:
+        with open(config_path, 'r') as stream:
+            return yaml.safe_load(stream)
+    except Exception as e:
+        LOGGER.error('Cannot load config: %s', e)
+        return None
+
+
+def show_error(error, path, params):
+    """Display errors"""
+    return f"Cannot initialize forch: {str(error)}"
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     CONFIG = load_config()
+    if not CONFIG:
+        LOGGER.error('Exiting program')
+        sys.exit(1)
+
     FORCH = Forchestrator(CONFIG)
-    FORCH.initialize()
-    HTTP = forch.http_server.HttpServer(CONFIG.get('http', {}),
-                                        FORCH.get_local_port())
-    HTTP.map_request('system_state', FORCH.get_system_state)
-    HTTP.map_request('dataplane_state', FORCH.get_dataplane_state)
-    HTTP.map_request('switch_state', FORCH.get_switch_state)
-    HTTP.map_request('cpn_state', FORCH.get_cpn_state)
-    HTTP.map_request('process_state', FORCH.get_process_state)
-    HTTP.map_request('host_path', FORCH.get_host_path)
-    HTTP.map_request('list_hosts', FORCH.get_list_hosts)
-    HTTP.map_request('', HTTP.static_file(''))
-    HTTP.start_server()
-    FORCH.main_loop()
+    HTTP = forch.http_server.HttpServer(CONFIG.get('http', {}), FORCH.get_local_port())
+
+    try:
+        FORCH.initialize()
+        HTTP.map_request('system_state', FORCH.get_system_state)
+        HTTP.map_request('dataplane_state', FORCH.get_dataplane_state)
+        HTTP.map_request('switch_state', FORCH.get_switch_state)
+        HTTP.map_request('cpn_state', FORCH.get_cpn_state)
+        HTTP.map_request('process_state', FORCH.get_process_state)
+        HTTP.map_request('host_path', FORCH.get_host_path)
+        HTTP.map_request('list_hosts', FORCH.get_list_hosts)
+        HTTP.map_request('', HTTP.static_file(''))
+    except Exception as e:
+        LOGGER.error("Cannot initialize forch: %s", e)
+        HTTP.map_request('', functools.partial(show_error, e))
+
+    finally:
+        HTTP.start_server()
+
+    if FORCH.initialized():
+        FORCH.main_loop()
+    else:
+        try:
+            HTTP.join_thread()
+        except KeyboardInterrupt:
+            LOGGER.info('Keyboard interrupt. Exiting.')
+
     LOGGER.warning('Exiting program')
     HTTP.stop_server()
