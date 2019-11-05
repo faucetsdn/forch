@@ -145,23 +145,23 @@ class Valve:
         self._dump_lag_status_event_sock()
         self._dump_ports_status_event_sock()
         self._dump_learned_hosts_event_sock()
-        self._notify({'CONFIG_CHANGE': {'restart_type': 'reconnect'}})
+        self.notify({'CONFIG_CHANGE': {'restart_type': 'reconnect'}})
 
     def _dump_ports_status_event_sock(self):
         port_status = {
             str(port.number): (port.running()) for port in self.dp.ports.values()}
-        self._notify({'PORTS_STATUS': port_status})
+        self.notify({'PORTS_STATUS': port_status})
 
     def _dump_dp_of_status_event_sock(self):
         reason = 'cold_start' if self.dp.dyn_running else 'disconnect'
-        self._notify(
+        self.notify(
                 {'DP_CHANGE': {
                     'reason': reason}})
 
     def _dump_lag_status_event_sock(self):
         for port in self.dp.ports.values():
             if port.lacp:
-                self._notify(
+                self.notify(
                         {'LAG_CHANGE': {
                             'port_no': port.number,
                             'status': port.dyn_lacp_up}})
@@ -176,7 +176,7 @@ class Valve:
                 mac_obj['l3_src_ip'] = str(host.l3_src_ip)
                 mac_obj['vid'] = vlan.vid
                 learned_macs.append(mac_obj)
-        self._notify({'L2_LEARNED_MACS': learned_macs})
+        self.notify({'L2_LEARNED_MACS': learned_macs})
 
     def dp_init(self, new_dp=None):
         """Initialize datapath state at connection/re/config time."""
@@ -665,7 +665,7 @@ class Valve:
             for valve in stacked_valves:
                 graph = valve.dp.get_node_link_data()
                 if graph:
-                    self._notify(
+                    self.notify(
                         {'STACK_TOPO_CHANGE': {
                             'stack_root': valve.dp.stack_root_name,
                             'graph': graph,
@@ -970,7 +970,7 @@ class Valve:
 
     def _reset_lacp_status(self, port):
         self._set_var('port_lacp_status', port.dyn_lacp_up, labels=self.dp.port_labels(port.number))
-        self._notify(
+        self.notify(
                 {'LAG_CHANGE': {
                     'port_no': port.number,
                     'status': port.dyn_lacp_up}})
