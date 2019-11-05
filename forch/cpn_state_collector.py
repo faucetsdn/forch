@@ -47,6 +47,7 @@ class CPNStateCollector:
         """Initialize this instance and make it go"""
         cpn_dir_name = os.getenv('FORCH_CONFIG_DIR')
         cpn_file_name = os.path.join(cpn_dir_name, 'cpn.yaml')
+        current_time = datetime.now().isoformat()
         LOGGER.info("Loading CPN config file: %s", cpn_file_name)
         try:
             with open(cpn_file_name) as cpn_file:
@@ -55,15 +56,15 @@ class CPNStateCollector:
 
                 for node, attr_map in cpn_nodes.items():
                     node_state_map = self._node_states.setdefault(node, {})
-                    node_state_map[KEY_NODE_ATTRIBUTES] = copy.copy(attr_map)
+                    node_state_map[KEY_NODE_ATTRIBUTES] = copy.deepcopy(attr_map)
                     self._hosts_ip[node] = attr_map['cpn_ip']
-
-                    self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip)
+            if not self._hosts_ip:
+                raise Exception('No CPN components defined in file')
+            self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip)
+            self._update_cpn_state(current_time, constants.STATE_INITIALIZING, "Initializing")
         except Exception as e:
             self._node_states.clear()
-            self._update_cpn_state(datetime.now().isoformat(), detail=str(e))
-
-        self._update_cpn_state(datetime.now().isoformat(), detail="Initializing")
+            self._update_cpn_state(current_time, constants.STATE_BROKEN, str(e))
 
         if self._ping_manager:
             self._ping_manager.start_loop(self._handle_ping_result)
@@ -153,8 +154,8 @@ class CPNStateCollector:
                 res_summary['rtt_ms'] = dict(zip(['min', 'avg', 'max', 'mdev'], rtt_vals))
         return res_summary
 
-    def _update_cpn_state(self, current_time, detail=None):
-        new_cpn_state, broken = self._get_cpn_state()
+    def _update_cpn_state(self, current_time, state=None, detail=None):
+        new_cpn_state, broken = (state, None) if state else self._get_cpn_state()
 
         if detail:
             use_detail = detail
