@@ -28,6 +28,7 @@ class LocalStateCollector:
         self._process_interval = int(config.get('scan_interval_sec', 60))
         self._lock = threading.Lock()
         self._cleanup_handler = cleanup_handler
+        self._last_error = {}
         LOGGER.info('Scanning %s processes every %ds',
                     len(self._target_procs), self._process_interval)
 
@@ -70,16 +71,17 @@ class LocalStateCollector:
                 continue
             proc_list = procs[target_name]
             target_count = int(target_map.get('count', 1))
-            if len(proc_list) == target_count:
-                state_map.update(self._extract_process_state(target_name, proc_list))
+            state, detail = self._extract_process_state(target_name, target_count, proc_list)
+            state_map['detail'] = detail
+            if state:
                 state_map['state'] = constants.STATE_HEALTHY
-            else:
-                state_map['state'] = 'broken'
-                err_detail = f"Process {target_name}: number of process ({len(proc_list)}) " \
-                             f"does not match target count ({target_count})"
-                state_map['detail'] = err_detail
-                LOGGER.error(err_detail)
-                broken.append(target_name)
+                self._last_error.pop(target_name, None)
+                continue
+            state_map['state'] = 'broken'
+            if detail != self._last_error.get(target_name):
+                LOGGER.error(detail)
+                self._last_error[target_name] = detail
+            broken.append(target_name)
 
         old_state = process_state.get('processes_state')
         state = constants.STATE_BROKEN if broken else constants.STATE_HEALTHY
@@ -106,8 +108,12 @@ class LocalStateCollector:
 
         return procs
 
-    def _extract_process_state(self, proc_name, proc_list):
+    def _extract_process_state(self, proc_name, proc_count, proc_list):
         """Fill process state for a single process"""
+        if len(proc_list) != proc_count:
+            return None, f"Process {proc_name}: number of process ({len(proc_list)}) " \
+                f"does not match target count ({proc_count})"
+
         old_proc_map = self._process_state.get(proc_name, {})
         proc_map = copy.deepcopy(old_proc_map)
 
@@ -122,22 +128,33 @@ class LocalStateCollector:
             create_time_change_count = old_proc_map.get('create_time_change_count', 0) + 1
             proc_map['create_time_change_count'] = create_time_change_count
 
+        error = self._aggregate_process_stats(proc_map, proc_list)
+
+        if error:
+            return None, error
+
+        return proc_map, None
+
+    def _aggregate_process_stats(self, proc_map, proc_list):
         cpu_time_user = 0.0
         cpu_time_system = 0.0
         cpu_time_iowait = None
         memory_rss = 0.0
         memory_vms = 0.0
 
-        for proc in proc_list:
-            cpu_time_user += proc.cpu_times().user
-            cpu_time_system += proc.cpu_times().system
-            if hasattr(proc.cpu_times(), 'iowait'):
-                if not cpu_time_iowait:
-                    cpu_time_iowait = 0.0
-                cpu_time_iowait += proc.cpu_times().iowait
+        try:
+            for proc in proc_list:
+                cpu_time_user += proc.cpu_times().user
+                cpu_time_system += proc.cpu_times().system
+                if hasattr(proc.cpu_times(), 'iowait'):
+                    if not cpu_time_iowait:
+                        cpu_time_iowait = 0.0
+                        cpu_time_iowait += proc.cpu_times().iowait
 
-            memory_rss += proc.memory_info().rss / 1e6
-            memory_vms += proc.memory_info().vms / 1e6
+                        memory_rss += proc.memory_info().rss / 1e6
+                        memory_vms += proc.memory_info().vms / 1e6
+        except Exception as e:
+            return "Error extracting process info: %s" % e
 
         proc_map['cpu_times_s'] = {}
         proc_map['cpu_times_s']['user'] = cpu_time_user / len(proc_list)
@@ -149,7 +166,7 @@ class LocalStateCollector:
         proc_map['memory_info_mb']['rss'] = memory_rss / len(proc_list)
         proc_map['memory_info_mb']['vms'] = memory_vms / len(proc_list)
 
-        return proc_map
+        return None
 
     def _get_vrrp_info(self):
         """Get vrrp info"""

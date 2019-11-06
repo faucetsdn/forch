@@ -167,11 +167,11 @@ class Forchestrator:
             start_time = self._start_time
             summary_values = summaries.values()
             change_counts = list(map(lambda subsystem:
-                                     subsystem.get('change_count', 0), summary_values))
+                                     subsystem.get('change_count') or 0, summary_values))
             last_changes = list(map(lambda subsystem:
-                                    subsystem.get('last_change', start_time), summary_values))
+                                    subsystem.get('last_change') or start_time, summary_values))
             last_updates = list(map(lambda subsystem:
-                                    subsystem.get('last_update', start_time), summary_values))
+                                    subsystem.get('last_update') or start_time, summary_values))
             summary, detail = self._get_combined_summary(summaries)
             system_summary = {
                 'system_state': summary,

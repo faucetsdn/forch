@@ -74,12 +74,9 @@ class FaucetEventClient():
                 return True
             if self.sock and (blocking or self.has_data()):
                 data = self.sock.recv(1024).decode('utf-8')
-                # TODO: recv doesn't block if socket has disconnected
-                # and simply returns empty string. Hence the check.
-                # Need to alter the way disconnection is handled
-                # to reduce CPU cycles in case peer disconnects.
                 if not data:
                     self.disconnect()
+                    time.sleep(1)
                     return False
                 with self._buffer_lock:
                     self.buffer += data
