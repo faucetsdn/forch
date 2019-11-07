@@ -295,8 +295,8 @@ class FaucetStateCollector:
 
         # port dynamics
         if PORT_STATE_UP in port_states:
-            active = port_states[PORT_STATE_UP]
-            port_map[PORT_STATE] = constants.STATE_ACTIVE if active else constants.STATE_DOWN
+            port_up = port_states[PORT_STATE_UP]
+            port_map[PORT_STATE] = constants.STATE_UP if port_up else constants.STATE_DOWN
         else:
             port_map[PORT_STATE] = None
         port_map["state_last_change"] = port_states.get(PORT_STATE_TS)
