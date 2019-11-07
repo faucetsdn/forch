@@ -49,7 +49,7 @@ echo Switching to gmaster branch...
 git checkout gmaster
 
 echo Creating clean clone of master...
-git reset --hard $REPO/master
+git reset --hard LAST_RELEASE
 echo `git rev-parse HEAD` master >> $VTEMP
 
 echo Merging feature branches...
@@ -65,4 +65,4 @@ git add $VFILE
 git commit -m "Adding version history"
 
 echo Done with clean gmaster merge.
-echo You will likely need to force push.
+echo Now time to validate and push!
