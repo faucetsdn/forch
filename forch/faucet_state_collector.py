@@ -508,7 +508,7 @@ class FaucetStateCollector:
             if new_state != old_state:
                 LOGGER.info('lag_state %s, %s -> %s', name, old_state, new_state)
                 egress_state[EGRESS_STATE] = new_state
-                egress_state[EGRESS_DETAIL] = port if state else None
+                egress_state[EGRESS_DETAIL] = name if state else None
                 egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 egress_state[EGRESS_CHANGE_COUNT] = egress_state.get(EGRESS_CHANGE_COUNT, 0) + 1
 
