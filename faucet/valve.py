@@ -911,17 +911,29 @@ class Valve:
         """Return flow messages that delete port from pipeline."""
         return self.ports_delete([port_num])
 
-    def _reset_lacp_status(self, port):
-        self._set_var('port_lacp_status', port.dyn_lacp_up, labels=self.dp.port_labels(port.number))
+    def _lacp_port_state(self, port):
+        return port.dyn_lacp_up if port.dyn_last_lacp_pkt else -1
 
-    def lacp_down(self, port, cold_start=False):
+    def _reset_lacp_status(self, port):
+        lacp_present = 1 if port.dyn_last_lacp_pkt else 0
+        self._set_var('port_lacp_status', port.dyn_lacp_up, labels=self.dp.port_labels(port.number))
+        self._set_var('port_lacp_present', lacp_present, labels=self.dp.port_labels(port.number))
+        self.notify(
+                {'LAG_CHANGE': {
+                    'port_no': port.number,
+                    'present': lacp_present,
+                    'status': port.dyn_lacp_up}})
+
+    def lacp_down(self, port, cold_start=False, from_lacp_pkt=False):
         """Return OpenFlow messages when LACP is down on a port."""
         ofmsgs = []
-        if port.dyn_lacp_up != 0:
-            self.logger.info('LAG %u %s down (previous state %s)' % (
-                port.lacp, port, port.dyn_lacp_up))
+        prev_state = self._lacp_port_state(port)
+        new_state = 0 if from_lacp_pkt else -1
+        if prev_state != new_state:
+            state_name = 'inactive' if from_lacp_pkt else 'down'
+            self.logger.info('LAG %u %s %s (previous state %s)' % (
+                port.lacp, port, state_name, prev_state))
         port.dyn_lacp_up = 0
-        port.dyn_last_lacp_pkt = None
         port.dyn_lacp_updated_time = None
         port.dyn_lacp_last_resp_time = None
         if not cold_start:
@@ -946,9 +958,10 @@ class Valve:
         """Return OpenFlow messages when LACP is up on a port."""
         vlan_table = self.dp.tables['vlan']
         ofmsgs = []
-        if port.dyn_lacp_up != 1:
+        prev_state = self._lacp_port_state(port)
+        if prev_state != 1:
             self.logger.info('LAG %u %s up (previous state %s)' % (
-                port.lacp, port, port.dyn_lacp_up))
+                port.lacp, port, prev_state))
         port.dyn_lacp_up = 1
         # Only enable learning if this bundle is selected for forwarding.
         # E.g. non stack or root of stack.
@@ -1025,21 +1038,20 @@ class Valve:
                 if pkt_meta.port.dyn_lacp_last_resp_time:
                     age = now - pkt_meta.port.dyn_lacp_last_resp_time
                 actor_up = valve_packet.lacp_actor_up(lacp_pkt)
-                lacp_state_change = pkt_meta.port.dyn_lacp_up != actor_up
-                lacp_pkt_change = (
-                    pkt_meta.port.dyn_last_lacp_pkt is None or
-                    str(lacp_pkt) != str(pkt_meta.port.dyn_last_lacp_pkt))
-                if lacp_state_change:
+                prev_state = self._lacp_port_state(pkt_meta.port)
+                if prev_state != actor_up:
                     self.logger.info(
                         'remote LACP state change from %s to %s from %s LAG %u (%s)' % (
-                            pkt_meta.port.dyn_lacp_up, actor_up,
-                            lacp_pkt.actor_system, pkt_meta.port.lacp,
+                            prev_state, actor_up, lacp_pkt.actor_system, pkt_meta.port.lacp,
                             pkt_meta.log()))
                     if actor_up:
                         ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port))
                     else:
-                        ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port))
+                        ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, from_lacp_pkt=True))
                 lacp_resp_interval = pkt_meta.port.lacp_resp_interval
+                lacp_pkt_change = (
+                    pkt_meta.port.dyn_last_lacp_pkt is None or
+                    str(lacp_pkt) != str(pkt_meta.port.dyn_last_lacp_pkt))
                 if lacp_pkt_change or (age is not None and age > lacp_resp_interval):
                     ofmsgs_by_valve[self].extend(self._lacp_actions(lacp_pkt, pkt_meta.port))
                     pkt_meta.port.dyn_lacp_last_resp_time = now

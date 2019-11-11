@@ -148,6 +148,10 @@ class FaucetMetrics(PromClient):
             'port_lacp_status',
             'status of LACP on port',
             self.PORT_REQUIRED_LABELS)
+        self.port_lacp_present = self._gauge(
+            'port_lacp_present',
+            'presence of LACP on port',
+            self.PORT_REQUIRED_LABELS)
         self.dp_status = self._dpid_gauge(
             'dp_status',
             'status of datapaths')
