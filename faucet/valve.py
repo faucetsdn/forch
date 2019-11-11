@@ -34,7 +34,7 @@ from faucet import valve_util
 from faucet import valve_pipeline
 
 from faucet.vlan import NullVLAN, OFVLAN
-
+from port import LACP_STATE_INIT, LACP_STATE_UP, LACP_STATE_NOACT
 
 class ValveLogger:
     """Logger for a Valve that adds DP ID."""
@@ -911,24 +911,19 @@ class Valve:
         """Return flow messages that delete port from pipeline."""
         return self.ports_delete([port_num])
 
-    def _lacp_port_state(self, port):
-        return port.dyn_lacp_up if port.dyn_last_lacp_pkt else -1
-
     def _reset_lacp_status(self, port):
-        lacp_present = 1 if port.dyn_last_lacp_pkt else 0
-        self._set_var('port_lacp_status', port.dyn_lacp_up, labels=self.dp.port_labels(port.number))
-        self._set_var('port_lacp_present', lacp_present, labels=self.dp.port_labels(port.number))
+        lacp_state = port.lacp_state()
+        self._set_var('port_lacp_state', lacp_state, labels=self.dp.port_labels(port.number))
         self.notify(
                 {'LAG_CHANGE': {
                     'port_no': port.number,
-                    'present': lacp_present,
-                    'status': port.dyn_lacp_up}})
+                    'state': lacp_state}})
 
     def lacp_down(self, port, cold_start=False, from_lacp_pkt=False):
         """Return OpenFlow messages when LACP is down on a port."""
         ofmsgs = []
-        prev_state = self._lacp_port_state(port)
-        new_state = 0 if from_lacp_pkt else -1
+        prev_state = port.lacp_state()
+        new_state = LACP_STATE_NOACT if from_lacp_pkt else LACP_STATE_INIT
         if prev_state != new_state:
             state_name = 'inactive' if from_lacp_pkt else 'down'
             self.logger.info('LAG %u %s %s (previous state %s)' % (
@@ -958,8 +953,8 @@ class Valve:
         """Return OpenFlow messages when LACP is up on a port."""
         vlan_table = self.dp.tables['vlan']
         ofmsgs = []
-        prev_state = self._lacp_port_state(port)
-        if prev_state != 1:
+        prev_state = port.lacp_state()
+        if prev_state != LACP_STATE_UP:
             self.logger.info('LAG %u %s up (previous state %s)' % (
                 port.lacp, port, prev_state))
         port.dyn_lacp_up = 1

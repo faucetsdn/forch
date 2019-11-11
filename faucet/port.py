@@ -25,6 +25,10 @@ STACK_STATE_INIT = 1
 STACK_STATE_DOWN = 2
 STACK_STATE_UP = 3
 
+LACP_STATE_NONE = 0
+LACP_STATE_INIT = 1
+LACP_STATE_UP = 2
+LACP_STATE_NOACT = 3
 
 class Port(Conf):
     """Stores state for ports, including the configuration."""
@@ -418,3 +422,10 @@ class Port(Conf):
     def stack_init(self):
         """Change the current stack state to INIT_DOWN."""
         self.dyn_stack_current_state = STACK_STATE_INIT
+
+    def lacp_state(self):
+        if not self.lacp:
+            return LACP_STATE_NONE
+        if not self.dyn_last_lacp_pkt:
+            return LACP_STATE_INIT
+        return LACP_STATE_UP if self.dyn_lacp_up else LACP_STATE_NOACT
