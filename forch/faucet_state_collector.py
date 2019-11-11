@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import logging
 import time
+import threading
 from threading import RLock
 
 import forch.constants as constants
@@ -78,11 +79,31 @@ class FaucetStateCollector:
         self.learned_macs = {}
         self.faucet_config = {}
         self.lock = RLock()
+        self._active_lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
+        self._is_active = False
 
+    def set_active(self, is_active):
+        """Set active state"""
+        with self._active_lock:
+            self._is_active = is_active
+
+    # pylint: disable=no-self-argument, protected-access
+    def _check_active(state_name):
+        def check_active(func):
+            def wrapped(self, *args, **kwargs):
+                with self._active_lock:
+                    if not self._is_active:
+                        detail = 'This controller is inactive. Please view peer controller.'
+                        return {state_name: constants.STATE_INACTIVE, 'detail': detail}
+                return func(self, *args, **kwargs)
+            return wrapped
+        return check_active
+
+    @_check_active(state_name='state')
     def get_dataplane_summary(self):
         """Get summary of dataplane"""
-        dplane_state = self.get_dataplane_state()
+        dplane_state = self._get_dataplane_state()
         state, detail, count, last = self._get_dataplane_detail(dplane_state)
         return {
             'state': state,
@@ -119,8 +140,13 @@ class FaucetStateCollector:
 
         return state, "; ".join(detail), egress_count, egress_last
 
+    @_check_active(state_name='dataplane_state')
     def get_dataplane_state(self):
         """get the topology state"""
+        return self._get_dataplane_state()
+
+    def _get_dataplane_state(self):
+        """get the topology state impl"""
         dplane_state = {}
         switch_state = dplane_state.setdefault('switch', {})
         switch_state[TOPOLOGY_DP_MAP] = self._get_switch_map()
@@ -151,9 +177,10 @@ class FaucetStateCollector:
                 broken_links.append(link)
         return broken_links
 
+    @_check_active(state_name='state')
     def get_switch_summary(self):
         """Get summary of switch state"""
-        switch_state = self.get_switch_state(None, None)
+        switch_state = self._get_switch_state(None, None)
         return {
             'state': switch_state['switches_state'],
             'detail': switch_state['switches_state_detail'],
@@ -166,8 +193,13 @@ class FaucetStateCollector:
             for mac, mac_data in switch_data.get('access_port_macs', {}).items():
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
+    @_check_active(state_name='switch_state')
     def get_switch_state(self, switch, port, url_base=None):
         """get a set of all switches"""
+        return self._get_switch_state(switch, port, url_base)
+
+    def _get_switch_state(self, switch, port, url_base=None):
+        """Get switch state impl"""
         switches_data = {}
         broken = []
         change_count = 0
@@ -207,9 +239,10 @@ class FaucetStateCollector:
 
     def cleanup(self):
         """Clean up internal data"""
-        self.learned_macs.clear()
-        for switch_data in self.switch_states.values():
-            switch_data.pop(LEARNED_MACS, None)
+        with self.lock:
+            self.learned_macs.clear()
+            for switch_data in self.switch_states.values():
+                switch_data.get(LEARNED_MACS, set()).clear()
 
     def _fill_egress_state(self, dplane_state):
         """Return egress state obj"""
@@ -439,9 +472,9 @@ class FaucetStateCollector:
                 hop = next_hop
         return res
 
+    @_check_active(state_name='host_path_state')
     def get_host_path(self, src_mac, dst_mac, to_egress):
         """Given two MAC addresses in the core network, find the active path between them"""
-
         if not src_mac:
             return {'error': 'Empty eth_src. Please use list_hosts to get a list of hosts'}
         if not dst_mac and not to_egress:
@@ -625,14 +658,17 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
+    @_check_active(state_name='state')
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
-        num_hosts = len(self.learned_macs)
+        with self.lock:
+            num_hosts = len(self.learned_macs)
         return {
             'state': constants.STATE_HEALTHY,
             'detail': f'{num_hosts} learned host MACs'
         }
 
+    @_check_active(state_name='hosts_list_state')
     def get_list_hosts(self, url_base, src_mac):
         """Get access devices"""
         host_macs = {}

@@ -18,7 +18,7 @@ LOGGER = logging.getLogger('localstate')
 class LocalStateCollector:
     """Storing local system states"""
 
-    def __init__(self, config, cleanup_handler):
+    def __init__(self, config, cleanup_handler, active_state_handler):
         self._state = {'processes': {}, 'vrrp': {}}
         self._process_state = self._state['processes']
         self._vrrp_state = self._state['vrrp']
@@ -28,6 +28,7 @@ class LocalStateCollector:
         self._process_interval = int(config.get('scan_interval_sec', 60))
         self._lock = threading.Lock()
         self._cleanup_handler = cleanup_handler
+        self._active_state_handler = active_state_handler
         self._last_error = {}
         LOGGER.info('Scanning %s processes every %ds',
                     len(self._target_procs), self._process_interval)
@@ -36,6 +37,8 @@ class LocalStateCollector:
         """Initialize LocalStateCollector"""
         if not self._check_vrrp:
             self._vrrp_state['is_master'] = True
+            self._active_state_handler(True)
+
         self.start_process_loop()
 
     def get_process_summary(self):
@@ -179,9 +182,10 @@ class LocalStateCollector:
                 stats = yaml.safe_load(stats_file)
 
                 self._vrrp_state = self._extract_vrrp_state(stats)
+                self._active_state_handler(self._vrrp_state['is_master'])
 
         except Exception as e:
-            LOGGER.error("Cannot get VRRF info: %s", e)
+            LOGGER.error("Cannot get VRRP info: %s", e)
 
     def _extract_vrrp_state(self, stats):
         """Extract vrrp state from keepalived stats data"""
