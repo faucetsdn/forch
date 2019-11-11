@@ -385,6 +385,13 @@ class Port(Conf):
         """Return True if LLDP beacon enabled on this port."""
         return self.lldp_beacon and self.lldp_beacon.get('enable', False)
 
+    def lacp_state(self):
+        if not self.lacp:
+            return LACP_STATE_NONE
+        if not self.dyn_last_lacp_pkt:
+            return LACP_STATE_INIT
+        return LACP_STATE_UP if self.dyn_lacp_up else LACP_STATE_NOACT
+
     def mirror_actions(self):
         """Return OF actions to mirror this port."""
         if self.mirror is not None:
@@ -422,10 +429,3 @@ class Port(Conf):
     def stack_init(self):
         """Change the current stack state to INIT_DOWN."""
         self.dyn_stack_current_state = STACK_STATE_INIT
-
-    def lacp_state(self):
-        if not self.lacp:
-            return LACP_STATE_NONE
-        if not self.dyn_last_lacp_pkt:
-            return LACP_STATE_INIT
-        return LACP_STATE_UP if self.dyn_lacp_up else LACP_STATE_NOACT
