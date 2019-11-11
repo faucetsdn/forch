@@ -279,7 +279,7 @@ class Forchestrator:
         """Handler for local state collector to handle vrrp state"""
         with self._active_state_lock:
             self._is_active = is_master
-            self._faucet_collector.set_active(is_master)
+        self._faucet_collector.set_active(is_master)
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""

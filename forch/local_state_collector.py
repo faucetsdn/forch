@@ -63,13 +63,14 @@ class LocalStateCollector:
         """Get the raw information of processes"""
 
         process_state = self._process_state
+        process_map = {}
         procs = self._get_target_processes()
         broken = []
 
         # fill up process info
         for target_name, target_map in self._target_procs.items():
             state_map = {}
-            process_state[target_name] = state_map
+            process_map[target_name] = state_map
             if target_name not in procs:
                 continue
             proc_list = procs[target_name]
@@ -78,6 +79,7 @@ class LocalStateCollector:
             state_map['detail'] = detail
             if state:
                 state_map['state'] = constants.STATE_HEALTHY
+                state_map.update(state)
                 self._last_error.pop(target_name, None)
                 continue
             state_map['state'] = 'broken'
@@ -85,6 +87,8 @@ class LocalStateCollector:
                 LOGGER.error(detail)
                 self._last_error[target_name] = detail
             broken.append(target_name)
+
+        process_state['processes'] = process_map
 
         old_state = process_state.get('processes_state')
         state = constants.STATE_BROKEN if broken else constants.STATE_HEALTHY
@@ -154,8 +158,8 @@ class LocalStateCollector:
                         cpu_time_iowait = 0.0
                         cpu_time_iowait += proc.cpu_times().iowait
 
-                        memory_rss += proc.memory_info().rss / 1e6
-                        memory_vms += proc.memory_info().vms / 1e6
+                memory_rss += proc.memory_info().rss / 1e6
+                memory_vms += proc.memory_info().vms / 1e6
         except Exception as e:
             return "Error extracting process info: %s" % e
 
