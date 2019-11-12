@@ -146,7 +146,7 @@ class FaucetMetrics(PromClient):
             self.PORT_REQUIRED_LABELS)
         self.port_lacp_state = self._gauge(
             'port_lacp_state',
-            'state of LACP on port',
+            'state of LACP on a port',
             self.PORT_REQUIRED_LABELS)
         self.dp_status = self._dpid_gauge(
             'dp_status',
