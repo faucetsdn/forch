@@ -535,6 +535,10 @@ class FaucetStateCollector:
         """process lag change event"""
         with self.lock:
             egress_state = self.topo_state.setdefault('egress', {})
+            old_egress_name = egress_state.get(EGRESS_DETAIL)
+            if old_egress_name and old_egress_name != name and not state:
+                return
+
             egress_state[EGRESS_LAST_UPDATE] = datetime.fromtimestamp(timestamp).isoformat()
             old_state = egress_state.get(EGRESS_STATE)
             new_state = constants.STATE_UP if state else constants.STATE_DOWN
