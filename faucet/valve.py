@@ -34,7 +34,7 @@ from faucet import valve_util
 from faucet import valve_pipeline
 
 from faucet.vlan import NullVLAN, OFVLAN
-from port import LACP_STATE_INIT, LACP_STATE_UP, LACP_STATE_NOACT
+from faucet.port import LACP_STATE_INIT, LACP_STATE_UP, LACP_STATE_NOACT
 
 class ValveLogger:
     """Logger for a Valve that adds DP ID."""
