@@ -1035,6 +1035,7 @@ class Valve:
                 actor_up = valve_packet.lacp_actor_up(lacp_pkt)
                 prev_state = pkt_meta.port.lacp_state()
                 new_state = LACP_STATE_UP if actor_up else LACP_STATE_NOACT
+                print(pkt_meta.port, prev_state, new_state)
                 if prev_state != new_state:
                     self.logger.info(
                         'remote LACP state change from %s to %s from %s LAG %u (%s)' % (
