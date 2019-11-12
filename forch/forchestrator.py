@@ -66,7 +66,11 @@ class Forchestrator:
         LOGGER.info('Entering main event loop...')
         try:
             while self._handle_faucet_events():
-                pass
+                while not self._faucet_events.event_socket_connected:
+                    LOGGER.info('Attempting to reconnect...')
+                    # TODO: Figure out reasonable time delay before each reconnection attempt
+                    time.sleep(1)
+                    self._faucet_events.connect()
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
