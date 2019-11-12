@@ -1033,7 +1033,7 @@ class Valve:
                 if pkt_meta.port.dyn_lacp_last_resp_time:
                     age = now - pkt_meta.port.dyn_lacp_last_resp_time
                 actor_up = valve_packet.lacp_actor_up(lacp_pkt)
-                prev_state = self._lacp_port_state(pkt_meta.port)
+                prev_state = pkt_meta.port.lacp_state()
                 if prev_state != actor_up:
                     self.logger.info(
                         'remote LACP state change from %s to %s from %s LAG %u (%s)' % (
