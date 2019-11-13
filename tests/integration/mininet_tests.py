@@ -3909,6 +3909,7 @@ details partner lacp pdu:
                 if prom_lag_state() == status:
                     break
                 time.sleep(1)
+            print('require_lag_status', prom_lag_state(), status)
             self.assertEqual(prom_lag_state(), status)
 
         def require_linux_bond_up():
