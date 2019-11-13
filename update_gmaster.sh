@@ -50,10 +50,10 @@ git checkout gmaster
 
 echo Creating clean clone of master...
 git reset --hard LAST_RELEASE
-echo `git rev-parse HEAD` master >> $VTEMP
+echo `git rev-parse HEAD` LAST_RELEASE >> $VTEMP
 
 echo Merging feature branches...
-for branch in $BRANCHES; do
+for branch in master $BRANCHES; do
     echo Merging $REPO/$branch...
     git merge --no-edit $REPO/$branch
     echo `git rev-parse $REPO/$branch` $branch >> $VTEMP
