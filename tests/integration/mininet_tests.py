@@ -3896,7 +3896,7 @@ details partner lacp pdu:
 
         lacp_timeout = 5
 
-        def prom_lag_status():
+        def prom_lag_state():
             lacp_up_ports = 0
             for lacp_port in lag_ports:
                 port_labels = self.port_labels(self.port_map['port_%u' % lacp_port])
@@ -3906,10 +3906,10 @@ details partner lacp pdu:
 
         def require_lag_status(status):
             for _ in range(lacp_timeout*10):
-                if prom_lag_status() == status:
+                if prom_lag_state() == status:
                     break
                 time.sleep(1)
-            self.assertEqual(prom_lag_status(), status)
+            self.assertEqual(prom_lag_state(), status)
 
         def require_linux_bond_up():
             for _retries in range(lacp_timeout*2):
@@ -3928,7 +3928,7 @@ details partner lacp pdu:
         # Start with ports down.
         for port in lag_ports:
             self.set_port_down(self.port_map['port_%u' % port])
-        self.assertEqual(0, prom_lag_status())
+        self.assertEqual(2, prom_lag_state())
         orig_ip = first_host.IP()
         switch = self.first_switch()
         bond_members = [pair[0].name for pair in first_host.connectionsTo(switch)]
