@@ -1035,7 +1035,15 @@ class Valve:
                 actor_up = valve_packet.lacp_actor_up(lacp_pkt)
                 prev_state = pkt_meta.port.lacp_state()
                 new_state = LACP_STATE_UP if actor_up else LACP_STATE_NOACT
-                print(pkt_meta.port, prev_state, new_state)
+                lacp_pkt_change = (
+                    pkt_meta.port.dyn_last_lacp_pkt is None or
+                    str(lacp_pkt) != str(pkt_meta.port.dyn_last_lacp_pkt))
+                pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
+                pkt_meta.port.dyn_lacp_updated_time = now
+                lacp_resp_interval = pkt_meta.port.lacp_resp_interval
+                if lacp_pkt_change or (age is not None and age > lacp_resp_interval):
+                    ofmsgs_by_valve[self].extend(self._lacp_actions(lacp_pkt, pkt_meta.port))
+                    pkt_meta.port.dyn_lacp_last_resp_time = now
                 if prev_state != new_state:
                     self.logger.info(
                         'remote LACP state change from %s to %s from %s LAG %u (%s)' % (
@@ -1045,15 +1053,6 @@ class Valve:
                         ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port))
                     else:
                         ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, from_lacp_pkt=True))
-                lacp_resp_interval = pkt_meta.port.lacp_resp_interval
-                lacp_pkt_change = (
-                    pkt_meta.port.dyn_last_lacp_pkt is None or
-                    str(lacp_pkt) != str(pkt_meta.port.dyn_last_lacp_pkt))
-                if lacp_pkt_change or (age is not None and age > lacp_resp_interval):
-                    ofmsgs_by_valve[self].extend(self._lacp_actions(lacp_pkt, pkt_meta.port))
-                    pkt_meta.port.dyn_lacp_last_resp_time = now
-                pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
-                pkt_meta.port.dyn_lacp_updated_time = now
                 other_lag_ports = [
                     port for port in self.dp.ports.values()
                     if port.lacp == pkt_meta.port.lacp and port.dyn_last_lacp_pkt]
@@ -1065,6 +1064,10 @@ class Valve:
                             'LACP actor system mismatch %s: %s, %s %s' % (
                                 pkt_meta.port, actor_system,
                                 other_lag_port, other_actor_system))
+                updated_state = pkt_meta.port.lacp_state()
+                assert updated_state is new_state, (
+                    'Updated state %d not as expected new state %d' % (updated_state, new_state))
+
         return ofmsgs_by_valve
 
     def _verify_stack_lldp(self, port, now, other_valves,
@@ -1542,6 +1545,7 @@ class Valve:
         for lag, ports_up in self.dp.lags_up().items():
             for port in ports_up:
                 lacp_age = now - port.dyn_lacp_updated_time
+                port.dyn_last_lacp_pkt = None
                 if lacp_age > self.dp.lacp_timeout:
                     self.logger.info('LACP %s on %s expired (age %u)' % (lag, port, lacp_age))
                     ofmsgs_by_valve[self].extend(self.lacp_down(port))
