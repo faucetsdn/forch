@@ -7434,11 +7434,14 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
                 labels=labels, dpid=False, timeout=timeout):
             self.fail('wanted LACP state for %s to be %u' % (labels, wanted_state))
 
-    def wait_for_lacp_port_down(self, port_no, dpid, dp_name):
-        self.wait_for_lacp_state(port_no, 0, dpid, dp_name)
+    def wait_for_lacp_port_init(self, port_no, dpid, dp_name):
+        self.wait_for_lacp_state(port_no, 1, dpid, dp_name)
 
     def wait_for_lacp_port_up(self, port_no, dpid, dp_name):
         self.wait_for_lacp_state(port_no, 2, dpid, dp_name)
+
+    def wait_for_lacp_port_noact(self, port_no, dpid, dp_name):
+        self.wait_for_lacp_state(port_no, 3, dpid, dp_name)
 
     # We sort non_host_links by port because FAUCET sorts its ports
     # and only floods out of the first active LACP port in that list
@@ -7469,9 +7472,9 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
             other_local_lacp_port = list(local_ports - {local_lacp_port})[0]
             other_remote_lacp_port = list(remote_ports - {remote_lacp_port})[0]
             self.set_port_down(local_lacp_port, wait=False)
-            self.wait_for_lacp_port_down(
+            self.wait_for_lacp_port_init(
                 local_lacp_port, self.dpid, self.DP_NAME)
-            self.wait_for_lacp_port_down(
+            self.wait_for_lacp_port_init(
                 remote_lacp_port, self.dpids[1], 'faucet-2')
             self.wait_until_matching_flow(
                 self.match_bcast, self._FLOOD_TABLE, actions=[
@@ -7506,7 +7509,7 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.reload_conf(conf, self.faucet_config_path, restart=True,
                          cold_start=False, change_expected=False)
 
-        self.wait_for_lacp_port_down(src_port, self.dpids[0], 'faucet-1')
+        self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
 
     def test_passthrough(self):
@@ -7536,9 +7539,9 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.reload_conf(conf, self.faucet_config_path, restart=True,
                          cold_start=False, change_expected=False)
 
-        self.wait_for_lacp_port_down(src_port, self.dpids[0], 'faucet-1')
+        self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
-        self.wait_for_lacp_port_down(end_port, self.dpids[1], 'faucet-2')
+        self.wait_for_lacp_port_noact(end_port, self.dpids[1], 'faucet-2')
 
 
 class FaucetStackStringOfDPUntaggedTest(FaucetStringOfDPTest):
