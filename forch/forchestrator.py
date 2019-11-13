@@ -348,8 +348,14 @@ def show_error(error, path, params):
     return f"Cannot initialize forch: {str(error)}"
 
 
+def get_log_path():
+    """Get path for logging"""
+    forch_log_dir = os.getenv('FORCH_LOG_DIR', '/var/log/faucet')
+    return os.path.join(forch_log_dir, 'forch.log')
+
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(filename=get_log_path(), level=logging.INFO)
     CONFIG = load_config()
     if not CONFIG:
         LOGGER.error('Exiting program')

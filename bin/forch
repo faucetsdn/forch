@@ -22,6 +22,7 @@ sudo \
     FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK} \
     FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet} \
     FORCH_RUN_DIR=${FORCH_RUN_DIR:-/var/run/faucet} \
+    FORCH_LOG_DIR=${FORCH_LOG_DIR:-/var/log/faucet} \
     CONTROLLER_NAME=$CONTROLLER_NAME \
     PYTHONPATH=$PYTHONPATH \
     $PYTHON -m forch.forchestrator
