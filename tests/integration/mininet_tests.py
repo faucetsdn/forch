@@ -7438,7 +7438,7 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.wait_for_lacp_state(port_no, 0, dpid, dp_name)
 
     def wait_for_lacp_port_up(self, port_no, dpid, dp_name):
-        self.wait_for_lacp_state(port_no, 1, dpid, dp_name)
+        self.wait_for_lacp_state(port_no, 2, dpid, dp_name)
 
     # We sort non_host_links by port because FAUCET sorts its ports
     # and only floods out of the first active LACP port in that list
