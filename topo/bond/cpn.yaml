@@ -1,0 +1,31 @@
+cpn_nodes:
+    nz-kiwi-ctl1:
+        cpn_ip: 240.0.0.253
+        role: controller
+        vendor: Dell
+        model: RS300
+    nz-kiwi-t1sw1:
+        cpn_ip: 127.0.0.1
+        role: dist
+        vendor: NoviSwitch
+        model: NS-2128
+    nz-kiwi-t1sw2:
+        cpn_ip: 127.0.0.1
+        role: dist
+        vendor: NoviSwitch
+        model: NS-2128
+    nz-kiwi-t2sw1:
+        cpn_ip: 127.0.0.1
+        role: access
+        vendor: Cisco
+        model: C9300-48P
+    nz-kiwi-t2sw2:
+        cpn_ip: 240.0.0.1
+        role: access
+        vendor: Cisco
+        model: C9300-48P
+    nz-kiwi-t2sw3:
+        cpn_ip: 240.0.0.2
+        role: access
+        vendor: Cisco
+        model: C9300-48P

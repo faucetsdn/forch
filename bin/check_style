@@ -3,7 +3,7 @@
 ROOT=$(realpath $(dirname $0)/..)
 RESULTS=build/lint_results.txt
 PYLINTRC=$ROOT/.pylintrc
-VENV_PYTHON=venv/lib/python3.6/site-packages/
+VENV_PYTHON=venv/lib/python3.7/site-packages/
 
 cd $ROOT
 mkdir -p build
@@ -13,10 +13,13 @@ export PYTHONPATH=forch:$VENV_PYTHON
 if [ -d venv ]; then
     source venv/bin/activate
     if [ ! -d $VENV_PYTHON ]; then
-        echo Missing python env directory.
+        echo Missing expected python env directory $VENV_PYTHON
+        ls -ld venv/lib/python*
         false
     fi
 fi
+
+pip3 freeze
 
 which pylint
 pylint --version

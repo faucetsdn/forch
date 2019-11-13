@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+sudo apt-get install openvswitch-switch
+
+python3 -m venv venv
+
+source venv/bin/activate
+
+pip install -r etc/requirements.txt

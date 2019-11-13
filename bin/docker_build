@@ -1,0 +1,38 @@
+#!/bin/bash -e
+
+FAUCET_REPO=https://github.com/grafnu/faucet.git
+FAUCET_HASH=$(cat etc/FAUCET_VERSION)
+
+docker rmi forch/faux forch/faucet forch/gauge || true
+images=$(docker images | fgrep forch/ | wc -l)
+if [ $images != 0 ]; then
+    echo Unexpected forch/ images found:
+    docker images | fgrep forch/
+fi
+
+echo Building faux...
+docker build -t forch/faux -f etc/Dockerfile.faux . &
+
+if [ -d faucet ]; then
+    echo Faucet already exists. Not cloning.
+else
+    echo Cloning faucet locally...
+    git clone $FAUCET_REPO faucet
+    (cd faucet; git checkout $FAUCET_HASH)
+fi
+
+echo Building faucet and gauge...
+docker build -t forch/faucet -f etc/Dockerfile.faucet . &
+docker build -t forch/gauge -f etc/Dockerfile.gauge . &
+
+echo Waiting for builds to complete.
+wait
+
+images=$(docker images | fgrep forch/ | wc -l)
+if [ $images != 3 ]; then
+    echo Did not find expected 3 forch images:
+    docker images | fgrep forch/
+    false
+fi
+
+echo Done with successful docker build.

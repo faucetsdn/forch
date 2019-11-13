@@ -19,7 +19,6 @@ from forch.local_state_collector import LocalStateCollector
 
 LOGGER = logging.getLogger('forch')
 
-
 _FCONFIG_DEFAULT = 'forch.yaml'
 _DEFAULT_PORT = 9019
 
@@ -350,7 +349,7 @@ def show_error(error, path, params):
 
 def get_log_path():
     """Get path for logging"""
-    forch_log_dir = os.getenv('FORCH_LOG_DIR', '/var/log/faucet')
+    forch_log_dir = os.getenv('FORCH_LOG_DIR')
     return os.path.join(forch_log_dir, 'forch.log')
 
 
@@ -358,7 +357,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename=get_log_path(), level=logging.INFO)
     CONFIG = load_config()
     if not CONFIG:
-        LOGGER.error('Exiting program')
+        LOGGER.error('Invalid config, exiting.')
         sys.exit(1)
 
     FORCH = Forchestrator(CONFIG)
@@ -377,7 +376,6 @@ if __name__ == '__main__':
     except Exception as e:
         LOGGER.error("Cannot initialize forch: %s", e)
         HTTP.map_request('', functools.partial(show_error, e))
-
     finally:
         HTTP.start_server()
 

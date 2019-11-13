@@ -1,16 +1,18 @@
-sudo: required
 dist: bionic
+sudo: required
 language: python
 python:
   - "3.7"
+cach:
+  pip: true
 addons:
   apt:
     update: true
 install:
-  - pip3 install -r etc/requirements.txt
+  - bin/setup_base
 script:
   - set -e
   - bin/check_style
-branches:
-  except:
-  - /^release-\d+\.\d+(\.\d+)?$/
+  - bin/docker_build
+  - bin/setup_stack local
+  - sudo bin/test_stack

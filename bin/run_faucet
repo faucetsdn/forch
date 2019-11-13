@@ -1,0 +1,80 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+CONTAINER=forch-faucet
+INSTDIR=$ROOT/inst
+IMAGE=forch/faucet
+FAUCET_SOCK=faucet_event.sock
+SYSTEM_CONF=system.conf
+LOCAL_CONFIG=local/$SYSTEM_CONF
+
+ext_ofpt=6653
+gauge_pt=6654
+prom_pt=
+docker_volumes=
+port_opts=
+
+cd $ROOT
+
+if [ "$1" == "local" ]; then
+    docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
+    shift
+fi
+
+if [ "$1" == "gauge" ]; then
+    CONTAINER=forch-gauge
+    IMAGE=forch/gauge
+    FAUCET_SOCK=
+    shift
+fi
+
+if [ -n "$1" ]; then
+    CONTAINER=$CONTAINER-$1
+    INSTDIR=$INSTDIR/forch-faucet-$1
+    shift
+fi
+
+if [ -n "$1" ]; then
+    ext_ofpt=$1
+    shift
+fi
+
+if [ -n "$1" ]; then
+    prom_pt=$1
+    shift
+fi
+
+echo Creating $IMAGE instance $CONTAINER on port $ext_ofpt in $INSTDIR
+
+mkdir -p $INSTDIR
+
+if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; then
+    echo -n "Clensing old container "
+    docker rm -f $CONTAINER
+fi
+
+if [ -n "$FAUCET_SOCK" ]; then
+    rm -f $INSTDIR/$FAUCET_SOCK
+    event_sock=/var/log/faucet/$FAUCET_SOCK
+fi
+
+docker_envs="\
+        --env FAUCET_CONFIG_STAT_RELOAD=1 \
+        --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
+        --env FAUCET_EVENT_SOCK=$event_sock"
+
+docker_volumes+="\
+        -v $INSTDIR:/etc/faucet \
+        -v $INSTDIR:/var/log/faucet"
+
+if [ -n "$prom_pt" ]; then
+    port_opts="-p $prom_pt:9303"
+fi
+
+cid=$(docker run -d --privileged --name $CONTAINER $docker_volumes $docker_envs -p $ext_ofpt:6653 $port_opts $IMAGE)
+echo Container $CONTAINER started as $cid
+
+while [ -n "$FAUCET_SOCK" -a ! -e $INSTDIR/$FAUCET_SOCK ]; do
+    echo Waiting for $INSTDIR/$FAUCET_SOCK to exist...
+    sleep 10
+done
