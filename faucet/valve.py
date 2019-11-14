@@ -1071,7 +1071,7 @@ class Valve:
                 other_lag_ports = [
                     port for port in self.dp.ports.values()
                     if port.lacp == pkt_meta.port.lacp and port.dyn_last_lacp_pkt]
-                actor_system = pkt_meta.port.dyn_last_lacp_pkt.actor_system
+                actor_system = lacp_pkt.actor_system
                 for other_lag_port in other_lag_ports:
                     other_actor_system = other_lag_port.dyn_last_lacp_pkt.actor_system
                     if actor_system != other_actor_system:
