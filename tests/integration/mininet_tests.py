@@ -3877,21 +3877,20 @@ details partner lacp pdu:
 
         lacp_timeout = 5
 
-        def prom_lag_state():
+        def prom_lacp_up_ports():
             lacp_up_ports = 0
             for lacp_port in lag_ports:
                 port_labels = self.port_labels(self.port_map['port_%u' % lacp_port])
-                lacp_up_ports += self.scrape_prometheus_var(
-                    'port_lacp_state', port_labels, default=0)
+                lacp_state = self.scrape_prometheus_var('port_lacp_state', port_labels, default=0)
+                lacp_up_ports += 1 if lacp_state == 2 else 0
             return lacp_up_ports
 
-        def require_lag_status(status):
+        def require_lag_up_ports(expected_up_ports):
             for _ in range(lacp_timeout*10):
-                if prom_lag_state() == status:
+                if prom_lacp_up_ports() == expected_up_ports:
                     break
                 time.sleep(1)
-            print('require_lag_status', prom_lag_state(), status)
-            self.assertEqual(prom_lag_state(), status)
+            self.assertEqual(prom_lacp_up_ports(), expected_up_ports())
 
         def require_linux_bond_up():
             for _retries in range(lacp_timeout*2):
@@ -3910,7 +3909,7 @@ details partner lacp pdu:
         # Start with ports down.
         for port in lag_ports:
             self.set_port_down(self.port_map['port_%u' % port])
-        self.assertEqual(2, prom_lag_state())
+        require_lag_up_ports(0)
         orig_ip = first_host.IP()
         switch = self.first_switch()
         bond_members = [pair[0].name for pair in first_host.connectionsTo(switch)]
@@ -3934,24 +3933,24 @@ details partner lacp pdu:
             # All ports down.
             for port in lag_ports:
                 self.set_port_down(self.port_map['port_%u' % port])
-            require_lag_status(0)
+            require_lag_up_ports(0)
             # Pick a random port to come up.
             up_port = random.choice(lag_ports)
             self.set_port_up(self.port_map['port_%u' % up_port])
-            require_lag_status(1)
+            require_lag_up_ports(1)
             # We have connectivity with only one port.
             self.one_ipv4_ping(
                 first_host, self.FAUCET_VIPV4.ip, require_host_learned=False, intf=bond)
             for port in lag_ports:
                 self.set_port_up(self.port_map['port_%u' % port])
             # We have connectivity with two ports.
-            require_lag_status(2)
+            require_lag_up_ports(2)
             require_linux_bond_up()
             self.one_ipv4_ping(
                 first_host, self.FAUCET_VIPV4.ip, require_host_learned=False, intf=bond)
             # We have connectivity if that random port goes down.
             self.set_port_down(self.port_map['port_%u' % up_port])
-            require_lag_status(1)
+            require_lag_up_ports(1)
             self.one_ipv4_ping(
                 first_host, self.FAUCET_VIPV4.ip, require_host_learned=False, intf=bond)
             for port in lag_ports:
