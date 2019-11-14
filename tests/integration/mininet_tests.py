@@ -3890,7 +3890,7 @@ details partner lacp pdu:
                 if prom_lacp_up_ports() == expected_up_ports:
                     break
                 time.sleep(1)
-            self.assertEqual(prom_lacp_up_ports(), expected_up_ports())
+            self.assertEqual(prom_lacp_up_ports(), expected_up_ports)
 
         def require_linux_bond_up():
             for _retries in range(lacp_timeout*2):
