@@ -65,6 +65,7 @@ class FaucetEventNotifier:
         self.thread = None
         self.lock = NonBlockLock()
         self.event_q = eventlet.queue.Queue(120)
+        self.new_conn_handlers = []
 
     def start(self):
         """Start socket server."""
@@ -81,6 +82,7 @@ class FaucetEventNotifier:
                 self.logger.info('multiple event clients not supported')
             else:
                 self.logger.info('event client connected')
+                self._call_new_conn_handlers()
                 while True:
                     event = self.event_q.get()
                     event_bytes = bytes('\n'.join((json.dumps(event, default=str), '')).encode('UTF-8'))
@@ -93,6 +95,14 @@ class FaucetEventNotifier:
             sock.close()
         except (socket.error, IOError):
             pass
+
+    def register_conn_handler(self, handler):
+        """Registers connection handler to be called on new connection"""
+        self.new_conn_handlers.append(handler)
+
+    def _call_new_conn_handlers(self):
+        for handler in self.new_conn_handlers:
+            handler()
 
     def notify(self, dp_id, dp_name, event_dict):
         """Notify of an event."""
