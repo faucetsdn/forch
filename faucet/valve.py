@@ -929,24 +929,25 @@ class Valve:
 
     def _reset_lacp_status(self, port):
         lacp_state = port.lacp_state()
+        self.logger.info('Port %s lacp_state %d' % (port, lacp_state))
         self._set_var('port_lacp_state', lacp_state, labels=self.dp.port_labels(port.number))
         self.notify(
                 {'LAG_CHANGE': {
                     'port_no': port.number,
                     'state': lacp_state}})
 
-    def lacp_down(self, port, cold_start=False, from_lacp_pkt=False):
+    def lacp_down(self, port, cold_start=False, lacp_pkt=None):
         """Return OpenFlow messages when LACP is down on a port."""
         ofmsgs = []
         prev_state = port.lacp_state()
-        new_state = LACP_STATE_NOACT if from_lacp_pkt else LACP_STATE_INIT
-        if prev_state != new_state:
-            state_name = 'inactive' if from_lacp_pkt else 'down'
-            self.logger.info('LAG %u %s %s (previous state %s)' % (
-                port.lacp, port, state_name, prev_state))
+        new_state = LACP_STATE_NOACT if lacp_pkt else LACP_STATE_INIT
+        #  if prev_state != new_state:
+        self.logger.info('LAG %u %s state %d (previous state %d)' % (
+            port.lacp, port, new_state, prev_state))
         port.dyn_lacp_up = 0
         port.dyn_lacp_updated_time = None
         port.dyn_lacp_last_resp_time = None
+        port.dyn_last_lacp_pkt = lacp_pkt
         if not cold_start:
             ofmsgs.extend(self.host_manager.del_port(port))
             for vlan in port.vlans():
@@ -1053,7 +1054,6 @@ class Valve:
                 lacp_pkt_change = (
                     pkt_meta.port.dyn_last_lacp_pkt is None or
                     str(lacp_pkt) != str(pkt_meta.port.dyn_last_lacp_pkt))
-                pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
                 pkt_meta.port.dyn_lacp_updated_time = now
                 lacp_resp_interval = pkt_meta.port.lacp_resp_interval
                 if lacp_pkt_change or (age is not None and age > lacp_resp_interval):
@@ -1067,7 +1067,7 @@ class Valve:
                     if actor_up:
                         ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port))
                     else:
-                        ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, from_lacp_pkt=True))
+                        ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, lacp_pkt=lacp_pkt))
                 other_lag_ports = [
                     port for port in self.dp.ports.values()
                     if port.lacp == pkt_meta.port.lacp and port.dyn_last_lacp_pkt]
@@ -1560,9 +1560,8 @@ class Valve:
         for lag, ports_up in self.dp.lags_up().items():
             for port in ports_up:
                 lacp_age = now - port.dyn_lacp_updated_time
-                port.dyn_last_lacp_pkt = None
                 if lacp_age > self.dp.lacp_timeout:
-                    self.logger.info('LACP %s on %s expired (age %u)' % (lag, port, lacp_age))
+                    self.logger.info('LAG %s %s expired (age %u)' % (lag, port, lacp_age))
                     ofmsgs_by_valve[self].extend(self.lacp_down(port))
         return ofmsgs_by_valve
 

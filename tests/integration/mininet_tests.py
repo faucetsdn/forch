@@ -7522,7 +7522,7 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
 
         self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
-        self.wait_for_lacp_port_noact(end_port, self.dpids[1], 'faucet-2')
+        self.wait_for_lacp_port_init(end_port, self.dpids[1], 'faucet-2')
 
 
 class FaucetStackStringOfDPUntaggedTest(FaucetStringOfDPTest):
