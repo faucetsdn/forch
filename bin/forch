@@ -4,7 +4,6 @@ ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
 FSOCK=faucet_event.sock
-PYTHONPATH=faucet:$PYTHONPATH
 
 if [ -n "$1" ]; then
     FORCH_BASE=$1

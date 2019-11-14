@@ -134,7 +134,7 @@ function restart_forch {
     echo Killing any old instances of forch...
     sudo kill `ps ax | fgrep forch | awk '{print $1}'`
 
-    bin/forch inst/forch-faucet-1 2>&1 &
+    PYTHONPATH=faucet bin/forch inst/forch-faucet-1 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
     sleep 10

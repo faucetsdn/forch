@@ -84,36 +84,48 @@ class Forchestrator:
             event = self._faucet_events.next_event(blocking=True)
             if not event:
                 return True
-            timestamp = event.get("time")
-            LOGGER.debug("Event: %r", event)
-            (name, dpid, port, active) = self._faucet_events.as_port_state(event)
-            if dpid and port:
-                LOGGER.debug('Port state %s %s %s', name, port, active)
-                self._faucet_collector.process_port_state(timestamp, name, port, active)
-            (name, dpid, port, target_mac, src_ip) = self._faucet_events.as_port_learn(event)
-            if dpid and port:
-                LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
-                self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
-            (name, dpid, restart_type, dps_config) = self._faucet_events.as_config_change(event)
-            if dpid is not None:
-                LOGGER.debug('DP restart %s %s', name, restart_type)
-                self._faucet_collector.process_dp_config_change(timestamp, name, restart_type, dpid)
-            if dps_config:
-                LOGGER.debug('Config change. New config: %s', dps_config)
-                self._faucet_collector.process_dataplane_config_change(timestamp, dps_config)
-            (stack_root, graph, dps) = self._faucet_events.as_stack_topo_change(event)
-            if stack_root is not None:
-                LOGGER.debug('stack dataplane_state change root:%s', stack_root)
-                self._faucet_collector.process_stack_topo_change(timestamp, stack_root, graph, dps)
-            (name, port, active) = self._faucet_events.as_lag_status(event)
-            if name and port:
-                LOGGER.debug('LAG state %s %s %s', name, port, active)
-                self._faucet_collector.process_lag_state(timestamp, name, port, active)
-            (name, connected) = self._faucet_events.as_dp_change(event)
-            if name:
-                LOGGER.debug('DP %s connected %r', name, connected)
-                self._faucet_collector.process_dp_change(timestamp, name, connected)
+            try:
+                self._handle_faucet_event(event)
+            except Exception as e:
+                LOGGER.warning('While processing event %s', event)
+                raise e
         return False
+
+    def _handle_faucet_event(self, event):
+        timestamp = event.get("time")
+        LOGGER.debug("Event: %r", event)
+        (name, dpid, port, active) = self._faucet_events.as_port_state(event)
+        if dpid and port:
+            LOGGER.debug('Port state %s %s %s', name, port, active)
+            self._faucet_collector.process_port_state(timestamp, name, port, active)
+
+        (name, dpid, port, target_mac, src_ip) = self._faucet_events.as_port_learn(event)
+        if dpid and port:
+            LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
+            self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
+
+        (name, dpid, restart_type, dps_config) = self._faucet_events.as_config_change(event)
+        if dpid is not None:
+            LOGGER.debug('DP restart %s %s', name, restart_type)
+            self._faucet_collector.process_dp_config_change(timestamp, name, restart_type, dpid)
+        if dps_config:
+            LOGGER.debug('Config change. New config: %s', dps_config)
+            self._faucet_collector.process_dataplane_config_change(timestamp, dps_config)
+
+        (stack_root, graph, dps) = self._faucet_events.as_stack_topo_change(event)
+        if stack_root is not None:
+            LOGGER.debug('stack dataplane_state change root:%s', stack_root)
+            self._faucet_collector.process_stack_topo_change(timestamp, stack_root, graph, dps)
+
+        (name, port, state) = self._faucet_events.as_lag_state(event)
+        if name and port:
+            LOGGER.debug('LAG state %s %s %s', name, port, state)
+            self._faucet_collector.process_lag_state(timestamp, name, port, state)
+
+        (name, connected) = self._faucet_events.as_dp_change(event)
+        if name:
+            LOGGER.debug('DP %s connected %r', name, connected)
+            self._faucet_collector.process_dp_change(timestamp, name, connected)
 
     def _get_controller_info(self, target):
         controllers = self._config.get('site', {}).get('controllers', {})

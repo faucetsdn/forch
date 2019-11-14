@@ -13,6 +13,7 @@ import forch.constants as constants
 
 LOGGER = logging.getLogger('fstate')
 
+
 def dump_states(func):
     """Decorator to dump the current states after the states map is modified"""
 
@@ -30,6 +31,7 @@ def dump_states(func):
     return wrapped
 
 
+FAUCET_LACP_STATE_UP = 3
 SWITCH_CONNECTED = "CONNECTED"
 SWITCH_DOWN = "DOWN"
 
@@ -531,21 +533,22 @@ class FaucetStateCollector:
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
     @dump_states
-    def process_lag_state(self, timestamp, name, port, state):
+    def process_lag_state(self, timestamp, name, port, lacp_state):
         """process lag change event"""
         with self.lock:
             egress_state = self.topo_state.setdefault('egress', {})
             old_egress_name = egress_state.get(EGRESS_DETAIL)
-            if old_egress_name and old_egress_name != name and not state:
+            if old_egress_name and old_egress_name != name and not lacp_state:
                 return
 
+            lacp_up = lacp_state == FAUCET_LACP_STATE_UP
             egress_state[EGRESS_LAST_UPDATE] = datetime.fromtimestamp(timestamp).isoformat()
             old_state = egress_state.get(EGRESS_STATE)
-            new_state = constants.STATE_UP if state else constants.STATE_DOWN
+            new_state = constants.STATE_UP if lacp_up else constants.STATE_DOWN
             if new_state != old_state:
                 LOGGER.info('lag_state %s, %s -> %s', name, old_state, new_state)
                 egress_state[EGRESS_STATE] = new_state
-                egress_state[EGRESS_DETAIL] = name if state else None
+                egress_state[EGRESS_DETAIL] = name if lacp_up else None
                 egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 egress_state[EGRESS_CHANGE_COUNT] = egress_state.get(EGRESS_CHANGE_COUNT, 0) + 1
 
