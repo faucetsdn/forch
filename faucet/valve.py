@@ -546,7 +546,7 @@ class Valve:
 
         last_seen_lldp_time = port.dyn_stack_probe_info.get('last_seen_lldp_time', None)
         if last_seen_lldp_time is None:
-            if port.is_stack_down():
+            if port.is_stack_init():
                 next_state = port.stack_init
                 self.logger.info('Stack %s new, state INIT' % port)
             return next_state
@@ -567,24 +567,20 @@ class Valve:
             if num_lost_lldp < port.max_lldp_lost:
                 stack_timed_out = False
 
-        if not stack_correct:
-            if not port.is_stack_down():
-                next_state = port.stack_down
-                self.logger.error('Stack %s DOWN, incorrect cabling' % port)
-            return next_state
-
         if stack_timed_out:
-            if not port.is_stack_down():
-                # Stay in init state if we never got a packet.
-                if time_since_lldp_seen:
-                    next_state = port.stack_down
-                    self.logger.error(
-                        'Stack %s DOWN, too many (%u) packets lost, last received %us ago' % (
-                            port, num_lost_lldp, time_since_lldp_seen))
-        else:
-            if not port.is_stack_up():
-                next_state = port.stack_up
-                self.logger.info('Stack %s UP' % port)
+            if not port.is_stack_gone():
+                next_state = port.stack_gone
+                self.logger.error(
+                    'Stack %s GONE, too many (%u) packets lost, last received %us ago' % (
+                        port, num_lost_lldp, time_since_lldp_seen))
+        elif not stack_correct:
+            if not port.is_stack_bad():
+                next_state = port.stack_bad
+                self.logger.error('Stack %s BAD, incorrect cabling' % port)
+        elif not port.is_stack_up():
+            next_state = port.stack_up
+            self.logger.info('Stack %s UP' % port)
+
         return next_state
 
     def _update_stack_link_state(self, ports, now, other_valves):
@@ -600,11 +596,14 @@ class Valve:
                     'port_stack_state',
                     port.dyn_stack_current_state,
                     labels=self.dp.port_labels(port.number))
-                if port.is_stack_up() or port.is_stack_down() or port.is_stack_init():
-                    stack_changes += 1
-                    port_stack_up = port.is_stack_up()
-                    for valve in stacked_valves:
-                        valve.flood_manager.update_stack_topo(port_stack_up, self.dp, port)
+                self.notify({'STACK_STATE': {
+                    'port': port.number,
+                    'state': port.dyn_stack_current_state
+                    }})
+                stack_changes += 1
+                port_stack_up = port.is_stack_up()
+                for valve in stacked_valves:
+                    valve.flood_manager.update_stack_topo(port_stack_up, self.dp, port)
         if stack_changes:
             self.logger.info('%u stack ports changed state' % stack_changes)
             notify_dps = {}
@@ -930,24 +929,25 @@ class Valve:
 
     def _reset_lacp_status(self, port):
         lacp_state = port.lacp_state()
+        self.logger.info('Port %s lacp_state %d' % (port, lacp_state))
         self._set_var('port_lacp_state', lacp_state, labels=self.dp.port_labels(port.number))
         self.notify(
                 {'LAG_CHANGE': {
                     'port_no': port.number,
                     'state': lacp_state}})
 
-    def lacp_down(self, port, cold_start=False, from_lacp_pkt=False):
+    def lacp_down(self, port, cold_start=False, lacp_pkt=None):
         """Return OpenFlow messages when LACP is down on a port."""
         ofmsgs = []
         prev_state = port.lacp_state()
-        new_state = LACP_STATE_NOACT if from_lacp_pkt else LACP_STATE_INIT
-        if prev_state != new_state:
-            state_name = 'inactive' if from_lacp_pkt else 'down'
-            self.logger.info('LAG %u %s %s (previous state %s)' % (
-                port.lacp, port, state_name, prev_state))
+        new_state = LACP_STATE_NOACT if lacp_pkt else LACP_STATE_INIT
+        #  if prev_state != new_state:
+        self.logger.info('LAG %u %s state %d (previous state %d)' % (
+            port.lacp, port, new_state, prev_state))
         port.dyn_lacp_up = 0
         port.dyn_lacp_updated_time = None
         port.dyn_lacp_last_resp_time = None
+        port.dyn_last_lacp_pkt = lacp_pkt
         if not cold_start:
             ofmsgs.extend(self.host_manager.del_port(port))
             for vlan in port.vlans():
@@ -966,7 +966,7 @@ class Valve:
         self._reset_lacp_status(port)
         return ofmsgs
 
-    def lacp_up(self, port):
+    def lacp_up(self, port, lacp_pkt=None):
         """Return OpenFlow messages when LACP is up on a port."""
         vlan_table = self.dp.tables['vlan']
         ofmsgs = []
@@ -975,6 +975,7 @@ class Valve:
             self.logger.info('LAG %u %s up (previous state %s)' % (
                 port.lacp, port, prev_state))
         port.dyn_lacp_up = 1
+        port.dyn_last_lacp_pkt = lacp_pkt
         # Only enable learning if this bundle is selected for forwarding.
         # E.g. non stack or root of stack.
         if self.dp.lacp_forwarding(port):
@@ -997,9 +998,8 @@ class Valve:
         actor_state_activity = 0
         if port.lacp_active:
             actor_state_activity = 1
-        lacp_forwarding = self.dp.lacp_forwarding(port)
-        actor_state_collecting = lacp_forwarding
-        actor_state_distributing = lacp_forwarding
+        actor_state_collecting = self.dp.lacp_collect_and_distribute(port)
+        actor_state_distributing = actor_state_collecting
         if lacp_pkt:
             pkt = valve_packet.lacp_reqreply(
                 self.dp.faucet_dp_mac, self.dp.faucet_dp_mac,
@@ -1051,28 +1051,28 @@ class Valve:
                     age = now - pkt_meta.port.dyn_lacp_last_resp_time
                 actor_up = valve_packet.lacp_actor_up(lacp_pkt)
                 prev_state = pkt_meta.port.lacp_state()
-                if prev_state != actor_up:
-                    self.logger.info(
-                        'remote LACP state change from %s to %s from %s LAG %u (%s)' % (
-                            prev_state, actor_up, lacp_pkt.actor_system, pkt_meta.port.lacp,
-                            pkt_meta.log()))
-                    if actor_up:
-                        ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port))
-                    else:
-                        ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, from_lacp_pkt=True))
-                lacp_resp_interval = pkt_meta.port.lacp_resp_interval
+                new_state = LACP_STATE_UP if actor_up else LACP_STATE_NOACT
                 lacp_pkt_change = (
                     pkt_meta.port.dyn_last_lacp_pkt is None or
                     str(lacp_pkt) != str(pkt_meta.port.dyn_last_lacp_pkt))
+                pkt_meta.port.dyn_lacp_updated_time = now
+                lacp_resp_interval = pkt_meta.port.lacp_resp_interval
                 if lacp_pkt_change or (age is not None and age > lacp_resp_interval):
                     ofmsgs_by_valve[self].extend(self._lacp_actions(lacp_pkt, pkt_meta.port))
                     pkt_meta.port.dyn_lacp_last_resp_time = now
-                pkt_meta.port.dyn_last_lacp_pkt = lacp_pkt
-                pkt_meta.port.dyn_lacp_updated_time = now
+                if prev_state != new_state:
+                    self.logger.info(
+                        'remote LACP state change from %s to %s from %s LAG %u (%s)' % (
+                            prev_state, new_state, lacp_pkt.actor_system, pkt_meta.port.lacp,
+                            pkt_meta.log()))
+                    if actor_up:
+                        ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port, lacp_pkt=lacp_pkt))
+                    else:
+                        ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, lacp_pkt=lacp_pkt))
                 other_lag_ports = [
                     port for port in self.dp.ports.values()
                     if port.lacp == pkt_meta.port.lacp and port.dyn_last_lacp_pkt]
-                actor_system = pkt_meta.port.dyn_last_lacp_pkt.actor_system
+                actor_system = lacp_pkt.actor_system
                 for other_lag_port in other_lag_ports:
                     other_actor_system = other_lag_port.dyn_last_lacp_pkt.actor_system
                     if actor_system != other_actor_system:
@@ -1080,6 +1080,10 @@ class Valve:
                             'LACP actor system mismatch %s: %s, %s %s' % (
                                 pkt_meta.port, actor_system,
                                 other_lag_port, other_actor_system))
+                updated_state = pkt_meta.port.lacp_state()
+                assert updated_state is new_state, (
+                    'Updated state %d not as expected new state %d' % (updated_state, new_state))
+
         return ofmsgs_by_valve
 
     def _verify_stack_lldp(self, port, now, other_valves,
@@ -1558,7 +1562,7 @@ class Valve:
             for port in ports_up:
                 lacp_age = now - port.dyn_lacp_updated_time
                 if lacp_age > self.dp.lacp_timeout:
-                    self.logger.info('LACP %s on %s expired (age %u)' % (lag, port, lacp_age))
+                    self.logger.info('LAG %s %s expired (age %u)' % (lag, port, lacp_age))
                     ofmsgs_by_valve[self].extend(self.lacp_down(port))
         return ofmsgs_by_valve
 

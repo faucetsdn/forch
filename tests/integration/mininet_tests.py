@@ -3877,7 +3877,7 @@ details partner lacp pdu:
 
         lacp_timeout = 5
 
-        def prom_lag_status():
+        def prom_lag_state():
             lacp_up_ports = 0
             for lacp_port in lag_ports:
                 port_labels = self.port_labels(self.port_map['port_%u' % lacp_port])
@@ -3887,10 +3887,11 @@ details partner lacp pdu:
 
         def require_lag_status(status):
             for _ in range(lacp_timeout*10):
-                if prom_lag_status() == status:
+                if prom_lag_state() == status:
                     break
                 time.sleep(1)
-            self.assertEqual(prom_lag_status(), status)
+            print('require_lag_status', prom_lag_state(), status)
+            self.assertEqual(prom_lag_state(), status)
 
         def require_linux_bond_up():
             for _retries in range(lacp_timeout*2):
@@ -3909,7 +3910,7 @@ details partner lacp pdu:
         # Start with ports down.
         for port in lag_ports:
             self.set_port_down(self.port_map['port_%u' % port])
-        self.assertEqual(0, prom_lag_status())
+        self.assertEqual(2, prom_lag_state())
         orig_ip = first_host.IP()
         switch = self.first_switch()
         bond_members = [pair[0].name for pair in first_host.connectionsTo(switch)]
@@ -6874,7 +6875,7 @@ class FaucetStringOfDPTest(FaucetTest):
 
     def one_stack_port_down(self, dpid, dp_name, port):
         self.set_port_down(port, dpid, wait=False)
-        self.wait_for_stack_port_status(dpid, dp_name, port, 2)
+        self.wait_for_stack_port_status(dpid, dp_name, port, 4)
 
     def one_stack_port_up(self, dpid, dp_name, port):
         self.set_port_up(port, dpid, wait=False)
@@ -7411,11 +7412,14 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
                 labels=labels, dpid=False, timeout=timeout):
             self.fail('wanted LACP state for %s to be %u' % (labels, wanted_state))
 
-    def wait_for_lacp_port_down(self, port_no, dpid, dp_name):
-        self.wait_for_lacp_state(port_no, 0, dpid, dp_name)
+    def wait_for_lacp_port_init(self, port_no, dpid, dp_name):
+        self.wait_for_lacp_state(port_no, 1, dpid, dp_name)
 
     def wait_for_lacp_port_up(self, port_no, dpid, dp_name):
-        self.wait_for_lacp_state(port_no, 1, dpid, dp_name)
+        self.wait_for_lacp_state(port_no, 2, dpid, dp_name)
+
+    def wait_for_lacp_port_noact(self, port_no, dpid, dp_name):
+        self.wait_for_lacp_state(port_no, 3, dpid, dp_name)
 
     # We sort non_host_links by port because FAUCET sorts its ports
     # and only floods out of the first active LACP port in that list
@@ -7446,9 +7450,9 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
             other_local_lacp_port = list(local_ports - {local_lacp_port})[0]
             other_remote_lacp_port = list(remote_ports - {remote_lacp_port})[0]
             self.set_port_down(local_lacp_port, wait=False)
-            self.wait_for_lacp_port_down(
+            self.wait_for_lacp_port_init(
                 local_lacp_port, self.dpid, self.DP_NAME)
-            self.wait_for_lacp_port_down(
+            self.wait_for_lacp_port_init(
                 remote_lacp_port, self.dpids[1], 'faucet-2')
             self.wait_until_matching_flow(
                 self.match_bcast, self._FLOOD_TABLE, actions=[
@@ -7462,12 +7466,13 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
             self.wait_for_all_lacp_up()
 
     def test_untagged(self):
-        """All untagged hosts in stack topology can reach each other."""
+        """All untagged hosts in stack topology can reach each other, LAG_CHANGE event emitted."""
         self._enable_event_log()
         for _ in range(3):
             self.wait_for_all_lacp_up()
             self.verify_stack_hosts()
             self.flap_all_switch_ports()
+        # Check for presence of LAG_CHANGE event in event socket log
         self.wait_until_matching_lines_from_file(r'.+LAG_CHANGE.+', self.event_log)
 
     def test_dyn_fail(self):
@@ -7485,7 +7490,7 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.reload_conf(conf, self.faucet_config_path, restart=True,
                          cold_start=False, change_expected=False)
 
-        self.wait_for_lacp_port_down(src_port, self.dpids[0], 'faucet-1')
+        self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
 
     def test_passthrough(self):
@@ -7515,9 +7520,9 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.reload_conf(conf, self.faucet_config_path, restart=True,
                          cold_start=False, change_expected=False)
 
-        self.wait_for_lacp_port_down(src_port, self.dpids[0], 'faucet-1')
+        self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
-        self.wait_for_lacp_port_down(end_port, self.dpids[1], 'faucet-2')
+        self.wait_for_lacp_port_init(end_port, self.dpids[1], 'faucet-2')
 
 
 class FaucetStackStringOfDPUntaggedTest(FaucetStringOfDPTest):
@@ -7666,7 +7671,7 @@ class FaucetStackRingOfDPTest(FaucetStringOfDPTest):
         self.start_net()
 
     def test_untagged(self):
-        """Stack loop prevention works and hosts can ping each other."""
+        """Stack loop prevention works and hosts can ping each other, STACK_TOPO_CHANGE event emitted."""
         self._enable_event_log()
         self.verify_stack_up()
         self.verify_stack_has_no_loop()
@@ -7681,6 +7686,7 @@ class FaucetStackRingOfDPTest(FaucetStringOfDPTest):
                 self.one_stack_port_down(dpid, dp_name, port)
                 self.retry_net_ping()
                 self.one_stack_port_up(dpid, dp_name, port)
+        # Check for presence of STACK_TOPO_CHANGE event in event socket log
         self.wait_until_matching_lines_from_file(r'.+STACK_TOPO_CHANGE.+', self.event_log)
 
 
