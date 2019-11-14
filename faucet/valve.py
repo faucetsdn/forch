@@ -966,7 +966,7 @@ class Valve:
         self._reset_lacp_status(port)
         return ofmsgs
 
-    def lacp_up(self, port):
+    def lacp_up(self, port, lacp_pkt=None):
         """Return OpenFlow messages when LACP is up on a port."""
         vlan_table = self.dp.tables['vlan']
         ofmsgs = []
@@ -975,6 +975,7 @@ class Valve:
             self.logger.info('LAG %u %s up (previous state %s)' % (
                 port.lacp, port, prev_state))
         port.dyn_lacp_up = 1
+        port.dyn_last_lacp_pkt = lacp_pkt
         # Only enable learning if this bundle is selected for forwarding.
         # E.g. non stack or root of stack.
         if self.dp.lacp_forwarding(port):
@@ -1065,7 +1066,7 @@ class Valve:
                             prev_state, new_state, lacp_pkt.actor_system, pkt_meta.port.lacp,
                             pkt_meta.log()))
                     if actor_up:
-                        ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port))
+                        ofmsgs_by_valve[self].extend(self.lacp_up(pkt_meta.port, lacp_pkt=lacp_pkt))
                     else:
                         ofmsgs_by_valve[self].extend(self.lacp_down(pkt_meta.port, lacp_pkt=lacp_pkt))
                 other_lag_ports = [
