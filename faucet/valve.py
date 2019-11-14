@@ -160,7 +160,7 @@ class Valve:
 
     def _dump_lag_status_event_sock(self):
         for port in self.dp.ports.values():
-            self._reset_lacp_status(port):
+            self._reset_lacp_status(port)
 
     def _dump_learned_hosts_event_sock(self):
         learned_macs = []
