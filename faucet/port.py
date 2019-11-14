@@ -390,6 +390,11 @@ class Port(Conf):
         """Return True if LLDP beacon enabled on this port."""
         return self.lldp_beacon and self.lldp_beacon.get('enable', False)
 
+    def lacp_update(self, lacp_up, now=None, lacp_pkt=None):
+        self.dyn_lacp_up = 1 if lacp_up else 0
+        self.dyn_lacp_updated_time = now
+        self.dyn_last_lacp_pkt = lacp_pkt
+
     def lacp_state(self):
         if not self.lacp:
             return LACP_STATE_NONE
