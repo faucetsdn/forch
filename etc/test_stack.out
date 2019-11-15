@@ -1,4 +1,3 @@
-Base Stack Setup
 supercalifragilisticexpialidocious
 Stacking Tests
 Starting stack-solid stack test...
@@ -20,19 +19,19 @@ forch-faux-3: ping -c 10 192.168.1.0 10
 forch-faux-3: ping -c 10 192.168.1.1 10
 forch-faux-3: ping -c 10 192.168.1.2 10
 Done with stack-solid stack test.
-Running forch-pre tests
+Running forch-solid tests
 system_state
 "nz-kiwi"
-25
+19
 "http://localhost.n:9020"
 "split"
 dataplane_state
 "up"
-8
+5
 "active"
 "active"
 switch_state
-15
+12
 "nz-kiwi-t1sw1"
 9
 null
@@ -105,16 +104,16 @@ Done with stack-twod stack test.
 Running forch-twod tests
 system_state
 "nz-kiwi"
-61
+44
 "http://localhost.n:9020"
 "broken"
 dataplane_state
 "up"
-26
+13
 "active"
 "active"
 switch_state
-32
+29
 "nz-kiwi-t1sw2"
 9
 6
@@ -169,7 +168,7 @@ Done with stack-broken stack test.
 Running forch-broke tests
 system_state
 "nz-kiwi"
-80
+59
 "http://localhost.n:9020"
 "broken"
 dataplane_state
@@ -231,7 +230,7 @@ Done with stack-restored stack test.
 Running forch-post tests
 system_state
 "nz-kiwi"
-98
+73
 "http://localhost.n:9020"
 "broken"
 dataplane_state

@@ -3,7 +3,7 @@
 FAUCET_REPO=https://github.com/grafnu/faucet.git
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 
-docker rmi forch/faux forch/faucet forch/gauge || true
+docker rmi -f forch/faux forch/faucet forch/gauge || true
 images=$(docker images | fgrep forch/ | wc -l)
 if [ $images != 0 ]; then
     echo Unexpected forch/ images found:
