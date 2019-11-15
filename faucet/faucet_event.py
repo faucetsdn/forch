@@ -64,7 +64,8 @@ class FaucetEventNotifier:
         self.event_id = 0
         self.thread = None
         self.lock = NonBlockLock()
-        self.event_q = eventlet.queue.Queue(120)
+        # TODO: Fix event generation mechanism so this isn't an issue.
+        self.event_q = eventlet.queue.Queue(500)
 
     def start(self):
         """Start socket server."""
@@ -112,6 +113,7 @@ class FaucetEventNotifier:
         if self.event_q.full():
             self.event_q.get()
         self.event_q.put(event)
+        return self.event_id
 
     def check_path(self, socket_path):
         """Check that socket_path is valid."""
