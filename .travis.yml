@@ -15,4 +15,4 @@ script:
   - bin/check_style
   - bin/docker_build
   - bin/setup_stack local
-  - sudo bin/test_stack
+  - bin/test_stack

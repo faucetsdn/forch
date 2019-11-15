@@ -61,6 +61,7 @@ fi
 docker_envs="\
         --env FAUCET_CONFIG_STAT_RELOAD=1 \
         --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
+        --env USERID=$(id -u) \
         --env FAUCET_EVENT_SOCK=$event_sock"
 
 docker_volumes+="\
@@ -71,10 +72,21 @@ if [ -n "$prom_pt" ]; then
     port_opts="-p $prom_pt:9303"
 fi
 
-cid=$(docker run -d --privileged --name $CONTAINER $docker_volumes $docker_envs -p $ext_ofpt:6653 $port_opts $IMAGE)
+uid=$(id -u)
+gid=$(id -g)
+echo $uid $gid
+cid=$(docker run -d --privileged --name $CONTAINER \
+             $docker_volumes $docker_envs \
+             -p $ext_ofpt:6653 $port_opts $IMAGE)
+
 echo Container $CONTAINER started as $cid
 
 while [ -n "$FAUCET_SOCK" -a ! -e $INSTDIR/$FAUCET_SOCK ]; do
+    status=`docker inspect $CONTAINER | jq -r '.[0].State.Status'`
+    if [ "$status" != running ]; then
+       echo Faucet docker container $CONTAINER not running, is $status
+       false
+    fi
     echo Waiting for $INSTDIR/$FAUCET_SOCK to exist...
     sleep 10
 done

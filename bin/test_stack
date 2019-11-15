@@ -1,34 +1,20 @@
 #!/bin/bash
 
-if [ `whoami` != root ]; then
-    echo Please run as root.
-    exit 1
-fi
-
 out_dir=test_out/
 rm -rf $out_dir
+mkdir -p $out_dir
 
 export CONTROLLER_NAME=127.0.0.1
 
 TEST_RESULTS=${TEST_RESULTS:-$out_dir/test_stack.out}
 GOLDEN_RESULTS=etc/test_stack.out
+TCPSUDO="sudo tcpdump"
 
 local=
 if [ "$1" == local ]; then
     local=y
     shift
 fi
-
-t1sw1p6_pcap=$out_dir/t1sw1-eth6.pcap
-t1sw1p28_pcap=$out_dir/t1sw1-eth28.pcap
-t1sw2p28_pcap=$out_dir/t1sw2-eth28.pcap
-t2sw1p1_pcap=$out_dir/t2sw1-eth1.pcap
-t2sw1p50_pcap=$out_dir/t2sw1-eth50.pcap
-t2sw1p52_pcap=$out_dir/t2sw1-eth52.pcap
-t2sw2p1_pcap=$out_dir/t2sw2-eth1.pcap
-nodes_dir=$out_dir/nodes
-
-mkdir -p $out_dir $nodes_dir
 
 cap_base=10
 ping_count=10
@@ -62,21 +48,33 @@ function test_stack {
 
     # Some versions of OVS are somewhat unstable, so restart for consistency.
     echo $desc Restarting ovs...
-    /etc/init.d/openvswitch-switch restart
+    sudo /etc/init.d/openvswitch-switch restart
 
     rm -f $faucet_log
     echo $desc Waiting for network stability...
     sleep 30
 
+    desc_dir=$out_dir/stack-$desc
+    t1sw1p6_pcap=$desc_dir/t1sw1-eth6.pcap
+    t1sw1p28_pcap=$desc_dir/t1sw1-eth28.pcap
+    t1sw2p28_pcap=$desc_dir/t1sw2-eth28.pcap
+    t2sw1p1_pcap=$desc_dir/t2sw1-eth1.pcap
+    t2sw1p50_pcap=$desc_dir/t2sw1-eth50.pcap
+    t2sw1p52_pcap=$desc_dir/t2sw1-eth52.pcap
+    t2sw2p1_pcap=$desc_dir/t2sw2-eth1.pcap
+    nodes_dir=$desc_dir/nodes
+
+    rm -rf $nodes_dir
+    mkdir -p $nodes_dir
+
     echo $desc Capturing pcaps for $cap_length seconds...
-    rm -f $out_dir/*.pcap
-    timeout $cap_length tcpdump -eni t1sw1-eth6 -w $t1sw1p6_pcap &
-    timeout $cap_length tcpdump -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
-    timeout $cap_length tcpdump -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
-    timeout $cap_length tcpdump -Q out -eni faux-1 -w $t2sw1p1_pcap &
-    timeout $cap_length tcpdump -eni t2sw1-eth50 -w $t2sw1p50_pcap &
-    timeout $cap_length tcpdump -eni t2sw1-eth52 -w $t2sw1p52_pcap &
-    timeout $cap_length tcpdump -Q out -eni faux-2 -w $t2sw2p1_pcap &
+    timeout $cap_length $TCPSUDO -eni t1sw1-eth6 -w $t1sw1p6_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni faux-1 -w $t2sw1p1_pcap &
+    timeout $cap_length $TCPSUDO -eni t2sw1-eth50 -w $t2sw1p50_pcap &
+    timeout $cap_length $TCPSUDO -eni t2sw1-eth52 -w $t2sw1p52_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni faux-2 -w $t2sw2p1_pcap &
     sleep 5
 
     echo $desc Simple tests...
@@ -103,6 +101,7 @@ function test_stack {
 
     echo $desc Waiting for port capture to complete...
     sleep $cap_length
+    sudo chown -R $USER $desc_dir
 
     bcount6=$(tcpdump -en -r $t1sw1p6_pcap | wc -l) 2>/dev/null
     bcount50=$(tcpdump -en -r $t2sw1p50_pcap | wc -l) 2>/dev/null
@@ -132,7 +131,8 @@ function test_stack {
 
 function restart_forch {
     echo Killing any old instances of forch...
-    sudo kill `ps ax | fgrep forch | awk '{print $1}'`
+    sudo kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+    sudo kill `ps ax | fgrep inst/forch-faucet-1/forch.log | fgrep -v fgrep | awk '{print $1}'`
 
     PYTHONPATH=faucet bin/forch inst/forch-faucet-1 2>&1 &
 
@@ -254,7 +254,7 @@ rm faucet/faucet/python_test.py
 
 echo Stacking Tests | tee -a $TEST_RESULTS
 test_stack stack-solid
-test_forch -pre
+test_forch -solid
 
 echo Bring t2sw3 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl del-controller t2sw3
@@ -286,7 +286,7 @@ ip link set t1sw2-eth10 up
 ip link set t1sw1-eth6 up
 test_stack stack-restored
 sleep 12
-test_forch -post
+test_forch -restored
 
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`

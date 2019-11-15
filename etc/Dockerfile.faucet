@@ -9,6 +9,8 @@ RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
 # Check for target executable since installer doesn't error out properly.
 RUN which faucet
 
-RUN apk add -q tcpdump iptables
+RUN apk add -q tcpdump iptables sudo
 
-CMD ["faucet"]
+COPY bin/faucet_go bin/
+
+CMD ["bin/faucet_go"]

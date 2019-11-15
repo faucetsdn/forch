@@ -1,0 +1,11 @@
+#!/bin/sh -ex
+
+env
+
+adduser -D -u $USERID kronkiteman
+
+sudo -u kronkiteman \
+     FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \
+     FAUCET_EVENT_SOCK_HEARTBEAT=$FAUCET_EVENT_SOCK_HEARTBEAT \
+     FAUCET_CONFIG_STAT_RELOAD=$FAUCET_CONFIG_STAT_RELOAD \
+     faucet
