@@ -296,8 +296,8 @@ class FaucetStateCollector:
             switch_map[SW_STATE] = constants.STATE_ACTIVE
         else:
             switch_map[SW_STATE] = constants.STATE_DOWN
-        switch_map[SW_STATE_LAST_CHANGE] = switch_states.get(SW_STATE_LAST_CHANGE)
-        switch_map[SW_STATE_CHANGE_COUNT] = switch_states.get(SW_STATE_CHANGE_COUNT)
+        switch_map[SW_STATE_LAST_CHANGE] = switch_states.get(SW_STATE_LAST_CHANGE, '')
+        switch_map[SW_STATE_CHANGE_COUNT] = switch_states.get(SW_STATE_CHANGE_COUNT, 0)
 
         # filling port information
         switch_port_map = switch_map.setdefault('ports', {})
@@ -538,10 +538,10 @@ class FaucetStateCollector:
         with self.lock:
             egress_state = self.topo_state.setdefault('egress', {})
             old_egress_name = egress_state.get(EGRESS_DETAIL)
-            if old_egress_name and old_egress_name != name and not lacp_state:
+            lacp_up = lacp_state == FAUCET_LACP_STATE_UP
+            if old_egress_name and old_egress_name != name and not lacp_up:
                 return
 
-            lacp_up = lacp_state == FAUCET_LACP_STATE_UP
             egress_state[EGRESS_LAST_UPDATE] = datetime.fromtimestamp(timestamp).isoformat()
             old_state = egress_state.get(EGRESS_STATE)
             new_state = constants.STATE_UP if lacp_up else constants.STATE_DOWN
