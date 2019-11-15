@@ -58,6 +58,8 @@ TOPOLOGY_GRAPH = "graph_obj"
 TOPOLOGY_DPS = "dps"
 TOPOLOGY_CHANGE_COUNT = "dataplane_state_change_count"
 TOPOLOGY_LAST_CHANGE = "dataplane_state_last_change"
+LINKS_CHANGE_COUNT = "links_change_count"
+LINKS_LAST_CHANGE = "links_state_last_change"
 TOPOLOGY_HEALTH = "is_healthy"
 TOPOLOGY_NOT_HEALTH = "is_wounded"
 TOPOLOGY_DP_MAP = "switches"
@@ -106,29 +108,26 @@ class FaucetStateCollector:
     def get_dataplane_summary(self):
         """Get summary of dataplane"""
         dplane_state = self._get_dataplane_state()
-        state, detail, count, last = self._get_dataplane_detail(dplane_state)
         return {
-            'state': state,
-            'detail': detail,
-            'change_count': count,
-            'last_change': last
+            'state': dplane_state.get('dataplane_state'),
+            'detail': dplane_state.get('dataplane_state_detail'),
+            'change_count': dplane_state.get('dataplane_state_change_count'),
+            'last_change': dplane_state.get('dataplane_state_last_change')
         }
 
-    def _get_dataplane_detail(self, dplane_state):
+    def _update_dataplane_detail(self, dplane_state):
         state = constants.STATE_HEALTHY
         detail = []
-
         egress = dplane_state.get('egress', {})
         egress_state = egress.get(EGRESS_STATE)
         egress_detail = egress.get(EGRESS_DETAIL)
-        egress_count = egress.get(EGRESS_CHANGE_COUNT)
-        egress_last = egress.get(EGRESS_LAST_CHANGE)
+
         # TODO: Expose last update time up the chain.
         _ = egress.get(EGRESS_LAST_UPDATE)
 
         state = egress_state if egress else constants.STATE_INITIALIZING
         if egress_detail:
-            detail.append(egress_detail)
+            detail.append("egress:" + str(egress_detail))
 
         broken_sw = self._get_broken_switches(dplane_state)
         if broken_sw:
@@ -140,7 +139,8 @@ class FaucetStateCollector:
             state = constants.STATE_BROKEN
             detail.append("broken links: " + str(broken_links))
 
-        return state, "; ".join(detail), egress_count, egress_last
+        dplane_state['dataplane_state'] = state
+        dplane_state['dataplane_state_detail'] = "; ".join(detail)
 
     @_check_active(state_name='dataplane_state')
     def get_dataplane_state(self):
@@ -150,22 +150,33 @@ class FaucetStateCollector:
     def _get_dataplane_state(self):
         """get the topology state impl"""
         dplane_state = {}
-        switch_state = dplane_state.setdefault('switch', {})
-        switch_state[TOPOLOGY_DP_MAP] = self._get_switch_map()
-        stack_state = dplane_state.setdefault('stack', {})
-        stack_state[TOPOLOGY_LINK_MAP] = self._get_stack_topo()
+        change_count = 0
+        last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
+
+        switch_map = self._get_switch_map()
+        dplane_state['switch'] = switch_map
+        change_count += switch_map.get(SW_STATE_CHANGE_COUNT, 0)
+        last_change = max(last_change, switch_map.get(SW_STATE_LAST_CHANGE, ''))
+
+        stack_topo = self._get_stack_topo()
+        dplane_state['stack'] = stack_topo
+        change_count += stack_topo.get(LINKS_CHANGE_COUNT, 0)
+        last_change = max(last_change, stack_topo.get(LINKS_LAST_CHANGE, ''))
+
         egress_state = dplane_state.setdefault('egress', {})
         self._fill_egress_state(egress_state)
-        state, detail, count, last = self._get_dataplane_detail(dplane_state)
-        dplane_state['dataplane_state'] = state
-        dplane_state['dataplane_state_detail'] = detail
-        dplane_state['dataplane_state_change_count'] = count
-        dplane_state['dataplane_state_last_change'] = last
+        change_count += egress_state.get(EGRESS_CHANGE_COUNT, 0)
+        last_change = max(last_change, egress_state.get(EGRESS_LAST_CHANGE, ''))
+
+        self._update_dataplane_detail(dplane_state)
+        dplane_state['dataplane_state_change_count'] = change_count
+        dplane_state['dataplane_state_last_change'] = last_change
+
         return dplane_state
 
     def _get_broken_switches(self, dplane_state):
         broken_sw = []
-        sw_map = dplane_state.get(TOPOLOGY_DP_MAP, {})
+        sw_map = dplane_state.get('switch', {}).get(TOPOLOGY_DP_MAP, {})
         for switch, state in sw_map.items():
             if state.get(SW_STATE) == constants.STATE_DOWN:
                 broken_sw.append(switch)
@@ -173,7 +184,7 @@ class FaucetStateCollector:
 
     def _get_broken_links(self, dplane_state):
         broken_links = []
-        link_map = dplane_state.get(TOPOLOGY_LINK_MAP, {})
+        link_map = dplane_state.get('stack', {}).get(TOPOLOGY_LINK_MAP, {})
         for link, link_obj in link_map.items():
             if link_obj.get(LINK_STATE) == constants.STATE_DOWN:
                 broken_links.append(link)
@@ -260,20 +271,27 @@ class FaucetStateCollector:
     def _get_switch_map(self):
         """returns switch map for topology overview"""
         switch_map = {}
+        switch_map_obj = {}
         if not self.switch_states:
             return {}
+        change_count = 0
+        last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
         with self.lock:
             for switch, switch_state in self.switch_states.items():
                 switch_map[switch] = {}
                 current_state = switch_state.get(SW_STATE)
+                change_count += switch_state.get(SW_STATE_CHANGE_COUNT, 0)
+                last_change = max(last_change, switch_state.get(SW_STATE_LAST_CHANGE, ''))
                 if not current_state:
                     switch_map[switch][SW_STATE] = None
                 elif current_state == SWITCH_CONNECTED:
                     switch_map[switch][SW_STATE] = constants.STATE_ACTIVE
                 else:
                     switch_map[switch][SW_STATE] = constants.STATE_DOWN
-
-            return switch_map
+            switch_map_obj[TOPOLOGY_DP_MAP] = switch_map
+            switch_map_obj[SW_STATE_CHANGE_COUNT] = change_count
+            switch_map_obj[SW_STATE_LAST_CHANGE] = last_change
+            return switch_map_obj
 
     def _get_switch(self, switch_name, port):
         """lock protect get_switch_raw"""
@@ -384,6 +402,7 @@ class FaucetStateCollector:
     def _get_stack_topo(self):
         """Returns formatted topology object"""
         topo_map = {}
+        topo_map_obj = {}
         with self.lock:
             config_obj = self.faucet_config.get(DPS_CFG, {})
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
@@ -406,8 +425,10 @@ class FaucetStateCollector:
                             link_obj[LINK_STATE] = constants.STATE_UP
                         else:
                             link_obj[LINK_STATE] = constants.STATE_DOWN
-
-        return topo_map
+            topo_map_obj[TOPOLOGY_LINK_MAP] = topo_map
+            topo_map_obj[LINKS_CHANGE_COUNT] = self.topo_state.get(LINKS_CHANGE_COUNT, 0)
+            topo_map_obj[LINKS_LAST_CHANGE] = self.topo_state.get(LINKS_LAST_CHANGE)
+        return topo_map_obj
 
     def _is_link_up(self, key):
         """iterates through links in graph obj and returns if link with key is in graph"""
@@ -626,6 +647,8 @@ class FaucetStateCollector:
                 change = True
             if topo_state.get(TOPOLOGY_GRAPH) != graph:
                 topo_state[TOPOLOGY_GRAPH] = graph
+                topo_state[LINKS_CHANGE_COUNT] = topo_state.get(LINKS_CHANGE_COUNT, 0) + 1
+                topo_state[LINKS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 change = True
             if topo_state.get(TOPOLOGY_DPS) != dps:
                 topo_state[TOPOLOGY_DPS] = dps
