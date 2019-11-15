@@ -217,9 +217,10 @@ function test_forch {
     echo process_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/process_state.json
     jq .processes_state_change_count $api_result | tee -a $TEST_RESULTS
-    jq .faucet.state $api_result | tee -a $TEST_RESULTS
-    jq .sleep.state $api_result | tee -a $TEST_RESULTS
-    jq .sleep.cmd_line $api_result | tee -a $TEST_RESULTS
+    jq .processes.faucet.state $api_result | tee -a $TEST_RESULTS
+    jq .processes.sleep.state $api_result | tee -a $TEST_RESULTS
+    jq .processes.sleep.cmd_line $api_result | tee -a $TEST_RESULTS
+    jq '.processes.sleep.cpu_times_s | length' $api_result | tee -a $TEST_RESULTS
 
     echo list_hosts | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts1.json
