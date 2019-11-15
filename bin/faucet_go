@@ -2,7 +2,8 @@
 
 env
 
-adduser -D -u $USERID kronkiteman
+# User might already exist if docker restarted.
+adduser -D -u $USERID kronkiteman || true
 
 sudo -u kronkiteman \
      FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \

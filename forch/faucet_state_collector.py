@@ -246,15 +246,16 @@ class FaucetStateCollector:
             for switch_data in self.switch_states.values():
                 switch_data.get(LEARNED_MACS, set()).clear()
 
-    def _fill_egress_state(self, dplane_state):
+    def _fill_egress_state(self, target_obj):
         """Return egress state obj"""
         with self.lock:
             egress_obj = self.topo_state.get('egress', {})
-            dplane_state[EGRESS_STATE] = egress_obj.get(EGRESS_STATE)
-            dplane_state[EGRESS_DETAIL] = egress_obj.get(EGRESS_DETAIL)
-            dplane_state[EGRESS_LAST_UPDATE] = egress_obj.get(EGRESS_LAST_UPDATE)
-            dplane_state[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
-            dplane_state[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+            target_obj[EGRESS_STATE] = egress_obj.get(EGRESS_STATE)
+            target_obj[EGRESS_DETAIL] = egress_obj.get(EGRESS_DETAIL)
+            target_obj[EGRESS_LAST_UPDATE] = egress_obj.get(EGRESS_LAST_UPDATE)
+            target_obj[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
+            target_obj[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+            target_obj[TOPOLOGY_ROOT] = self.topo_state.get(TOPOLOGY_ROOT)
 
     def _get_switch_map(self):
         """returns switch map for topology overview"""
@@ -616,22 +617,22 @@ class FaucetStateCollector:
     @dump_states
     def process_stack_topo_change(self, timestamp, stack_root, graph, dps):
         """Process stack topology change event"""
-        t_state = self.topo_state
+        topo_state = self.topo_state
         change = False
         with self.lock:
             LOGGER.info('stack_topo changed to root %s', stack_root)
-            if t_state.get(TOPOLOGY_ROOT) != stack_root:
-                t_state[TOPOLOGY_ROOT] = stack_root
+            if topo_state.get(TOPOLOGY_ROOT) != stack_root:
+                topo_state[TOPOLOGY_ROOT] = stack_root
                 change = True
-            if t_state.get(TOPOLOGY_GRAPH) != graph:
-                t_state[TOPOLOGY_GRAPH] = graph
+            if topo_state.get(TOPOLOGY_GRAPH) != graph:
+                topo_state[TOPOLOGY_GRAPH] = graph
                 change = True
-            if t_state.get(TOPOLOGY_DPS) != dps:
-                t_state[TOPOLOGY_DPS] = dps
+            if topo_state.get(TOPOLOGY_DPS) != dps:
+                topo_state[TOPOLOGY_DPS] = dps
                 change = True
             if change:
-                t_state[TOPOLOGY_CHANGE_COUNT] = t_state.setdefault(TOPOLOGY_CHANGE_COUNT, 0) + 1
-                t_state[TOPOLOGY_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+                topo_state[TOPOLOGY_CHANGE_COUNT] = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
+                topo_state[TOPOLOGY_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
 
     @staticmethod
     def get_endpoints_from_link(link_map):
