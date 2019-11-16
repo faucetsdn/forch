@@ -22,16 +22,16 @@ Done with stack-solid stack test.
 Running forch-solid tests
 system_state
 "nz-kiwi"
-19
+25
 "http://localhost.n:9020"
 "split"
 dataplane_state
 "up"
-5
+8
 "active"
 "active"
 switch_state
-12
+15
 "nz-kiwi-t1sw1"
 9
 null
@@ -110,11 +110,11 @@ system_state
 "broken"
 dataplane_state
 "up"
-13
+16
 "active"
 "active"
 switch_state
-29
+32
 "nz-kiwi-t1sw2"
 9
 6
@@ -128,7 +128,7 @@ cpn_state
 "240.0.0.1"
 "healthy"
 process_state
-2
+1
 "healthy"
 "healthy"
 sleep 50.3231
@@ -139,10 +139,10 @@ list_hosts
 host_path
 "192.168.1.2"
 "nz-kiwi-t1sw2"
-6
+10
 "192.168.1.1"
 "nz-kiwi-t1sw2"
-null
+28
 Bring t2sw3 up
 Starting stack-broken stack test...
  t1sw2-eth6@t1sw1-eth6
@@ -170,12 +170,12 @@ Done with stack-broken stack test.
 Running forch-broke tests
 system_state
 "nz-kiwi"
-59
+65
 "http://localhost.n:9020"
 "broken"
 dataplane_state
 "up"
-34
+20
 "active"
 "down"
 switch_state
@@ -204,10 +204,10 @@ list_hosts
 host_path
 "192.168.1.2"
 "nz-kiwi-t1sw2"
-6
+10
 "192.168.1.1"
-null
-null
+"nz-kiwi-t1sw1"
+28
 Starting stack-restored stack test...
  t2sw1-eth50@t1sw1-eth9
  t2sw2-eth50@t1sw1-eth10
@@ -230,15 +230,15 @@ forch-faux-3: ping -c 10 192.168.1.0 10
 forch-faux-3: ping -c 10 192.168.1.1 10
 forch-faux-3: ping -c 10 192.168.1.2 10
 Done with stack-restored stack test.
-Running forch-post tests
+Running forch-restored tests
 system_state
 "nz-kiwi"
-73
+79
 "http://localhost.n:9020"
 "broken"
 dataplane_state
 "up"
-42
+24
 "active"
 "active"
 switch_state
@@ -270,4 +270,4 @@ host_path
 10
 "192.168.1.1"
 "nz-kiwi-t1sw2"
-null
+28

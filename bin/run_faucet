@@ -13,11 +13,13 @@ gauge_pt=6654
 prom_pt=
 docker_volumes=
 port_opts=
+local=
 
 cd $ROOT
 
 if [ "$1" == "local" ]; then
     docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
+    local=local
     shift
 fi
 
@@ -56,6 +58,22 @@ fi
 if [ -n "$FAUCET_SOCK" ]; then
     rm -f $INSTDIR/$FAUCET_SOCK
     event_sock=/var/log/faucet/$FAUCET_SOCK
+fi
+
+if [ -n "$local" ]; then
+    using_faucet=$(cd faucet; git rev-parse HEAD)
+    error_label="from local faucet/"
+else
+    using_faucet=`docker inspect $IMAGE | jq -r .[0].Config.Labels.FAUCET`
+    error_label="from image $IMAGE"
+fi
+
+expected_faucet=$(cat etc/FAUCET_VERSION)
+if [ "$using_faucet" != "$expected_faucet" ]; then
+    echo Image faucet version does not match configuration.
+    echo $using_faucet $error_label
+    echo $expected_faucet from etc/FAUCET_VERSION
+    false
 fi
 
 docker_envs="\

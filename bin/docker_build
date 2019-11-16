@@ -2,6 +2,7 @@
 
 FAUCET_REPO=https://github.com/grafnu/faucet.git
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
+docker_args=
 
 docker rmi -f forch/faux forch/faucet forch/gauge || true
 images=$(docker images | fgrep forch/ | wc -l)
@@ -15,15 +16,26 @@ docker build -t forch/faux -f etc/Dockerfile.faux . &
 
 if [ -d faucet ]; then
     echo Faucet already exists. Not cloning.
+    faucet_ver=$(cd faucet; git rev-parse HEAD)
+    if [ "$faucet_ver" != $FAUCET_HASH ]; then
+        echo Local faucet version not as expected.
+        echo $FAUCET_HASH from etc/FAUCET_VERSION
+        echo $faucet_ver in faucet/
+        false
+    fi
 else
     echo Cloning faucet locally...
     git clone $FAUCET_REPO faucet
     (cd faucet; git checkout $FAUCET_HASH)
 fi
 
+faucet_ver=$(cd faucet; git rev-parse HEAD)
+
+docker_args+=--label=FAUCET=$faucet_ver
+
 echo Building faucet and gauge...
-docker build -t forch/faucet -f etc/Dockerfile.faucet . &
-docker build -t forch/gauge -f etc/Dockerfile.gauge . &
+docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . &
+docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . &
 
 echo Waiting for builds to complete.
 wait
