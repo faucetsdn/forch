@@ -92,14 +92,15 @@ class LocalStateCollector:
 
         old_state = process_state.get('processes_state')
         state = constants.STATE_BROKEN if broken else constants.STATE_HEALTHY
-        process_state['processes_state'] = state
         process_state['processes_state_last_update'] = self._current_time
         state_detail = 'Processes in broken state: ' + ', '.join(broken) if broken else ''
-        process_state['processes_state_detail'] = state_detail
         if state != old_state:
-            process_state['processes_state_last_change'] = self._current_time
             state_change_count = process_state.get('processes_state_change_count', 0) + 1
+            LOGGER.info('process_state #%d is %s: %s', state_change_count, state, state_detail)
+            process_state['processes_state'] = state
+            process_state['processes_state_detail'] = state_detail
             process_state['processes_state_change_count'] = state_change_count
+            process_state['processes_state_last_change'] = self._current_time
 
     def _get_target_processes(self):
         """Get target processes"""
@@ -126,14 +127,16 @@ class LocalStateCollector:
 
         cmd_line = ' '.join(proc_list[0].cmdline()) if len(proc_list) == 1 else 'multiple'
         proc_map['cmd_line'] = cmd_line
-        create_time = max(proc.create_time() for proc in proc_list)
-        proc_map['create_time'] = datetime.fromtimestamp(create_time).isoformat()
+        create_time_max = max(proc.create_time() for proc in proc_list)
+        create_time = datetime.fromtimestamp(create_time_max).isoformat()
+        proc_map['create_time'] = create_time
         proc_map['create_time_last_update'] = self._current_time
 
-        if proc_map['create_time'] != old_proc_map.get('create_time'):
+        if create_time != old_proc_map.get('create_time'):
+            change_count = old_proc_map.get('create_time_change_count', 0) + 1
+            LOGGER.info('create_time #%d for %s: %s', change_count, proc_name, create_time)
+            proc_map['create_time_change_count'] = change_count
             proc_map['create_time_last_change'] = self._current_time
-            create_time_change_count = old_proc_map.get('create_time_change_count', 0) + 1
-            proc_map['create_time_change_count'] = create_time_change_count
 
         error = self._aggregate_process_stats(proc_map, proc_list)
 
@@ -204,6 +207,7 @@ class LocalStateCollector:
         if vrrp_map['is_master'] != old_vrrp_map.get('is_master'):
             vrrp_map['is_master_last_change'] = self._current_time
             is_master_change_count = old_vrrp_map.get('is_master_change_count', 0) + 1
+            LOGGER.info('is_master #%d: %s', is_master_change_count, vrrp_map['is_master'])
             vrrp_map['is_master_change_count'] = is_master_change_count
             if not vrrp_map['is_master']:
                 self._cleanup_handler()
@@ -217,8 +221,9 @@ class LocalStateCollector:
         vrrp_map['state_last_update'] = self._current_time
         if vrrp_map['state'] != old_vrrp_map.get('state'):
             vrrp_map['state_last_change'] = self._current_time
-            is_master_change_count = old_vrrp_map.get('state_change_count', 0) + 1
-            vrrp_map['state_change_count'] = is_master_change_count
+            state_change_count = old_vrrp_map.get('state_change_count', 0) + 1
+            LOGGER.info('vrrp_state #%d: %s', state_change_count, vrrp_map['state'])
+            vrrp_map['state_change_count'] = state_change_count
 
         return vrrp_map
 

@@ -90,9 +90,6 @@ if [ -n "$prom_pt" ]; then
     port_opts="-p $prom_pt:9303"
 fi
 
-uid=$(id -u)
-gid=$(id -g)
-echo $uid $gid
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
              -p $ext_ofpt:6653 $port_opts $IMAGE)

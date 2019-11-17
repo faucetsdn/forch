@@ -113,13 +113,13 @@ class CPNStateCollector:
                     continue
                 node_state_map = self._node_states[host_name]
 
-                last_state_count = node_state_map.get(KEY_NODE_STATE_COUNT, 0)
                 last_state = node_state_map.get(KEY_NODE_STATE)
                 new_state = CPNStateCollector._get_node_state(res_map)
                 if not last_state or new_state != last_state:
-                    LOGGER.info('cpn_state %s changed %s to %s', host_name, last_state, new_state)
+                    state_count = node_state_map.get(KEY_NODE_STATE_COUNT, 0) + 1
+                    LOGGER.info('cpn_state #%d host %s is %s', state_count, host_name, new_state)
                     node_state_map[KEY_NODE_STATE] = new_state
-                    node_state_map[KEY_NODE_STATE_COUNT] = last_state_count + 1
+                    node_state_map[KEY_NODE_STATE_COUNT] = state_count
                     node_state_map[KEY_NODE_STATE_CHANGE_TS] = current_time
 
                 node_state_map[KEY_NODE_STATE_UPDATE_TS] = current_time
@@ -167,8 +167,9 @@ class CPNStateCollector:
         if new_cpn_state != self._cpn_state.get(KEY_CPN_STATE):
             cpn_state_count = self._cpn_state.get(KEY_CPN_STATE_COUNT, 0) + 1
             self._cpn_state[KEY_CPN_STATE_COUNT] = cpn_state_count
+            self._cpn_state[KEY_CPN_STATE] = new_cpn_state
             self._cpn_state[KEY_CPN_STATE_CHANGE_TS] = current_time
-        self._cpn_state[KEY_CPN_STATE] = new_cpn_state
+            LOGGER.info('cpn_state #%d %s: %s', cpn_state_count, new_cpn_state, use_detail)
         self._cpn_state[KEY_CPN_STATE_DETAIL] = use_detail
         self._cpn_state[KEY_CPN_STATE_UPDATE_TS] = current_time
 

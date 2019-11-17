@@ -9,11 +9,24 @@ export CONTROLLER_NAME=127.0.0.1
 TEST_RESULTS=${TEST_RESULTS:-$out_dir/test_stack.out}
 GOLDEN_RESULTS=etc/test_stack.out
 TCPSUDO="sudo tcpdump"
+controllers=`sudo ovs-vsctl get-controller t1sw1`
 
 local=
 if [ "$1" == local ]; then
     local=y
     shift
+fi
+
+bridges=$(sudo ovs-vsctl show | fgrep Bridge | wc -l)
+if [ $bridges != 6 ]; then
+    echo System misconfiguration: found $bridges bridges, expected 6.
+    exit 2
+fi
+
+containers=$(docker ps  | fgrep forch- | wc -l)
+if [ $containers != 7 ]; then
+    echo System misconfiguration: found $containers containers, expected 7.
+    exit 2
 fi
 
 cap_base=10
@@ -22,6 +35,32 @@ num_pairs=12
 cap_length=$((cap_base + ping_count + num_pairs * 2))
 
 faucet_log=inst/forch-faucet-1/faucet.log
+
+function diagnose_stack {
+    echo Stack health
+    for bridge in $(sudo ovs-vsctl list-br); do
+        cont_count=`sudo ovs-vsctl get-controller $bridge | wc -l`
+        if [ $cont_count != 2 ]; then
+            echo Switch $bridge config: $(sudo ovs-vsctl get-controller $bridge)
+        fi
+    done
+
+    ip link | fgrep M-DOWN | sed -E 's/.*:(.*):.*/\1/'
+}
+
+function reset_stack {
+    sudo ovs-vsctl set-controller t2sw3 $controllers
+    sudo ip addr del 240.0.0.253/24 dev lo
+    sudo ip addr del 240.0.0.1/24 dev lo
+    sudo ip addr del 240.0.0.2/24 dev lo
+    sudo ip link set t1sw1-eth6 up
+    sudo ip link set t1sw1-eth9 up
+    sudo ip link set t1sw1-eth10 up
+    sudo ip link set t1sw1-eth11 up
+    sudo ip link set t1sw2-eth10 up
+
+    diagnose_stack
+}
 
 function test_pair {
     src=$1
@@ -41,10 +80,10 @@ function comp {
 }
 
 function test_stack {
-    desc=$1
-    echo Starting $desc stack test... | tee -a $TEST_RESULTS
+    desc=stack$1
+    echo Starting $desc test... | tee -a $TEST_RESULTS
 
-    ip link  | fgrep t1sw | fgrep M-DOWN | sed -E 's/.*:(.*):.*/\1/' | tee -a $TEST_RESULTS
+    diagnose_stack
 
     # Some versions of OVS are somewhat unstable, so restart for consistency.
     echo $desc Restarting ovs...
@@ -54,7 +93,7 @@ function test_stack {
     echo $desc Waiting for network stability...
     sleep 30
 
-    desc_dir=$out_dir/stack-$desc
+    desc_dir=$out_dir/$desc
     t1sw1p6_pcap=$desc_dir/t1sw1-eth6.pcap
     t1sw1p28_pcap=$desc_dir/t1sw1-eth28.pcap
     t1sw2p28_pcap=$desc_dir/t1sw2-eth28.pcap
@@ -126,13 +165,13 @@ function test_stack {
 
     cat $nodes_dir/* | tee -a $TEST_RESULTS
 
-    echo Done with $desc stack test. | tee -a $TEST_RESULTS
+    echo Done with $desc test. | tee -a $TEST_RESULTS
 }
 
 function restart_forch {
     echo Killing any old instances of forch...
-    sudo kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
-    sudo kill `ps ax | fgrep inst/forch-faucet-1/forch.log | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep inst/forch-faucet-1/forch.log | fgrep -v fgrep | awk '{print $1}'`
 
     PYTHONPATH=faucet bin/forch inst/forch-faucet-1 2>&1 &
 
@@ -174,6 +213,7 @@ function test_forch {
     fetch_forch dataplane_state
     fetch_forch switch_state '?switch=nz-kiwi-t2sw1&port=1' 1
     fetch_forch switch_state '?switch=nz-kiwi-t1sw2&port=10' 2
+    fetch_forch switch_state '?switch=nz-kiwi-t2sw3&port=1' 3
     fetch_forch cpn_state
     fetch_forch process_state
     fetch_forch list_hosts '' 1
@@ -181,21 +221,26 @@ function test_forch {
     fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02' 1
     fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&to_egress=true' 2
 
-    echo system_state | tee -a $TEST_RESULTS
+    echo @system_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/system_state.json
     jq .site_name $api_result | tee -a $TEST_RESULTS
     jq .system_state_change_count $api_result | tee -a $TEST_RESULTS
     jq .peer_controller_url $api_result | tee -a $TEST_RESULTS
     jq .system_state $api_result | tee -a $TEST_RESULTS
 
-    echo dataplane_state | tee -a $TEST_RESULTS
+    echo @dataplane_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/dataplane_state.json
     jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
+    jq '.dataplane_state_detail' $api_result | tee -a $TEST_RESULTS
     jq '.dataplane_state_change_count' $api_result | tee -a $TEST_RESULTS
     jq '.switch.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
     jq '.stack.links."nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6".link_state' $api_result | tee -a $TEST_RESULTS
+    jq '.egress.egress_state' $api_result | tee -a $TEST_RESULT
+    jq '.egress.egress_state_detail' $api_result | tee -a $TEST_RESULT
+    jq '.egress.egress_state_change_count' $api_result | tee -a $TEST_RESULT
+    jq '.egress.active_root' $api_result | tee -a $TEST_RESULT
 
-    echo switch_state | tee -a $TEST_RESULTS
+    echo @switch_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state1.json
     jq '.switches_state_change_count' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path[1].switch' $api_result | tee -a $TEST_RESULTS
@@ -205,8 +250,10 @@ function test_forch {
     api_result=$fout_dir/switch_state2.json
     jq '.switches_state_detail' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
+    api_result=$fout_dir/switch_state3.json
+    jq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result | tee -a $TEST_RESULTS
 
-    echo cpn_state | tee -a $TEST_RESULTS
+    echo @cpn_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/cpn_state.json
     jq '.cpn_state_change_count' $api_result | tee -a $TEST_RESULTS
     for node in nz-kiwi-t1sw1 nz-kiwi-t2sw2; do
@@ -214,7 +261,7 @@ function test_forch {
         jq ".cpn_nodes.\"$node\".state" $api_result | tee -a $TEST_RESULTS
     done
 
-    echo process_state | tee -a $TEST_RESULTS
+    echo @process_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/process_state.json
     jq .processes_state_change_count $api_result | tee -a $TEST_RESULTS
     jq .processes.faucet.state $api_result | tee -a $TEST_RESULTS
@@ -222,13 +269,13 @@ function test_forch {
     jq .processes.sleep.cmd_line $api_result | tee -a $TEST_RESULTS
     jq '.processes.sleep.cpu_times_s | length' $api_result | tee -a $TEST_RESULTS
 
-    echo list_hosts | tee -a $TEST_RESULTS
+    echo @list_hosts | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts1.json
     jq '.eth_srcs."9a:02:57:1e:8f:01".url' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts2.json
     jq '.eth_dsts."9a:02:57:1e:8f:02".url' $api_result | tee -a $TEST_RESULTS
 
-    echo host_path | tee -a $TEST_RESULTS
+    echo @host_path | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path1.json
     jq .dst_ip $api_result | tee -a $TEST_RESULTS
     jq .path[1].switch $api_result | tee -a $TEST_RESULTS
@@ -237,7 +284,10 @@ function test_forch {
     jq .src_ip $api_result | tee -a $TEST_RESULTS
     jq .path[1].switch $api_result | tee -a $TEST_RESULTS
     jq .path[1].egress $api_result | tee -a $TEST_RESULTS
+    jq '.path | length' $api_result | tee -a $TEST_RESULTS
 }
+
+reset_stack
 
 if [ -n "$local" ]; then
     echo Restarting Faucet | tee -a $TEST_RESULTS
@@ -246,58 +296,61 @@ if [ -n "$local" ]; then
 fi
 
 restart_forch
-controllers=`sudo ovs-vsctl get-controller t1sw2`
 
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
 docker exec forch-faucet-1 python -m faucet.python_test 2>&1 | tee -a $TEST_RESULTS
 rm faucet/faucet/python_test.py
 
-echo Stacking Tests | tee -a $TEST_RESULTS
-test_stack stack-solid
+echo %%% initial solid state | tee -a $TEST_RESULTS
+test_stack -solid
 test_forch -solid
 
-echo Bring t2sw3 down | tee -a $TEST_RESULTS
+echo %%% t2sw3 down, cpn nz-kiwi-ctl1 up, t1sw1-eth9 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl del-controller t2sw3
-ip addr add 240.0.0.253/24 dev lo
-ip link set t1sw1-eth9 down
-test_stack stack-linkd
+sudo ip addr add 240.0.0.253/24 dev lo
+sudo ip link set t1sw1-eth9 down
+test_stack -linkd
 
-ip link set t1sw2-eth10 down
-test_stack stack-twod
-echo sleep start `date`
+echo %%% t1sw1-eth10 down | tee -a $TEST_RESULTS
+sudo ip link set t1sw2-eth10 down
+test_stack -twod
 sleep 50.3231 &
 sleep 32
-echo sleep mid `date`
 test_forch -twod
-ps ax | fgrep sleep
-echo sleep end `date`
 
-echo Bring t2sw3 up | tee -a $TEST_RESULTS
+echo %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl set-controller t2sw3 $controllers
-ip addr add 240.0.0.1/24 dev lo
-ip link set t1sw1-eth6 down
-ip link set t1sw1-eth11 down
-test_stack stack-broken
-test_forch -broke
+sudo ip addr add 240.0.0.1/24 dev lo
+sudo ip link set t1sw1-eth6 down
+sudo ip link set t1sw1-eth11 down
+test_stack -broken
+test_forch -broken
 
-ip addr del 240.0.0.1/24 dev lo
-ip link set t1sw1-eth10 down
-ip link set t1sw2-eth10 up
-ip link set t1sw1-eth6 up
-test_stack stack-restored
-sleep 12
+echo %%% cpn nz-kiwi-t2sw2 down, t1sw1-eth10 down, t1sw2-eth10 up, t1sw1-eth6 up | tee -a $TEST_RESULTS
+sudo ip addr add 240.0.0.2/24 dev lo
+sudo ip link set t1sw1-eth10 down
+sudo ip link set t1sw2-eth10 up
+sudo ip link set t1sw1-eth6 up
+test_stack -restored
 test_forch -restored
+
+echo %%% reset stack | tee -a $TEST_RESULTS
+reset_stack
+sleep 15
+test_forch -reset
 
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`
 
-ip addr del 240.0.0.253/24 dev lo | true
-
+echo
+echo '########## Begin complete test results ##########'
+cat $TEST_RESULTS
+echo '########## End complete test_results ##########'
+echo
 echo Comparing $GOLDEN_RESULTS with $TEST_RESULTS
 diff -b $GOLDEN_RESULTS $TEST_RESULTS
 result=$?
 
 echo Result diff returned $result
-# TODO: Fix the test diff and then enable this exit code.
-#exit $result
+exit $result

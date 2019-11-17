@@ -54,14 +54,12 @@ CONFIG_CHANGE_TYPE = "config_change_type"
 CONFIG_CHANGE_TS = "config_change_timestamp"
 LINK_STATE = "link_state"
 TOPOLOGY_ENTRY = "topology"
-TOPOLOGY_GRAPH = "graph_obj"
 TOPOLOGY_DPS = "dps"
-TOPOLOGY_CHANGE_COUNT = "dataplane_state_change_count"
-TOPOLOGY_LAST_CHANGE = "dataplane_state_last_change"
+TOPOLOGY_CHANGE_COUNT = "topology_change_count"
+TOPOLOGY_LAST_CHANGE = "topology_last_change"
+LINKS_GRAPH = "links_graph"
 LINKS_CHANGE_COUNT = "links_change_count"
 LINKS_LAST_CHANGE = "links_state_last_change"
-TOPOLOGY_HEALTH = "is_healthy"
-TOPOLOGY_NOT_HEALTH = "is_wounded"
 TOPOLOGY_DP_MAP = "switches"
 TOPOLOGY_LINK_MAP = "links"
 TOPOLOGY_ROOT = "active_root"
@@ -80,6 +78,7 @@ class FaucetStateCollector:
     def __init__(self):
         self.switch_states = {}
         self.topo_state = {}
+        self.topo_state.setdefault(LINKS_GRAPH, [])
         self.learned_macs = {}
         self.faucet_config = {}
         self.lock = RLock()
@@ -434,8 +433,7 @@ class FaucetStateCollector:
         """iterates through links in graph obj and returns if link with key is in graph"""
         key = key.replace('@', '-')
         with self.lock:
-            links = self.topo_state.get(TOPOLOGY_GRAPH, {}).get("links", [])
-            for link in links:
+            for link in self.topo_state.get(LINKS_GRAPH):
                 if link["key"] == key:
                     return True
         return False
@@ -460,7 +458,7 @@ class FaucetStateCollector:
         """"Returns path to egress from given switch. Appends ingress port to first hop if given"""
         res = {'path': []}
         with self.lock:
-            link_list = self.topo_state.get(TOPOLOGY_GRAPH, {}).get('links', [])
+            link_list = self.topo_state.get(LINKS_GRAPH)
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
             if not dps or not link_list:
                 return {
@@ -568,11 +566,12 @@ class FaucetStateCollector:
             old_state = egress_state.get(EGRESS_STATE)
             new_state = constants.STATE_UP if lacp_up else constants.STATE_DOWN
             if new_state != old_state:
-                LOGGER.info('lag_state %s, %s -> %s', name, old_state, new_state)
+                change_count = egress_state.get(EGRESS_CHANGE_COUNT, 0) + 1
+                LOGGER.info('lag_state #%d %s, %s -> %s', change_count, name, old_state, new_state)
                 egress_state[EGRESS_STATE] = new_state
                 egress_state[EGRESS_DETAIL] = name if lacp_up else None
                 egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
-                egress_state[EGRESS_CHANGE_COUNT] = egress_state.get(EGRESS_CHANGE_COUNT, 0) + 1
+                egress_state[EGRESS_CHANGE_COUNT] = change_count
 
     @dump_states
     # pylint: disable=too-many-arguments
@@ -605,11 +604,12 @@ class FaucetStateCollector:
 
             dp_state = self.switch_states.setdefault(dp_name, {})
 
-            LOGGER.info('dp_config %s change type %s', dp_id, restart_type)
+            change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + 1
+            LOGGER.info('dp_config #%d %s change type %s', change_count, dp_id, restart_type)
             dp_state[DP_ID] = dp_id
             dp_state[CONFIG_CHANGE_TYPE] = restart_type
             dp_state[CONFIG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
-            dp_state[CONFIG_CHANGE_COUNT] = dp_state.setdefault(CONFIG_CHANGE_COUNT, 0) + 1
+            dp_state[CONFIG_CHANGE_COUNT] = change_count
 
     @dump_states
     def process_dp_change(self, timestamp, dp_name, connected):
@@ -620,41 +620,43 @@ class FaucetStateCollector:
             dp_state = self.switch_states.setdefault(dp_name, {})
             new_state = SWITCH_CONNECTED if connected else SWITCH_DOWN
             if dp_state.get(SW_STATE) != new_state:
-                LOGGER.info('dp_change %s, %s -> %s', dp_name, dp_state.get(SW_STATE), new_state)
+                change_count = dp_state.get(SW_STATE_CHANGE_COUNT, 0) + 1
+                LOGGER.info('dp_change #%d %s, %s -> %s', change_count, dp_name,
+                            dp_state.get(SW_STATE), new_state)
                 dp_state[SW_STATE] = new_state
                 dp_state[SW_STATE_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
-                dp_state[SW_STATE_CHANGE_COUNT] = dp_state.get(SW_STATE_CHANGE_COUNT, 0) + 1
+                dp_state[SW_STATE_CHANGE_COUNT] = change_count
 
     @dump_states
     def process_dataplane_config_change(self, timestamp, dps_config):
         """Handle config data sent through event channel """
         with self.lock:
-            LOGGER.info('dataplane_config change')
             cfg_state = self.faucet_config
+            change_count = cfg_state.get(DPS_CFG_CHANGE_COUNT, 0) + 1
+            LOGGER.info('dataplane_config #%d change', change_count)
             cfg_state[DPS_CFG] = dps_config
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
-            cfg_state[DPS_CFG_CHANGE_COUNT] = cfg_state.setdefault(DPS_CFG_CHANGE_COUNT, 0) + 1
+            cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
 
     @dump_states
     def process_stack_topo_change(self, timestamp, stack_root, graph, dps):
         """Process stack topology change event"""
         topo_state = self.topo_state
-        change = False
         with self.lock:
-            LOGGER.info('stack_topo changed to root %s', stack_root)
-            if topo_state.get(TOPOLOGY_ROOT) != stack_root:
-                topo_state[TOPOLOGY_ROOT] = stack_root
-                change = True
-            if topo_state.get(TOPOLOGY_GRAPH) != graph:
-                topo_state[TOPOLOGY_GRAPH] = graph
-                topo_state[LINKS_CHANGE_COUNT] = topo_state.get(LINKS_CHANGE_COUNT, 0) + 1
+            link_graph = graph.get('links')
+            if topo_state.get(LINKS_GRAPH) != link_graph:
+                link_change_count = topo_state.get(LINKS_CHANGE_COUNT, 0) + 1
+                LOGGER.info('topo_links #%d graph len %d', link_change_count, len(link_graph))
+                topo_state[LINKS_GRAPH] = link_graph
+                topo_state[LINKS_CHANGE_COUNT] = link_change_count
                 topo_state[LINKS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
-                change = True
-            if topo_state.get(TOPOLOGY_DPS) != dps:
+
+            if topo_state.get(TOPOLOGY_ROOT) != stack_root or topo_state.get(TOPOLOGY_DPS) != dps:
+                topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
+                LOGGER.info('stack_topo change #%d to root %s', topo_change_count, stack_root)
+                topo_state[TOPOLOGY_ROOT] = stack_root
                 topo_state[TOPOLOGY_DPS] = dps
-                change = True
-            if change:
-                topo_state[TOPOLOGY_CHANGE_COUNT] = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
+                topo_state[TOPOLOGY_CHANGE_COUNT] = topo_change_count
                 topo_state[TOPOLOGY_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
 
     @staticmethod
@@ -729,7 +731,7 @@ class FaucetStateCollector:
     def _get_graph(self, src_mac, dst_mac):
         """Get a graph consists of links only used by src and dst MAC"""
         graph = {}
-        for link_map in self.topo_state.get(TOPOLOGY_GRAPH, {}).get("links", []):
+        for link_map in self.topo_state.get(LINKS_GRAPH):
             if not link_map:
                 continue
             sw_1, p_1, sw_2, p_2 = FaucetStateCollector.get_endpoints_from_link(link_map)

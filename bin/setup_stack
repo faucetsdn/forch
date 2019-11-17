@@ -175,7 +175,7 @@ done
 echo Letting system settle...
 sleep 10
 
-echo forch-faucet-1
+echo head of forch-faucet-1/faucet.log:
 head inst/forch-faucet-1/faucet.log
 echo
 
