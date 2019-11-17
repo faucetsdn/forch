@@ -1,0 +1,37 @@
+#!/bin/bash -e
+
+OUTFILE=$HOME/.travis.out
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
+echo Trigger build at `date` > $OUTFILE
+
+echo Reading info from $HOME/.travis.env >> $OUTFILE
+source $HOME/.travis.env
+
+if [ -z "$TRAVIS_API_TOKEN" ]; then
+    echo TRAVIS_API_TOKEN not defined.
+    false
+fi
+
+
+branch=`git rev-parse --abbrev-ref HEAD`
+remote_branch=`git rev-parse --abbrev-ref $branch@{upstream}`
+remote=${remote_branch%/$branch}
+url=`git config remote.$remote.url`
+slug_prefix=${url#*:}
+slug=${slug_prefix%.git}
+account=${slug%/*}
+repo=${slug#*/}
+
+body="{\"request\": {\"branch\": \"$branch\" }}"
+
+curl -s -X POST \
+   -H "Content-Type: application/json" \
+   -H "Accept: application/json" \
+   -H "Travis-API-Version: 3" \
+   -H "Authorization: token $TRAVIS_API_TOKEN" \
+   -d "$body" \
+   https://api.travis-ci.org/repo/$account%2F$repo/requests >> $OUTFILE 2>&1
+
+echo Trigger complete. >> $OUTFILE
