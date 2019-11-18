@@ -3877,20 +3877,20 @@ details partner lacp pdu:
 
         lacp_timeout = 5
 
-        def prom_lag_status():
+        def prom_lacp_up_ports():
             lacp_up_ports = 0
             for lacp_port in lag_ports:
                 port_labels = self.port_labels(self.port_map['port_%u' % lacp_port])
-                lacp_up_ports += self.scrape_prometheus_var(
-                    'port_lacp_status', port_labels, default=0)
+                lacp_state = self.scrape_prometheus_var('port_lacp_state', port_labels, default=0)
+                lacp_up_ports += 1 if lacp_state == 3 else 0
             return lacp_up_ports
 
-        def require_lag_status(status):
+        def require_lag_up_ports(expected_up_ports):
             for _ in range(lacp_timeout*10):
-                if prom_lag_status() == status:
+                if prom_lacp_up_ports() == expected_up_ports:
                     break
                 time.sleep(1)
-            self.assertEqual(prom_lag_status(), status)
+            self.assertEqual(prom_lacp_up_ports(), expected_up_ports)
 
         def require_linux_bond_up():
             for _retries in range(lacp_timeout*2):
@@ -3909,7 +3909,7 @@ details partner lacp pdu:
         # Start with ports down.
         for port in lag_ports:
             self.set_port_down(self.port_map['port_%u' % port])
-        self.assertEqual(0, prom_lag_status())
+        require_lag_up_ports(0)
         orig_ip = first_host.IP()
         switch = self.first_switch()
         bond_members = [pair[0].name for pair in first_host.connectionsTo(switch)]
@@ -3933,24 +3933,24 @@ details partner lacp pdu:
             # All ports down.
             for port in lag_ports:
                 self.set_port_down(self.port_map['port_%u' % port])
-            require_lag_status(0)
+            require_lag_up_ports(0)
             # Pick a random port to come up.
             up_port = random.choice(lag_ports)
             self.set_port_up(self.port_map['port_%u' % up_port])
-            require_lag_status(1)
+            require_lag_up_ports(1)
             # We have connectivity with only one port.
             self.one_ipv4_ping(
                 first_host, self.FAUCET_VIPV4.ip, require_host_learned=False, intf=bond)
             for port in lag_ports:
                 self.set_port_up(self.port_map['port_%u' % port])
             # We have connectivity with two ports.
-            require_lag_status(2)
+            require_lag_up_ports(2)
             require_linux_bond_up()
             self.one_ipv4_ping(
                 first_host, self.FAUCET_VIPV4.ip, require_host_learned=False, intf=bond)
             # We have connectivity if that random port goes down.
             self.set_port_down(self.port_map['port_%u' % up_port])
-            require_lag_status(1)
+            require_lag_up_ports(1)
             self.one_ipv4_ping(
                 first_host, self.FAUCET_VIPV4.ip, require_host_learned=False, intf=bond)
             for port in lag_ports:
@@ -4693,19 +4693,19 @@ acls:
         tcpdump_filter = ('icmp')
         tcpdump_txt = self.tcpdump_helper(
             second_host, tcpdump_filter, [
-                lambda: first_host.cmd('ping -c1 %s' % second_host.IP())])
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))])
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
         tcpdump_txt = self.tcpdump_helper(
             third_host, tcpdump_filter, [
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (third_host.IP(), '01:02:03:04:05:06')),
-                lambda: first_host.cmd('ping -c1 %s' % third_host.IP())])
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, third_host.IP())))])
         self.assertTrue(re.search(
             '%s: ICMP echo request' % third_host.IP(), tcpdump_txt))
         tcpdump_txt = self.tcpdump_helper(
             fourth_host, tcpdump_filter, [
-                lambda: first_host.cmd('ping -c1 %s' % fourth_host.IP())])
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, fourth_host.IP())))])
         self.assertFalse(re.search(
             '%s: ICMP echo request' % fourth_host.IP(), tcpdump_txt))
 
@@ -4750,7 +4750,7 @@ acls:
             second_host, tcpdump_filter, [
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (second_host.IP(), '01:02:03:04:05:06')),
-                lambda: first_host.cmd('ping -c1 %s' % second_host.IP())])
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))])
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
         self.assertTrue(re.search(
@@ -4797,7 +4797,7 @@ acls:
             second_host, tcpdump_filter, [
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (second_host.IP(), '01:02:03:04:05:06')),
-                lambda: first_host.cmd('ping -c1 %s' % second_host.IP())])
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))])
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
         self.assertTrue(re.search(
@@ -4844,7 +4844,7 @@ acls:
             second_host, tcpdump_filter, [
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (second_host.IP(), '01:02:03:04:05:06')),
-                lambda: first_host.cmd('ping -c1 %s' % second_host.IP())],
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))],
             packets=1)
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt), msg=tcpdump_txt)
@@ -5491,7 +5491,8 @@ acls:
                 tcpdump_host, tcpdump_filter, [
                     lambda: first_host.cmd(
                         'arp -s %s %s' % (second_host.IP(), '01:02:03:04:05:06')),
-                    lambda: first_host.cmd('ping -c1 %s' % second_host.IP())], root_intf=True)
+                    lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))],
+                root_intf=True)
             self.assertTrue(re.search(
                 '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
             self.assertTrue(re.search(
@@ -5544,7 +5545,8 @@ acls:
             second_host, tcpdump_filter, [
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (second_host.IP(), '01:02:03:04:05:06')),
-                lambda: first_host.cmd('ping -c1 %s' % second_host.IP())], root_intf=True)
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))],
+            root_intf=True)
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
         self.assertTrue(re.search(
@@ -5592,7 +5594,8 @@ acls:
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (second_host.IP(), '01:02:03:04:05:06')),
                 lambda: first_host.cmd(
-                    'ping -c1 %s' % second_host.IP())], packets=10, root_intf=True)
+                    ' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))],
+            packets=10, root_intf=True)
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
 
@@ -6925,7 +6928,7 @@ class FaucetStringOfDPTest(FaucetTest):
         tcpdump_txt = self.tcpdump_helper(
             tcpdump_host, tcpdump_filter, [
                 lambda: ping_host.cmd('arp -d %s' % tcpdump_host.IP()),
-                lambda: ping_host.cmd('ping -c1 %s' % tcpdump_host.IP())],
+                lambda: ping_host.cmd(' '.join((self.FPINGS_ARGS_ONE, tcpdump_host.IP())))],
             packets=(num_arp_expected+1))
         num_arp_received = len(re.findall(
             'who-has %s tell %s' % (tcpdump_host.IP(), ping_host.IP()), tcpdump_txt))
@@ -7403,19 +7406,22 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         return (first_lacp_port, second_lacp_port,
                 remote_first_lacp_port, remote_second_lacp_port)
 
-    def wait_for_lacp_status(self, port_no, wanted_status, dpid, dp_name, timeout=30):
+    def wait_for_lacp_state(self, port_no, wanted_state, dpid, dp_name, timeout=30):
         labels = self.port_labels(port_no)
         labels.update({'dp_id': '0x%x' % int(dpid), 'dp_name': dp_name})
         if not self.wait_for_prometheus_var(
-                'port_lacp_status', wanted_status,
+                'port_lacp_state', wanted_state,
                 labels=labels, dpid=False, timeout=timeout):
-            self.fail('wanted LACP status for %s to be %u' % (labels, wanted_status))
+            self.fail('wanted LACP state for %s to be %u' % (labels, wanted_state))
 
-    def wait_for_lacp_port_down(self, port_no, dpid, dp_name):
-        self.wait_for_lacp_status(port_no, 0, dpid, dp_name)
+    def wait_for_lacp_port_init(self, port_no, dpid, dp_name):
+        self.wait_for_lacp_state(port_no, 1, dpid, dp_name)
 
     def wait_for_lacp_port_up(self, port_no, dpid, dp_name):
-        self.wait_for_lacp_status(port_no, 1, dpid, dp_name)
+        self.wait_for_lacp_state(port_no, 3, dpid, dp_name)
+
+    def wait_for_lacp_port_noact(self, port_no, dpid, dp_name):
+        self.wait_for_lacp_state(port_no, 5, dpid, dp_name)
 
     # We sort non_host_links by port because FAUCET sorts its ports
     # and only floods out of the first active LACP port in that list
@@ -7446,9 +7452,9 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
             other_local_lacp_port = list(local_ports - {local_lacp_port})[0]
             other_remote_lacp_port = list(remote_ports - {remote_lacp_port})[0]
             self.set_port_down(local_lacp_port, wait=False)
-            self.wait_for_lacp_port_down(
+            self.wait_for_lacp_port_init(
                 local_lacp_port, self.dpid, self.DP_NAME)
-            self.wait_for_lacp_port_down(
+            self.wait_for_lacp_port_init(
                 remote_lacp_port, self.dpids[1], 'faucet-2')
             self.wait_until_matching_flow(
                 self.match_bcast, self._FLOOD_TABLE, actions=[
@@ -7486,7 +7492,7 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.reload_conf(conf, self.faucet_config_path, restart=True,
                          cold_start=False, change_expected=False)
 
-        self.wait_for_lacp_port_down(src_port, self.dpids[0], 'faucet-1')
+        self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
 
     def test_passthrough(self):
@@ -7516,9 +7522,9 @@ class FaucetStringOfDPLACPUntaggedTest(FaucetStringOfDPTest):
         self.reload_conf(conf, self.faucet_config_path, restart=True,
                          cold_start=False, change_expected=False)
 
-        self.wait_for_lacp_port_down(src_port, self.dpids[0], 'faucet-1')
+        self.wait_for_lacp_port_init(src_port, self.dpids[0], 'faucet-1')
         self.wait_for_lacp_port_up(dst_port, self.dpids[0], 'faucet-1')
-        self.wait_for_lacp_port_down(end_port, self.dpids[1], 'faucet-2')
+        self.wait_for_lacp_port_init(end_port, self.dpids[1], 'faucet-2')
 
 
 class FaucetStackStringOfDPUntaggedTest(FaucetStringOfDPTest):
@@ -8176,7 +8182,7 @@ acls:
             second_host, tcpdump_filter, [
                 lambda: first_host.cmd(
                     'arp -s %s %s' % (second_host.IP(), self.OVERRIDE_MAC)),
-                lambda: first_host.cmd('ping -c1 -t1 %s' % second_host.IP())],
+                lambda: first_host.cmd(' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))],
             timeout=5, packets=1)
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt))
@@ -8185,7 +8191,7 @@ acls:
         overridden_host.setMAC(self.OVERRIDE_MAC)
         rewrite_host.setMAC(self.REWRITE_MAC)
         rewrite_host.cmd('arp -s %s %s' % (overridden_host.IP(), overridden_host.MAC()))
-        rewrite_host.cmd('ping -c1 %s' % overridden_host.IP())
+        rewrite_host.cmd(' '.join((self.FPINGS_ARGS_ONE, overridden_host.IP())))
         self.wait_until_matching_flow(
             {'dl_dst': self.REWRITE_MAC},
             table_id=self._ETH_DST_TABLE,
