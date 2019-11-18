@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-OUTFILE=$HOME/.travis.out
+OUTFILE=$HOME/.travis.forch
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
@@ -14,17 +14,19 @@ if [ -z "$TRAVIS_API_TOKEN" ]; then
     false
 fi
 
-
 branch=`git rev-parse --abbrev-ref HEAD`
 remote_branch=`git rev-parse --abbrev-ref $branch@{upstream}`
 remote=${remote_branch%/$branch}
 url=`git config remote.$remote.url`
-slug_prefix=${url#*:}
-slug=${slug_prefix%.git}
-account=${slug%/*}
-repo=${slug#*/}
+major=${url%.git}
+repo=${major##*/}
+pre_repo=${major%/$repo}
+account_prime=${pre_repo##*/}
+account=${account_prime##*:}
 
 body="{\"request\": {\"branch\": \"$branch\" }}"
+
+echo $account $repo $branch >> $OUTFILE
 
 curl -s -X POST \
    -H "Content-Type: application/json" \
@@ -34,4 +36,5 @@ curl -s -X POST \
    -d "$body" \
    https://api.travis-ci.org/repo/$account%2F$repo/requests >> $OUTFILE 2>&1
 
+echo >> $OUTFILE
 echo Trigger complete. >> $OUTFILE
