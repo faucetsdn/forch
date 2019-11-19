@@ -122,7 +122,7 @@ class LocalStateCollector:
             return None, f"Process {proc_name}: number of process ({len(proc_list)}) " \
                 f"does not match target count ({proc_count})"
 
-        old_proc_map = self._process_state.get(proc_name, {})
+        old_proc_map = self._process_state.get('processes', {}).get(proc_name, {})
         proc_map = copy.deepcopy(old_proc_map)
 
         cmd_line = ' '.join(proc_list[0].cmdline()) if len(proc_list) == 1 else 'multiple'
