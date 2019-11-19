@@ -4,6 +4,8 @@ out_dir=test_out/
 rm -rf $out_dir
 mkdir -p $out_dir
 
+source bin/stack_functions
+
 export CONTROLLER_NAME=127.0.0.1
 
 TEST_RESULTS=${TEST_RESULTS:-$out_dir/test_stack.out}
@@ -327,11 +329,15 @@ sudo ip link set t1sw1-eth11 down
 test_stack -broken
 test_forch -broken
 
-echo %%% cpn nz-kiwi-t2sw2 down, t1sw1-eth10 down, t1sw2-eth10 up, t1sw1-eth6 up | tee -a $TEST_RESULTS
+echo %%% cpn t2sw2 down, t1sw1:10 down, t1sw2:10 up, t1sw1:6 up, t2sw3 swapped | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.2/24 dev lo
 sudo ip link set t1sw1-eth10 down
 sudo ip link set t1sw2-eth10 up
 sudo ip link set t1sw1-eth6 up
+del_link t1sw1 11 t2sw3 50
+del_link t1sw2 11 t2sw3 52
+add_link t1sw1 11 t2sw3 52
+add_link t1sw2 11 t2sw3 50
 test_stack -restored
 test_forch -restored
 

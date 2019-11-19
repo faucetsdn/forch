@@ -32,6 +32,8 @@ def dump_states(func):
 
 
 FAUCET_LACP_STATE_UP = 3
+FAUCET_STACK_STATE_BAD = 2
+FAUCET_STACK_STATE_UP = 3
 SWITCH_CONNECTED = "CONNECTED"
 SWITCH_DOWN = "DOWN"
 
@@ -57,9 +59,10 @@ TOPOLOGY_ENTRY = "topology"
 TOPOLOGY_DPS = "dps"
 TOPOLOGY_CHANGE_COUNT = "topology_change_count"
 TOPOLOGY_LAST_CHANGE = "topology_last_change"
+LINKS_STATE = "links_state"
 LINKS_GRAPH = "links_graph"
 LINKS_CHANGE_COUNT = "links_change_count"
-LINKS_LAST_CHANGE = "links_state_last_change"
+LINKS_LAST_CHANGE = "links_last_change"
 TOPOLOGY_DP_MAP = "switches"
 TOPOLOGY_LINK_MAP = "links"
 TOPOLOGY_ROOT = "active_root"
@@ -115,14 +118,11 @@ class FaucetStateCollector:
         }
 
     def _update_dataplane_detail(self, dplane_state):
-        state = constants.STATE_HEALTHY
         detail = []
+
         egress = dplane_state.get('egress', {})
         egress_state = egress.get(EGRESS_STATE)
         egress_detail = egress.get(EGRESS_DETAIL)
-
-        # TODO: Expose last update time up the chain.
-        _ = egress.get(EGRESS_LAST_UPDATE)
 
         state = egress_state if egress else constants.STATE_INITIALIZING
         if egress_detail:
@@ -185,7 +185,7 @@ class FaucetStateCollector:
         broken_links = []
         link_map = dplane_state.get('stack', {}).get(TOPOLOGY_LINK_MAP, {})
         for link, link_obj in link_map.items():
-            if link_obj.get(LINK_STATE) == constants.STATE_DOWN:
+            if link_obj.get(LINK_STATE) not in {constants.STATE_ACTIVE, constants.STATE_UP}:
                 broken_links.append(link)
         return broken_links
 
@@ -398,45 +398,46 @@ class FaucetStateCollector:
         keep_order = subkey1 < subkey2
         return subkey1+"@"+subkey2 if keep_order else subkey2+"@"+subkey1
 
+    def _get_topo_map(self):
+        topo_map = {}
+        config_obj = self.faucet_config.get(DPS_CFG)
+        if not config_obj:
+            return None
+        for local_dp, dp_obj in config_obj.items():
+            for local_port, iface_obj in dp_obj.get("interfaces", {}).items():
+                peer_dp = iface_obj.get("stack", {}).get("dp")
+                peer_port = str(iface_obj.get("stack", {}).get("port"))
+                if peer_dp and peer_port:
+                    key = self._make_key(local_dp, local_port, peer_dp, peer_port)
+                    if key not in topo_map:
+                        link_state = self._get_link_state(local_dp, local_port, peer_dp, peer_port)
+                        topo_map.setdefault(key, {})[LINK_STATE] = link_state
+        return topo_map
+
+    def _get_link_state(self, local_dp, local_port, peer_dp, peer_port):
+        dps = self.topo_state.get(TOPOLOGY_DPS, {})
+        if (dps.get(local_dp, {}).get('root_hop_port') == int(local_port) or
+                dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
+            return constants.STATE_ACTIVE
+        dp_state = self.topo_state.setdefault(LINKS_STATE, {}).setdefault(local_dp, {})
+        port_state = dp_state.setdefault(int(local_port), {}).get('state')
+        if port_state == FAUCET_STACK_STATE_UP:
+            return constants.STATE_UP
+        if port_state == FAUCET_STACK_STATE_BAD:
+            return constants.STATE_BROKEN
+        return constants.STATE_DOWN
+
     def _get_stack_topo(self):
         """Returns formatted topology object"""
-        topo_map = {}
-        topo_map_obj = {}
         with self.lock:
-            config_obj = self.faucet_config.get(DPS_CFG, {})
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
-            if not dps or not config_obj:
-                return {}
-            for start_dp, dp_obj in config_obj.items():
-                for start_port, iface_obj in dp_obj.get("interfaces", {}).items():
-                    peer_dp = iface_obj.get("stack", {}).get("dp")
-                    peer_port = str(iface_obj.get("stack", {}).get("port"))
-                    if peer_dp and peer_port:
-                        link_obj = {}
-                        key = self._make_key(start_dp, start_port, peer_dp, peer_port)
-                        if key in topo_map:
-                            continue
-                        topo_map[key] = link_obj
-                        if (dps.get(start_dp, {}).get('root_hop_port') == int(start_port) or
-                                dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
-                            link_obj[LINK_STATE] = constants.STATE_ACTIVE
-                        elif self._is_link_up(key):
-                            link_obj[LINK_STATE] = constants.STATE_UP
-                        else:
-                            link_obj[LINK_STATE] = constants.STATE_DOWN
-            topo_map_obj[TOPOLOGY_LINK_MAP] = topo_map
+            if not dps:
+                return None
+            topo_map_obj = {}
+            topo_map_obj[TOPOLOGY_LINK_MAP] = self._get_topo_map()
             topo_map_obj[LINKS_CHANGE_COUNT] = self.topo_state.get(LINKS_CHANGE_COUNT, 0)
             topo_map_obj[LINKS_LAST_CHANGE] = self.topo_state.get(LINKS_LAST_CHANGE)
         return topo_map_obj
-
-    def _is_link_up(self, key):
-        """iterates through links in graph obj and returns if link with key is in graph"""
-        key = key.replace('@', '-')
-        with self.lock:
-            for link in self.topo_state.get(LINKS_GRAPH):
-                if link["key"] == key:
-                    return True
-        return False
 
     def _is_port_up(self, switch, port):
         """Check if port is up"""
@@ -639,17 +640,27 @@ class FaucetStateCollector:
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
 
     @dump_states
+    def process_stack_state(self, timestamp, dp_name, port, new_state):
+        """Process a stack link state change"""
+        with self.lock:
+            links_state = self.topo_state.setdefault(LINKS_STATE, {})
+            port_state = links_state.setdefault(dp_name, {}).setdefault(port, {})
+            if port_state.get('state') != new_state:
+                port_state['state'] = new_state
+                link_change_count = self._update_stack_links_stats(timestamp)
+                LOGGER.info('stack_state_links #%d %s:%d is now %s', link_change_count,
+                            dp_name, port, new_state)
+
+    @dump_states
     def process_stack_topo_change(self, timestamp, stack_root, graph, dps):
         """Process stack topology change event"""
         topo_state = self.topo_state
         with self.lock:
             link_graph = graph.get('links')
             if topo_state.get(LINKS_GRAPH) != link_graph:
-                link_change_count = topo_state.get(LINKS_CHANGE_COUNT, 0) + 1
-                LOGGER.info('topo_links #%d graph len %d', link_change_count, len(link_graph))
                 topo_state[LINKS_GRAPH] = link_graph
-                topo_state[LINKS_CHANGE_COUNT] = link_change_count
-                topo_state[LINKS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+                link_change_count = self._update_stack_links_stats(timestamp)
+                LOGGER.info('stack_topo_links #%d graph len %d', link_change_count, len(link_graph))
 
             if topo_state.get(TOPOLOGY_ROOT) != stack_root or topo_state.get(TOPOLOGY_DPS) != dps:
                 topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
@@ -658,6 +669,12 @@ class FaucetStateCollector:
                 topo_state[TOPOLOGY_DPS] = dps
                 topo_state[TOPOLOGY_CHANGE_COUNT] = topo_change_count
                 topo_state[TOPOLOGY_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+
+    def _update_stack_links_stats(self, timestamp):
+        link_change_count = self.topo_state.get(LINKS_CHANGE_COUNT, 0) + 1
+        self.topo_state[LINKS_CHANGE_COUNT] = link_change_count
+        self.topo_state[LINKS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+        return link_change_count
 
     @staticmethod
     def get_endpoints_from_link(link_map):

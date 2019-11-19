@@ -117,6 +117,11 @@ class Forchestrator:
             LOGGER.debug('stack dataplane_state change root:%s', stack_root)
             self._faucet_collector.process_stack_topo_change(timestamp, stack_root, graph, dps)
 
+        (name, port, state) = self._faucet_events.as_stack_state(event)
+        if name is not None:
+            LOGGER.debug('stack stack_state change: %s:%d, %d', name, port, state)
+            self._faucet_collector.process_stack_state(timestamp, name, port, state)
+
         (name, port, state) = self._faucet_events.as_lag_state(event)
         if name and port:
             LOGGER.debug('LAG state %s %s %s', name, port, state)
@@ -362,6 +367,8 @@ def show_error(error, path, params):
 def get_log_path():
     """Get path for logging"""
     forch_log_dir = os.getenv('FORCH_LOG_DIR')
+    if not forch_log_dir:
+        return None
     return os.path.join(forch_log_dir, 'forch.log')
 
 

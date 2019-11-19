@@ -2,8 +2,14 @@
 
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
+nolog=
 
 FSOCK=faucet_event.sock
+
+if [ "$1" == nolog ]; then
+    nolog=nolog
+    shift
+fi
 
 if [ -n "$1" ]; then
     FORCH_BASE=$1
@@ -16,6 +22,10 @@ else
     FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
     FORCH_LOG_DIR=${FORCH_LOG_DIR:-/var/log/faucet}
     mkdir -p $FORCH_LOG_DIR $FORCH_CONFIG_DIR
+fi
+
+if [ -n "$nolog" ]; then
+    FORCH_LOG_DIR=
 fi
 
 if [ -f venv/bin/python ]; then
@@ -31,7 +41,9 @@ else
     echo Using existing controller name $CONTROLLER_NAME
 fi
 
-echo Writing forch logs to $FORCH_LOG_DIR/forch.log
+if [ -n "$FORCH_LOG_DIR" ]; then
+    echo Writing forch logs to $FORCH_LOG_DIR/forch.log
+fi
 
 export CONTROLLER_NAME
 export FAUCET_EVENT_SOCK
