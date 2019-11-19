@@ -8,8 +8,9 @@ import time
 import threading
 from threading import RLock
 
-import forch.constants as constants
-
+from forch.constants import \
+    STATE_INACTIVE, STATE_HEALTHY, STATE_UP, STATE_INITIALIZING, \
+    STATE_BROKEN, STATE_DOWN, STATE_ACTIVE
 
 LOGGER = logging.getLogger('fstate')
 
@@ -101,7 +102,7 @@ class FaucetStateCollector:
                 with self._active_lock:
                     if not self._is_active:
                         detail = 'This controller is inactive. Please view peer controller.'
-                        return {state_name: constants.STATE_INACTIVE, 'detail': detail}
+                        return {state_name: STATE_INACTIVE, 'detail': detail}
                 return func(self, *args, **kwargs)
             return wrapped
         return check_active
@@ -119,23 +120,25 @@ class FaucetStateCollector:
 
     def _update_dataplane_detail(self, dplane_state):
         detail = []
+        state = STATE_INITIALIZING
 
         egress = dplane_state.get('egress', {})
         egress_state = egress.get(EGRESS_STATE)
         egress_detail = egress.get(EGRESS_DETAIL)
 
-        state = egress_state if egress else constants.STATE_INITIALIZING
+        if egress:
+            state = STATE_HEALTHY if egress_state == STATE_UP else STATE_BROKEN
         if egress_detail:
             detail.append("egress:" + str(egress_detail))
 
         broken_sw = self._get_broken_switches(dplane_state)
         if broken_sw:
-            state = constants.STATE_BROKEN
+            state = STATE_BROKEN
             detail.append("broken switches: " + str(broken_sw))
 
         broken_links = self._get_broken_links(dplane_state)
         if broken_links:
-            state = constants.STATE_BROKEN
+            state = STATE_BROKEN
             detail.append("broken links: " + str(broken_links))
 
         dplane_state['dataplane_state'] = state
@@ -177,7 +180,7 @@ class FaucetStateCollector:
         broken_sw = []
         sw_map = dplane_state.get('switch', {}).get(TOPOLOGY_DP_MAP, {})
         for switch, state in sw_map.items():
-            if state.get(SW_STATE) == constants.STATE_DOWN:
+            if state.get(SW_STATE) == STATE_DOWN:
                 broken_sw.append(switch)
         return broken_sw
 
@@ -185,7 +188,7 @@ class FaucetStateCollector:
         broken_links = []
         link_map = dplane_state.get('stack', {}).get(TOPOLOGY_LINK_MAP, {})
         for link, link_obj in link_map.items():
-            if link_obj.get(LINK_STATE) not in {constants.STATE_ACTIVE, constants.STATE_UP}:
+            if link_obj.get(LINK_STATE) not in {STATE_ACTIVE, STATE_UP}:
                 broken_links.append(link)
         return broken_links
 
@@ -221,18 +224,18 @@ class FaucetStateCollector:
             switches_data[switch_name] = switch_data
             change_count += switch_data.get(SW_STATE_CHANGE_COUNT, 0)
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
-            if switch_data[SW_STATE] != constants.STATE_ACTIVE:
+            if switch_data[SW_STATE] != STATE_ACTIVE:
                 broken.append(switch_name)
             self._augment_mac_urls(url_base, switch_data)
 
         if not self.switch_states:
-            switches_state = constants.STATE_BROKEN
+            switches_state = STATE_BROKEN
             state_detail = 'No switches connected'
         elif broken:
-            switches_state = constants.STATE_BROKEN
+            switches_state = STATE_BROKEN
             state_detail = 'Switches in broken state: ' + ', '.join(broken)
         else:
-            switches_state = constants.STATE_HEALTHY
+            switches_state = STATE_HEALTHY
             state_detail = None
 
         result = {
@@ -284,9 +287,9 @@ class FaucetStateCollector:
                 if not current_state:
                     switch_map[switch][SW_STATE] = None
                 elif current_state == SWITCH_CONNECTED:
-                    switch_map[switch][SW_STATE] = constants.STATE_ACTIVE
+                    switch_map[switch][SW_STATE] = STATE_ACTIVE
                 else:
-                    switch_map[switch][SW_STATE] = constants.STATE_DOWN
+                    switch_map[switch][SW_STATE] = STATE_DOWN
             switch_map_obj[TOPOLOGY_DP_MAP] = switch_map
             switch_map_obj[SW_STATE_CHANGE_COUNT] = change_count
             switch_map_obj[SW_STATE_LAST_CHANGE] = last_change
@@ -311,9 +314,9 @@ class FaucetStateCollector:
         switch_map["restart_type_last_change"] = switch_states.get(CONFIG_CHANGE_TS)
 
         if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
-            switch_map[SW_STATE] = constants.STATE_ACTIVE
+            switch_map[SW_STATE] = STATE_ACTIVE
         else:
-            switch_map[SW_STATE] = constants.STATE_DOWN
+            switch_map[SW_STATE] = STATE_DOWN
         switch_map[SW_STATE_LAST_CHANGE] = switch_states.get(SW_STATE_LAST_CHANGE, '')
         switch_map[SW_STATE_CHANGE_COUNT] = switch_states.get(SW_STATE_CHANGE_COUNT, 0)
 
@@ -349,7 +352,7 @@ class FaucetStateCollector:
         # port dynamics
         if PORT_STATE_UP in port_states:
             port_up = port_states[PORT_STATE_UP]
-            port_map[PORT_STATE] = constants.STATE_UP if port_up else constants.STATE_DOWN
+            port_map[PORT_STATE] = STATE_UP if port_up else STATE_DOWN
         else:
             port_map[PORT_STATE] = None
         port_map["state_last_change"] = port_states.get(PORT_STATE_TS)
@@ -418,14 +421,14 @@ class FaucetStateCollector:
         dps = self.topo_state.get(TOPOLOGY_DPS, {})
         if (dps.get(local_dp, {}).get('root_hop_port') == int(local_port) or
                 dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
-            return constants.STATE_ACTIVE
+            return STATE_ACTIVE
         dp_state = self.topo_state.setdefault(LINKS_STATE, {}).setdefault(local_dp, {})
         port_state = dp_state.setdefault(int(local_port), {}).get('state')
         if port_state == FAUCET_STACK_STATE_UP:
-            return constants.STATE_UP
+            return STATE_UP
         if port_state == FAUCET_STACK_STATE_BAD:
-            return constants.STATE_BROKEN
-        return constants.STATE_DOWN
+            return STATE_BROKEN
+        return STATE_DOWN
 
     def _get_stack_topo(self):
         """Returns formatted topology object"""
@@ -463,7 +466,7 @@ class FaucetStateCollector:
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
             if not dps or not link_list:
                 return {
-                    'state': constants.STATE_BROKEN,
+                    'state': STATE_BROKEN,
                     'error': 'Missing state data'
                 }
             hop = {'switch': src_switch}
@@ -565,7 +568,7 @@ class FaucetStateCollector:
 
             egress_state[EGRESS_LAST_UPDATE] = datetime.fromtimestamp(timestamp).isoformat()
             old_state = egress_state.get(EGRESS_STATE)
-            new_state = constants.STATE_UP if lacp_up else constants.STATE_DOWN
+            new_state = STATE_UP if lacp_up else STATE_DOWN
             if new_state != old_state:
                 change_count = egress_state.get(EGRESS_CHANGE_COUNT, 0) + 1
                 LOGGER.info('lag_state #%d %s, %s -> %s', change_count, name, old_state, new_state)
@@ -714,7 +717,7 @@ class FaucetStateCollector:
         with self.lock:
             num_hosts = len(self.learned_macs)
         return {
-            'state': constants.STATE_HEALTHY,
+            'state': STATE_HEALTHY,
             'detail': f'{num_hosts} learned host MACs'
         }
 

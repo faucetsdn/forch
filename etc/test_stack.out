@@ -26,7 +26,7 @@ Running forch-solid tests
 "http://localhost.n:9020"
 "split"
 @dataplane_state
-"up"
+"healthy"
 "egress:nz-kiwi-t1sw1"
 64
 "active"
