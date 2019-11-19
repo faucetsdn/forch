@@ -49,7 +49,7 @@ class FaucetEventClient():
             self.event_socket_connected = True
         except socket.error as err:
             self.event_socket_connected = False
-            assert False, "Failed to connect because: %s" % err
+            raise ConnectionError("Failed to connect because: %s" % err)
 
     def disconnect(self):
         """Disconnect this event socket"""
@@ -151,7 +151,7 @@ class FaucetEventClient():
 
     def next_event(self, blocking=False):
         """Return the next event from the queue"""
-        while self.has_event(blocking=blocking):
+        while self.event_socket_connected and self.has_event(blocking=blocking):
             with self._buffer_lock:
                 line, remainder = self.buffer.split('\n', 1)
                 self.buffer = remainder
