@@ -133,7 +133,7 @@ Running forch-twod tests
 @process_state
 1
 "healthy"
-"healthy"
+"broken"
 "sleep 50.3231"
 2
 @list_hosts
@@ -279,9 +279,9 @@ null
 Running forch-reset tests
 @system_state
 "nz-kiwi"
-211
+212
 "http://localhost.n:9020"
-"broken"
+"split"
 @dataplane_state
 "broken"
 "egress:nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
@@ -298,11 +298,11 @@ null
 "active"
 9
 @cpn_state
-3
+4
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
-"healthy"
+"damaged"
 @process_state
 1
 "healthy"
