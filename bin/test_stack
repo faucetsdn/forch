@@ -210,6 +210,7 @@ function test_forch {
     tail -n 30 inst/forch-faucet-1/faucet.log
 
     echo Running forch$1 tests | tee -a $TEST_RESULTS
+    echo Current time: $(date)
 
     fetch_forch system_state
     fetch_forch dataplane_state

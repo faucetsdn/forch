@@ -48,7 +48,10 @@ class LocalStateCollector:
         process_state = self.get_process_state()
         return {
             'state': process_state.get('processes_state'),
-            'detail': process_state.get('processes_state_detail')
+            'detail': process_state.get('processes_state_detail'),
+            'change_count': process_state.get('processes_state_change_count'),
+            'last_update': process_state.get('processes_state_last_update'),
+            'last_changed': process_state.get('processes_state_last_change')
         }
 
     def get_process_state(self):
