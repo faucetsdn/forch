@@ -37,6 +37,7 @@ num_pairs=12
 cap_length=$((cap_base + ping_count + num_pairs * 2))
 
 faucet_log=inst/forch-faucet-1/faucet.log
+forch_log=inst/forch-faucet-1/forch.log
 
 function diagnose_stack {
     echo Stack health
@@ -91,7 +92,6 @@ function test_stack {
     echo $desc Restarting ovs...
     sudo /etc/init.d/openvswitch-switch restart
 
-    rm -f $faucet_log
     echo $desc Waiting for network stability...
     sleep 30
 
@@ -173,16 +173,17 @@ function test_stack {
 function restart_forch {
     echo Killing any old instances of forch...
     kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
-    kill `ps ax | fgrep inst/forch-faucet-1/forch.log | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
+
+    rm -f $forch_log
+    tail --retry -f $forch_log &
 
     PYTHONPATH=faucet \
       PROMETHEUS_PORT=8001 \
       bin/forch inst/forch-faucet-1 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
-    sleep 10
-    tail -f inst/forch-faucet-1/forch.log &
-    sleep 10
+    sleep 20
 }
 
 function fetch_forch {
@@ -207,9 +208,6 @@ function test_forch {
 
     # Make sure mac addresses are still learned...
     docker exec forch-faux-1 ping -q -c 3 192.168.1.2
-
-    echo Tail of faucet.log for $1
-    tail -n 30 inst/forch-faucet-1/faucet.log
 
     echo Running forch$1 tests | tee -a $TEST_RESULTS
     echo Current time: $(date)
@@ -292,6 +290,10 @@ function test_forch {
     jq '.path | length' $api_result | tee -a $TEST_RESULTS
 }
 
+echo Capturing $faucet_log...
+rm -f $faucet_log
+tail --retry -f $faucet_log &
+
 reset_stack
 
 if [ -n "$local" ]; then
@@ -351,6 +353,8 @@ test_forch -reset
 
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`
+kill `ps ax | $faucet_log | fgrep -v fgrep | awk '{print $1}'`
+kill `ps ax | $forch_log | fgrep -v fgrep | awk '{print $1}'`
 
 echo
 echo '########## Begin complete test results ##########'

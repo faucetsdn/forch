@@ -15,7 +15,7 @@ from forch.constants import \
 LOGGER = logging.getLogger('fstate')
 
 
-def dump_states(func):
+def _dump_states(func):
     """Decorator to dump the current states after the states map is modified"""
 
     def _set_default(obj):
@@ -32,7 +32,7 @@ def dump_states(func):
     return wrapped
 
 
-RESTORE_METHODS = {'port': {}, 'dp': {}}
+_RESTORE_METHODS = {'port': {}, 'dp': {}}
 
 FAUCET_LACP_STATE_UP = 3
 FAUCET_STACK_STATE_BAD = 2
@@ -89,61 +89,56 @@ class FaucetStateCollector:
         self.learned_macs = {}
         self.faucet_config = {}
         self.lock = RLock()
-        self._active_lock = threading.Lock()
-        self._connected_lock = threading.Lock()
+        self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
         self._is_active = False
         self._is_connected = False
 
     def set_active(self, is_active):
         """Set active state"""
-        with self._active_lock:
+        with self._lock:
             self._is_active = is_active
 
     def set_connected(self, is_connected):
         """Set active state"""
-        with self._connected_lock:
+        with self._lock:
             self._is_connected = is_connected
 
     # pylint: disable=no-self-argument, protected-access
     def _pre_check(state_name):
         def pre_check(func):
             def wrapped(self, *args, **kwargs):
-                with self._active_lock:
+                with self._lock:
                     if not self._is_active:
                         detail = 'This controller is inactive. Please view peer controller.'
                         return {state_name: STATE_INACTIVE, 'detail': detail}
-                with self._connected_lock:
                     if not self._is_connected:
-                        detail = 'Faucet is disconnected'
-                        return {state_name: STATE_DOWN, 'detail': detail}
+                        detail = 'Diconnected from Faucet event socket.'
+                        return {state_name: STATE_BROKEN, 'detail': detail}
                 return func(self, *args, **kwargs)
             return wrapped
         return pre_check
 
     # pylint: disable=no-self-argument
-    def _register_restore_port_method(method_type, metric_name):
+    def _register_restore_state_method(label_name, metric_name):
         def register(func):
-            RESTORE_METHODS[method_type][metric_name] = func
+            _RESTORE_METHODS[label_name][metric_name] = func
             return func
         return register
 
     def restore_states_from_metrics(self, metrics):
         """Restore internal states from prometheus metrics"""
         current_time = time.time()
-        for method_type, method_map in RESTORE_METHODS.items():
+        for label_name, method_map in _RESTORE_METHODS.items():
             for metric_name, restore_method in method_map.items():
                 if metric_name not in metrics:
                     LOGGER.warning("Metrics does not contain: %s", metric_name)
                     continue
                 for sample in metrics[metric_name].samples:
                     switch = sample.labels['dp_name']
-                    port = int(sample.labels.get('port', 0))
-                    state = bool(sample.value)
-                    if method_type == 'port':
-                        restore_method(self, current_time, switch, port, state)
-                    elif method_type == 'dp':
-                        restore_method(self, current_time, switch, state)
+                    label = int(sample.labels.get(label_name, 0))
+                    restore_method(self, current_time, switch, label, sample.value)
+        return int(metrics['faucet_event_id'].samples[0].value)
 
     @_pre_check(state_name='state')
     def get_dataplane_summary(self):
@@ -581,8 +576,8 @@ class FaucetStateCollector:
 
         return res
 
-    @dump_states
-    @_register_restore_port_method(method_type='port', metric_name='port_status')
+    @_dump_states
+    @_register_restore_state_method(label_name='port', metric_name='port_status')
     def process_port_state(self, timestamp, name, port, state):
         """process port state event"""
         with self.lock:
@@ -595,8 +590,8 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
-    @dump_states
-    @_register_restore_port_method(method_type='port', metric_name='port_lacp_state')
+    @_dump_states
+    @_register_restore_state_method(label_name='port', metric_name='port_lacp_state')
     def process_lag_state(self, timestamp, name, port, lacp_state):
         """process lag change event"""
         with self.lock:
@@ -617,7 +612,7 @@ class FaucetStateCollector:
                 egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 egress_state[EGRESS_CHANGE_COUNT] = change_count
 
-    @dump_states
+    @_dump_states
     # pylint: disable=too-many-arguments
     def process_port_learn(self, timestamp, name, port, mac, src_ip):
         """process port learn event"""
@@ -638,7 +633,7 @@ class FaucetStateCollector:
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
-    @dump_states
+    @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
         """process config change event"""
         with self.lock:
@@ -655,9 +650,9 @@ class FaucetStateCollector:
             dp_state[CONFIG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             dp_state[CONFIG_CHANGE_COUNT] = change_count
 
-    @dump_states
-    @_register_restore_port_method(method_type='dp', metric_name='dp_status')
-    def process_dp_change(self, timestamp, dp_name, connected):
+    @_dump_states
+    @_register_restore_state_method(label_name='dp', metric_name='dp_status')
+    def process_dp_change(self, timestamp, dp_name, _, connected):
         """process dp_change to get dp state"""
         with self.lock:
             if not dp_name:
@@ -672,7 +667,7 @@ class FaucetStateCollector:
                 dp_state[SW_STATE_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 dp_state[SW_STATE_CHANGE_COUNT] = change_count
 
-    @dump_states
+    @_dump_states
     def process_dataplane_config_change(self, timestamp, dps_config):
         """Handle config data sent through event channel """
         with self.lock:
@@ -683,7 +678,7 @@ class FaucetStateCollector:
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
 
-    @dump_states
+    @_dump_states
     def process_stack_state(self, timestamp, dp_name, port, new_state):
         """Process a stack link state change"""
         with self.lock:
@@ -695,7 +690,7 @@ class FaucetStateCollector:
                 LOGGER.info('stack_state_links #%d %s:%d is now %s', link_change_count,
                             dp_name, port, new_state)
 
-    @dump_states
+    @_dump_states
     def process_stack_topo_change(self, timestamp, stack_root, graph, dps):
         """Process stack topology change event"""
         topo_state = self.topo_state
@@ -704,7 +699,9 @@ class FaucetStateCollector:
             if topo_state.get(LINKS_GRAPH) != link_graph:
                 topo_state[LINKS_GRAPH] = link_graph
                 link_change_count = self._update_stack_links_stats(timestamp)
-                LOGGER.info('stack_topo_links #%d graph len %d', link_change_count, len(link_graph))
+                graph_links = [link['key'] for link in link_graph]
+                graph_links.sort()
+                LOGGER.info('stack_topo_links #%d links: %s', link_change_count, graph_links)
 
             if topo_state.get(TOPOLOGY_ROOT) != stack_root or topo_state.get(TOPOLOGY_DPS) != dps:
                 topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1

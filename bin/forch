@@ -17,6 +17,7 @@ if [ -n "$1" ]; then
     FAUCET_EVENT_SOCK=$FORCH_BASE/$FSOCK
     FORCH_CONFIG_DIR=$FORCH_BASE
     FORCH_LOG_DIR=$FORCH_BASE
+    PROM_PORT_FILE=$FORCH_BASE/PROM_PORT.9302
 else
     FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK}
     FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
@@ -44,6 +45,9 @@ fi
 if [ -z "$PROMETHEUS_PORT" ]; then
     PROMETHEUS_PORT=9302
     echo Using prometheus port $PROMETHEUS_PORT
+elif [ -f "$PROM_PORT_FILE" ]; then
+    PROMETHEUS_PORT=$(< $PROM_PORT_FILE)
+    echo Using prometheus port $PROMETHEUS_PORT from $PROM_PORT_FILE
 else
     echo Using existing prometheus port $PROMETHEUS_PORT
 fi

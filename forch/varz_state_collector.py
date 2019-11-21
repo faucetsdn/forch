@@ -35,8 +35,8 @@ class VarzStateCollector:
                 metrics = self._get_metrics()
                 if metrics:
                     return metrics
-                LOGGER.error("Metrics are empty, retry: %d", retry)
+                LOGGER.warning("Metrics are empty, retry: %d", retry)
             except Exception as e:
-                LOGGER.error("Cannot retrieve prometheus metrics: %s, retry: %d", e, retry)
+                LOGGER.warning("Cannot retrieve prometheus metrics: %s, retry: %d", e, retry)
                 time.sleep(1)
         raise Exception(f"Cannot retrieve prometheus metrics after {retries} retries")

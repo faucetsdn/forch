@@ -4,13 +4,14 @@ ROOT=$(realpath $(dirname $0)/..)
 CONTAINER=forch-faucet
 INSTDIR=$ROOT/inst
 IMAGE=forch/faucet
+PROM_TARGET=9302
 FAUCET_SOCK=faucet_event.sock
 SYSTEM_CONF=system.conf
 LOCAL_CONFIG=local/$SYSTEM_CONF
 
 ext_ofpt=6653
-gauge_pt=
 prom_pt=
+prom_target=
 docker_volumes=
 port_opts=
 local=
@@ -26,6 +27,7 @@ fi
 if [ "$1" == "gauge" ]; then
     CONTAINER=forch-gauge
     IMAGE=forch/gauge
+    PROM_TARGET=9303
     FAUCET_SOCK=
     shift
 fi
@@ -42,11 +44,7 @@ if [ -n "$1" ]; then
 fi
 
 if [ -n "$1" ]; then
-    if [ "$IMAGE" == "forch/faucet" ]; then
-        prom_pt=$1
-    else
-        gauge_pt=$1
-    fi
+    prom_pt=$1
     shift
 fi
 
@@ -91,9 +89,8 @@ docker_volumes+="\
         -v $INSTDIR:/var/log/faucet"
 
 if [ -n "$prom_pt" ]; then
-    port_opts="-p $prom_pt:9302"
-elif [ -n "$gauge_pt" ]; then
-    port_opts="-p $gauge_pt:9303"
+    port_opts="-p $prom_pt:$PROM_TARGET"
+    echo $prom_pt > $INSTDIR/PROM_PORT.$PROM_TARGET
 fi
 
 cid=$(docker run -d --privileged --name $CONTAINER \

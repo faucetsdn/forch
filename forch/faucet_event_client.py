@@ -1,5 +1,6 @@
 """Simple client for working with the faucet event socket"""
 
+import copy
 import json
 import logging
 import os
@@ -91,7 +92,7 @@ class FaucetEventClient():
         (name, dpid, port, active) = self.as_port_state(event)
         if dpid and port:
             if not event.get('debounced'):
-                self._debounce_port_event(name, dpid, port, active)
+                self._debounce_port_event(event, port, active)
             elif self._process_state_update(dpid, port, active):
                 return event
             return None
@@ -100,12 +101,12 @@ class FaucetEventClient():
         if dpid:
             for port in status:
                 # Prepend events so they functionally replace the current one in the queue.
-                self._prepend_event(self._make_port_state(name, dpid, port, status[port]))
+                self._prepend_event(event, self._make_port_state(port, status[port]))
             return None
-        (name, dpid, macs, timestamp) = self.as_learned_macs(event)
-        if dpid:
+        (name, macs) = self._as_learned_macs(event)
+        if name:
             for mac in macs:
-                self._prepend_event(self._make_l2_learn(name, dpid, mac, timestamp))
+                self._prepend_event(event, self._make_l2_learn(mac))
         return event
 
     def _process_state_update(self, dpid, port, active):
@@ -116,33 +117,46 @@ class FaucetEventClient():
         self.previous_state[state_key] = active
         return True
 
-    def _debounce_port_event(self, name, dpid, port, active):
+    def _debounce_port_event(self, event, port, active):
         if not self._port_debounce_sec:
-            self._handle_debounce(name, dpid, port, active)
+            self._handle_debounce(event, port, active)
             return
-        state_key = '%s-%d' % (dpid, port)
+        state_key = '%s-%d' % (event['dp_id'], port)
         if state_key in self._port_timers:
             LOGGER.debug('Port cancel %s', state_key)
             self._port_timers[state_key].cancel()
         if active:
-            self._handle_debounce(name, dpid, port, active)
+            self._handle_debounce(event, port, active)
             return
         LOGGER.debug('Port timer %s = %s', state_key, active)
         timer = threading.Timer(self._port_debounce_sec,
-                                lambda: self._handle_debounce(name, dpid, port, active))
+                                lambda: self._handle_debounce(event, port, active))
         timer.start()
         self._port_timers[state_key] = timer
 
-    def _handle_debounce(self, name, dpid, port, active):
-        LOGGER.debug('Port handle %s-%s as %s', dpid, port, active)
-        self._append_event(self._make_port_state(name, dpid, port, active, debounced=True))
+    def _handle_debounce(self, event, port, active):
+        LOGGER.debug('Port handle %s-%s as %s', event['dp_id'], port, active)
+        self._append_event(event, self._make_port_state(port, active), debounced=True)
 
-    def _prepend_event(self, event):
+    def _merge_event(self, base, event, timestamp=None, debounced=None):
+        merged_event = copy.deepcopy(event)
+        merged_event.update({
+            'dp_name': base['dp_name'],
+            'dp_id': base['dp_id'],
+            'event_id': base['event_id'],
+            'time': timestamp if timestamp else base['time'],
+            'debounced': debounced
+        })
+        return merged_event
+
+    def _prepend_event(self, base, event):
+        merged_event = self._merge_event(base, event)
         with self._buffer_lock:
-            self.buffer = '%s\n%s' % (json.dumps(event), self.buffer)
+            self.buffer = '%s\n%s' % (json.dumps(merged_event), self.buffer)
 
-    def _append_event(self, event):
-        event_str = json.dumps(event)
+    def _append_event(self, base, event, debounced):
+        event_str = json.dumps(self._merge_event(base, event, timestamp=time.time(),
+                                                 debounced=debounced))
         with self._buffer_lock:
             index = self.buffer.rfind('\n')
             if index == len(self.buffer) - 1:
@@ -169,26 +183,19 @@ class FaucetEventClient():
         return None
 
     # pylint: disable=too-many-arguments
-    def _make_port_state(self, name, dpid, port, status, debounced=False):
-        port_change = {}
-        port_change['port_no'] = port
-        port_change['status'] = status
-        port_change['reason'] = 'MODIFY'
-        event = {}
-        event['dp_name'] = name
-        event['dp_id'] = dpid
-        event['PORT_CHANGE'] = port_change
-        event['debounced'] = debounced
-        event['time'] = time.time()
-        return event
+    def _make_port_state(self, port, status):
+        return {
+            'PORT_CHANGE': {
+                'port_no': port,
+                'status': status,
+                'reason': 'MODIFY'
+            }
+        }
 
-    def _make_l2_learn(self, name, dpid, entry, timestamp):
-        event = {}
-        event['dp_name'] = name
-        event['dp_id'] = dpid
-        event['L2_LEARN'] = entry
-        event['time'] = timestamp
-        return event
+    def _make_l2_learn(self, entry):
+        return {
+            'L2_LEARN': entry
+        }
 
     def as_config_change(self, event):
         """Convert the event to dp change info, if applicable"""
@@ -204,15 +211,11 @@ class FaucetEventClient():
             return (None, None, None)
         return (event['dp_name'], event['dp_id'], event['PORTS_STATUS'])
 
-    def as_learned_macs(self, event):
+    def _as_learned_macs(self, event):
         """Convert the event to learned macs info, if applicable"""
         if not event or 'L2_LEARNED_MACS' not in event:
-            return (None, None, None, None)
-        name = event.get('dp_name')
-        dpid = event.get('dp_id')
-        macs = event.get('L2_LEARNED_MACS')
-        timestamp = event.get('time')
-        return name, dpid, macs, timestamp
+            return (None, None)
+        return (event.get('dp_name'), event.get('L2_LEARNED_MACS'))
 
     def as_lag_state(self, event):
         """Convert event to lag status, if applicable"""
