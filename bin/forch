@@ -41,11 +41,19 @@ else
     echo Using existing controller name $CONTROLLER_NAME
 fi
 
+if [ -z "$PROMETHEUS_PORT" ]; then
+    PROMETHEUS_PORT=9302
+    echo Using prometheus port $PROMETHEUS_PORT
+else
+    echo Using existing prometheus port $PROMETHEUS_PORT
+fi
+
 if [ -n "$FORCH_LOG_DIR" ]; then
     echo Writing forch logs to $FORCH_LOG_DIR/forch.log
 fi
 
 export CONTROLLER_NAME
+export PROMETHEUS_PORT
 export FAUCET_EVENT_SOCK
 export FORCH_CONFIG_DIR
 export FORCH_LOG_DIR

@@ -28,7 +28,7 @@ setuptools.setup(
         "Operating System :: Debian",
     ],
     python_requires='>=3.6',
-    install_requires=['pyyaml', 'psutil'],
+    install_requires=['requests', 'prometheus_client', 'psutil', 'pyyaml'],
     data_files=data_files,
     scripts=['bin/forch']
 )

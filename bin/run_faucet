@@ -9,7 +9,7 @@ SYSTEM_CONF=system.conf
 LOCAL_CONFIG=local/$SYSTEM_CONF
 
 ext_ofpt=6653
-gauge_pt=6654
+gauge_pt=
 prom_pt=
 docker_volumes=
 port_opts=
@@ -42,7 +42,11 @@ if [ -n "$1" ]; then
 fi
 
 if [ -n "$1" ]; then
-    prom_pt=$1
+    if [ "$IMAGE" == "forch/faucet" ]; then
+        prom_pt=$1
+    else
+        gauge_pt=$1
+    fi
     shift
 fi
 
@@ -87,7 +91,9 @@ docker_volumes+="\
         -v $INSTDIR:/var/log/faucet"
 
 if [ -n "$prom_pt" ]; then
-    port_opts="-p $prom_pt:9303"
+    port_opts="-p $prom_pt:9302"
+elif [ -n "$gauge_pt" ]; then
+    port_opts="-p $gauge_pt:9303"
 fi
 
 cid=$(docker run -d --privileged --name $CONTAINER \

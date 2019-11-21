@@ -16,7 +16,7 @@ class FaucetEventClient():
     FAUCET_RETRIES = 10
     _PORT_DEBOUNCE_SEC = 5
 
-    def __init__(self, config):
+    def __init__(self, config, connection_state_handler):
         self.config = config
         self.sock = None
         self.buffer = None
@@ -25,6 +25,7 @@ class FaucetEventClient():
         self._port_debounce_sec = int(config.get('port_debounce_sec', self._PORT_DEBOUNCE_SEC))
         self._port_timers = {}
         self.event_socket_connected = False
+        self._connection_state_handler = connection_state_handler
 
     def connect(self):
         """Make connection to sock to receive events"""
@@ -47,8 +48,10 @@ class FaucetEventClient():
             self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self.sock.connect(sock_path)
             self.event_socket_connected = True
+            self._connection_state_handler(True)
         except socket.error as err:
             self.event_socket_connected = False
+            self._connection_state_handler(False)
             raise ConnectionError("Failed to connect because: %s" % err)
 
     def disconnect(self):
@@ -57,6 +60,7 @@ class FaucetEventClient():
             self.sock.close()
         self.sock = None
         self.event_socket_connected = False
+        self._connection_state_handler(False)
         with self._buffer_lock:
             self.buffer = None
 

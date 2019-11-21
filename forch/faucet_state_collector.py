@@ -32,6 +32,8 @@ def dump_states(func):
     return wrapped
 
 
+RESTORE_METHODS = {'port': {}, 'dp': {}}
+
 FAUCET_LACP_STATE_UP = 3
 FAUCET_STACK_STATE_BAD = 2
 FAUCET_STACK_STATE_UP = 3
@@ -77,6 +79,7 @@ EGRESS_LAST_UPDATE = "egress_state_last_update"
 EGRESS_CHANGE_COUNT = "egress_state_change_count"
 
 
+# pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
     def __init__(self):
@@ -87,27 +90,62 @@ class FaucetStateCollector:
         self.faucet_config = {}
         self.lock = RLock()
         self._active_lock = threading.Lock()
+        self._connected_lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
         self._is_active = False
+        self._is_connected = False
 
     def set_active(self, is_active):
         """Set active state"""
         with self._active_lock:
             self._is_active = is_active
 
+    def set_connected(self, is_connected):
+        """Set active state"""
+        with self._connected_lock:
+            self._is_connected = is_connected
+
     # pylint: disable=no-self-argument, protected-access
-    def _check_active(state_name):
-        def check_active(func):
+    def _pre_check(state_name):
+        def pre_check(func):
             def wrapped(self, *args, **kwargs):
                 with self._active_lock:
                     if not self._is_active:
                         detail = 'This controller is inactive. Please view peer controller.'
                         return {state_name: STATE_INACTIVE, 'detail': detail}
+                with self._connected_lock:
+                    if not self._is_connected:
+                        detail = 'Faucet is disconnected'
+                        return {state_name: STATE_DOWN, 'detail': detail}
                 return func(self, *args, **kwargs)
             return wrapped
-        return check_active
+        return pre_check
 
-    @_check_active(state_name='state')
+    # pylint: disable=no-self-argument
+    def _register_restore_port_method(method_type, metric_name):
+        def register(func):
+            RESTORE_METHODS[method_type][metric_name] = func
+            return func
+        return register
+
+    def restore_states_from_metrics(self, metrics):
+        """Restore internal states from prometheus metrics"""
+        current_time = time.time()
+        for method_type, method_map in RESTORE_METHODS.items():
+            for metric_name, restore_method in method_map.items():
+                if metric_name not in metrics:
+                    LOGGER.warning("Metrics does not contain: %s", metric_name)
+                    continue
+                for sample in metrics[metric_name].samples:
+                    switch = sample.labels['dp_name']
+                    port = int(sample.labels.get('port', 0))
+                    state = bool(sample.value)
+                    if method_type == 'port':
+                        restore_method(self, current_time, switch, port, state)
+                    elif method_type == 'dp':
+                        restore_method(self, current_time, switch, state)
+
+    @_pre_check(state_name='state')
     def get_dataplane_summary(self):
         """Get summary of dataplane"""
         dplane_state = self._get_dataplane_state()
@@ -144,7 +182,7 @@ class FaucetStateCollector:
         dplane_state['dataplane_state'] = state
         dplane_state['dataplane_state_detail'] = "; ".join(detail)
 
-    @_check_active(state_name='dataplane_state')
+    @_pre_check(state_name='dataplane_state')
     def get_dataplane_state(self):
         """get the topology state"""
         return self._get_dataplane_state()
@@ -192,7 +230,7 @@ class FaucetStateCollector:
                 broken_links.append(link)
         return broken_links
 
-    @_check_active(state_name='state')
+    @_pre_check(state_name='state')
     def get_switch_summary(self):
         """Get summary of switch state"""
         switch_state = self._get_switch_state(None, None)
@@ -208,7 +246,7 @@ class FaucetStateCollector:
             for mac, mac_data in switch_data.get('access_port_macs', {}).items():
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
-    @_check_active(state_name='switch_state')
+    @_pre_check(state_name='switch_state')
     def get_switch_state(self, switch, port, url_base=None):
         """get a set of all switches"""
         return self._get_switch_state(switch, port, url_base)
@@ -498,7 +536,7 @@ class FaucetStateCollector:
                 hop = next_hop
         return res
 
-    @_check_active(state_name='host_path_state')
+    @_pre_check(state_name='host_path_state')
     def get_host_path(self, src_mac, dst_mac, to_egress):
         """Given two MAC addresses in the core network, find the active path between them"""
         if not src_mac:
@@ -544,6 +582,7 @@ class FaucetStateCollector:
         return res
 
     @dump_states
+    @_register_restore_port_method(method_type='port', metric_name='port_status')
     def process_port_state(self, timestamp, name, port, state):
         """process port state event"""
         with self.lock:
@@ -557,6 +596,7 @@ class FaucetStateCollector:
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
     @dump_states
+    @_register_restore_port_method(method_type='port', metric_name='port_lacp_state')
     def process_lag_state(self, timestamp, name, port, lacp_state):
         """process lag change event"""
         with self.lock:
@@ -616,6 +656,7 @@ class FaucetStateCollector:
             dp_state[CONFIG_CHANGE_COUNT] = change_count
 
     @dump_states
+    @_register_restore_port_method(method_type='dp', metric_name='dp_status')
     def process_dp_change(self, timestamp, dp_name, connected):
         """process dp_change to get dp state"""
         with self.lock:
@@ -711,7 +752,7 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
-    @_check_active(state_name='state')
+    @_pre_check(state_name='state')
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
         with self.lock:
@@ -721,7 +762,7 @@ class FaucetStateCollector:
             'detail': f'{num_hosts} learned host MACs'
         }
 
-    @_check_active(state_name='hosts_list_state')
+    @_pre_check(state_name='hosts_list_state')
     def get_list_hosts(self, url_base, src_mac):
         """Get access devices"""
         host_macs = {}
