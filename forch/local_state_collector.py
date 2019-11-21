@@ -15,6 +15,8 @@ import forch.constants as constants
 
 LOGGER = logging.getLogger('localstate')
 
+PROC_ATTRS = ['cmdline', 'cpu_times', 'memory_info']
+
 class LocalStateCollector:
     """Storing local system states"""
 
@@ -109,8 +111,8 @@ class LocalStateCollector:
             target_regex = target_map['regex']
             proc_list = procs.setdefault(target_name, [])
 
-            for proc in psutil.process_iter():
-                cmd_line_str = ' '.join(proc.cmdline())
+            for proc in psutil.process_iter(attrs=PROC_ATTRS):
+                cmd_line_str = ' '.join(proc.info['cmdline'])
                 if re.search(target_regex, cmd_line_str):
                     proc_list.append(proc)
 
@@ -125,7 +127,7 @@ class LocalStateCollector:
         old_proc_map = self._process_state.get('processes', {}).get(proc_name, {})
         proc_map = copy.deepcopy(old_proc_map)
 
-        cmd_line = ' '.join(proc_list[0].cmdline()) if len(proc_list) == 1 else 'multiple'
+        cmd_line = ' '.join(proc_list[0].info['cmdline']) if len(proc_list) == 1 else 'multiple'
         proc_map['cmd_line'] = cmd_line
         create_time_max = max(proc.create_time() for proc in proc_list)
         create_time = datetime.fromtimestamp(create_time_max).isoformat()
@@ -154,15 +156,15 @@ class LocalStateCollector:
 
         try:
             for proc in proc_list:
-                cpu_time_user += proc.cpu_times().user
-                cpu_time_system += proc.cpu_times().system
-                if hasattr(proc.cpu_times(), 'iowait'):
+                cpu_time_user += proc.info['cpu_times'].user
+                cpu_time_system += proc.info['cpu_times'].system
+                if hasattr(proc.info['cpu_times'], 'iowait'):
                     if not cpu_time_iowait:
                         cpu_time_iowait = 0.0
                         cpu_time_iowait += proc.cpu_times().iowait
 
-                memory_rss += proc.memory_info().rss / 1e6
-                memory_vms += proc.memory_info().vms / 1e6
+                memory_rss += proc.info['memory_info'].rss / 1e6
+                memory_vms += proc.info['memory_info'].vms / 1e6
         except Exception as e:
             return "Error extracting process info: %s" % e
 
