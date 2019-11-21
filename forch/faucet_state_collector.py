@@ -679,6 +679,7 @@ class FaucetStateCollector:
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
 
     @_dump_states
+    @_register_restore_state_method(label_name='port', metric_name='port_stack_state')
     def process_stack_state(self, timestamp, dp_name, port, new_state):
         """Process a stack link state change"""
         with self.lock:
