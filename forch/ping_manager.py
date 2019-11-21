@@ -8,7 +8,7 @@ from collections import namedtuple
 
 
 PingResult = namedtuple('PingResult', ['host_name', 'proc_code', 'stdout', 'stderr'])
-LOGGER = logging.getLogger('Ping')
+LOGGER = logging.getLogger('ping')
 
 
 class PingManager:

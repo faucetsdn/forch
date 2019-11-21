@@ -13,7 +13,7 @@ import yaml
 
 import forch.constants as constants
 
-LOGGER = logging.getLogger('localstate')
+LOGGER = logging.getLogger('lstate')
 
 PROC_ATTRS = ['cmdline', 'cpu_times', 'memory_info']
 

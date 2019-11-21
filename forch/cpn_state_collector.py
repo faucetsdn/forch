@@ -12,7 +12,7 @@ import yaml
 import forch.constants as constants
 import forch.ping_manager
 
-LOGGER = logging.getLogger('cpn')
+LOGGER = logging.getLogger('cstate')
 
 KEY_NODES = 'cpn_nodes'
 KEY_NODE_ATTRIBUTES = 'attributes'
