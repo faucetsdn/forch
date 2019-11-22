@@ -64,6 +64,7 @@ class FaucetTestBase(unittest.TestCase):
     CONTROLLER_CLASS = mininet_test_topo.FAUCET
     DP_NAME = 'faucet-1'
     STAT_RELOAD = ''
+    EVENT_SOCK_HEARTBEAT = ''
 
     CONFIG = ''
     CONFIG_GLOBAL = ''
@@ -156,6 +157,8 @@ class FaucetTestBase(unittest.TestCase):
 
     def first_switch(self):
         """Return first switch by name order."""
+        if not self.switches_name_ordered():
+            return None
         return self.switches_name_ordered()[0]
 
     def rand_dpid(self):
@@ -182,6 +185,7 @@ class FaucetTestBase(unittest.TestCase):
         self.event_sock = os.path.join(tempfile.mkdtemp(), 'event.sock')
         self._set_var('faucet', 'FAUCET_EVENT_SOCK', self.event_sock)
         self._set_var('faucet', 'FAUCET_CONFIG_STAT_RELOAD', self.STAT_RELOAD)
+        self._set_var('faucet', 'FAUCET_EVENT_SOCK_HEARTBEAT', self.EVENT_SOCK_HEARTBEAT)
         self._set_var_path('faucet', 'FAUCET_CONFIG', 'faucet.yaml')
         self._set_var_path('faucet', 'FAUCET_LOG', 'faucet.log')
         self._set_var_path('faucet', 'FAUCET_EXCEPTION_LOG', 'faucet-exception.log')
@@ -385,6 +389,20 @@ class FaucetTestBase(unittest.TestCase):
     def hostns(self, host):
         return '%s' % host.name
 
+    def dump_switch_flows(self, switch):
+        """ """
+        for dump_cmd in (
+                'dump-flows', 'dump-groups', 'dump-meters',
+                'dump-group-stats', 'dump-ports', 'dump-ports-desc',
+                'meter-stats'):
+            switch_dump_name = os.path.join(self.tmpdir, '%s-%s.log' % (switch.name, dump_cmd))
+            # TODO: occasionally fails with socket error.
+            switch.cmd('%s %s %s > %s' % (self.OFCTL, dump_cmd, switch.name, switch_dump_name),
+                       success=None)
+        for other_cmd in ('show', 'list controller', 'list manager'):
+            other_dump_name = os.path.join(self.tmpdir, '%s.log' % other_cmd.replace(' ', ''))
+            switch.cmd('%s %s > %s' % (self.VSCTL, other_cmd, other_dump_name))
+
     def tearDown(self, ignore_oferrors=False):
         """Clean up after a test.
            ignore_oferrors: return OF errors rather than failing"""
@@ -392,21 +410,13 @@ class FaucetTestBase(unittest.TestCase):
             for host in self.hosts_name_ordered()[:1]:
                 if self.get_host_netns(host):
                     self.quiet_commands(host, ['ip netns del %s' % self.hostns(host)])
-        self.first_switch().cmd('ip link > %s' % os.path.join(self.tmpdir, 'ip-links.log'))
+        first_switch = self.first_switch()
+        if first_switch:
+            self.first_switch().cmd('ip link > %s' % os.path.join(self.tmpdir, 'ip-links.log'))
         switch_names = []
         for switch in self.net.switches:
             switch_names.append(switch.name)
-            for dump_cmd in (
-                    'dump-flows', 'dump-groups', 'dump-meters',
-                    'dump-group-stats', 'dump-ports', 'dump-ports-desc',
-                    'meter-stats'):
-                switch_dump_name = os.path.join(self.tmpdir, '%s-%s.log' % (switch.name, dump_cmd))
-                # TODO: occasionally fails with socket error.
-                switch.cmd('%s %s %s > %s' % (self.OFCTL, dump_cmd, switch.name, switch_dump_name),
-                           success=None)
-            for other_cmd in ('show', 'list controller', 'list manager'):
-                other_dump_name = os.path.join(self.tmpdir, '%s.log' % other_cmd.replace(' ', ''))
-                switch.cmd('%s %s > %s' % (self.VSCTL, other_cmd, other_dump_name))
+            self.dump_switch_flows(switch)
             switch.cmd('%s del-br %s' % (self.VSCTL, switch.name))
         self._stop_net()
         self.net = None
