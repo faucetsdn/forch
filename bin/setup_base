@@ -7,3 +7,12 @@ python3 -m venv venv
 source venv/bin/activate
 
 pip install -r etc/requirements.txt
+
+DEF_IFACE=`route -n | fgrep UG | awk '{print $8}'`
+if [ -n "$DEF_IFACE" ]; then
+    echo Allowing docker external access through interface $DEF_IFACE...
+    sudo iptables -o docker0 -i $DEF_IFACE -A FORWARD -j ACCEPT
+    sudo iptables -i docker0 -o $DEF_IFACE -A FORWARD -j ACCEPT
+else
+    echo No DEF_IFACE found. If this causes problems, maybe you need ipv4!
+fi

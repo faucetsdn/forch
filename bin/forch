@@ -44,14 +44,14 @@ else
     echo Using existing controller name $CONTROLLER_NAME
 fi
 
-if [ -z "$PROMETHEUS_PORT" ]; then
-    PROMETHEUS_PORT=9302
-    echo Using prometheus port $PROMETHEUS_PORT
+if [ -n "$PROMETHEUS_PORT" ]; then
+    echo Using existing prometheus port $PROMETHEUS_PORT
 elif [ -f "$PROM_PORT_FILE" ]; then
     PROMETHEUS_PORT=$(< $PROM_PORT_FILE)
     echo Using prometheus port $PROMETHEUS_PORT from $PROM_PORT_FILE
 else
-    echo Using existing prometheus port $PROMETHEUS_PORT
+    PROMETHEUS_PORT=9302
+    echo Using default prometheus port $PROMETHEUS_PORT
 fi
 
 if [ -n "$FORCH_LOG_DIR" ]; then
@@ -65,4 +65,4 @@ export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR
 export FORCH_LOG_DIR
 export PYTHONPATH
-$PYTHON -m forch.forchestrator
+$PYTHON -m forch.forchestrator || tail $FORCH_LOG_DIR/forch.log && false
