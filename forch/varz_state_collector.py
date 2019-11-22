@@ -6,11 +6,18 @@ import prometheus_client.parser
 import requests
 
 LOGGER = logging.getLogger('vstate')
+_TARGET_METRICS = (
+    'port_status',
+    'port_lacp_state',
+    'dp_status',
+    'port_stack_state',
+    'faucet_event_id'
+)
 
 
 class VarzStateCollector:
     """Collecting varz"""
-    def __init__(self, endpoint, target_metrics):
+    def __init__(self, endpoint, target_metrics=_TARGET_METRICS):
         self._endpoint = endpoint
         self._target_metrics = target_metrics
 

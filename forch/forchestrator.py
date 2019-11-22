@@ -20,12 +20,11 @@ from forch.varz_state_collector import VarzStateCollector
 
 LOGGER = logging.getLogger('forch')
 
-_FCONFIG_DEFAULT = 'forch.yaml'
+_FORCH_CONFIG_DEFAULT = 'forch.yaml'
+_FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
-# TODO: Move this down into some other class so metrics aren't exposed in forchestrator.
-_TARGET_METRICS = {'port_status', 'port_lacp_state', 'dp_status', 'faucet_event_id'}
-_LOG_FORMAT = '%(asctime)s %(name)-6s %(levelname)-8s %(message)s'
+_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 
 class Forchestrator:
@@ -36,6 +35,7 @@ class Forchestrator:
 
     def __init__(self, config):
         self._config = config
+        self._faucet_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
 
@@ -55,11 +55,16 @@ class Forchestrator:
             self._config.get('process'), self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
+        self._faucet_config_file = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), _FAUCET_CONFIG_DEFAULT)
+        if not self._faucet_config_file or not os.path.exists(self._faucet_config_file):
+            raise Exception(f"Faucet config file does not exist: {self._faucet_config_file}")
+
         prom_port = os.getenv('PROMETHEUS_PORT')
         if not prom_port:
             raise Exception("PROMETHEUS_PORT is not set")
         prom_url = f"http://{_PROMETHEUS_HOST}:{prom_port}"
-        self._varz_collector = VarzStateCollector(prom_url, _TARGET_METRICS)
+        self._varz_collector = VarzStateCollector(prom_url)
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -79,6 +84,13 @@ class Forchestrator:
         metrics = self._varz_collector.get_metrics()
         self._event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
         LOGGER.info('Setting event horizon to event #%d', self._event_horizon)
+
+        current_time = time.time()
+        with open(self._faucet_config_file) as faucet_config_file:
+            faucet_config = yaml.safe_load(faucet_config_file)
+
+        self._faucet_collector.process_dataplane_config_change(
+            current_time, faucet_config.get('dps', {}))
 
     def main_loop(self):
         """Main event processing loop"""
@@ -382,7 +394,7 @@ class Forchestrator:
 def load_config():
     """Load configuration from the configuration file"""
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
-    config_path = os.path.join(config_root, _FCONFIG_DEFAULT)
+    config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
     try:
         with open(config_path, 'r') as stream:
