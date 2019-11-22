@@ -193,7 +193,7 @@ class LocalStateCollector:
                 stats_file.readline()
                 stats = yaml.safe_load(stats_file)
 
-                self._vrrp_state = self._extract_vrrp_state(stats)
+                self._vrrp_state.update(self._extract_vrrp_state(stats))
                 self._active_state_handler(self._vrrp_state['is_master'])
 
         except Exception as e:
