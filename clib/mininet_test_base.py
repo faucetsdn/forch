@@ -64,6 +64,7 @@ class FaucetTestBase(unittest.TestCase):
     CONTROLLER_CLASS = mininet_test_topo.FAUCET
     DP_NAME = 'faucet-1'
     STAT_RELOAD = ''
+    EVENT_SOCK_HEARTBEAT = ''
 
     CONFIG = ''
     CONFIG_GLOBAL = ''
@@ -83,6 +84,7 @@ class FaucetTestBase(unittest.TestCase):
 
     FPING_ARGS = FPING_ARGS
     FPING_ARGS_SHORT = ' '.join((FPING_ARGS, '-i10 -p100 -t100'))
+    FPINGS_ARGS_ONE = ' '.join(('fping', FPING_ARGS, '-t100 -c 1'))
 
     RUN_GAUGE = True
     REQUIRES_METERS = False
@@ -155,6 +157,8 @@ class FaucetTestBase(unittest.TestCase):
 
     def first_switch(self):
         """Return first switch by name order."""
+        if not self.switches_name_ordered():
+            return None
         return self.switches_name_ordered()[0]
 
     def rand_dpid(self):
@@ -181,6 +185,7 @@ class FaucetTestBase(unittest.TestCase):
         self.event_sock = os.path.join(tempfile.mkdtemp(), 'event.sock')
         self._set_var('faucet', 'FAUCET_EVENT_SOCK', self.event_sock)
         self._set_var('faucet', 'FAUCET_CONFIG_STAT_RELOAD', self.STAT_RELOAD)
+        self._set_var('faucet', 'FAUCET_EVENT_SOCK_HEARTBEAT', self.EVENT_SOCK_HEARTBEAT)
         self._set_var_path('faucet', 'FAUCET_CONFIG', 'faucet.yaml')
         self._set_var_path('faucet', 'FAUCET_LOG', 'faucet.log')
         self._set_var_path('faucet', 'FAUCET_EXCEPTION_LOG', 'faucet-exception.log')
@@ -384,6 +389,20 @@ class FaucetTestBase(unittest.TestCase):
     def hostns(self, host):
         return '%s' % host.name
 
+    def dump_switch_flows(self, switch):
+        """ """
+        for dump_cmd in (
+                'dump-flows', 'dump-groups', 'dump-meters',
+                'dump-group-stats', 'dump-ports', 'dump-ports-desc',
+                'meter-stats'):
+            switch_dump_name = os.path.join(self.tmpdir, '%s-%s.log' % (switch.name, dump_cmd))
+            # TODO: occasionally fails with socket error.
+            switch.cmd('%s %s %s > %s' % (self.OFCTL, dump_cmd, switch.name, switch_dump_name),
+                       success=None)
+        for other_cmd in ('show', 'list controller', 'list manager'):
+            other_dump_name = os.path.join(self.tmpdir, '%s.log' % other_cmd.replace(' ', ''))
+            switch.cmd('%s %s > %s' % (self.VSCTL, other_cmd, other_dump_name))
+
     def tearDown(self, ignore_oferrors=False):
         """Clean up after a test.
            ignore_oferrors: return OF errors rather than failing"""
@@ -391,21 +410,13 @@ class FaucetTestBase(unittest.TestCase):
             for host in self.hosts_name_ordered()[:1]:
                 if self.get_host_netns(host):
                     self.quiet_commands(host, ['ip netns del %s' % self.hostns(host)])
-        self.first_switch().cmd('ip link > %s' % os.path.join(self.tmpdir, 'ip-links.log'))
+        first_switch = self.first_switch()
+        if first_switch:
+            self.first_switch().cmd('ip link > %s' % os.path.join(self.tmpdir, 'ip-links.log'))
         switch_names = []
         for switch in self.net.switches:
             switch_names.append(switch.name)
-            for dump_cmd in (
-                    'dump-flows', 'dump-groups', 'dump-meters',
-                    'dump-group-stats', 'dump-ports', 'dump-ports-desc',
-                    'meter-stats'):
-                switch_dump_name = os.path.join(self.tmpdir, '%s-%s.log' % (switch.name, dump_cmd))
-                # TODO: occasionally fails with socket error.
-                switch.cmd('%s %s %s > %s' % (self.OFCTL, dump_cmd, switch.name, switch_dump_name),
-                           success=None)
-            for other_cmd in ('show', 'list controller', 'list manager'):
-                other_dump_name = os.path.join(self.tmpdir, '%s.log' % other_cmd.replace(' ', ''))
-                switch.cmd('%s %s > %s' % (self.VSCTL, other_cmd, other_dump_name))
+            self.dump_switch_flows(switch)
             switch.cmd('%s del-br %s' % (self.VSCTL, switch.name))
         self._stop_net()
         self.net = None
@@ -1757,7 +1768,7 @@ dbs:
             tcpdump_txt = self.tcpdump_helper(
                 other_vlan_host, tcpdump_filter, [
                     partial(first_host.cmd, 'arp -d %s' % second_host.IP()),
-                    partial(first_host.cmd, 'ping -c1 %s' % second_host.IP())],
+                    partial(first_host.cmd, ' '.join((self.FPINGS_ARGS_ONE, second_host.IP())))],
                 packets=1)
             self.verify_no_packets(tcpdump_txt)
 
@@ -1771,19 +1782,21 @@ dbs:
             '(ether src %s or ether src %s) and '
             '(icmp[icmptype] == 8 or icmp[icmptype] == 0)') % (
                 first_host.MAC(), second_host.MAC())
-        first_ping_second = 'ping -c1 %s' % second_host.IP()
+        first_ping_second = ' '.join((self.FPINGS_ARGS_ONE, second_host.IP()))
         packets = 2
         if both_mirrored:
             packets *= 2
         tcpdump_txt = self.tcpdump_helper(
             mirror_host, tcpdump_filter, [
-                partial(first_host.cmd, first_ping_second)], packets=packets)
+                partial(first_host.cmd, first_ping_second)], packets=(packets+1))
         self.assertTrue(re.search(
             '%s: ICMP echo request' % second_host.IP(), tcpdump_txt),
                         msg=tcpdump_txt)
         self.assertTrue(re.search(
             '%s: ICMP echo reply' % first_host.IP(), tcpdump_txt),
                         msg=tcpdump_txt)
+        self.assertTrue(self.tcpdump_rx_packets(tcpdump_txt, packets=packets))
+
 
     def verify_bcast_ping_mirrored(self, first_host, second_host, mirror_host, tagged=False):
         """Verify that broadcast to a mirrored port, is mirrored."""
@@ -1848,9 +1861,9 @@ dbs:
         ping_commands = []
         for hosts in ping_pairs:
             ping_commands.append(
-                lambda hosts=hosts: hosts[0].cmd('ping -c1 %s' % hosts[1].IP()))
+                lambda hosts=hosts: hosts[0].cmd(' '.join((self.FPINGS_ARGS_ONE, hosts[1].IP()))))
         tcpdump_txt = self.tcpdump_helper(
-            mirror_host, tcpdump_filter, ping_commands, packets=expected_pings)
+            mirror_host, tcpdump_filter, ping_commands, packets=(expected_pings+1))
 
         # Validate all required pings were mirrored
         for hosts in ping_pairs:
