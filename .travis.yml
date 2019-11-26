@@ -13,6 +13,7 @@ install:
 script:
   - set -e
   - bin/check_style
-  - bin/docker_build
+  - bin/build_forch
+  - bin/build_docker
   - bin/setup_stack local
   - bin/test_stack

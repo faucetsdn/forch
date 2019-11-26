@@ -1,5 +1,7 @@
-pylint==2.4.2
+google-cloud
 prometheus_client
+protobuf
 psutil
+pylint==2.4.2
 pyyaml
 requests

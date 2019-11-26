@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-sudo apt-get install openvswitch-switch
+sudo apt-get install openvswitch-switch protobuf-compiler
 
 python3 -m venv venv
 

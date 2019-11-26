@@ -1,20 +1,22 @@
 """Collecting the state of CPN components"""
 
-import copy
 from datetime import datetime
 import logging
 import os
 import os.path
 import re
 import threading
-import yaml
+
+from proto.cpn_config_pb2 import CpnConfig
 
 import forch.constants as constants
 import forch.ping_manager
 
+from forch.utils import yaml_proto
+from forch.utils import proto_dict
+
 LOGGER = logging.getLogger('cstate')
 
-KEY_NODES = 'cpn_nodes'
 KEY_NODE_ATTRIBUTES = 'attributes'
 KEY_NODE_PING_RES = 'ping_results'
 KEY_NODE_STATE = 'state'
@@ -33,12 +35,11 @@ PING_SUMMARY_REGEX = {'transmitted': r'\d+(?= packets transmitted)',
                       'loss_percentage': r'\d+(?=% packet loss)',
                       'time_ms': r'(?<=time )\d+(?=ms)'}
 
-
 class CPNStateCollector:
     """Processing and storing CPN components states"""
     def __init__(self):
         self._cpn_state = {}
-        self._node_states = self._cpn_state.setdefault(KEY_NODES, {})
+        self._node_states = {}
         self._hosts_ip = {}
         self._lock = threading.Lock()
         self._ping_manager = None
@@ -50,19 +51,20 @@ class CPNStateCollector:
         current_time = datetime.now().isoformat()
         LOGGER.info("Loading CPN config file: %s", cpn_file_name)
         try:
-            with open(cpn_file_name) as cpn_file:
-                cpn_data = yaml.safe_load(cpn_file)
-                cpn_nodes = cpn_data.get('cpn_nodes', {})
+            cpn_data = yaml_proto(cpn_file_name, CpnConfig)
+            cpn_nodes = cpn_data.cpn_nodes
 
-                for node, attr_map in cpn_nodes.items():
-                    node_state_map = self._node_states.setdefault(node, {})
-                    node_state_map[KEY_NODE_ATTRIBUTES] = copy.deepcopy(attr_map)
-                    self._hosts_ip[node] = attr_map['cpn_ip']
+            for node, attr_map in cpn_nodes.items():
+                node_state_map = self._node_states.setdefault(node, {})
+                node_state_map[KEY_NODE_ATTRIBUTES] = attr_map
+                self._hosts_ip[node] = attr_map.cpn_ip
+
             if not self._hosts_ip:
                 raise Exception('No CPN components defined in file')
             self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip)
             self._update_cpn_state(current_time, constants.STATE_INITIALIZING, "Initializing")
         except Exception as e:
+            LOGGER.error('Could not load config file: %s', e)
             self._node_states.clear()
             self._update_cpn_state(current_time, constants.STATE_BROKEN, str(e))
 
@@ -86,7 +88,7 @@ class CPNStateCollector:
         with self._lock:
             for cpn_node, node_state in self._node_states.items():
                 cpn_node_map = cpn_nodes.setdefault(cpn_node, {})
-                cpn_node_map['attributes'] = copy.copy(node_state.get(KEY_NODE_ATTRIBUTES, {}))
+                cpn_node_map['attributes'] = proto_dict(node_state.get(KEY_NODE_ATTRIBUTES))
                 cpn_node_map['state'] = node_state.get(KEY_NODE_STATE)
                 ping_result = node_state.get(KEY_NODE_PING_RES, {}).get('stdout')
                 cpn_node_map['ping_results'] = CPNStateCollector._get_ping_summary(ping_result)

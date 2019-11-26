@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
+rm -rf build/proto
+mkdir -p build
+
+protoc --python_out=build proto/*.proto
