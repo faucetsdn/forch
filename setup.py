@@ -28,7 +28,14 @@ setuptools.setup(
         "Operating System :: Debian",
     ],
     python_requires='>=3.6',
-    install_requires=['requests', 'prometheus_client', 'psutil', 'pyyaml'],
+    install_requires=[
+        'google-cloud',
+        'prometheus_client',
+        'protobuf',
+        'psutil',
+        'pyyaml',
+        'requests'
+    ],
     data_files=data_files,
     scripts=['bin/forch']
 )
