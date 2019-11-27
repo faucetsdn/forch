@@ -2,6 +2,7 @@ syntax = "proto3";
 
 message CpnConfig {
   map<string, CpnNode> cpn_nodes = 1;
+  int32 ping_interval = 2;
 
   message CpnNode {
     string cpn_ip = 1;

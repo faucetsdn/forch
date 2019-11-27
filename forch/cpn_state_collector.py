@@ -59,9 +59,12 @@ class CPNStateCollector:
                 node_state_map[KEY_NODE_ATTRIBUTES] = attr_map
                 self._hosts_ip[node] = attr_map.cpn_ip
 
+            ping_interval = cpn_data.ping_interval if cpn_data.ping_interval else 60
+
             if not self._hosts_ip:
                 raise Exception('No CPN components defined in file')
-            self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip)
+
+            self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip, ping_interval)
             self._update_cpn_state(current_time, constants.STATE_INITIALIZING, "Initializing")
         except Exception as e:
             LOGGER.error('Could not load config file: %s', e)

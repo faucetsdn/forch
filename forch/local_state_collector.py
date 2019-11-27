@@ -15,7 +15,7 @@ import forch.constants as constants
 
 LOGGER = logging.getLogger('lstate')
 
-PROC_ATTRS = ['cmdline', 'cpu_times', 'memory_info']
+_PROC_ATTRS = ['cmdline', 'cpu_times', 'memory_info']
 
 class LocalStateCollector:
     """Storing local system states"""
@@ -74,11 +74,8 @@ class LocalStateCollector:
 
         # fill up process info
         for target_name, target_map in self._target_procs.items():
-            state_map = {}
-            process_map[target_name] = state_map
-            if target_name not in procs:
-                continue
-            proc_list = procs[target_name]
+            state_map = process_map.setdefault(target_name, {})
+            proc_list = procs.get(target_name, [])
             target_count = int(target_map.get('count', 1))
             state, detail = self._extract_process_state(target_name, target_count, proc_list)
             state_map['detail'] = detail
@@ -110,13 +107,11 @@ class LocalStateCollector:
     def _get_target_processes(self):
         """Get target processes"""
         procs = {}
-        for target_name, target_map in self._target_procs.items():
-            target_regex = target_map['regex']
-            proc_list = procs.setdefault(target_name, [])
-
-            for proc in psutil.process_iter(attrs=PROC_ATTRS):
-                cmd_line_str = ' '.join(proc.info['cmdline'])
-                if re.search(target_regex, cmd_line_str):
+        for proc in psutil.process_iter(attrs=_PROC_ATTRS):
+            cmd_line_str = ' '.join(proc.info['cmdline'])
+            for target_name, target_map in self._target_procs.items():
+                proc_list = procs.setdefault(target_name, [])
+                if re.search(target_map['regex'], cmd_line_str):
                     proc_list.append(proc)
 
         return procs
@@ -128,7 +123,7 @@ class LocalStateCollector:
                 f"does not match target count ({proc_count})"
 
         old_proc_map = self._process_state.get('processes', {}).get(proc_name, {})
-        proc_map = copy.deepcopy(old_proc_map)
+        proc_map = {}
 
         cmd_line = ' '.join(proc_list[0].info['cmdline']) if len(proc_list) == 1 else 'multiple'
         proc_map['cmd_line'] = cmd_line

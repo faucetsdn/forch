@@ -63,6 +63,51 @@ null
 "nz-kiwi-t1sw1"
 28
 2
+%%% healthy state
+Running forch-healthy tests
+@system_state
+"nz-kiwi"
+95
+"http://localhost.n:9020"
+"healthy"
+@dataplane_state
+"healthy"
+"egress:nz-kiwi-t1sw1"
+75
+"active"
+"active"
+@switch_state
+15
+"nz-kiwi-t1sw1"
+9
+null
+2352
+null
+"active"
+3
+@cpn_state
+3
+"127.0.0.1"
+"healthy"
+"240.0.0.1"
+"healthy"
+@process_state
+2
+"healthy"
+"healthy"
+"sleep 50.3231"
+2
+@list_hosts
+"http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
+"http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
+@host_path
+"192.168.1.2"
+"nz-kiwi-t1sw1"
+10
+"192.168.1.1"
+"nz-kiwi-t1sw1"
+28
+2
 %%% t2sw3 down, cpn nz-kiwi-ctl1 up, t1sw1-eth9 down
 Starting stack-linkd test...
 (UNKNOWN) [192.168.1.1] 23 (?) : Connection timed out
@@ -106,7 +151,7 @@ Done with stack-twod test.
 Running forch-twod tests
 @system_state
 "nz-kiwi"
-148
+153
 "http://localhost.n:9020"
 "broken"
 @dataplane_state
@@ -125,15 +170,15 @@ Running forch-twod tests
 "active"
 4
 @cpn_state
-3
+5
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
 @process_state
-1
+4
 "healthy"
-"broken"
+"healthy"
 "sleep 50.3231"
 2
 @list_hosts
@@ -170,7 +215,7 @@ Done with stack-broken test.
 Running forch-broken tests
 @system_state
 "nz-kiwi"
-180
+186
 "http://localhost.n:9020"
 "broken"
 @dataplane_state
@@ -189,13 +234,13 @@ null
 "active"
 7
 @cpn_state
-3
+5
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
 @process_state
-1
+5
 "healthy"
 "broken"
 null
@@ -234,7 +279,7 @@ Done with stack-restored test.
 Running forch-restored tests
 @system_state
 "nz-kiwi"
-217
+223
 "http://localhost.n:9020"
 "broken"
 @dataplane_state
@@ -253,13 +298,13 @@ null
 "active"
 9
 @cpn_state
-3
+5
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
 @process_state
-1
+5
 "healthy"
 "broken"
 null
@@ -279,7 +324,7 @@ null
 Running forch-reset tests
 @system_state
 "nz-kiwi"
-223
+229
 "http://localhost.n:9020"
 "split"
 @dataplane_state
@@ -298,13 +343,13 @@ null
 "active"
 9
 @cpn_state
-4
+6
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
-"damaged"
+"down"
 @process_state
-1
+5
 "healthy"
 "broken"
 null

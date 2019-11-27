@@ -29,3 +29,4 @@ cpn_nodes:
         role: access
         vendor: Cisco
         model: C9300-48P
+ping_interval: 10
