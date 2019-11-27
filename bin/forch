@@ -58,8 +58,6 @@ if [ -n "$FORCH_LOG_DIR" ]; then
     echo Writing forch logs to $FORCH_LOG_DIR/forch.log
 fi
 
-PYTHONPATH=build
-
 export CONTROLLER_NAME
 export PROMETHEUS_PORT
 export FAUCET_EVENT_SOCK

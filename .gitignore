@@ -1,6 +1,7 @@
 faucet
 inst/
 test_out/
+forch/proto/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

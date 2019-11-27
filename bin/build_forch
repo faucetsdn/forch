@@ -3,7 +3,8 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-rm -rf build/proto
-mkdir -p build
+rm -rf forch/proto
 
-protoc --python_out=build proto/*.proto
+protoc --python_out=forch proto/*.proto
+
+touch forch/proto/__init__.py
