@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message StateSummary {
+  string state = 1;
+  string detail = 2;
+  int32 change_count = 3;
+  string last_update = 4;
+  string last_changed = 5;
+  string url = 6;
+}

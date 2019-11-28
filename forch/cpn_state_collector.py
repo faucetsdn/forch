@@ -8,12 +8,15 @@ import re
 import threading
 
 from forch.proto.cpn_config_pb2 import CpnConfig
+from forch.proto.cpn_state_pb2 import CpnState
+from forch.proto.system_state_pb2 import StateSummary
 
 import forch.constants as constants
 import forch.ping_manager
 
 from forch.utils import yaml_proto
 from forch.utils import proto_dict
+from forch.utils import dict_proto
 
 LOGGER = logging.getLogger('cstate')
 
@@ -60,7 +63,6 @@ class CPNStateCollector:
                 self._hosts_ip[node] = attr_map.cpn_ip
 
             ping_interval = cpn_data.ping_interval if cpn_data.ping_interval else 60
-
             if not self._hosts_ip:
                 raise Exception('No CPN components defined in file')
 
@@ -76,13 +78,13 @@ class CPNStateCollector:
 
     def get_cpn_summary(self):
         """Get summary of cpn info"""
-        return {
+        return dict_proto({
             'state': self._cpn_state.get(KEY_CPN_STATE),
             'detail': self._cpn_state.get(KEY_CPN_STATE_DETAIL),
             'change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT),
             'last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS),
             'last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
-        }
+        }, StateSummary)
 
     def get_cpn_state(self):
         """Get CPN state"""
@@ -99,14 +101,14 @@ class CPNStateCollector:
                 cpn_node_map['state_last_updated'] = node_state.get(KEY_NODE_STATE_UPDATE_TS)
                 cpn_node_map['state_last_changed'] = node_state.get(KEY_NODE_STATE_CHANGE_TS)
 
-            return {
+            return dict_proto({
                 'cpn_nodes': cpn_nodes,
                 'cpn_state': self._cpn_state.get(KEY_CPN_STATE),
                 'cpn_state_detail': self._cpn_state.get(KEY_CPN_STATE_DETAIL),
                 'cpn_state_change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT),
                 'cpn_state_last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS),
                 'cpn_state_last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
-            }
+            }, CpnState)
 
     def _handle_ping_result(self, ping_res_future):
         """Handle ping result for hosts"""

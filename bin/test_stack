@@ -196,7 +196,7 @@ function fetch_forch {
     echo http://$CONTROLLER_NAME:9019/$api > $fname.txt
     jq . $fname >> $fname.txt
     echo forch $name$sub results from $api
-    cat $fname
+    jq --indent 0 . $fname
     echo
 }
 
