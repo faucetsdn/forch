@@ -10,6 +10,7 @@ import collections
 import copy
 import glob
 import ipaddress
+import json
 import os
 import random
 import re
@@ -146,6 +147,8 @@ class FaucetTestBase(unittest.TestCase):
         self.port_order = port_order
         self.start_time = None
         self.dpid_names = None
+        self.event_log = None
+        self.prev_event_id = None
 
     def hosts_name_ordered(self):
         """Return hosts in strict name only order."""
@@ -157,8 +160,6 @@ class FaucetTestBase(unittest.TestCase):
 
     def first_switch(self):
         """Return first switch by name order."""
-        if not self.switches_name_ordered():
-            return None
         return self.switches_name_ordered()[0]
 
     def rand_dpid(self):
@@ -231,10 +232,12 @@ class FaucetTestBase(unittest.TestCase):
         self._set_var(name, 'FAUCET_LOG_LEVEL', str(self.LOG_LEVEL))
 
     def _enable_event_log(self, timeout=None):
-        """Creates a file event.log in the test folder that tracks all events sent out by faucet to the event socket"""
+        """Enable analsis of event log contents by copying events to a local log file"""
+        assert not self.event_log, 'event_log already enabled'
         if not timeout:
             timeout = self.EVENT_LOGGER_TIMEOUT
         self.event_log = os.path.join(self.tmpdir, 'event.log')
+        self.prev_event_id = 0
         controller = self._get_controller()
         sock = self.env['faucet']['FAUCET_EVENT_SOCK']
         # Relying on a timeout seems a bit brittle;
@@ -242,6 +245,26 @@ class FaucetTestBase(unittest.TestCase):
         # `with popen(cmd...) as proc`to clean up on exceptions
         controller.cmd(mininet_test_util.timeout_cmd(
             'nc -U %s > %s &' % (sock, self.event_log), timeout))
+
+    def _wait_until_matching_event(self, match_func, timeout=30):
+        """Return the next matching event from the event sock, else fail"""
+        assert timeout >= 1
+        assert self.event_log and os.path.exists(self.event_log)
+        for _ in range(timeout):
+            with open(self.event_log) as events:
+                for event_str in events:
+                    event = json.loads(event_str)
+                    event_id = event['event_id']
+                    if event_id <= self.prev_event_id:
+                        continue
+                    self.prev_event_id = event_id
+                    try:
+                        if match_func(event):
+                            return event
+                    except KeyError:
+                        pass  # Allow for easy dict traversal.
+                time.sleep(1)
+        self.fail('matching event not found in event stream')
 
     def _read_yaml(self, yaml_path):
         with open(yaml_path) as yaml_file:
@@ -389,20 +412,6 @@ class FaucetTestBase(unittest.TestCase):
     def hostns(self, host):
         return '%s' % host.name
 
-    def dump_switch_flows(self, switch):
-        """ """
-        for dump_cmd in (
-                'dump-flows', 'dump-groups', 'dump-meters',
-                'dump-group-stats', 'dump-ports', 'dump-ports-desc',
-                'meter-stats'):
-            switch_dump_name = os.path.join(self.tmpdir, '%s-%s.log' % (switch.name, dump_cmd))
-            # TODO: occasionally fails with socket error.
-            switch.cmd('%s %s %s > %s' % (self.OFCTL, dump_cmd, switch.name, switch_dump_name),
-                       success=None)
-        for other_cmd in ('show', 'list controller', 'list manager'):
-            other_dump_name = os.path.join(self.tmpdir, '%s.log' % other_cmd.replace(' ', ''))
-            switch.cmd('%s %s > %s' % (self.VSCTL, other_cmd, other_dump_name))
-
     def tearDown(self, ignore_oferrors=False):
         """Clean up after a test.
            ignore_oferrors: return OF errors rather than failing"""
@@ -410,13 +419,21 @@ class FaucetTestBase(unittest.TestCase):
             for host in self.hosts_name_ordered()[:1]:
                 if self.get_host_netns(host):
                     self.quiet_commands(host, ['ip netns del %s' % self.hostns(host)])
-        first_switch = self.first_switch()
-        if first_switch:
-            self.first_switch().cmd('ip link > %s' % os.path.join(self.tmpdir, 'ip-links.log'))
+        self.first_switch().cmd('ip link > %s' % os.path.join(self.tmpdir, 'ip-links.log'))
         switch_names = []
         for switch in self.net.switches:
             switch_names.append(switch.name)
-            self.dump_switch_flows(switch)
+            for dump_cmd in (
+                    'dump-flows', 'dump-groups', 'dump-meters',
+                    'dump-group-stats', 'dump-ports', 'dump-ports-desc',
+                    'meter-stats'):
+                switch_dump_name = os.path.join(self.tmpdir, '%s-%s.log' % (switch.name, dump_cmd))
+                # TODO: occasionally fails with socket error.
+                switch.cmd('%s %s %s > %s' % (self.OFCTL, dump_cmd, switch.name, switch_dump_name),
+                           success=None)
+            for other_cmd in ('show', 'list controller', 'list manager'):
+                other_dump_name = os.path.join(self.tmpdir, '%s.log' % other_cmd.replace(' ', ''))
+                switch.cmd('%s %s > %s' % (self.VSCTL, other_cmd, other_dump_name))
             switch.cmd('%s del-br %s' % (self.VSCTL, switch.name))
         self._stop_net()
         self.net = None
