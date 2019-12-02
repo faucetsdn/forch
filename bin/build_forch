@@ -6,6 +6,7 @@ cd $ROOT
 rm -rf build/ forch/proto
 
 proto_files=`ls proto/*.proto`
+protoc --version
 
 mkdir -p build/forch/proto build/proto
 cp $proto_files build/forch/proto/
