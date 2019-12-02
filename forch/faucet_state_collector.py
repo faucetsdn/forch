@@ -468,7 +468,7 @@ class FaucetStateCollector:
         with self.lock:
             dps = self.topo_state.get(TOPOLOGY_DPS, {})
             if not dps:
-                return None
+                return {}
             topo_map_obj = {}
             topo_map_obj[TOPOLOGY_LINK_MAP] = self._get_topo_map()
             topo_map_obj[LINKS_CHANGE_COUNT] = self.topo_state.get(LINKS_CHANGE_COUNT, 0)
