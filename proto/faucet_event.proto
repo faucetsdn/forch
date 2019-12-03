@@ -1,0 +1,29 @@
+/*
+ * Encapsulation of an event on the Faucet event socket.
+ */
+syntax = "proto3";
+
+message FaucetEvent {
+  int32 version = 1;
+  string dp_name = 2;
+  int32 dp_id = 3;
+  int32 event_id = 4;
+  int32 timestamp = 5;
+  bool debounced = 6;
+
+  oneof event_data {
+    StackTopoChange STACK_TOPO_CHANGE = 7;
+  }
+}
+
+message StackTopoChange {
+  string stack_root = 1;
+  StackGraph graph = 2;
+  StackDps dps = 3;
+}
+
+message StackGraph {
+}
+
+message StackDps {
+}

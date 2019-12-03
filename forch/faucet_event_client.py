@@ -9,6 +9,10 @@ import socket
 import threading
 import time
 
+from forch.utils import dict_proto
+
+from forch.proto.faucet_event_pb2 import FaucetEvent
+
 LOGGER = logging.getLogger('fevent')
 
 class FaucetEventClient():
@@ -254,12 +258,10 @@ class FaucetEventClient():
 
     def as_stack_topo_change(self, event):
         """Convert to port learning info, if applicable"""
-        if not event or 'STACK_TOPO_CHANGE' not in event:
-            return (None, None, None)
-        root = event['STACK_TOPO_CHANGE']['stack_root']
-        graph = event['STACK_TOPO_CHANGE']['graph']
-        dps = event['STACK_TOPO_CHANGE'].get('dps')
-        return (root, graph, dps)
+        event_proto = dict_proto(event, FaucetEvent)
+        if event_proto.STACK_TOPO_CHANGE:
+            return event_proto
+        return None
 
     def as_dp_change(self, event):
         """Convert to dp status"""
