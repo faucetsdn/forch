@@ -1,13 +1,32 @@
+/*
+ * CPN configuration structure.
+ */
 syntax = "proto3";
 
+/*
+ * Overall static configuration of the CPN.
+ */
 message CpnConfig {
+  // Map of all CPN nodes, by node name.
   map<string, CpnAttributes> cpn_nodes = 1;
+
+  // Interval for check pings.
   int32 ping_interval = 2;
 }
 
+/*
+ * Static node attributes.
+ */
 message CpnAttributes {
+  // Node IP address on the CPN.
   string cpn_ip = 1;
+
+  // Role of this entry.
   string role = 2;
+
+  // Entity vendor.
   string vendor = 3;
+
+  // Entity model.
   string model = 4;
-}      
+}

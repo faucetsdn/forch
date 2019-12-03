@@ -1,37 +1,92 @@
+/*
+ * cpn_state API result.
+ */
 syntax = "proto3";
 
 import "forch/proto/cpn_config.proto";
 
+/*
+ * Summary of overall CPN state.
+ */
 message CpnState {
+  // All the CPN nodes on the network.
   map<string, CpnNode> cpn_nodes = 1;
+
+  // Overall CPN state:<em>initializing, healthy, broken, down, damaged</em>
   string cpn_state = 2;
+
+  // Text description of any problems.
   string cpn_state_detail = 3;
+
+  // Number of times state has changed.
   int32 cpn_state_change_count = 4;
+
+  // Last time the state was updated.
   string cpn_state_last_update = 5;
+
+  // Last time the state changed value.
   string cpn_state_last_changed = 6;
+
+  // Link to top-level system state.
   string system_state_url = 7;
 
+  /*
+   * Static CPN node attributes.
+   */
   message CpnNode {
+    // Static attributes describing the node.
     CpnAttributes attributes = 1;
+
+    // Current node state:<em>healthy, down, damaged</em>
     string state = 2;
+
+    // Underlying ping results used to determine health.
     PingResults ping_results = 3;
+
+    // Change count for node state.
     int32 state_change_count = 4;
+
+    // Last timestamp of node state update.
     string state_last_updated = 5;
+
+    // Last timestamp of node state change.
     string state_last_changed = 6;
   }
 
+  /*
+   * Summary of ping results for this node.
+   */
   message PingResults {
+    // Number of packets transmitted.
     int32 transmitted = 1;
+
+    // Number of packets actually received.
     int32 received = 2;
+
+    // Percentage package loss.
     int32 loss_percentage = 3;
+
+    // Total time for all pings.
     int32 time_ms = 4;
+
+    // Detailed timing information.
     RttInfo rtt_ms = 5;
   }
 
+  /*
+   * Detailed timing information for ping rtt.
+   */
   message RttInfo {
+    // Minimum time in ms.
     float min = 1;
+
+    // Average time in ms.
     float avg = 2;
+
+    // Maximum time in ms.
     float max = 3;
+
+    // Mean time in ms.
     float mdev = 4;
   }
 }

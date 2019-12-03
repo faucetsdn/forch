@@ -16,25 +16,30 @@ proto_files=`ls proto/*.proto`
     cp protoc-gen-doc-*.linux-amd64.go*/protoc-gen-doc bin/
 )
 
-doc_path=$ROOT/protoc-gen-doc/bin/protoc-gen-doc
+gen_path=$ROOT/protoc-gen-doc/bin/protoc-gen-doc
 
 mkdir -p build/forch/proto build/proto
 cp $proto_files build/forch/proto/
+proto_files2=
 
 mkdir -p build/proto_docs
 
 for proto in $proto_files; do
-    (
-        cd build
-        protoc --python_out=. --plugin=protoc-gen-doc=$doc_path \
-               --doc_out=html,${proto%.proto}.html:proto_docs \
-               forch/$proto
-    )
+    proto_files2+="forch/$proto "
 done
 
+(
+    cd build
+    protoc --python_out=. --plugin=protoc-gen-doc=$gen_path \
+           --doc_out=html,protos.html:. \
+           $proto_files2
+    sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' protos.html
+    sed -i'' -e 's/&lt;/</g' -e 's/&gt;/>/g' protos.html
+)
+
 cp -a public_src public
-mkdir -p forch/proto/ public/proto
+mkdir -p forch/proto/
 
 touch forch/proto/__init__.py
 cp build/forch/proto/*.py forch/proto/
-cp build/proto_docs/* public/proto/
+cp build/protos.html public/

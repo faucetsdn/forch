@@ -32,7 +32,8 @@ function fetch_path(eth_src, eth_dst) {
 
 function adjust_header(api) {
   postfix_tag = document.getElementById('header_postfix')
-  postfix_tag.innerHTML = `: ${api} (<a href="proto/${api}.html">docs</a>)`
+  proto_path = `protos.html#forch%2fproto%2f${api}.proto`
+  postfix_tag.innerHTML = `: ${api} (<a href="${proto_path}">docs</a>)`
 }
 
 function initialize() {
