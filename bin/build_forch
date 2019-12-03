@@ -3,20 +3,38 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-rm -rf build/ forch/proto
+rm -rf build/ forch/proto public/
 
 proto_files=`ls proto/*.proto`
-protoc --version
+
+(
+    export PATH=$PATH:/usr/local/go/bin/
+    cd protoc-gen-doc
+    script/dist.sh
+    tar -xzvf dist/protoc-gen-doc-*.linux-amd64.go*.tar.gz
+    mkdir -p bin
+    cp protoc-gen-doc-*.linux-amd64.go*/protoc-gen-doc bin/
+)
+
+doc_path=$ROOT/protoc-gen-doc/bin/protoc-gen-doc
 
 mkdir -p build/forch/proto build/proto
 cp $proto_files build/forch/proto/
 
-ls -l build/forch/proto/
+mkdir -p build/proto_docs
 
 for proto in $proto_files; do
-    (cd build; protoc --python_out=. forch/$proto)
+    (
+        cd build
+        protoc --python_out=. --plugin=protoc-gen-doc=$doc_path \
+               --doc_out=html,${proto%.proto}.html:proto_docs \
+               forch/$proto
+    )
 done
 
-mkdir -p forch/proto/
+cp -a public_src public
+mkdir -p forch/proto/ public/proto
+
 touch forch/proto/__init__.py
 cp build/forch/proto/*.py forch/proto/
+cp build/proto_docs/* public/proto/

@@ -1,12 +1,17 @@
 #!/bin/bash -e
 
+GO_VERSION=1.13.3
+
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
 sudo apt-get install openvswitch-switch protobuf-compiler
 
 python3 -m venv venv
-
 source venv/bin/activate
 
 pip install -r etc/requirements.txt
+
 
 DEF_IFACE=`route -n | fgrep UG | awk '{print $8}'`
 if [ -n "$DEF_IFACE" ]; then
@@ -16,3 +21,23 @@ if [ -n "$DEF_IFACE" ]; then
 else
     echo No DEF_IFACE found. If this causes problems, maybe you need ipv4!
 fi
+
+
+if [ -d /usr/local/go ]; then
+    echo /usr/local/go already installed, `/usr/local/go/bin/go version`
+else
+    go_zip=go$GO_VERSION.linux-amd64.tar.gz
+    rm -rf build/go build/$go_zip
+    mkdir -p build
+    (cd build; wget https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz)
+    (cd build; tar -xzf go$GO_VERSION.linux-amd64.tar.gz)
+    sudo cp -a build/go /usr/local
+    sudo chown root:root -R /usr/local/go
+fi
+
+rm -rf protoc-gen-doc
+git clone https://github.com/pseudomuto/protoc-gen-doc.git
+
+
+echo
+echo Done with forch base setup.
