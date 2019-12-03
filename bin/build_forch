@@ -34,11 +34,11 @@ done
            --doc_out=html,protos.html:. \
            $proto_files2
     sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' protos.html
-    sed -i'' -e 's/&lt;/</' -e 's/&gt;/>/' protos.html
+    sed -i'' -e 's/&lt;/</g' -e 's/&gt;/>/g' protos.html
 )
 
 cp -a public_src public
-mkdir -p forch/proto/ public/proto
+mkdir -p forch/proto/
 
 touch forch/proto/__init__.py
 cp build/forch/proto/*.py forch/proto/
