@@ -307,8 +307,8 @@ restart_forch
 # Basic test of static web-server
 curl http://$CONTROLLER_NAME:9019/index.html > $out_dir/index.html
 fgrep "Network Operations Administrative Helper" $out_dir/index.html || exit 1
-curl http://$CONTROLLER_NAME:9019/proto/system_state.html > $out_dir/system_state.html
-fgrep "forch/proto/system_state.proto" $out_dir/system_state.html || exit 1
+curl http://$CONTROLLER_NAME:9019/protos.html > $out_dir/protos.html
+fgrep "forch/proto/system_state.proto" $out_dir/protos.html || exit 1
 
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
