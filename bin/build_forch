@@ -31,9 +31,9 @@ done
 (
     cd build
     protoc --python_out=. --plugin=protoc-gen-doc=$gen_path \
-           --doc_out=html,proto.html:proto_docs \
+           --doc_out=html,protos.html:. \
            $proto_files2
-    sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' proto_docs/proto.html
+    sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' protos.html
 )
 
 cp -a public_src public
@@ -41,4 +41,4 @@ mkdir -p forch/proto/ public/proto
 
 touch forch/proto/__init__.py
 cp build/forch/proto/*.py forch/proto/
-cp build/proto_docs/* public/proto/
+cp build/protos.html public/
