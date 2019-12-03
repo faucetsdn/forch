@@ -1,3 +1,6 @@
+/*
+ * CPN configuration structure.
+ */
 syntax = "proto3";
 
 /*

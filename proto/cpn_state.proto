@@ -1,3 +1,6 @@
+/*
+ * cpn_state API result.
+ */
 syntax = "proto3";
 
 import "forch/proto/cpn_config.proto";
