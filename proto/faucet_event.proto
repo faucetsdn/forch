@@ -8,7 +8,7 @@ message FaucetEvent {
   string dp_name = 2;
   int32 dp_id = 3;
   int32 event_id = 4;
-  int32 timestamp = 5;
+  float time = 5;
   bool debounced = 6;
 
   oneof event_data {
@@ -19,11 +19,38 @@ message FaucetEvent {
 message StackTopoChange {
   string stack_root = 1;
   StackGraph graph = 2;
-  StackDps dps = 3;
+  map<string, StackDp> dps = 3;
 }
 
 message StackGraph {
+  bool directed = 1;
+  bool multigraph = 2;
+  NetworkGraph graph = 3;
+  repeated StackNode nodes = 4;
+  repeated StackLink links = 5;
 }
 
-message StackDps {
+message NetworkGraph {
+}
+
+message StackNode {
+  string id = 1;
+}
+
+message StackLink {
+  string key = 1;
+  string source = 2;
+  string target = 3;
+  LinkPortMap port_map = 4;
+}
+
+message LinkPortMap {
+  string dp_a = 1;
+  string port_a = 2;
+  string dp_z = 3;
+  string port_z = 4;
+}
+
+message StackDp {
+  int32 root_hop_port = 1;
 }

@@ -258,9 +258,10 @@ class FaucetEventClient():
 
     def as_stack_topo_change(self, event):
         """Convert to port learning info, if applicable"""
-        event_proto = dict_proto(event, FaucetEvent)
-        if event_proto.STACK_TOPO_CHANGE:
-            return event_proto
+        if event.get('STACK_TOPO_CHANGE'):
+            event_proto = dict_proto(event, FaucetEvent)
+            if event_proto.STACK_TOPO_CHANGE:
+                return event_proto.STACK_TOPO_CHANGE
         return None
 
     def as_dp_change(self, event):
