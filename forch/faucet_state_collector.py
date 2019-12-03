@@ -92,17 +92,19 @@ class FaucetStateCollector:
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
         self._is_active = False
-        self._is_connected = False
+        self._is_state_restored = False
+        self._state_restore_error = None
 
     def set_active(self, is_active):
         """Set active state"""
         with self._lock:
             self._is_active = is_active
 
-    def set_connected(self, is_connected):
-        """Set active state"""
+    def set_state_restored(self, is_restored, restore_error=None):
+        """Set state restore result"""
         with self._lock:
-            self._is_connected = is_connected
+            self._is_state_restored = is_restored
+            self._state_restore_error = restore_error
 
     # pylint: disable=no-self-argument, protected-access
     def _pre_check(state_name):
@@ -112,8 +114,9 @@ class FaucetStateCollector:
                     if not self._is_active:
                         detail = 'This controller is inactive. Please view peer controller.'
                         return {state_name: STATE_INACTIVE, 'detail': detail}
-                    if not self._is_connected:
-                        detail = 'Diconnected from Faucet event socket.'
+                    if not self._is_state_restored:
+                        error = self._state_restore_error
+                        detail = f'Cannot restore states or connect to Faucet: {error}'
                         return {state_name: STATE_BROKEN, 'detail': detail}
                 return func(self, *args, **kwargs)
             return wrapped
