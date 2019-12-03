@@ -34,6 +34,7 @@ done
            --doc_out=html,protos.html:. \
            $proto_files2
     sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' protos.html
+    sed -i'' -e 's/&lt;/</' -e 's/&gt;/>/' protos.html
 )
 
 cp -a public_src public

@@ -3,12 +3,30 @@ syntax = "proto3";
 import "forch/proto/cpn_config.proto";
 
 message CpnState {
+  // All the CPN nodes on the network.
   map<string, CpnNode> cpn_nodes = 1;
+
+  // Overall CPN state:<ul>
+  // <li>Initializing: Waiting for initial results.
+  // <li>Healthy: No problems detected.
+  // <li>Broken: 
+  // <li>Down
+  // <li>Damaged
   string cpn_state = 2;
+
+  // Text description of any CPN problems.
   string cpn_state_detail = 3;
+
+  // Number of times CPN state has changed.
   int32 cpn_state_change_count = 4;
+
+  // Last time the CPN state was updated.
   string cpn_state_last_update = 5;
+
+  // Last time the CPN state changed value.
   string cpn_state_last_changed = 6;
+
+  // Link to top-level system state.
   string system_state_url = 7;
 
   message CpnNode {
