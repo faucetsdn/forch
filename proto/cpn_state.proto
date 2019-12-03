@@ -3,7 +3,7 @@ syntax = "proto3";
 import "forch/proto/cpn_config.proto";
 
 /*
- * Summary of overall cpn state.
+ * Summary of overall CPN state.
  */
 message CpnState {
   // All the CPN nodes on the network.
@@ -12,23 +12,23 @@ message CpnState {
   // Overall CPN state:<em>initializing, healthy, broken, down, damaged</em>
   string cpn_state = 2;
 
-  // Text description of any CPN problems.
+  // Text description of any problems.
   string cpn_state_detail = 3;
 
-  // Number of times CPN state has changed.
+  // Number of times state has changed.
   int32 cpn_state_change_count = 4;
 
-  // Last time the CPN state was updated.
+  // Last time the state was updated.
   string cpn_state_last_update = 5;
 
-  // Last time the CPN state changed value.
+  // Last time the state changed value.
   string cpn_state_last_changed = 6;
 
   // Link to top-level system state.
   string system_state_url = 7;
 
   /*
-   * Static cpn node attributes.
+   * Static CPN node attributes.
    */
   message CpnNode {
     // Static attributes describing the node.

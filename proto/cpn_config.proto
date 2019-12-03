@@ -1,10 +1,10 @@
 syntax = "proto3";
 
 /*
- * Overall static configuration of the cpn.
+ * Overall static configuration of the CPN.
  */
 message CpnConfig {
-  // Map of all cpn nodes, by node name.
+  // Map of all CPN nodes, by node name.
   map<string, CpnAttributes> cpn_nodes = 1;
 
   // Interval for check pings.
