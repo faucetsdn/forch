@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+version=`git describe`
+
+python3 setup.py sdist bdist_wheel
+
+echo
+ls -l dist/forch-$version.* dist/forch-$version-*
+echo
+echo Created version $version '(from most recent annotated tag)'

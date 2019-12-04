@@ -12,6 +12,7 @@ install:
   - bin/setup_base
 script:
   - set -e
+  - bin/package_forch
   - bin/check_style
   - bin/build_forch
   - bin/build_docker
