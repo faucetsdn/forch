@@ -713,7 +713,8 @@ class FaucetStateCollector:
 
             stack_root = topo_change.stack_root
             dps_hash = str(topo_change.dps)
-            if topo_state.get(TOPOLOGY_ROOT) != stack_root or topo_state.get(TOPOLOGY_DPS_HASH) != dps_hash:
+            prev_hash = topo_state.get(TOPOLOGY_DPS_HASH)
+            if topo_state.get(TOPOLOGY_ROOT) != stack_root or prev_hash != dps_hash:
                 topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
                 LOGGER.info('stack_topo change #%d to root %s', topo_change_count, stack_root)
                 topo_state[TOPOLOGY_ROOT] = topo_change.stack_root
