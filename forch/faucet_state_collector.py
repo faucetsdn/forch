@@ -501,7 +501,7 @@ class FaucetStateCollector:
         res = {'path': []}
         with self.lock:
             link_list = self.topo_state.get(LINKS_GRAPH)
-            dps = self.topo_state.get(TOPOLOGY_DPS, {})
+            dps = self.topo_state.get(TOPOLOGY_DPS)
             if not dps or not link_list:
                 return {
                     'state': STATE_BROKEN,
@@ -512,7 +512,7 @@ class FaucetStateCollector:
                 hop['in'] = src_port
             while hop:
                 next_hop = {}
-                egress_port = dps.get(hop['switch'], {}).get('root_hop_port')
+                egress_port = dps[hop['switch']].root_hop_port
                 if egress_port:
                     hop['out'] = egress_port
                     for link_map in link_list:
@@ -732,10 +732,10 @@ class FaucetStateCollector:
     @staticmethod
     def get_endpoints_from_link(link_map):
         """Get the the pair of switch and port for a link"""
-        from_sw = link_map["port_map"]["dp_a"]
-        from_port = int(link_map["port_map"]["port_a"][5:])
-        to_sw = link_map["port_map"]["dp_z"]
-        to_port = int(link_map["port_map"]["port_z"][5:])
+        from_sw = link_map['port_map'].dp_a
+        from_port = int(link_map['port_map'].port_a[5:])
+        to_sw = link_map['port_map']dp_z
+        to_port = int(link_map['port_map'].port_z[5:])
 
         return from_sw, from_port, to_sw, to_port
 
