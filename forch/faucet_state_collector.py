@@ -60,10 +60,12 @@ CONFIG_CHANGE_TS = "config_change_timestamp"
 LINK_STATE = "link_state"
 TOPOLOGY_ENTRY = "topology"
 TOPOLOGY_DPS = "dps"
+TOPOLOGY_DPS_HASH = "dps_hash"
 TOPOLOGY_CHANGE_COUNT = "topology_change_count"
 TOPOLOGY_LAST_CHANGE = "topology_last_change"
 LINKS_STATE = "links_state"
 LINKS_GRAPH = "links_graph"
+LINKS_HASH = "links_hash"
 LINKS_CHANGE_COUNT = "links_change_count"
 LINKS_LAST_CHANGE = "links_last_change"
 TOPOLOGY_DP_MAP = "switches"
@@ -455,8 +457,8 @@ class FaucetStateCollector:
 
     def _get_link_state(self, local_dp, local_port, peer_dp, peer_port):
         dps = self.topo_state.get(TOPOLOGY_DPS, {})
-        if (dps.get(local_dp, {}).get('root_hop_port') == int(local_port) or
-                dps.get(peer_dp, {}).get('root_hop_port') == int(peer_port)):
+        if (dps[local_dp].root_hop_port == int(local_port) or
+                dps[peer_dp].root_hop_port == int(peer_port)):
             return STATE_ACTIVE
         dp_state = self.topo_state.setdefault(LINKS_STATE, {}).setdefault(local_dp, {})
         port_state = dp_state.setdefault(int(local_port), {}).get('state')
@@ -499,7 +501,7 @@ class FaucetStateCollector:
         res = {'path': []}
         with self.lock:
             link_list = self.topo_state.get(LINKS_GRAPH)
-            dps = self.topo_state.get(TOPOLOGY_DPS, {})
+            dps = self.topo_state.get(TOPOLOGY_DPS)
             if not dps or not link_list:
                 return {
                     'state': STATE_BROKEN,
@@ -510,7 +512,7 @@ class FaucetStateCollector:
                 hop['in'] = src_port
             while hop:
                 next_hop = {}
-                egress_port = dps.get(hop['switch'], {}).get('root_hop_port')
+                egress_port = dps[hop['switch']].root_hop_port
                 if egress_port:
                     hop['out'] = egress_port
                     for link_map in link_list:
@@ -695,23 +697,30 @@ class FaucetStateCollector:
                             dp_name, port, new_state)
 
     @_dump_states
-    def process_stack_topo_change(self, timestamp, stack_root, graph, dps):
+    def process_stack_topo_change(self, topo_change):
         """Process stack topology change event"""
         topo_state = self.topo_state
+        timestamp = topo_change.timestamp
         with self.lock:
-            link_graph = graph.get('links')
-            if topo_state.get(LINKS_GRAPH) != link_graph:
+            link_graph = topo_change.graph.links
+            links_hash = str(link_graph)
+            if topo_state.get(LINKS_HASH) != links_hash:
                 topo_state[LINKS_GRAPH] = link_graph
+                topo_state[LINKS_HASH] = links_hash
                 link_change_count = self._update_stack_links_stats(timestamp)
-                graph_links = [link['key'] for link in link_graph]
+                graph_links = [link.key for link in link_graph]
                 graph_links.sort()
                 LOGGER.info('stack_topo_links #%d links: %s', link_change_count, graph_links)
 
-            if topo_state.get(TOPOLOGY_ROOT) != stack_root or topo_state.get(TOPOLOGY_DPS) != dps:
+            stack_root = topo_change.stack_root
+            dps_hash = str(topo_change.dps)
+            prev_hash = topo_state.get(TOPOLOGY_DPS_HASH)
+            if topo_state.get(TOPOLOGY_ROOT) != stack_root or prev_hash != dps_hash:
                 topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
                 LOGGER.info('stack_topo change #%d to root %s', topo_change_count, stack_root)
-                topo_state[TOPOLOGY_ROOT] = stack_root
-                topo_state[TOPOLOGY_DPS] = dps
+                topo_state[TOPOLOGY_ROOT] = topo_change.stack_root
+                topo_state[TOPOLOGY_DPS] = topo_change.dps
+                topo_state[TOPOLOGY_DPS_HASH] = dps_hash
                 topo_state[TOPOLOGY_CHANGE_COUNT] = topo_change_count
                 topo_state[TOPOLOGY_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
 
@@ -724,10 +733,10 @@ class FaucetStateCollector:
     @staticmethod
     def get_endpoints_from_link(link_map):
         """Get the the pair of switch and port for a link"""
-        from_sw = link_map["port_map"]["dp_a"]
-        from_port = int(link_map["port_map"]["port_a"][5:])
-        to_sw = link_map["port_map"]["dp_z"]
-        to_port = int(link_map["port_map"]["port_z"][5:])
+        from_sw = link_map.port_map.dp_a
+        from_port = int(link_map.port_map.port_a[5:])
+        to_sw = link_map.port_map.dp_z
+        to_port = int(link_map.port_map.port_z[5:])
 
         return from_sw, from_port, to_sw, to_port
 

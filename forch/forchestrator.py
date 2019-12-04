@@ -155,10 +155,10 @@ class Forchestrator:
             LOGGER.debug('Config change. New config: %s', dps_config)
             self._faucet_collector.process_dataplane_config_change(timestamp, dps_config)
 
-        (stack_root, graph, dps) = self._faucet_events.as_stack_topo_change(event)
-        if stack_root is not None:
-            LOGGER.debug('stack dataplane_state change root:%s', stack_root)
-            self._faucet_collector.process_stack_topo_change(timestamp, stack_root, graph, dps)
+        topo_change = self._faucet_events.as_stack_topo_change(event)
+        if topo_change:
+            LOGGER.debug('stack dataplane_state change root:%s', topo_change.stack_root)
+            self._faucet_collector.process_stack_topo_change(topo_change)
 
         (name, port, state) = self._faucet_events.as_stack_state(event)
         if name is not None:

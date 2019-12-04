@@ -9,6 +9,10 @@ import socket
 import threading
 import time
 
+from forch.utils import dict_proto
+
+from forch.proto.faucet_event_pb2 import FaucetEvent
+
 LOGGER = logging.getLogger('fevent')
 
 class FaucetEventClient():
@@ -178,6 +182,12 @@ class FaucetEventClient():
                 return event
         return None
 
+    def _augment_event_proto(self, event, target_event, include_dp=True):
+        target_event.timestamp = event.time
+        if event.dp_name and event.dp_name != '0' and include_dp:
+            target_event.dp_name = event.dp_name
+        return target_event
+
     # pylint: disable=too-many-arguments
     def _make_port_state(self, port, status):
         return {
@@ -254,12 +264,11 @@ class FaucetEventClient():
 
     def as_stack_topo_change(self, event):
         """Convert to port learning info, if applicable"""
-        if not event or 'STACK_TOPO_CHANGE' not in event:
-            return (None, None, None)
-        root = event['STACK_TOPO_CHANGE']['stack_root']
-        graph = event['STACK_TOPO_CHANGE']['graph']
-        dps = event['STACK_TOPO_CHANGE'].get('dps')
-        return (root, graph, dps)
+        if event.get('STACK_TOPO_CHANGE'):
+            event_proto = dict_proto(event, FaucetEvent)
+            return self._augment_event_proto(event_proto, event_proto.STACK_TOPO_CHANGE,
+                                             include_dp=False)
+        return None
 
     def as_dp_change(self, event):
         """Convert to dp status"""
