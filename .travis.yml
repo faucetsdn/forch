@@ -17,3 +17,10 @@ script:
   - bin/build_docker
   - bin/setup_stack local
   - bin/test_stack
+env:
+  matrix:
+    - SHARD=1
+    - SHARD=2
+    - SHARD=3
+    - SHARD=4
+    - SHARD=5
