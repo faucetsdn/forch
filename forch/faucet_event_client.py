@@ -185,6 +185,7 @@ class FaucetEventClient():
     def _augment_event_proto(self, event, target_event):
         target_event.timestamp = event.time
         if event.dp_name and event.dp_name != '0':
+            LOGGER.info('augmenting dp_name %s', event.dp_name)
             target_event.dp_name = event.dp_name
         return target_event
 
