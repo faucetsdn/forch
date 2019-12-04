@@ -734,7 +734,7 @@ class FaucetStateCollector:
         """Get the the pair of switch and port for a link"""
         from_sw = link_map['port_map'].dp_a
         from_port = int(link_map['port_map'].port_a[5:])
-        to_sw = link_map['port_map']dp_z
+        to_sw = link_map['port_map'].dp_z
         to_port = int(link_map['port_map'].port_z[5:])
 
         return from_sw, from_port, to_sw, to_port
