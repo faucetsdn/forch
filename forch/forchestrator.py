@@ -158,7 +158,7 @@ class Forchestrator:
         topo_change = self._faucet_events.as_stack_topo_change(event)
         if topo_change:
             LOGGER.debug('stack dataplane_state change root:%s', topo_change.stack_root)
-            self._faucet_collector.process_stack_topo_change(timestamp, topo_change)
+            self._faucet_collector.process_stack_topo_change(topo_change)
 
         (name, port, state) = self._faucet_events.as_stack_state(event)
         if name is not None:

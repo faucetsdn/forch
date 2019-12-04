@@ -182,6 +182,12 @@ class FaucetEventClient():
                 return event
         return None
 
+    def _augment_event_proto(self, event, target_event):
+        target_event.timestamp = event.time
+        if event.dp_name and event.dp_name != '0':
+            target_event.dp_name = event.dp_name
+        return target_event
+
     # pylint: disable=too-many-arguments
     def _make_port_state(self, port, status):
         return {
@@ -261,7 +267,7 @@ class FaucetEventClient():
         if event.get('STACK_TOPO_CHANGE'):
             event_proto = dict_proto(event, FaucetEvent)
             if event_proto.STACK_TOPO_CHANGE:
-                return event_proto.STACK_TOPO_CHANGE
+                return self._augment_event_proto(event_proto, event_proto.STACK_TOPO_CHANGE)
         return None
 
     def as_dp_change(self, event):

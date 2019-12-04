@@ -697,9 +697,10 @@ class FaucetStateCollector:
                             dp_name, port, new_state)
 
     @_dump_states
-    def process_stack_topo_change(self, timestamp, topo_change):
+    def process_stack_topo_change(self, topo_change):
         """Process stack topology change event"""
         topo_state = self.topo_state
+        timestamp = topo_change.timestamp
         with self.lock:
             link_graph = topo_change.graph.links
             links_hash = str(link_graph)

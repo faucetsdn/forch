@@ -17,9 +17,10 @@ message FaucetEvent {
 }
 
 message StackTopoChange {
-  string stack_root = 1;
-  StackGraph graph = 2;
-  map<string, StackDp> dps = 3;
+  float timestamp = 1;
+  string stack_root = 2;
+  StackGraph graph = 3;
+  map<string, StackDp> dps = 4;
 }
 
 message StackGraph {
