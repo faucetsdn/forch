@@ -16,9 +16,11 @@ package_data = {'': ['GVERSION']}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+version = os.popen('git describe').read().strip()
+
 setuptools.setup(
     name="forch",
-    version="1.0",
+    version=version,
     description="Faucet orchestrator",
     long_description=long_description,
     long_description_content_type="text/markdown",
