@@ -228,6 +228,7 @@ class FaucetStateCollector:
         for link, link_obj in link_map.items():
             if link_obj.get(LINK_STATE) not in {STATE_ACTIVE, STATE_UP}:
                 broken_links.append(link)
+        broken_links.sort()
         return broken_links
 
     @_pre_check(state_name='state')
