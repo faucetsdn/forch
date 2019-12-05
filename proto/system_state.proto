@@ -1,10 +1,29 @@
+/*
+ * State summary of a component
+ */
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
+/*
+ * State summary
+ */
 message StateSummary {
-  string state = 1;
+  // Overall state: <em>Initializing, healthy, broken</em>
+  State.State state = 1;
+
+  // Text description of any problems
   string detail = 2;
+
+  // Number of times state has changed
   int32 change_count = 3;
+
+  // Last time the state was updated
   string last_update = 4;
+
+  // Last time the state was changed
   string last_changed = 5;
+
+  //  Link to top-level system state
   string url = 6;
 }

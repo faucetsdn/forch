@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "forch/proto/cpn_config.proto";
+import "forch/proto/shared_constants.proto";
 
 /*
  * Summary of overall CPN state.
@@ -13,7 +14,7 @@ message CpnState {
   map<string, CpnNode> cpn_nodes = 1;
 
   // Overall CPN state:<em>initializing, healthy, broken, down, damaged</em>
-  string cpn_state = 2;
+  State.State cpn_state = 2;
 
   // Text description of any problems.
   string cpn_state_detail = 3;
@@ -38,7 +39,7 @@ message CpnState {
     CpnAttributes attributes = 1;
 
     // Current node state:<em>healthy, down, damaged</em>
-    string state = 2;
+    State.State state = 2;
 
     // Underlying ping results used to determine health.
     PingResults ping_results = 3;

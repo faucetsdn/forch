@@ -9,9 +9,9 @@ import threading
 
 from forch.proto.cpn_config_pb2 import CpnConfig
 from forch.proto.cpn_state_pb2 import CpnState
+from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 
-import forch.constants as constants
 import forch.ping_manager
 
 from forch.utils import yaml_proto
@@ -47,6 +47,7 @@ class CPNStateCollector:
         self._lock = threading.Lock()
         self._ping_manager = None
 
+    # pylint: disable=no-member
     def initialize(self):
         """Initialize this instance and make it go"""
         cpn_dir_name = os.getenv('FORCH_CONFIG_DIR')
@@ -67,11 +68,11 @@ class CPNStateCollector:
                 raise Exception('No CPN components defined in file')
 
             self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip, ping_interval)
-            self._update_cpn_state(current_time, constants.STATE_INITIALIZING, "Initializing")
+            self._update_cpn_state(current_time, State.initializing, "Initializing")
         except Exception as e:
             LOGGER.error('Could not load config file: %s', e)
             self._node_states.clear()
-            self._update_cpn_state(current_time, constants.STATE_BROKEN, str(e))
+            self._update_cpn_state(current_time, State.broken, str(e))
 
         if self._ping_manager:
             self._ping_manager.start_loop(self._handle_ping_result)
@@ -135,15 +136,16 @@ class CPNStateCollector:
             self._update_cpn_state(current_time)
 
     @staticmethod
+    # pylint: disable=no-member
     def _get_node_state(ping_result):
         """Get node state from ping stdout"""
         result = re.search(r'\d+(?=% packet loss)', ping_result['stdout'])
         loss = int(result.group()) if result else 100
         if loss == 0:
-            return constants.STATE_HEALTHY
+            return State.healthy
         if loss == 100:
-            return constants.STATE_DOWN
-        return constants.STATE_DAMAGED
+            return State.down
+        return State.damaged
 
     @staticmethod
     def _get_ping_summary(ping_stdout):
@@ -183,12 +185,12 @@ class CPNStateCollector:
     def _get_cpn_state(self):
         broken = []
         if not self._node_states:
-            return constants.STATE_BROKEN, broken
+            return State.broken, broken
         for node_name, node_state in self._node_states.items():
-            if node_state.get(KEY_NODE_STATE) != constants.STATE_HEALTHY:
+            if node_state.get(KEY_NODE_STATE) != State.healthy:
                 broken.append(node_name)
         if not broken:
-            return constants.STATE_HEALTHY, broken
+            return State.healthy, broken
         if len(broken) == len(self._node_states):
-            return constants.STATE_DOWN, broken
-        return constants.STATE_DAMAGED, broken
+            return State.down, broken
+        return State.damaged, broken

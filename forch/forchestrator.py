@@ -290,7 +290,7 @@ class Forchestrator:
     def _get_system_summary(self, path):
         states = {
             'cpn_state': proto_dict(self._cpn_collector.get_cpn_summary()),
-            'process_state': self._local_collector.get_process_summary(),
+            'process_state': proto_dict(self._local_collector.get_process_summary()),
             'dataplane_state': self._faucet_collector.get_dataplane_summary(),
             'switch_state': self._faucet_collector.get_switch_summary(),
             'list_hosts': self._faucet_collector.get_host_summary()

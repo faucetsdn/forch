@@ -1,6 +1,5 @@
 """Collecting the states of the local system"""
 
-import copy
 from datetime import datetime
 import logging
 import os
@@ -11,7 +10,10 @@ import threading
 import psutil
 import yaml
 
-import forch.constants as constants
+from forch.proto.process_state_pb2 import ProcessState
+from forch.proto.shared_constants_pb2 import State
+from forch.proto.system_state_pb2 import StateSummary
+from forch.utils import dict_proto
 
 LOGGER = logging.getLogger('lstate')
 
@@ -43,27 +45,24 @@ class LocalStateCollector:
 
         self.start_process_loop()
 
+    # pylint: disable=no-member
     def get_process_summary(self):
         """Return a summary of process table"""
         process_state = self.get_process_state()
-        return {
-            'state': process_state.get('processes_state'),
-            'detail': process_state.get('processes_state_detail'),
-            'change_count': process_state.get('processes_state_change_count'),
-            'last_update': process_state.get('processes_state_last_update'),
-            'last_changed': process_state.get('processes_state_last_change')
-        }
+        return dict_proto({
+            'state': process_state.processes_state,
+            'detail': process_state.processes_state_detail,
+            'change_count': process_state.processes_state_change_count,
+            'last_update': process_state.processes_state_last_update,
+            'last_changed': process_state.processes_state_last_change
+        }, StateSummary)
 
     def get_process_state(self):
         """Get the states of processes"""
         with self._lock:
-            return copy.deepcopy(self._process_state)
+            return dict_proto(self._process_state, ProcessState)
 
-    def get_vrrp_state(self):
-        """Get the local VRRP state"""
-        with self._lock:
-            return copy.deepcopy(self._vrrp_state)
-
+    # pylint: disable=no-member
     def _get_process_info(self):
         """Get the raw information of processes"""
 
@@ -80,11 +79,11 @@ class LocalStateCollector:
             state, detail = self._extract_process_state(target_name, target_count, proc_list)
             state_map['detail'] = detail
             if state:
-                state_map['state'] = constants.STATE_HEALTHY
+                state_map['state'] = State.healthy
                 state_map.update(state)
                 self._last_error.pop(target_name, None)
                 continue
-            state_map['state'] = 'broken'
+            state_map['state'] = State.broken
             if detail != self._last_error.get(target_name):
                 LOGGER.error(detail)
                 self._last_error[target_name] = detail
@@ -93,7 +92,7 @@ class LocalStateCollector:
         process_state['processes'] = process_map
 
         old_state = process_state.get('processes_state')
-        state = constants.STATE_BROKEN if broken else constants.STATE_HEALTHY
+        state = State.broken if broken else State.healthy
         process_state['processes_state_last_update'] = self._current_time
         state_detail = 'Processes in broken state: ' + ', '.join(broken) if broken else ''
         if state != old_state:
@@ -159,7 +158,7 @@ class LocalStateCollector:
                 if hasattr(proc.info['cpu_times'], 'iowait'):
                     if not cpu_time_iowait:
                         cpu_time_iowait = 0.0
-                        cpu_time_iowait += proc.cpu_times().iowait
+                    cpu_time_iowait += proc.cpu_times().iowait
 
                 memory_rss += proc.info['memory_info'].rss / 1e6
                 memory_vms += proc.info['memory_info'].vms / 1e6
@@ -195,9 +194,10 @@ class LocalStateCollector:
             LOGGER.error("Cannot get VRRP info, setting controller to inactive: %s", e)
             self._active_state_handler(False)
 
+    # pylint: disable=no-member
     def _extract_vrrp_state(self, stats):
         """Extract vrrp state from keepalived stats data"""
-        vrrp_map = {'state': constants.STATE_HEALTHY}
+        vrrp_map = {'state': State.healthy}
         vrrp_erros = []
         old_vrrp_map = self._state.get('vrrp', {})
 
@@ -216,7 +216,7 @@ class LocalStateCollector:
         for error_type in ['Packet Errors', 'Authentication Errors']:
             for error_key, error_count in stats.get(error_type, {}).items():
                 if int(error_count) > 0:
-                    vrrp_map['state'] = constants.STATE_BROKEN
+                    vrrp_map['state'] = State.broken
                     vrrp_erros.append(error_key)
 
         vrrp_map['state_last_update'] = self._current_time

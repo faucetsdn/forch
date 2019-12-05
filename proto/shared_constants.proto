@@ -1,0 +1,42 @@
+/*
+ * constants
+ */
+syntax = "proto3";
+
+/*
+ * States
+ */
+message State {
+  /*
+   * Enumeration of states
+   */
+  enum State {
+    // active: in function
+    active = 0;
+
+    // broken: unable to function because of error
+    broken = 1;
+
+    // damaged: partially broken
+    damaged = 2;
+
+    // down: not in function
+    down = 3;
+
+    // healthy: functioning properly
+    healthy = 4;
+
+    // inactive: specific to controller, not VRRP master
+    inactive = 5;
+
+    // initializing: in intialization after start
+    initializing = 6;
+
+    // split: specific to controller, being VRRP master but not able to connect
+    // to peer controller
+    split = 7;
+
+    // up: up but not in function
+    up = 8;
+  }
+}

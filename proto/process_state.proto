@@ -1,0 +1,89 @@
+/*
+ * process_state API result
+ */
+syntax = "proto3";
+
+import "forch/proto/shared_constants.proto";
+
+/*
+ * Summary of overall process state.
+ */
+message ProcessState {
+  // All the targeted processes
+  map<string, ProcessData> processes = 1;
+
+  // Overall process state: <em>healthy, broken</em>
+  State.State processes_state = 2;
+
+  // Text description of any problems
+  string processes_state_detail = 3;
+
+  // Number of times state has changed
+  int32 processes_state_change_count = 4;
+
+  // Last time the state was updated
+  string processes_state_last_update = 5;
+
+  // Last time the state was changed
+  string processes_state_last_change = 6;
+
+  // Link to top-level system state
+  string system_state_url = 7;
+
+  /*
+   * Data for each process
+   */
+  message ProcessData {
+    // Process state
+    State.State state = 1;
+
+    // Text description of any problems
+    string detail = 2;
+
+    // Process command line
+    string cmd_line = 3;
+
+    // Time when the process was created
+    string create_time = 4;
+
+    // Number of times create time has changed
+    int32 create_time_change_count = 5;
+
+    // Last time the create time was updated
+    string create_time_last_update = 6;
+
+    // Last time the create time was changed
+    string create_time_last_change = 7;
+
+    // CPU time consumption (in second)
+    CpuTime cpu_times_s = 8;
+
+    // Memory consumption (in MB)
+    MemoryInfo memory_info_mb = 9;
+  }
+
+  /*
+   * CPU time consumption
+   */
+  message CpuTime {
+    // user consumption
+    float user = 1;
+
+    // systime consumption
+    float system = 2;
+
+    // iowait consumption
+    float iowait = 3;
+  }
+
+  /*
+   * Memory consumption
+   */
+  message MemoryInfo {
+    // resident set size
+    float rss = 1;
+
+    // virtual set size
+    float vms = 2;
+  }
+}
