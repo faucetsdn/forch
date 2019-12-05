@@ -1,5 +1,4 @@
 wheel
-google-cloud
 prometheus_client
 protobuf
 psutil
