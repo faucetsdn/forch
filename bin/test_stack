@@ -302,18 +302,20 @@ if [ -n "$local" ]; then
     docker exec forch-faux-1 ping -c 3 192.168.1.2
 fi
 
-restart_forch
-
-# Basic test of static web-server
-curl http://$CONTROLLER_NAME:9019/index.html > $out_dir/index.html
-fgrep "Network Operations Administrative Helper" $out_dir/index.html || exit 1
-curl http://$CONTROLLER_NAME:9019/protos.html > $out_dir/protos.html
-fgrep "forch/proto/system_state.proto" $out_dir/protos.html || exit 1
-
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
 docker exec forch-faucet-1 python -m faucet.python_test 2>&1 | tee -a $TEST_RESULTS
 rm faucet/faucet/python_test.py
+
+restart_forch
+
+# Basic test of static web-server and config
+curl http://$CONTROLLER_NAME:9019/index.html > $out_dir/index.html
+fgrep "Network Operations Administrative Helper" $out_dir/index.html || exit 1
+curl http://$CONTROLLER_NAME:9019/protos.html > $out_dir/protos.html
+fgrep "forch/proto/system_state.proto" $out_dir/protos.html || exit 1
+curl http://$CONTROLLER_NAME:9019/sys_config > $out_dir/sys_config.json
+jq '.faucet.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $out_dir/sys_config.json | tee -a $TEST_RESULTS
 
 echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid

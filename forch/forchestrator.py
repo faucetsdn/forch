@@ -312,6 +312,7 @@ class Forchestrator:
             reply.system_state_url = url
         else:
             reply['system_state_url'] = url
+        return reply
 
     def _get_controller_state(self):
         with self._active_state_lock:
@@ -361,14 +362,12 @@ class Forchestrator:
         port = params.get('port')
         host = self._extract_url_base(path)
         reply = self._faucet_collector.get_switch_state(switch, port, host)
-        self._augment_state_reply(reply, path)
-        return reply
+        return self._augment_state_reply(reply, path)
 
     def get_dataplane_state(self, path, params):
         """Get the dataplane state overview"""
         reply = self._faucet_collector.get_dataplane_state()
-        self._augment_state_reply(reply, path)
-        return reply
+        return self._augment_state_reply(reply, path)
 
     def get_host_path(self, path, params):
         """Get active host path"""
@@ -376,35 +375,33 @@ class Forchestrator:
         eth_dst = params.get('eth_dst')
         to_egress = params.get('to_egress') == 'true'
         reply = self._faucet_collector.get_host_path(eth_src, eth_dst, to_egress)
-        self._augment_state_reply(reply, path)
-        return reply
+        return self._augment_state_reply(reply, path)
 
     def get_list_hosts(self, path, params):
         """List learned access devices"""
         eth_src = params.get('eth_src')
         host = self._extract_url_base(path)
         reply = self._faucet_collector.get_list_hosts(host, eth_src)
-        self._augment_state_reply(reply, path)
-        return reply
+        return self._augment_state_reply(reply, path)
 
     def get_cpn_state(self, path, params):
         """Get CPN state"""
         reply = self._cpn_collector.get_cpn_state()
-        self._augment_state_reply(reply, path)
-        return reply
+        return self._augment_state_reply(reply, path)
 
     def get_process_state(self, path, params):
         """Get certain processes state on the controller machine"""
         reply = self._local_collector.get_process_state()
-        self._augment_state_reply(reply, path)
-        return reply
+        return self._augment_state_reply(reply, path)
 
-    def get_faucet_config(self, path, params):
-        """Get faucet config from facuet config file"""
+    def get_sys_config(self, path, params):
+        """Get overall config from facuet config file"""
         try:
-            reply = self._get_faucet_config()
-            self._augment_state_reply(reply, path)
-            return reply
+            faucet_config = self._get_faucet_config()
+            reply = {
+                'faucet': faucet_config
+            }
+            return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
 
@@ -457,7 +454,7 @@ if __name__ == '__main__':
         HTTP.map_request('process_state', FORCH.get_process_state)
         HTTP.map_request('host_path', FORCH.get_host_path)
         HTTP.map_request('list_hosts', FORCH.get_list_hosts)
-        HTTP.map_request('faucet_config', FORCH.get_faucet_config)
+        HTTP.map_request('sys_config', FORCH.get_sys_config)
         HTTP.map_request('', HTTP.static_file(''))
     except Exception as e:
         LOGGER.error("Cannot initialize forch: %s", e)
