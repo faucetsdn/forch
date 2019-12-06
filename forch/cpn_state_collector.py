@@ -47,7 +47,6 @@ class CPNStateCollector:
         self._lock = threading.Lock()
         self._ping_manager = None
 
-    # pylint: disable=no-member
     def initialize(self):
         """Initialize this instance and make it go"""
         cpn_dir_name = os.getenv('FORCH_CONFIG_DIR')
@@ -136,7 +135,6 @@ class CPNStateCollector:
             self._update_cpn_state(current_time)
 
     @staticmethod
-    # pylint: disable=no-member
     def _get_node_state(ping_result):
         """Get node state from ping stdout"""
         result = re.search(r'\d+(?=% packet loss)', ping_result['stdout'])

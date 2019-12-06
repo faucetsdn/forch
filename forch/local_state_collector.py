@@ -45,7 +45,6 @@ class LocalStateCollector:
 
         self.start_process_loop()
 
-    # pylint: disable=no-member
     def get_process_summary(self):
         """Return a summary of process table"""
         process_state = self.get_process_state()
@@ -62,7 +61,6 @@ class LocalStateCollector:
         with self._lock:
             return dict_proto(self._process_state, ProcessState)
 
-    # pylint: disable=no-member
     def _get_process_info(self):
         """Get the raw information of processes"""
 
@@ -194,7 +192,6 @@ class LocalStateCollector:
             LOGGER.error("Cannot get VRRP info, setting controller to inactive: %s", e)
             self._active_state_handler(False)
 
-    # pylint: disable=no-member
     def _extract_vrrp_state(self, stats):
         """Extract vrrp state from keepalived stats data"""
         vrrp_map = {'state': State.healthy}
