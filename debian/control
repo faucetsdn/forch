@@ -1,0 +1,27 @@
+Source: forch
+Section: python
+Priority: optional
+Maintainer: Faucet dev <faucet-dev@google.com>
+Build-Depends: debhelper (>=9),
+	       dh-systemd (>= 1.5),
+	       dh-python,
+	       python3-all,
+	       python3-setuptools,
+	       python3-yaml,
+	       python3-prometheus-client,
+	       python3-requests,
+	       python3-psutil,
+	       python3-wheel,
+	       python3-protobuf,
+	       pylint,
+Standards-Version: 3.9.6
+X-Python3-Version: >= 3.6
+Homepage: https://github.com/grafnu/forch
+Vcs-Git: https://github.com/grafnu/forch.git
+Vcs-Browser: https://github.com/grafnu/forch
+
+Package: python3-forch
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends}
+Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
+ This relies on the event socket and Faucet varzs to build an approximation of the current faucet state.

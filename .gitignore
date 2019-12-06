@@ -30,6 +30,11 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pybuild/
+debian/.debhelper/
+debian/files
+debian/python3-forch.substvars
+debian/python3-forch/
 MANIFEST
 
 # PyInstaller
