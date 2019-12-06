@@ -291,7 +291,7 @@ class Forchestrator:
         states = {
             'cpn_state': proto_dict(self._cpn_collector.get_cpn_summary()),
             'process_state': proto_dict(self._local_collector.get_process_summary()),
-            'dataplane_state': self._faucet_collector.get_dataplane_summary(),
+            'dataplane_state': proto_dict(self._faucet_collector.get_dataplane_summary()),
             'switch_state': self._faucet_collector.get_switch_summary(),
             'list_hosts': self._faucet_collector.get_host_summary()
         }
@@ -366,7 +366,7 @@ class Forchestrator:
 
     def get_dataplane_state(self, path, params):
         """Get the dataplane state overview"""
-        reply = self._faucet_collector.get_dataplane_state()
+        reply = proto_dict(self._faucet_collector.get_dataplane_state())
         return self._augment_state_reply(reply, path)
 
     def get_host_path(self, path, params):

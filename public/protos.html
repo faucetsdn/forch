@@ -229,6 +229,49 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fdataplane_state.proto">forch/proto/dataplane_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#DataplaneState"><span class="badge">M</span>DataplaneState</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.Egress"><span class="badge">M</span>DataplaneState.Egress</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.Stack"><span class="badge">M</span>DataplaneState.Stack</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.Stack.LinksEntry"><span class="badge">M</span>DataplaneState.Stack.LinksEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.StackLinkStatus"><span class="badge">M</span>DataplaneState.StackLinkStatus</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.Switch"><span class="badge">M</span>DataplaneState.Switch</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.Switch.SwitchesEntry"><span class="badge">M</span>DataplaneState.Switch.SwitchesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.SwitchStatus"><span class="badge">M</span>DataplaneState.SwitchStatus</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2ffaucet_event.proto">forch/proto/faucet_event.proto</a>
             <ul>
               
@@ -716,6 +759,338 @@
                   <td><a href="#float">float</a></td>
                   <td></td>
                   <td><p>Mean time in ms. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/dataplane_state.proto">forch/proto/dataplane_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>dataplane_state API result.</p>
+
+      
+        <h3 id="DataplaneState">DataplaneState</h3>
+        <p>Summary of overall dataplane state.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switch</td>
+                  <td><a href="#DataplaneState.Switch">DataplaneState.Switch</a></td>
+                  <td></td>
+                  <td><p>Deails of all switches in the dataplane. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>stack</td>
+                  <td><a href="#DataplaneState.Stack">DataplaneState.Stack</a></td>
+                  <td></td>
+                  <td><p>Details of all stack links in the dataplane. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>egress</td>
+                  <td><a href="#DataplaneState.Egress">DataplaneState.Egress</a></td>
+                  <td></td>
+                  <td><p>Details of the egress links in the dataplane. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dataplane_state</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Overall status of the dataplane state. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dataplane_state_detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Summary detail of the dataplane state. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dataplane_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times dataplane state ahs changed. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dataplane_state_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The last time dataplane state changed. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Link to top level system state. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.Egress">DataplaneState.Egress</h3>
+        <p>Egress links details</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>egress_state</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Over all egress state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>egress_state_detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Details of egress link which is up </p></td>
+                </tr>
+              
+                <tr>
+                  <td>egress_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times the egress state has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>egress_state_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The last time egress state changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>egress_state_last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The last time information was received about the egress state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>active_root</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Active root switch of stack </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.Stack">DataplaneState.Stack</h3>
+        <p>Dataplane stack links details</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>links</td>
+                  <td><a href="#DataplaneState.Stack.LinksEntry">DataplaneState.Stack.LinksEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Map of switch status </p></td>
+                </tr>
+              
+                <tr>
+                  <td>links_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times the state of all switches as a whole has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>links_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state of switches was updated </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.Stack.LinksEntry">DataplaneState.Stack.LinksEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#DataplaneState.StackLinkStatus">DataplaneState.StackLinkStatus</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.StackLinkStatus">DataplaneState.StackLinkStatus</h3>
+        <p>Stack link status</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>link_state</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Stack link status, active, up or down </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.Switch">DataplaneState.Switch</h3>
+        <p>Dataplane switches details</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switches</td>
+                  <td><a href="#DataplaneState.Switch.SwitchesEntry">DataplaneState.Switch.SwitchesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Map of switch status </p></td>
+                </tr>
+              
+                <tr>
+                  <td>switch_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times the state of all switches as a whole has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>switch_state_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state of switches was updated </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.Switch.SwitchesEntry">DataplaneState.Switch.SwitchesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#DataplaneState.SwitchStatus">DataplaneState.SwitchStatus</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.SwitchStatus">DataplaneState.SwitchStatus</h3>
+        <p>Switch status</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switch_state</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Switch status, active or down </p></td>
                 </tr>
               
             </tbody>

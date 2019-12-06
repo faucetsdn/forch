@@ -1,0 +1,100 @@
+/*
+ * dataplane_state API result.
+ */
+syntax = "proto3";
+
+/*
+ * Summary of overall dataplane state.
+ */
+message DataplaneState {
+  // Deails of all switches in the dataplane.
+  Switch switch = 1;
+
+  // Details of all stack links in the dataplane.
+  Stack stack = 2;
+
+  // Details of the egress links in the dataplane.
+  Egress egress = 3;
+
+  // Overall status of the dataplane state.
+  string dataplane_state = 4;
+
+  // Summary detail of the dataplane state.
+  string dataplane_state_detail = 5;
+
+  // Number of times dataplane state ahs changed.
+  int32 dataplane_state_change_count = 6;
+
+  // The last time dataplane state changed.
+  string dataplane_state_last_change = 7;
+
+  // Link to top level system state.
+  string system_state_url = 8;
+
+  /*
+   * Dataplane switches details
+   */
+  message Switch {
+    // Map of switch status
+    map<string, SwitchStatus> switches = 1;
+
+    // Number of times the state of all switches as a whole has changed
+    int32 switch_state_change_count = 2;
+
+    // Last time the state of switches was updated
+    string switch_state_last_change = 3;
+  }
+
+  /*
+   * Dataplane stack links details
+   */
+  message Stack {
+    // Map of switch status
+    map<string, StackLinkStatus> links = 1;
+
+    // Number of times the state of all switches as a whole has changed
+    int32 links_change_count = 2;
+
+    // Last time the state of switches was updated
+    string links_last_change = 3;
+  }
+
+  /*
+   * Egress links details
+   */
+  message Egress {
+    // Over all egress state
+    string egress_state = 1;
+
+    // Details of egress link which is up
+    string egress_state_detail = 2;
+
+    // Number of times the egress state has changed
+    int32 egress_state_change_count = 3;
+
+    // The last time egress state changed
+    string egress_state_last_change = 4;
+
+    // The last time information was received about the egress state
+    string egress_state_last_update = 5;
+
+    // Active root switch of stack
+    string active_root = 6;
+  }
+
+  /*
+   * Switch status
+   */
+  message SwitchStatus {
+    // Switch status, active or down
+    string switch_state = 1;
+  }
+
+  /*
+   * Stack link status
+   */
+  message StackLinkStatus {
+    // Stack link status, active, up or down
+    string link_state = 2; 
+  }
+}

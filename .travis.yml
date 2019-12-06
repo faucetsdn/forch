@@ -9,13 +9,14 @@ addons:
   apt:
     update: true
 install:
+  - set -e
   - bin/setup_base
+  - bin/build_proto check
 script:
   - set -e
-  - bin/package_forch
   - bin/check_style
-  - bin/build_proto check
-  - bin/build_proto
   - bin/build_docker
   - bin/setup_stack local
   - bin/test_stack
+  - bin/build_proto
+  - bin/package_forch

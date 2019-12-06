@@ -7,6 +7,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -18,9 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/faucet_event.proto',
   package='',
   syntax='proto3',
-  serialized_options=None,
   serialized_pb=_b('\n\x1e\x66orch/proto/faucet_event.proto\"\xae\x01\n\x0b\x46\x61ucetEvent\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x64p_name\x18\x02 \x01(\t\x12\r\n\x05\x64p_id\x18\x03 \x01(\x05\x12\x10\n\x08\x65vent_id\x18\x04 \x01(\x05\x12\x0c\n\x04time\x18\x05 \x01(\x02\x12\x11\n\tdebounced\x18\x06 \x01(\x08\x12-\n\x11STACK_TOPO_CHANGE\x18\x07 \x01(\x0b\x32\x10.StackTopoChangeH\x00\x42\x0c\n\nevent_data\"\x8b\x05\n\x0fStackTopoChange\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\x12\n\nstack_root\x18\x02 \x01(\t\x12*\n\x05graph\x18\x03 \x01(\x0b\x32\x1b.StackTopoChange.StackGraph\x12&\n\x03\x64ps\x18\x04 \x03(\x0b\x32\x19.StackTopoChange.DpsEntry\x1a\x44\n\x08\x44psEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\'\n\x05value\x18\x02 \x01(\x0b\x32\x18.StackTopoChange.StackDp:\x02\x38\x01\x1a\xb6\x01\n\nStackGraph\x12\x10\n\x08\x64irected\x18\x01 \x01(\x08\x12\x12\n\nmultigraph\x18\x02 \x01(\x08\x12,\n\x05graph\x18\x03 \x01(\x0b\x32\x1d.StackTopoChange.NetworkGraph\x12)\n\x05nodes\x18\x04 \x03(\x0b\x32\x1a.StackTopoChange.StackNode\x12)\n\x05links\x18\x05 \x03(\x0b\x32\x1a.StackTopoChange.StackLink\x1a\x0e\n\x0cNetworkGraph\x1a\x17\n\tStackNode\x12\n\n\x02id\x18\x01 \x01(\t\x1ah\n\tStackLink\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x0e\n\x06target\x18\x03 \x01(\t\x12.\n\x08port_map\x18\x04 \x01(\x0b\x32\x1c.StackTopoChange.LinkPortMap\x1aI\n\x0bLinkPortMap\x12\x0c\n\x04\x64p_a\x18\x01 \x01(\t\x12\x0e\n\x06port_a\x18\x02 \x01(\t\x12\x0c\n\x04\x64p_z\x18\x03 \x01(\t\x12\x0e\n\x06port_z\x18\x04 \x01(\t\x1a \n\x07StackDp\x12\x15\n\rroot_hop_port\x18\x01 \x01(\x05\x62\x06proto3')
 )
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -38,56 +39,56 @@ _FAUCETEVENT = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='dp_name', full_name='FaucetEvent.dp_name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='dp_id', full_name='FaucetEvent.dp_id', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='event_id', full_name='FaucetEvent.event_id', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='time', full_name='FaucetEvent.time', index=4,
       number=5, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='debounced', full_name='FaucetEvent.debounced', index=5,
       number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='STACK_TOPO_CHANGE', full_name='FaucetEvent.STACK_TOPO_CHANGE', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -114,21 +115,21 @@ _STACKTOPOCHANGE_DPSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='StackTopoChange.DpsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -151,42 +152,42 @@ _STACKTOPOCHANGE_STACKGRAPH = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='multigraph', full_name='StackTopoChange.StackGraph.multigraph', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='graph', full_name='StackTopoChange.StackGraph.graph', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='nodes', full_name='StackTopoChange.StackGraph.nodes', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='links', full_name='StackTopoChange.StackGraph.links', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -209,7 +210,7 @@ _STACKTOPOCHANGE_NETWORKGRAPH = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -232,14 +233,14 @@ _STACKTOPOCHANGE_STACKNODE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -262,35 +263,35 @@ _STACKTOPOCHANGE_STACKLINK = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='source', full_name='StackTopoChange.StackLink.source', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='target', full_name='StackTopoChange.StackLink.target', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='port_map', full_name='StackTopoChange.StackLink.port_map', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -313,35 +314,35 @@ _STACKTOPOCHANGE_LINKPORTMAP = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='port_a', full_name='StackTopoChange.LinkPortMap.port_a', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='dp_z', full_name='StackTopoChange.LinkPortMap.dp_z', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='port_z', full_name='StackTopoChange.LinkPortMap.port_z', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -364,14 +365,14 @@ _STACKTOPOCHANGE_STACKDP = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -394,35 +395,35 @@ _STACKTOPOCHANGE = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='stack_root', full_name='StackTopoChange.stack_root', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='graph', full_name='StackTopoChange.graph', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='dps', full_name='StackTopoChange.dps', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[_STACKTOPOCHANGE_DPSENTRY, _STACKTOPOCHANGE_STACKGRAPH, _STACKTOPOCHANGE_NETWORKGRAPH, _STACKTOPOCHANGE_STACKNODE, _STACKTOPOCHANGE_STACKLINK, _STACKTOPOCHANGE_LINKPORTMAP, _STACKTOPOCHANGE_STACKDP, ],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -452,7 +453,6 @@ _STACKTOPOCHANGE.fields_by_name['graph'].message_type = _STACKTOPOCHANGE_STACKGR
 _STACKTOPOCHANGE.fields_by_name['dps'].message_type = _STACKTOPOCHANGE_DPSENTRY
 DESCRIPTOR.message_types_by_name['FaucetEvent'] = _FAUCETEVENT
 DESCRIPTOR.message_types_by_name['StackTopoChange'] = _STACKTOPOCHANGE
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 FaucetEvent = _reflection.GeneratedProtocolMessageType('FaucetEvent', (_message.Message,), dict(
   DESCRIPTOR = _FAUCETEVENT,
@@ -525,5 +525,6 @@ _sym_db.RegisterMessage(StackTopoChange.LinkPortMap)
 _sym_db.RegisterMessage(StackTopoChange.StackDp)
 
 
-_STACKTOPOCHANGE_DPSENTRY._options = None
+_STACKTOPOCHANGE_DPSENTRY.has_options = True
+_STACKTOPOCHANGE_DPSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 # @@protoc_insertion_point(module_scope)

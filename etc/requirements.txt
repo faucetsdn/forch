@@ -5,3 +5,4 @@ psutil
 pylint==2.4.2
 pyyaml
 requests
+setuptools
