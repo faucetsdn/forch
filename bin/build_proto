@@ -3,9 +3,18 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-rm -rf build/ forch/proto public/
-
 proto_files=`ls proto/*.proto`
+
+if [ "$1" == check ]; then
+    sha1sum $proto_files > build/protos.hash
+    diff build/protos.hash public/protos.hash
+    exit 0
+fi
+
+rm -rf build/ forch/proto public/proto
+mkdir build
+
+sha1sum $proto_files > public/protos.hash
 
 (
     export PATH=$PATH:/usr/local/go/bin/
@@ -37,7 +46,6 @@ done
     sed -i'' -e 's/&lt;/</g' -e 's/&gt;/>/g' protos.html
 )
 
-cp -a public_src public
 mkdir -p forch/proto/
 
 touch forch/proto/__init__.py

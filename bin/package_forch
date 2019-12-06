@@ -2,7 +2,7 @@
 
 version=`git describe`
 
-bin/build_forch
+rm -rf dist/
 
 python3 setup.py sdist bdist_wheel
 

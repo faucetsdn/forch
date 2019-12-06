@@ -1,9 +1,7 @@
 faucet
 inst/
 test_out/
-forch/proto/
 protoc-gen-doc/
-public/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

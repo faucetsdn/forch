@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Protocol Documentation</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic"/>
+    <style>
+      body {
+        width: 60em;
+        margin: 1em auto;
+        color: #222;
+        font-family: "Ubuntu", sans-serif;
+        padding-bottom: 4em;
+      }
+
+      h1 {
+        font-weight: normal;
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 0.5ex;
+      }
+
+      h2 {
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 0.5ex;
+        margin: 1.5em 0;
+      }
+
+      h3 {
+        font-weight: normal;
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 0.5ex;
+      }
+
+      a {
+        text-decoration: none;
+        color: #567e25;
+      }
+
+      table {
+        width: 100%;
+        font-size: 80%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        font-weight: 700;
+        background-color: #dcdcdc;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: #fbfbfb;
+      }
+
+      td {
+        border: 1px solid #ccc;
+        padding: 0.5ex 2ex;
+      }
+
+      td p {
+        text-indent: 1em;
+        margin: 0;
+      }
+
+      td p:nth-child(1) {
+        text-indent: 0;  
+      }
+
+       
+      .field-table td:nth-child(1) {  
+        width: 10em;
+      }
+      .field-table td:nth-child(2) {  
+        width: 10em;
+      }
+      .field-table td:nth-child(3) {  
+        width: 6em;
+      }
+      .field-table td:nth-child(4) {  
+        width: auto;
+      }
+
+       
+      .extension-table td:nth-child(1) {  
+        width: 10em;
+      }
+      .extension-table td:nth-child(2) {  
+        width: 10em;
+      }
+      .extension-table td:nth-child(3) {  
+        width: 10em;
+      }
+      .extension-table td:nth-child(4) {  
+        width: 5em;
+      }
+      .extension-table td:nth-child(5) {  
+        width: auto;
+      }
+
+       
+      .enum-table td:nth-child(1) {  
+        width: 10em;
+      }
+      .enum-table td:nth-child(2) {  
+        width: 10em;
+      }
+      .enum-table td:nth-child(3) {  
+        width: auto;
+      }
+
+       
+      .scalar-value-types-table tr {
+        height: 3em;
+      }
+
+       
+      #toc-container ul {
+        list-style-type: none;
+        padding-left: 1em;
+        line-height: 180%;
+        margin: 0;
+      }
+      #toc > li > a {
+        font-weight: bold;
+      }
+
+       
+      .file-heading {
+        width: 100%;
+        display: table;
+        border-bottom: 1px solid #aaa;
+        margin: 4em 0 1.5em 0;
+      }
+      .file-heading h2 {
+        border: none;
+        display: table-cell;
+      }
+      .file-heading a {
+        text-align: right;
+        display: table-cell;
+      }
+
+       
+      .badge {
+        width: 1.6em;
+        height: 1.6em;
+        display: inline-block;
+
+        line-height: 1.6em;
+        text-align: center;
+        font-weight: bold;
+        font-size: 60%;
+
+        color: #89ba48;
+        background-color: #dff0c8;
+
+        margin: 0.5ex 1em 0.5ex -1em;
+        border: 1px solid #fbfbfb;
+        border-radius: 1ex;
+      }
+    </style>
+
+    
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+  </head>
+
+  <body>
+
+    <h1 id="title">Protocol Documentation</h1>
+
+    <h2>Table of Contents</h2>
+
+    <div id="toc-container">
+      <ul id="toc">
+        
+          
+          <li>
+            <a href="#forch%2fproto%2fcpn_config.proto">forch/proto/cpn_config.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#CpnAttributes"><span class="badge">M</span>CpnAttributes</a>
+                </li>
+              
+                <li>
+                  <a href="#CpnConfig"><span class="badge">M</span>CpnConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#CpnConfig.CpnNodesEntry"><span class="badge">M</span>CpnConfig.CpnNodesEntry</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#forch%2fproto%2fcpn_state.proto">forch/proto/cpn_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#CpnState"><span class="badge">M</span>CpnState</a>
+                </li>
+              
+                <li>
+                  <a href="#CpnState.CpnNode"><span class="badge">M</span>CpnState.CpnNode</a>
+                </li>
+              
+                <li>
+                  <a href="#CpnState.CpnNodesEntry"><span class="badge">M</span>CpnState.CpnNodesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#CpnState.PingResults"><span class="badge">M</span>CpnState.PingResults</a>
+                </li>
+              
+                <li>
+                  <a href="#CpnState.RttInfo"><span class="badge">M</span>CpnState.RttInfo</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#forch%2fproto%2ffaucet_event.proto">forch/proto/faucet_event.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#FaucetEvent"><span class="badge">M</span>FaucetEvent</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange"><span class="badge">M</span>StackTopoChange</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.DpsEntry"><span class="badge">M</span>StackTopoChange.DpsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.LinkPortMap"><span class="badge">M</span>StackTopoChange.LinkPortMap</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.NetworkGraph"><span class="badge">M</span>StackTopoChange.NetworkGraph</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.StackDp"><span class="badge">M</span>StackTopoChange.StackDp</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.StackGraph"><span class="badge">M</span>StackTopoChange.StackGraph</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.StackLink"><span class="badge">M</span>StackTopoChange.StackLink</a>
+                </li>
+              
+                <li>
+                  <a href="#StackTopoChange.StackNode"><span class="badge">M</span>StackTopoChange.StackNode</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#forch%2fproto%2fprocess_state.proto">forch/proto/process_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#ProcessState"><span class="badge">M</span>ProcessState</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.CpuTime"><span class="badge">M</span>ProcessState.CpuTime</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.MemoryInfo"><span class="badge">M</span>ProcessState.MemoryInfo</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.ProcessData"><span class="badge">M</span>ProcessState.ProcessData</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.ProcessesEntry"><span class="badge">M</span>ProcessState.ProcessesEntry</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#forch%2fproto%2fshared_constants.proto">forch/proto/shared_constants.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#State"><span class="badge">M</span>State</a>
+                </li>
+              
+              
+                <li>
+                  <a href="#State.State"><span class="badge">E</span>State.State</a>
+                </li>
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#forch%2fproto%2fsystem_state.proto">forch/proto/system_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#StateSummary"><span class="badge">M</span>StateSummary</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+        <li><a href="#scalar-value-types">Scalar Value Types</a></li>
+      </ul>
+    </div>
+
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/cpn_config.proto">forch/proto/cpn_config.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>CPN configuration structure.</p>
+
+      
+        <h3 id="CpnAttributes">CpnAttributes</h3>
+        <p>Static node attributes.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>cpn_ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Node IP address on the CPN. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>role</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Role of this entry. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vendor</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Entity vendor. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>model</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Entity model. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="CpnConfig">CpnConfig</h3>
+        <p>Overall static configuration of the CPN.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>cpn_nodes</td>
+                  <td><a href="#CpnConfig.CpnNodesEntry">CpnConfig.CpnNodesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Map of all CPN nodes, by node name. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>ping_interval</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Interval for check pings. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="CpnConfig.CpnNodesEntry">CpnConfig.CpnNodesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#CpnAttributes">CpnAttributes</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/cpn_state.proto">forch/proto/cpn_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>cpn_state API result.</p>
+
+      
+        <h3 id="CpnState">CpnState</h3>
+        <p>Summary of overall CPN state.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>cpn_nodes</td>
+                  <td><a href="#CpnState.CpnNodesEntry">CpnState.CpnNodesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>All the CPN nodes on the network. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>Overall CPN state:<em>initializing, healthy, broken, down, damaged</em> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_state_detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Text description of any problems. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times state has changed. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_state_last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state was updated. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_state_last_changed</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state changed value. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Link to top-level system state. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="CpnState.CpnNode">CpnState.CpnNode</h3>
+        <p>Static CPN node attributes.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>attributes</td>
+                  <td><a href="#CpnAttributes">CpnAttributes</a></td>
+                  <td></td>
+                  <td><p>Static attributes describing the node. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>Current node state:<em>healthy, down, damaged</em> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>ping_results</td>
+                  <td><a href="#CpnState.PingResults">CpnState.PingResults</a></td>
+                  <td></td>
+                  <td><p>Underlying ping results used to determine health. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Change count for node state. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>state_last_updated</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last timestamp of node state update. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>state_last_changed</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last timestamp of node state change. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="CpnState.CpnNodesEntry">CpnState.CpnNodesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#CpnState.CpnNode">CpnState.CpnNode</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="CpnState.PingResults">CpnState.PingResults</h3>
+        <p>Summary of ping results for this node.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>transmitted</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of packets transmitted. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>received</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of packets actually received. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>loss_percentage</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Percentage package loss. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>time_ms</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Total time for all pings. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>rtt_ms</td>
+                  <td><a href="#CpnState.RttInfo">CpnState.RttInfo</a></td>
+                  <td></td>
+                  <td><p>Detailed timing information. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="CpnState.RttInfo">CpnState.RttInfo</h3>
+        <p>Detailed timing information for ping rtt.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>min</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>Minimum time in ms. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>avg</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>Average time in ms. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>max</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>Maximum time in ms. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>mdev</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>Mean time in ms. </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/faucet_event.proto">forch/proto/faucet_event.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>Encapsulation of an event on the Faucet event socket.</p>
+
+      
+        <h3 id="FaucetEvent">FaucetEvent</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>version</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_id</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>event_id</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>time</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>debounced</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>STACK_TOPO_CHANGE</td>
+                  <td><a href="#StackTopoChange">StackTopoChange</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange">StackTopoChange</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>timestamp</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>stack_root</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>graph</td>
+                  <td><a href="#StackTopoChange.StackGraph">StackTopoChange.StackGraph</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dps</td>
+                  <td><a href="#StackTopoChange.DpsEntry">StackTopoChange.DpsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange.DpsEntry">StackTopoChange.DpsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#StackTopoChange.StackDp">StackTopoChange.StackDp</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange.LinkPortMap">StackTopoChange.LinkPortMap</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>dp_a</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port_a</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_z</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port_z</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange.NetworkGraph">StackTopoChange.NetworkGraph</h3>
+        <p></p>
+
+        
+
+        
+      
+        <h3 id="StackTopoChange.StackDp">StackTopoChange.StackDp</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>root_hop_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange.StackGraph">StackTopoChange.StackGraph</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>directed</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>multigraph</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>graph</td>
+                  <td><a href="#StackTopoChange.NetworkGraph">StackTopoChange.NetworkGraph</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>nodes</td>
+                  <td><a href="#StackTopoChange.StackNode">StackTopoChange.StackNode</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>links</td>
+                  <td><a href="#StackTopoChange.StackLink">StackTopoChange.StackLink</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange.StackLink">StackTopoChange.StackLink</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>source</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>target</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port_map</td>
+                  <td><a href="#StackTopoChange.LinkPortMap">StackTopoChange.LinkPortMap</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackTopoChange.StackNode">StackTopoChange.StackNode</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/process_state.proto">forch/proto/process_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>process_state API result</p>
+
+      
+        <h3 id="ProcessState">ProcessState</h3>
+        <p>Summary of overall process state.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>processes</td>
+                  <td><a href="#ProcessState.ProcessesEntry">ProcessState.ProcessesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>All the targeted processes </p></td>
+                </tr>
+              
+                <tr>
+                  <td>processes_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>Overall process state: <em>healthy, broken</em> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>processes_state_detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Text description of any problems </p></td>
+                </tr>
+              
+                <tr>
+                  <td>processes_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times state has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>processes_state_last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state was updated </p></td>
+                </tr>
+              
+                <tr>
+                  <td>processes_state_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state was changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Link to top-level system state </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.CpuTime">ProcessState.CpuTime</h3>
+        <p>CPU time consumption</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>user</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>user consumption </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>systime consumption </p></td>
+                </tr>
+              
+                <tr>
+                  <td>iowait</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>iowait consumption </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.MemoryInfo">ProcessState.MemoryInfo</h3>
+        <p>Memory consumption</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>rss</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>resident set size </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vms</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>virtual set size </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ProcessData">ProcessState.ProcessData</h3>
+        <p>Data for each process</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>Process state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Text description of any problems </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cmd_line</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Process command line </p></td>
+                </tr>
+              
+                <tr>
+                  <td>create_time</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Time when the process was created </p></td>
+                </tr>
+              
+                <tr>
+                  <td>create_time_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times create time has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>create_time_last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the create time was updated </p></td>
+                </tr>
+              
+                <tr>
+                  <td>create_time_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the create time was changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpu_times_s</td>
+                  <td><a href="#ProcessState.CpuTime">ProcessState.CpuTime</a></td>
+                  <td></td>
+                  <td><p>CPU time consumption (in second) </p></td>
+                </tr>
+              
+                <tr>
+                  <td>memory_info_mb</td>
+                  <td><a href="#ProcessState.MemoryInfo">ProcessState.MemoryInfo</a></td>
+                  <td></td>
+                  <td><p>Memory consumption (in MB) </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ProcessesEntry">ProcessState.ProcessesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProcessState.ProcessData">ProcessState.ProcessData</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/shared_constants.proto">forch/proto/shared_constants.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>constants</p>
+
+      
+        <h3 id="State">State</h3>
+        <p>States</p>
+
+        
+
+        
+      
+
+      
+        <h3 id="State.State">State.State</h3>
+        <p>Enumeration of states</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>active</td>
+                <td>0</td>
+                <td><p>active: in function</p></td>
+              </tr>
+            
+              <tr>
+                <td>broken</td>
+                <td>1</td>
+                <td><p>broken: unable to function because of error</p></td>
+              </tr>
+            
+              <tr>
+                <td>damaged</td>
+                <td>2</td>
+                <td><p>damaged: partially broken</p></td>
+              </tr>
+            
+              <tr>
+                <td>down</td>
+                <td>3</td>
+                <td><p>down: not in function</p></td>
+              </tr>
+            
+              <tr>
+                <td>healthy</td>
+                <td>4</td>
+                <td><p>healthy: functioning properly</p></td>
+              </tr>
+            
+              <tr>
+                <td>inactive</td>
+                <td>5</td>
+                <td><p>inactive: specific to controller, not VRRP master</p></td>
+              </tr>
+            
+              <tr>
+                <td>initializing</td>
+                <td>6</td>
+                <td><p>initializing: in intialization after start</p></td>
+              </tr>
+            
+              <tr>
+                <td>split</td>
+                <td>7</td>
+                <td><p>split: specific to controller, being VRRP master but not able to connect
+to peer controller</p></td>
+              </tr>
+            
+              <tr>
+                <td>up</td>
+                <td>8</td>
+                <td><p>up: up but not in function</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/system_state.proto">forch/proto/system_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>State summary of a component</p>
+
+      
+        <h3 id="StateSummary">StateSummary</h3>
+        <p>State summary</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>Overall state: <em>Initializing, healthy, broken</em> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Text description of any problems </p></td>
+                </tr>
+              
+                <tr>
+                  <td>change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times state has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state was updated </p></td>
+                </tr>
+              
+                <tr>
+                  <td>last_changed</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state was changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Link to top-level system state </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+
+    <h2 id="scalar-value-types">Scalar Value Types</h2>
+    <table class="scalar-value-types-table">
+      <thead>
+        <tr><td>.proto Type</td><td>Notes</td><td>C++ Type</td><td>Java Type</td><td>Python Type</td></tr>
+      </thead>
+      <tbody>
+        
+          <tr id="double">
+            <td>double</td>
+            <td></td>
+            <td>double</td>
+            <td>double</td>
+            <td>float</td>
+          </tr>
+        
+          <tr id="float">
+            <td>float</td>
+            <td></td>
+            <td>float</td>
+            <td>float</td>
+            <td>float</td>
+          </tr>
+        
+          <tr id="int32">
+            <td>int32</td>
+            <td>Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead.</td>
+            <td>int32</td>
+            <td>int</td>
+            <td>int</td>
+          </tr>
+        
+          <tr id="int64">
+            <td>int64</td>
+            <td>Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead.</td>
+            <td>int64</td>
+            <td>long</td>
+            <td>int/long</td>
+          </tr>
+        
+          <tr id="uint32">
+            <td>uint32</td>
+            <td>Uses variable-length encoding.</td>
+            <td>uint32</td>
+            <td>int</td>
+            <td>int/long</td>
+          </tr>
+        
+          <tr id="uint64">
+            <td>uint64</td>
+            <td>Uses variable-length encoding.</td>
+            <td>uint64</td>
+            <td>long</td>
+            <td>int/long</td>
+          </tr>
+        
+          <tr id="sint32">
+            <td>sint32</td>
+            <td>Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s.</td>
+            <td>int32</td>
+            <td>int</td>
+            <td>int</td>
+          </tr>
+        
+          <tr id="sint64">
+            <td>sint64</td>
+            <td>Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s.</td>
+            <td>int64</td>
+            <td>long</td>
+            <td>int/long</td>
+          </tr>
+        
+          <tr id="fixed32">
+            <td>fixed32</td>
+            <td>Always four bytes. More efficient than uint32 if values are often greater than 2^28.</td>
+            <td>uint32</td>
+            <td>int</td>
+            <td>int</td>
+          </tr>
+        
+          <tr id="fixed64">
+            <td>fixed64</td>
+            <td>Always eight bytes. More efficient than uint64 if values are often greater than 2^56.</td>
+            <td>uint64</td>
+            <td>long</td>
+            <td>int/long</td>
+          </tr>
+        
+          <tr id="sfixed32">
+            <td>sfixed32</td>
+            <td>Always four bytes.</td>
+            <td>int32</td>
+            <td>int</td>
+            <td>int</td>
+          </tr>
+        
+          <tr id="sfixed64">
+            <td>sfixed64</td>
+            <td>Always eight bytes.</td>
+            <td>int64</td>
+            <td>long</td>
+            <td>int/long</td>
+          </tr>
+        
+          <tr id="bool">
+            <td>bool</td>
+            <td></td>
+            <td>bool</td>
+            <td>boolean</td>
+            <td>boolean</td>
+          </tr>
+        
+          <tr id="string">
+            <td>string</td>
+            <td>A string must always contain UTF-8 encoded or 7-bit ASCII text.</td>
+            <td>string</td>
+            <td>String</td>
+            <td>str/unicode</td>
+          </tr>
+        
+          <tr id="bytes">
+            <td>bytes</td>
+            <td>May contain any arbitrary sequence of bytes.</td>
+            <td>string</td>
+            <td>ByteString</td>
+            <td>str</td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </body>
+</html>
+
