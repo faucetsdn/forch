@@ -1,0 +1,35 @@
+/*
+ * List hosts API result
+ */
+syntax = "proto3";
+
+/*
+ * List of hosts
+ */
+message HostList {
+    // List of hosts indexed by MAC addresses with networking information
+    map<string, HostData> eth_srcs = 1;
+
+    // List of possible destined hosts indexed by destination MAC addresses
+    // with networking information
+    map<string, HostData> eth_dsts = 2;
+
+    // link to system overview API
+    string system_state_url = 3;
+
+    // Data for each host
+    message HostData {
+        // access switch host connected to
+        string switch = 1;
+
+        // port host connected to
+        int32 port = 2;
+
+        // host IP
+        string host_ip = 3;
+
+        // link to list_hosts API to list possible destinations
+        // or to host_path API to list path
+        string url = 4;
+    }
+}
