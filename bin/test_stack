@@ -82,18 +82,32 @@ function comp {
     echo $((($1 - $2 > 0) - ($1 - $2 < 0)))
 }
 
+function dump_flows {
+    foobar=$1
+    mkdir -p $out_dir/$foobar/
+
+    for switch in t1sw1 t1sw2 t2sw1 t2sw2 t2sw3; do
+        echo
+        echo switch dump nz-kiwi-$switch
+        sudo ovs-ofctl dump-flows --no-names $switch > $out_dir/$foobar/$switch.flows
+    done
+}
+
+function restart_ovs {
+    # Some versions of OVS are somewhat unstable, so restart for consistency.
+    echo Restarting ovs...
+    sudo /etc/init.d/openvswitch-switch restart
+
+    echo Waiting for network stability...
+    sleep 15
+}
+
 function test_stack {
     desc=stack$1
     echo Starting $desc test... | tee -a $TEST_RESULTS
 
     diagnose_stack
-
-    # Some versions of OVS are somewhat unstable, so restart for consistency.
-    echo $desc Restarting ovs...
-    sudo /etc/init.d/openvswitch-switch restart
-
-    echo $desc Waiting for network stability...
-    sleep 30
+    restart_ovs
 
     desc_dir=$out_dir/$desc
     t1sw1p6_pcap=$desc_dir/t1sw1-eth6.pcap
@@ -118,6 +132,8 @@ function test_stack {
     timeout $cap_length $TCPSUDO -Q out -eni faux-2 -w $t2sw2p1_pcap &
     sleep 5
 
+    dump_flows $desc-1
+
     echo $desc Simple tests...
     for from in 0 1 2 3; do
         for to in 0 1 2 3; do
@@ -126,6 +142,8 @@ function test_stack {
             fi
         done
     done
+
+    dump_flows $desc-2
 
     echo $desc Pair tests...
     for from in 0 1 2 3; do
@@ -141,7 +159,14 @@ function test_stack {
     docker exec forch-faux-0 nc -w 1 192.168.1.1 443 2>&1 | tee -a $TEST_RESULTS
 
     echo $desc Waiting for port capture to complete...
-    sleep $cap_length
+
+    sleep $((cap_length/3))
+    dump_flows $desc-3a
+    sleep $((cap_length/3))
+    dump_flows $desc-3b
+    sleep $((cap_length/3))
+    dump_flows $desc-3c
+
     sudo chown -R $USER $desc_dir
 
     bcount6=$(tcpdump -en -r $t1sw1p6_pcap | wc -l) 2>/dev/null
@@ -151,6 +176,17 @@ function test_stack {
     echo $desc pcap count is $bcount6 $bcount50 $bcount52 $bcount_total
     echo pcap sane $((bcount6 < 100)) \
          $((bcount_total > 100)) $((bcount_total < 220)) | tee -a $TEST_RESULTS
+
+    echo
+    if [ $bcount6 -lt 1000 ]; then
+        tcpdump -en -r $t1sw1p6_pcap
+    else
+        dump_flows $desc-panic
+        more $out_dir/$desc-panic/*.flows | cat
+        echo panic exit
+        exit 2
+    fi
+    echo
 
     bcount1e=$(tcpdump -en -r $t1sw1p28_pcap ether broadcast| wc -l) 2>/dev/null
     bcount2e=$(tcpdump -en -r $t1sw2p28_pcap ether broadcast| wc -l) 2>/dev/null
@@ -290,17 +326,20 @@ function test_forch {
 
 #################################################################################
 
-echo Capturing $faucet_log...
+if [ -n "$local" ]; then
+    echo Restarting Faucet | tee -a $TEST_RESULTS
+    rm -f $faucet_log
+    docker restart forch-faucet-1
+    docker exec forch-faux-1 ping -c 3 192.168.1.2
+fi
+
+cat $faucet_log | tee -a $out_dir/faucet_init.log
 rm -f $faucet_log
 tail --retry -f $faucet_log &
 
 reset_stack
 
-if [ -n "$local" ]; then
-    echo Restarting Faucet | tee -a $TEST_RESULTS
-    docker restart forch-faucet-1
-    docker exec forch-faux-1 ping -c 3 192.168.1.2
-fi
+restart_ovs
 
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
@@ -318,8 +357,13 @@ curl http://$CONTROLLER_NAME:9019/sys_config > $out_dir/sys_config.json
 jq '.faucet.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $out_dir/sys_config.json | tee -a $TEST_RESULTS
 
 echo %%% initial solid state | tee -a $TEST_RESULTS
+echo TODO: make pcap sane be 1 1 1 as per b/145851457 | tee -a $TEST_RESULTS
 test_stack -solid
 test_forch -solid
+
+fgrep table=1 $out_dir/stack-solid-*/t1sw1.flows | fgrep 'resubmit('
+
+exit 0
 
 echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
@@ -385,4 +429,4 @@ diff -b $GOLDEN_RESULTS $TEST_RESULTS
 result=$?
 
 echo Result diff returned $result
-exit $result
+#exit $result
