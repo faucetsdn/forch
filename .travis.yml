@@ -20,8 +20,3 @@ script:
   - bin/test_stack
   - bin/build_proto
   - bin/package_forch
-env:
-  matrix:
-    - SHARD=1
-    - SHARD=2
-    - SHARD=3
