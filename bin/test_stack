@@ -184,7 +184,7 @@ function test_stack {
         dump_flows $desc-panic
         more $out_dir/$desc-panic/*.flows | cat
         echo panic exit
-        exit 2
+        exit 3
     fi
     echo
 
@@ -361,10 +361,6 @@ echo TODO: make pcap sane be 1 1 1 as per b/145851457 | tee -a $TEST_RESULTS
 test_stack -solid
 test_forch -solid
 
-fgrep table=1 $out_dir/stack-solid-*/t1sw1.flows | fgrep 'resubmit('
-
-exit 0
-
 echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip addr add 240.0.0.2/24 dev lo
@@ -429,4 +425,4 @@ diff -b $GOLDEN_RESULTS $TEST_RESULTS
 result=$?
 
 echo Result diff returned $result
-#exit $result
+exit $result
