@@ -13,8 +13,11 @@ from forch.constants import \
     STATE_BROKEN, STATE_DOWN, STATE_ACTIVE
 
 from forch.utils import dict_proto
-from forch.proto.system_state_pb2 import StateSummary
 from forch.proto.dataplane_state_pb2 import DataplaneState
+from forch.proto.host_path_pb2 import HostPath
+from forch.proto.list_hosts_pb2 import HostList
+from forch.proto.shared_constants_pb2 import State
+from forch.proto.system_state_pb2 import StateSummary
 
 LOGGER = logging.getLogger('fstate')
 
@@ -569,7 +572,7 @@ class FaucetStateCollector:
         next_hops = self._get_graph(src_mac, dst_mac)
 
         if not next_hops:
-            return res
+            return dict_proto(res, HostPath)
 
         src_switch, src_port = self._get_access_switch(src_mac)
 
@@ -584,7 +587,7 @@ class FaucetStateCollector:
         next_hop['out'] = dst_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
         res['path'].append(copy.copy(next_hop))
 
-        return res
+        return dict_proto(res, HostPath)
 
     @_dump_states
     @_register_restore_state_method(label_name='port', metric_name='port_status')
@@ -772,10 +775,10 @@ class FaucetStateCollector:
         """Get a summary of the learned hosts"""
         with self.lock:
             num_hosts = len(self.learned_macs)
-        return {
-            'state': STATE_HEALTHY,
+        return dict_proto({
+            'state': State.healthy,
             'detail': f'{num_hosts} learned host MACs'
-        }
+        }, StateSummary)
 
     @_pre_check(state_name='hosts_list_state')
     def get_list_hosts(self, url_base, src_mac):
@@ -802,7 +805,7 @@ class FaucetStateCollector:
             mac_deets['url'] = url
 
         key = 'eth_dsts' if src_mac else 'eth_srcs'
-        return {key: host_macs}
+        return dict_proto({key: host_macs}, HostList)
 
     def _get_graph(self, src_mac, dst_mac):
         """Get a graph consists of links only used by src and dst MAC"""

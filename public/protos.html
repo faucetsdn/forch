@@ -319,6 +319,52 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fhost_path.proto">forch/proto/host_path.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#HostPath"><span class="badge">M</span>HostPath</a>
+                </li>
+              
+                <li>
+                  <a href="#HostPath.PathNode"><span class="badge">M</span>HostPath.PathNode</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
+            <a href="#forch%2fproto%2flist_hosts.proto">forch/proto/list_hosts.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#HostList"><span class="badge">M</span>HostList</a>
+                </li>
+              
+                <li>
+                  <a href="#HostList.EthDstsEntry"><span class="badge">M</span>HostList.EthDstsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#HostList.EthSrcsEntry"><span class="badge">M</span>HostList.EthSrcsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#HostList.HostData"><span class="badge">M</span>HostList.HostData</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2fprocess_state.proto">forch/proto/process_state.proto</a>
             <ul>
               
@@ -1444,6 +1490,264 @@
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/host_path.proto">forch/proto/host_path.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>Host path API result</p>
+
+      
+        <h3 id="HostPath">HostPath</h3>
+        <p>Host path</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>src_ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>IP address of source host </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dst_ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>IP address of destination host </p></td>
+                </tr>
+              
+                <tr>
+                  <td>path</td>
+                  <td><a href="#HostPath.PathNode">HostPath.PathNode</a></td>
+                  <td>repeated</td>
+                  <td><p>Path consists of a list of switches with in and out ports </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>link to system overview API </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostPath.PathNode">HostPath.PathNode</h3>
+        <p>Node on the host path</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switch</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>switch name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>in</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>incoming port </p></td>
+                </tr>
+              
+                <tr>
+                  <td>out</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>outgoing port </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/list_hosts.proto">forch/proto/list_hosts.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>List hosts API result</p>
+
+      
+        <h3 id="HostList">HostList</h3>
+        <p>List of hosts</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>eth_srcs</td>
+                  <td><a href="#HostList.EthSrcsEntry">HostList.EthSrcsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>List of hosts indexed by MAC addresses with networking information </p></td>
+                </tr>
+              
+                <tr>
+                  <td>eth_dsts</td>
+                  <td><a href="#HostList.EthDstsEntry">HostList.EthDstsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>List of possible destined hosts indexed by destination MAC addresses
+with networking information </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>link to system overview API </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.EthDstsEntry">HostList.EthDstsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#HostList.HostData">HostList.HostData</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.EthSrcsEntry">HostList.EthSrcsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#HostList.HostData">HostList.HostData</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.HostData">HostList.HostData</h3>
+        <p>Data for each host</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switch</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>access switch host connected to </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port host connected to </p></td>
+                </tr>
+              
+                <tr>
+                  <td>host_ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>host IP </p></td>
+                </tr>
+              
+                <tr>
+                  <td>url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>link to list_hosts API to list possible destinations
+or to host_path API to list path </p></td>
                 </tr>
               
             </tbody>

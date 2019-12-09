@@ -82,6 +82,15 @@ function comp {
     echo $((($1 - $2 > 0) - ($1 - $2 < 0)))
 }
 
+function restart_ovs {
+    desc=$1
+    echo $desc Restarting ovs...
+    sudo /etc/init.d/openvswitch-switch restart
+
+    echo $desc Waiting for network stability...
+    sleep 30
+}
+
 function test_stack {
     desc=stack$1
     echo Starting $desc test... | tee -a $TEST_RESULTS
@@ -89,11 +98,7 @@ function test_stack {
     diagnose_stack
 
     # Some versions of OVS are somewhat unstable, so restart for consistency.
-    echo $desc Restarting ovs...
-    sudo /etc/init.d/openvswitch-switch restart
-
-    echo $desc Waiting for network stability...
-    sleep 30
+    restart_ovs $desc
 
     desc_dir=$out_dir/$desc
     t1sw1p6_pcap=$desc_dir/t1sw1-eth6.pcap
@@ -366,6 +371,7 @@ test_stack -restored
 test_forch -restored
 
 echo %%% reset stack | tee -a $TEST_RESULTS
+restart_ovs
 reset_stack
 sleep 32
 test_forch -reset

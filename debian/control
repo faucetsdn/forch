@@ -3,7 +3,6 @@ Section: python
 Priority: optional
 Maintainer: Faucet dev <faucet-dev@google.com>
 Build-Depends: debhelper (>=9),
-	       dh-systemd (>= 1.5),
 	       dh-python,
 	       python3-all,
 	       python3-setuptools,

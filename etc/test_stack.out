@@ -325,24 +325,24 @@ null
 Running forch-reset tests
 @system_state
 "nz-kiwi"
-229
+251
 "http://localhost.n:9020"
 "split"
 @dataplane_state
 "broken"
 "egress:nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-165
+177
 "active"
 "active"
 @switch_state
-53
+63
 "nz-kiwi-t1sw1"
 9
 null
 2352
 null
 "active"
-9
+11
 @cpn_state
 6
 "127.0.0.1"
