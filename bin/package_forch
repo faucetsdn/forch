@@ -1,5 +1,14 @@
 #!/bin/bash -e
 
+testing=
+
+if [ "$1" == testing ]; then
+    testing=$1
+    shift
+    git tag -d 0.0.0 || true
+    git tag -a 0.0.0 -m "Testing"
+fi
+
 version=`git describe`
 
 rm -rf dist/
@@ -19,3 +28,8 @@ echo
 ls -l dist/
 echo
 echo Created version $version '(from most recent annotated tag)'
+
+if [ -n "$testing" ]; then
+    echo Checking contents of generated debian package...
+    dpkg -c dist/python3-forch_0.0.0_all.deb | fgrep forch/http_server.py
+fi

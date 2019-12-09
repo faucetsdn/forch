@@ -19,4 +19,4 @@ script:
   - bin/setup_stack local
   - bin/test_stack
   - bin/build_proto
-  - bin/package_forch
+  - bin/package_forch testing
