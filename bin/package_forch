@@ -6,6 +6,15 @@ rm -rf dist/
 
 python3 setup.py sdist bdist_wheel
 
+#- apt-get update && apt-get upgrade -y
+sudo apt-get install devscripts
+
+sudo mk-build-deps -i -r -t 'apt-get -f -y'
+#export DEBEMAIL='testuser@' && export DEBFULLNAME='Faucet Maintainers'
+debchange --newversion $version -b "New upstream release"
+dpkg-buildpackage -b -us -uc -rfakeroot
+mv ../*.deb dist/
+
 echo
 ls -l dist/
 echo
