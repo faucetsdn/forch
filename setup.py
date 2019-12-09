@@ -17,10 +17,6 @@ package_data = {'': ['GVERSION']}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-exit_code = os.system('bin/build_proto check')
-if exit_code:
-    sys.exit(exit_code)
-
 version = os.popen('git describe').read().strip()
 
 setuptools.setup(
