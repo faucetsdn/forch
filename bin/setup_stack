@@ -26,6 +26,8 @@ source bin/stack_functions
 
 ###########################################################
 
+ovs-vsctl -V
+
 bin/net_clean
 
 echo Configuring mode $mode...
