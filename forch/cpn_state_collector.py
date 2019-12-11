@@ -24,14 +24,14 @@ KEY_NODE_ATTRIBUTES = 'attributes'
 KEY_NODE_PING_RES = 'ping_results'
 KEY_NODE_STATE = 'state'
 KEY_NODE_STATE_COUNT = 'state_count'
-KEY_NODE_STATE_UPDATE_TS = 'state_updated'
-KEY_NODE_STATE_CHANGE_TS = 'state_changed'
+KEY_NODE_STATE_UPDATE_TS = 'state_update'
+KEY_NODE_STATE_CHANGE_TS = 'state_change'
 
 KEY_CPN_STATE = 'state'
 KEY_CPN_STATE_DETAIL = 'detail'
 KEY_CPN_STATE_COUNT = 'state_count'
-KEY_CPN_STATE_UPDATE_TS = 'state_updated'
-KEY_CPN_STATE_CHANGE_TS = 'state_changed'
+KEY_CPN_STATE_UPDATE_TS = 'state_update'
+KEY_CPN_STATE_CHANGE_TS = 'state_change'
 
 PING_SUMMARY_REGEX = {'transmitted': r'\d+(?= packets transmitted)',
                       'received': r'\d+(?= received)',
@@ -83,7 +83,7 @@ class CPNStateCollector:
             'detail': self._cpn_state.get(KEY_CPN_STATE_DETAIL),
             'change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT),
             'last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS),
-            'last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
+            'last_change': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
         }, StateSummary)
 
     def get_cpn_state(self):
@@ -98,8 +98,8 @@ class CPNStateCollector:
                 ping_result = node_state.get(KEY_NODE_PING_RES, {}).get('stdout')
                 cpn_node_map['ping_results'] = CPNStateCollector._get_ping_summary(ping_result)
                 cpn_node_map['state_change_count'] = node_state.get(KEY_NODE_STATE_COUNT)
-                cpn_node_map['state_last_updated'] = node_state.get(KEY_NODE_STATE_UPDATE_TS)
-                cpn_node_map['state_last_changed'] = node_state.get(KEY_NODE_STATE_CHANGE_TS)
+                cpn_node_map['state_last_update'] = node_state.get(KEY_NODE_STATE_UPDATE_TS)
+                cpn_node_map['state_last_change'] = node_state.get(KEY_NODE_STATE_CHANGE_TS)
 
             return dict_proto({
                 'cpn_nodes': cpn_nodes,
@@ -107,7 +107,7 @@ class CPNStateCollector:
                 'cpn_state_detail': self._cpn_state.get(KEY_CPN_STATE_DETAIL),
                 'cpn_state_change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT),
                 'cpn_state_last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS),
-                'cpn_state_last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
+                'cpn_state_last_change': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
             }, CpnState)
 
     def _handle_ping_result(self, ping_res_future):

@@ -14,6 +14,7 @@ from google.protobuf.message import Message
 import forch.constants as constants
 import forch.faucet_event_client
 import forch.http_server
+
 from forch.utils import proto_dict
 
 from forch.cpn_state_collector import CPNStateCollector
@@ -292,7 +293,7 @@ class Forchestrator:
             'cpn_state': proto_dict(self._cpn_collector.get_cpn_summary()),
             'process_state': proto_dict(self._local_collector.get_process_summary()),
             'dataplane_state': proto_dict(self._faucet_collector.get_dataplane_summary()),
-            'switch_state': self._faucet_collector.get_switch_summary(),
+            'switch_state': proto_dict(self._faucet_collector.get_switch_summary()),
             'list_hosts': proto_dict(self._faucet_collector.get_host_summary())
         }
         url_base = self._extract_url_base(path)

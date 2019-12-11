@@ -248,13 +248,13 @@ function test_forch {
 
     echo @switch_state | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state1.json
-    jq '.switches_state_change_count' $api_result | tee -a $TEST_RESULTS
+    jq '.switch_state_change_count' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path[1].switch' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path[1].in' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path[1].out' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".attributes.dp_id' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state2.json
-    jq '.switches_state_detail' $api_result | tee -a $TEST_RESULTS
+    jq '.switch_state_detail' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state3.json
     jq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result | tee -a $TEST_RESULTS

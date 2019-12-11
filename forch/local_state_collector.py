@@ -53,7 +53,7 @@ class LocalStateCollector:
             'detail': process_state.processes_state_detail,
             'change_count': process_state.processes_state_change_count,
             'last_update': process_state.processes_state_last_update,
-            'last_changed': process_state.processes_state_last_change
+            'last_change': process_state.processes_state_last_change
         }, StateSummary)
 
     def get_process_state(self):

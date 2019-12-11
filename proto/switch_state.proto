@@ -1,0 +1,139 @@
+/*
+ * switch_state API result
+ */
+syntax = "proto3";
+
+import "forch/proto/shared_constants.proto";
+
+/*
+ * State of switches
+ */
+message SwitchState {
+  // Overall status of the switches
+  State.State switch_state = 1;
+
+  // Summary detail of the switch state
+  string switch_state_detail = 2;
+
+  // Number of times switch state has changed
+  int32 switch_state_change_count = 3;
+
+  // The last time switch state changed
+  string switch_state_last_change = 4;
+
+  // Link to top level system state
+  string system_state_url = 5;
+
+  // Detailed information about individual switches
+  map<string, SwitchNode> switches = 6;
+
+  // Restriction information about this query
+  string switches_restrict = 7;
+
+  // Information about a single switch
+  message SwitchNode {
+    // Static attributes
+    Attributes attributes = 1;
+
+    // State of this switch
+    State.State switch_state = 2;
+
+    // Number of times it has been restarted
+    int32 restart_type_event_count = 3;
+
+    // Type of last restart
+    string restart_type = 4;
+
+    // Last restart change time
+    string restart_type_last_change = 5;
+
+    // Number of times switch state has changed
+    int32 switch_state_change_count = 6;
+
+    // Last change time of switch state
+    string switch_state_last_change = 7;
+
+    // Information about all switch ports
+    map<int32, Port> ports = 8;
+
+    // Any port restrictions in effect
+    int32 ports_restrict = 9;
+
+    // Path from this switch to root
+    repeated NodePath root_path = 10;
+
+    // All the access port macs on this switch
+    map<string, PortInfo> access_port_macs = 11;
+
+    // All the stacking port macs on this switch
+    map<string, PortInfo> stacking_port_macs = 12;
+
+    // All the egress port macs on this switch
+    map<string, PortInfo> egress_port_macs = 13;
+
+    // Attributes about this switch
+    message Attributes {
+      int32 dp_id = 1;
+    }
+
+    // Information for a path
+    message NodePath {
+      // Switch name
+      string switch = 1;
+
+      // In port
+      int32 in = 2;
+
+      // Out port
+      int32 out = 3;
+
+      // Egress port
+      int32 egress = 4;
+    }
+  }
+
+  // Information about a port
+  message Port {
+    // Static port attributes
+    Attributes attributes = 1;
+
+    // Port state
+    string port_state = 2;
+
+    // Port state last change time
+    string state_last_change = 3;
+
+    // Port state change count
+    int32 state_change_count = 4;
+
+    // Static port attributes
+    message Attributes {
+      // Port description
+      string description = 1;
+
+      // Port type
+      string port_type = 2;
+
+      // Peer stacking switch
+      string stack_peer_switch = 3;
+
+      // Peer stacking port
+      int32 stack_peer_port = 4;
+    }
+  }
+
+  message PortInfo {
+    // Port number on this switch
+    int32 port = 1;
+
+    // Learned IP address for this MAC
+    string ip_address = 2;
+
+    // Learning timestamp
+    string timestamp = 3;
+
+    // url for host learning info
+    string url = 4;
+  }
+
+}
