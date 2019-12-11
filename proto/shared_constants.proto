@@ -11,11 +11,11 @@ message State {
    * Enumeration of states
    */
   enum State {
-    // active: in function
-    active = 0;
+    // broken: unable to function because of error (default)
+    broken = 0;
 
-    // broken: unable to function because of error
-    broken = 1;
+    // active: in function
+    active = 1;
 
     // damaged: partially broken
     damaged = 2;
@@ -26,14 +26,13 @@ message State {
     // healthy: functioning properly
     healthy = 4;
 
-    // inactive: specific to controller, not VRRP master
+    // inactive: controller not active
     inactive = 5;
 
     // initializing: in intialization after start
     initializing = 6;
 
-    // split: specific to controller, being VRRP master but not able to connect
-    // to peer controller
+    // split: controller master but can not reach peer controller
     split = 7;
 
     // up: up but not in function
