@@ -9,6 +9,7 @@ STATE_UP = 'up'
 STATE_DOWN = 'down'
 STATE_BROKEN = 'broken'
 STATE_INITIALIZING = 'initializing'
+STATE_UNDEFINED = 'undefined'
 
 # TODO: Remove STATUS_ constants once all references have been removed.
 STATUS_HEALTHY = 'healthy'
