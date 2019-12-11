@@ -8,6 +8,7 @@ import time
 import threading
 from threading import RLock
 
+# TODO: Clean up to use State enum
 from forch.constants import \
     STATE_HEALTHY, STATE_UP, STATE_INITIALIZING, \
     STATE_BROKEN, STATE_DOWN, STATE_ACTIVE

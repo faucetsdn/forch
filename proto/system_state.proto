@@ -6,6 +6,58 @@ syntax = "proto3";
 import "forch/proto/shared_constants.proto";
 
 /*
+ * Overal accounting for system controller state
+ */
+message SystemState {
+  // Site name (prefix of most components)
+  string site_name = 1;
+
+  // This controller's name
+  string controller_name = 2;
+
+  // URL redirect to the peer controller
+  string peer_controller_url = 3;
+
+  // State of this system
+  State.State system_state = 4;
+
+  // Detail about the system state
+  string system_state_detail = 5;
+
+  // Count of changes for the system state
+  int32 system_state_change_count = 6;
+
+  // Last change time for the state
+  string system_state_last_change = 7;
+
+  // Last state update time
+  string system_state_last_update = 8;
+
+  // Summary of the system state components
+  SummarySources summary_sources = 9;
+
+  /*
+   * Summary collection of system state
+   */
+  message SummarySources {
+    // CPN state summary
+    StateSummary cpn_state = 1;
+
+    // Process state summary
+    StateSummary process_state = 2;
+
+    // Dataplane state summary
+    StateSummary dataplane_state = 3;
+
+    // Switch state summary
+    StateSummary switch_state = 4;
+
+    // Host listing summary
+    StateSummary list_hosts = 5;
+  }
+}
+
+/*
  * State summary
  */
 message StateSummary {

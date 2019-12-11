@@ -11,16 +11,16 @@ import yaml
 
 from google.protobuf.message import Message
 
-import forch.constants as constants
 import forch.faucet_event_client
 import forch.http_server
-
-from forch.utils import proto_dict
 
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
+
+from forch.proto.shared_constants_pb2 import State
+from forch.proto.system_state_pb2 import SystemState
 
 LOGGER = logging.getLogger('forch')
 
@@ -202,9 +202,9 @@ class Forchestrator:
         name = self._get_controller_name()
         controllers = self._config.get('site', {}).get('controllers', {})
         if name not in controllers:
-            return (f'missing_controller_name_{name}', _DEFAULT_PORT)
+            return f'missing_controller_name_{name}'
         if len(controllers) != 2:
-            return ('num_controllers_%s' % len(controllers), _DEFAULT_PORT)
+            return 'num_controllers_%s' % len(controllers)
         things = set(controllers.keys())
         things.remove(name)
         return list(things)[0]
@@ -220,59 +220,52 @@ class Forchestrator:
 
     def get_system_state(self, path, params):
         """Get an overview of the system state"""
-        system_summary = self._get_system_summary(path)
-        overview = {
-            'peer_controller_url': self._get_peer_controller_url(),
-            'summary_sources': system_summary,
-            'site_name': self._config.get('site', {}).get('name', 'unknown'),
-            'controller_name': self._get_controller_name(),
-        }
-        overview.update(self._distill_summary(system_summary))
-        return overview
+        system_state = SystemState()
+        system_state.peer_controller_url = self._get_peer_controller_url()
+        system_state.summary_sources.CopyFrom(self._get_system_summary(path))
+        system_state.site_name = self._config.get('site', {}).get('name', 'unknown')
+        system_state.controller_name = self._get_controller_name()
+        self._distill_summary(system_state.summary_sources, system_state)
+        return system_state
 
-    def _distill_summary(self, summaries):
+    def _distill_summary(self, summaries, system_state):
         try:
             start_time = self._start_time
-            summary_values = summaries.values()
+            summary_fields = summaries.ListFields()
+            summary_values = [value[1] for value in summary_fields]
             change_counts = list(map(lambda subsystem:
-                                     subsystem.get('change_count') or 0, summary_values))
+                                     subsystem.change_count or 0, summary_values))
             last_changes = list(map(lambda subsystem:
-                                    subsystem.get('last_change') or start_time, summary_values))
+                                    subsystem.last_change or start_time, summary_values))
             last_updates = list(map(lambda subsystem:
-                                    subsystem.get('last_update') or start_time, summary_values))
+                                    subsystem.last_update or start_time, summary_values))
             summary, detail = self._get_combined_summary(summaries)
-            system_summary = {
-                'system_state': summary,
-                'system_state_detail': detail,
-                'system_state_change_count': sum(change_counts),
-                'system_state_last_change': max(last_changes),
-                'system_state_last_update': max(last_updates)
-            }
+            system_state.system_state = summary
+            system_state.system_state_detail = detail
+            system_state.system_state_change_count = sum(change_counts)
+            system_state.system_state_last_change = max(last_changes)
+            system_state.system_state_last_update = max(last_updates)
         except Exception as e:
-            system_summary = {
-                'system_state': 'error',
-                'system_state_detail': str(e)
-            }
-            LOGGER.exception('Calculating state summary')
-        return system_summary
+            system_state.system_state = State.broken
+            system_state.system_state_detail = str(e)
+            LOGGER.exception(e)
 
     def _get_combined_summary(self, summary):
         controller_state, controller_state_detail = self._get_controller_state()
-        if not controller_state == constants.STATE_ACTIVE:
+        if controller_state != State.active:
             return controller_state, controller_state_detail
 
         has_error = False
         has_warning = False
         details = []
-        for subsystem_name in summary:
-            subsystem = summary[subsystem_name]
-            state = subsystem.get('state', constants.STATE_BROKEN)
-            if state in (constants.STATE_DOWN, constants.STATE_BROKEN):
+        for field, subsystem in summary.ListFields():
+            state = subsystem.state
+            if state in (State.down, State.broken):
                 has_error = True
-                details.append(subsystem_name)
-            elif state != constants.STATE_HEALTHY:
+                details.append(field.name)
+            elif state != State.healthy:
                 has_warning = True
-                details.append(subsystem_name)
+                details.append(field.name)
         if details:
             detail = 'broken subsystems: ' + ', '.join(details)
         else:
@@ -283,23 +276,21 @@ class Forchestrator:
             detail += '. Faucet disconnected.'
 
         if has_error:
-            return constants.STATE_BROKEN, detail
+            return State.broken, detail
         if has_warning:
-            return constants.STATE_DAMAGED, detail
-        return constants.STATE_HEALTHY, detail
+            return State.damaged, detail
+        return State.healthy, detail
 
     def _get_system_summary(self, path):
-        states = {
-            'cpn_state': proto_dict(self._cpn_collector.get_cpn_summary()),
-            'process_state': proto_dict(self._local_collector.get_process_summary()),
-            'dataplane_state': proto_dict(self._faucet_collector.get_dataplane_summary()),
-            'switch_state': proto_dict(self._faucet_collector.get_switch_summary()),
-            'list_hosts': proto_dict(self._faucet_collector.get_host_summary())
-        }
+        states = SystemState.SummarySources()
+        states.cpn_state.CopyFrom(self._cpn_collector.get_cpn_summary())
+        states.process_state.CopyFrom(self._local_collector.get_process_summary())
+        states.dataplane_state.CopyFrom(self._faucet_collector.get_dataplane_summary())
+        states.switch_state.CopyFrom(self._faucet_collector.get_switch_summary())
+        states.list_hosts.CopyFrom(self._faucet_collector.get_host_summary())
         url_base = self._extract_url_base(path)
-        for state in states:
-            summary = states[state]
-            summary['url'] = f'{url_base}/?{state}'
+        for field, value in states.ListFields():
+            value.url = f'{url_base}/?{field.name}'
         return states
 
     def _extract_url_base(self, path):
@@ -319,25 +310,24 @@ class Forchestrator:
         with self._active_state_lock:
             if not self._is_active:
                 detail = 'This controller is inactive. Please view peer controller.'
-                return constants.STATE_INACTIVE, detail
+                return State.inactive, detail
 
         cpn_state = self._cpn_collector.get_cpn_state()
         peer_controller = self._get_peer_controller_name()
-        cpn_nodes = proto_dict(cpn_state).get('cpn_nodes')
-        peer_controller_state = cpn_nodes.get(peer_controller, {}).get('state')
 
-        if not peer_controller_state:
-            LOGGER.error('Cannot get peer controller state: %s', peer_controller)
+        if peer_controller in cpn_state.cpn_nodes:
+            peer_controller_state = cpn_state.cpn_nodes[peer_controller].state
+        else:
+            LOGGER.error('Cannot get peer controller state for %s', peer_controller)
+            peer_controller_state = State.broken
 
-        if cpn_state.cpn_state == constants.STATE_INITIALIZING:
-            detail = 'Initializing'
-            return constants.STATE_INITIALIZING, detail
+        if cpn_state.cpn_state == State.initializing:
+            return State.initializing, 'Initializing'
 
-        if not peer_controller_state == constants.STATE_HEALTHY:
-            detail = 'Lost reachability to peer controller.'
-            return constants.STATE_SPLIT, detail
+        if peer_controller_state != State.healthy:
+            return State.split, 'Lost reachability to peer controller.'
 
-        return constants.STATE_ACTIVE, ''
+        return State.active, None
 
     def _get_faucet_config(self):
         try:

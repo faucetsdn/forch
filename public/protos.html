@@ -481,6 +481,14 @@
                   <a href="#StateSummary"><span class="badge">M</span>StateSummary</a>
                 </li>
               
+                <li>
+                  <a href="#SystemState"><span class="badge">M</span>SystemState</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.SummarySources"><span class="badge">M</span>SystemState.SummarySources</a>
+                </li>
+              
               
               
               
@@ -2108,15 +2116,15 @@ or to host_path API to list path </p></td>
           <tbody>
             
               <tr>
-                <td>active</td>
+                <td>broken</td>
                 <td>0</td>
-                <td><p>active: in function</p></td>
+                <td><p>broken: unable to function because of error (default)</p></td>
               </tr>
             
               <tr>
-                <td>broken</td>
+                <td>active</td>
                 <td>1</td>
-                <td><p>broken: unable to function because of error</p></td>
+                <td><p>active: in function</p></td>
               </tr>
             
               <tr>
@@ -2140,7 +2148,7 @@ or to host_path API to list path </p></td>
               <tr>
                 <td>inactive</td>
                 <td>5</td>
-                <td><p>inactive: specific to controller, not VRRP master</p></td>
+                <td><p>inactive: controller not active</p></td>
               </tr>
             
               <tr>
@@ -2152,8 +2160,7 @@ or to host_path API to list path </p></td>
               <tr>
                 <td>split</td>
                 <td>7</td>
-                <td><p>split: specific to controller, being VRRP master but not able to connect
-to peer controller</p></td>
+                <td><p>split: controller master but can not reach peer controller</p></td>
               </tr>
             
               <tr>
@@ -2781,6 +2788,138 @@ to peer controller</p></td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Link to top-level system state in long form </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState">SystemState</h3>
+        <p>Overal accounting for system controller state</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>site_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Site name (prefix of most components) </p></td>
+                </tr>
+              
+                <tr>
+                  <td>controller_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>This controller&#39;s name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>peer_controller_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>URL redirect to the peer controller </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>State of this system </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Detail about the system state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Count of changes for the system state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last change time for the state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last state update time </p></td>
+                </tr>
+              
+                <tr>
+                  <td>summary_sources</td>
+                  <td><a href="#SystemState.SummarySources">SystemState.SummarySources</a></td>
+                  <td></td>
+                  <td><p>Summary of the system state components </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.SummarySources">SystemState.SummarySources</h3>
+        <p>Summary collection of system state</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>cpn_state</td>
+                  <td><a href="#StateSummary">StateSummary</a></td>
+                  <td></td>
+                  <td><p>CPN state summary </p></td>
+                </tr>
+              
+                <tr>
+                  <td>process_state</td>
+                  <td><a href="#StateSummary">StateSummary</a></td>
+                  <td></td>
+                  <td><p>Process state summary </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dataplane_state</td>
+                  <td><a href="#StateSummary">StateSummary</a></td>
+                  <td></td>
+                  <td><p>Dataplane state summary </p></td>
+                </tr>
+              
+                <tr>
+                  <td>switch_state</td>
+                  <td><a href="#StateSummary">StateSummary</a></td>
+                  <td></td>
+                  <td><p>Switch state summary </p></td>
+                </tr>
+              
+                <tr>
+                  <td>list_hosts</td>
+                  <td><a href="#StateSummary">StateSummary</a></td>
+                  <td></td>
+                  <td><p>Host listing summary </p></td>
                 </tr>
               
             </tbody>
