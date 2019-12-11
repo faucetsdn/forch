@@ -48,7 +48,7 @@ class Forchestrator:
         self._local_collector = None
         self._cpn_collector = None
         self._initialized = False
-        self._is_active = False
+        self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
         self._event_horizon = 0
 
@@ -308,9 +308,14 @@ class Forchestrator:
 
     def _get_controller_state(self):
         with self._active_state_lock:
-            if not self._is_active:
+            active_state = self._active_state
+            if active_state == State.initializing:
+                return State.initializing, 'Initializing'
+            if active_state == State.inactive:
                 detail = 'This controller is inactive. Please view peer controller.'
                 return State.inactive, detail
+            if active_state != State.active:
+                return State.broken, 'Internal error'
 
         cpn_state = self._cpn_collector.get_cpn_state()
         peer_controller = self._get_peer_controller_name()
@@ -341,11 +346,11 @@ class Forchestrator:
         """Clean up relevant internal data in all collectors"""
         self._faucet_collector.cleanup()
 
-    def handle_active_state(self, is_master):
-        """Handler for local state collector to handle vrrp state"""
+    def handle_active_state(self, active_state):
+        """Handler for local state collector to handle controller active state"""
         with self._active_state_lock:
-            self._is_active = is_master
-        self._faucet_collector.set_active(is_master)
+            self._active_state = active_state
+        self._faucet_collector.set_active(active_state)
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""
