@@ -98,7 +98,7 @@ message SwitchState {
     Attributes attributes = 1;
 
     // Port state
-    string port_state = 2;
+    State.State port_state = 2;
 
     // Port state last change time
     string state_last_change = 3;

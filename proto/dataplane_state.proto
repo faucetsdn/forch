@@ -3,6 +3,8 @@
  */
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
 /*
  * Summary of overall dataplane state.
  */
@@ -17,7 +19,7 @@ message DataplaneState {
   Egress egress = 3;
 
   // Overall status of the dataplane state.
-  string dataplane_state = 4;
+  State.State dataplane_state = 4;
 
   // Summary detail of the dataplane state.
   string dataplane_state_detail = 5;
@@ -64,7 +66,7 @@ message DataplaneState {
    */
   message Egress {
     // Over all egress state
-    string egress_state = 1;
+    State.State egress_state = 1;
 
     // Details of egress link which is up
     string egress_state_detail = 2;
@@ -87,7 +89,7 @@ message DataplaneState {
    */
   message SwitchStatus {
     // Switch status, active or down
-    string switch_state = 1;
+    State.State switch_state = 1;
   }
 
   /*
@@ -95,6 +97,6 @@ message DataplaneState {
    */
   message StackLinkStatus {
     // Stack link status, active, up or down
-    string link_state = 2;
+    State.State link_state = 2;
   }
 }

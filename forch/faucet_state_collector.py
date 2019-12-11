@@ -104,14 +104,14 @@ class FaucetStateCollector:
         self.lock = RLock()
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
-        self._is_active = False
+        self._active_state = State.initializing
         self._is_state_restored = False
         self._state_restore_error = None
 
-    def set_active(self, is_active):
+    def set_active(self, active_state):
         """Set active state"""
         with self._lock:
-            self._is_active = is_active
+            self._active_state = active_state
 
     def set_state_restored(self, is_restored, restore_error=None):
         """Set state restore result"""
@@ -130,9 +130,13 @@ class FaucetStateCollector:
         def pre_check(func):
             def wrapped(self, *args, **kwargs):
                 with self._lock:
-                    if not self._is_active:
+                    if self._active_state == State.inactive:
                         detail = 'This controller is inactive. Please view peer controller.'
                         return self._make_summary(State.inactive, detail)
+                    if self._active_state != State.active:
+                        state_name = State.State.Name(self._active_state)
+                        detail = f'This controller is {state_name}'
+                        return self._make_summary(self._active_state, detail)
                     if not self._is_state_restored:
                         detail = f'Cannot state not restored: {self._state_restore_error}'
                         return self._make_summary(State.broken, detail)
@@ -165,12 +169,11 @@ class FaucetStateCollector:
     def get_dataplane_summary(self):
         """Get summary of dataplane"""
         dplane_state = self._get_dataplane_state()
-        return dict_proto({
-            'state': dplane_state.dataplane_state,
-            'detail': dplane_state.dataplane_state_detail,
-            'change_count': dplane_state.dataplane_state_change_count,
-            'last_change': dplane_state.dataplane_state_last_change
-        }, StateSummary)
+        state_summary = self._make_summary(dplane_state.dataplane_state,
+                                           dplane_state.dataplane_state_detail)
+        state_summary.change_count = dplane_state.dataplane_state_change_count
+        state_summary.last_change = dplane_state.dataplane_state_last_change
+        return state_summary
 
     def _update_dataplane_detail(self, dplane_state):
         detail = []
@@ -520,10 +523,7 @@ class FaucetStateCollector:
             link_list = self.topo_state.get(LINKS_GRAPH)
             dps = self.topo_state.get(TOPOLOGY_DPS)
             if not dps or not link_list:
-                return {
-                    'state': STATE_BROKEN,
-                    'error': 'Missing state data'
-                }
+                return self._make_summary(State.broken, 'Missing state data')
             hop = {'switch': src_switch}
             if src_port:
                 hop['in'] = src_port
@@ -557,13 +557,15 @@ class FaucetStateCollector:
     def get_host_path(self, src_mac, dst_mac, to_egress):
         """Given two MAC addresses in the core network, find the active path between them"""
         if not src_mac:
-            return {'error': 'Empty eth_src. Please use list_hosts to get a list of hosts'}
+            return self._make_summary(State.broken,
+                                      'Empty eth_src. Please use list_hosts to get a list of hosts')
         if not dst_mac and not to_egress:
-            return {'error': 'Empty eth_dst. Use list_hosts, or set to_egress=true'}
+            return self._make_summary(State.broken,
+                                      'Empty eth_dst. Use list_hosts, or set to_egress=true')
 
         if src_mac not in self.learned_macs or dst_mac and dst_mac not in self.learned_macs:
             error_msg = 'MAC address cannot be found. Please use list_hosts to get a list of hosts'
-            return {'error': error_msg}
+            return self._make_summary(State.broken, error_msg)
 
         if to_egress:
             ret_map = self.get_active_egress_path(src_mac)
@@ -784,10 +786,7 @@ class FaucetStateCollector:
         """Get a summary of the learned hosts"""
         with self.lock:
             num_hosts = len(self.learned_macs)
-        return dict_proto({
-            'state': State.healthy,
-            'detail': f'{num_hosts} learned host MACs'
-        }, StateSummary)
+        return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check(state_name='hosts_list_state')
     def get_list_hosts(self, url_base, src_mac):
@@ -795,7 +794,7 @@ class FaucetStateCollector:
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
             error_msg = 'MAC address cannot be found. Please use list_hosts to get a list of hosts'
-            return {'error': error_msg}
+            return self._make_summary(State.broken, error_msg)
         for mac, mac_state in self.learned_macs.items():
             if mac == src_mac:
                 continue

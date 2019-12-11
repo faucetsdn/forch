@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from forch.proto import shared_constants_pb2 as forch_dot_proto_dot_shared__constants__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,8 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n!forch/proto/dataplane_state.proto\"\xc3\x07\n\x0e\x44\x61taplaneState\x12&\n\x06switch\x18\x01 \x01(\x0b\x32\x16.DataplaneState.Switch\x12$\n\x05stack\x18\x02 \x01(\x0b\x32\x15.DataplaneState.Stack\x12&\n\x06\x65gress\x18\x03 \x01(\x0b\x32\x16.DataplaneState.Egress\x12\x17\n\x0f\x64\x61taplane_state\x18\x04 \x01(\t\x12\x1e\n\x16\x64\x61taplane_state_detail\x18\x05 \x01(\t\x12$\n\x1c\x64\x61taplane_state_change_count\x18\x06 \x01(\x05\x12#\n\x1b\x64\x61taplane_state_last_change\x18\x07 \x01(\t\x12\x18\n\x10system_state_url\x18\x08 \x01(\t\x1a\xd4\x01\n\x06Switch\x12\x36\n\x08switches\x18\x01 \x03(\x0b\x32$.DataplaneState.Switch.SwitchesEntry\x12!\n\x19switch_state_change_count\x18\x02 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x03 \x01(\t\x1aM\n\rSwitchesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.DataplaneState.SwitchStatus:\x02\x38\x01\x1a\xbe\x01\n\x05Stack\x12/\n\x05links\x18\x01 \x03(\x0b\x32 .DataplaneState.Stack.LinksEntry\x12\x1a\n\x12links_change_count\x18\x02 \x01(\x05\x12\x19\n\x11links_last_change\x18\x03 \x01(\t\x1aM\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x05value\x18\x02 \x01(\x0b\x32\x1f.DataplaneState.StackLinkStatus:\x02\x38\x01\x1a\xb7\x01\n\x06\x45gress\x12\x14\n\x0c\x65gress_state\x18\x01 \x01(\t\x12\x1b\n\x13\x65gress_state_detail\x18\x02 \x01(\t\x12!\n\x19\x65gress_state_change_count\x18\x03 \x01(\x05\x12 \n\x18\x65gress_state_last_change\x18\x04 \x01(\t\x12 \n\x18\x65gress_state_last_update\x18\x05 \x01(\t\x12\x13\n\x0b\x61\x63tive_root\x18\x06 \x01(\t\x1a$\n\x0cSwitchStatus\x12\x14\n\x0cswitch_state\x18\x01 \x01(\t\x1a%\n\x0fStackLinkStatus\x12\x12\n\nlink_state\x18\x02 \x01(\tb\x06proto3')
-)
+  serialized_pb=_b('\n!forch/proto/dataplane_state.proto\x1a\"forch/proto/shared_constants.proto\"\xfb\x07\n\x0e\x44\x61taplaneState\x12&\n\x06switch\x18\x01 \x01(\x0b\x32\x16.DataplaneState.Switch\x12$\n\x05stack\x18\x02 \x01(\x0b\x32\x15.DataplaneState.Stack\x12&\n\x06\x65gress\x18\x03 \x01(\x0b\x32\x16.DataplaneState.Egress\x12%\n\x0f\x64\x61taplane_state\x18\x04 \x01(\x0e\x32\x0c.State.State\x12\x1e\n\x16\x64\x61taplane_state_detail\x18\x05 \x01(\t\x12$\n\x1c\x64\x61taplane_state_change_count\x18\x06 \x01(\x05\x12#\n\x1b\x64\x61taplane_state_last_change\x18\x07 \x01(\t\x12\x18\n\x10system_state_url\x18\x08 \x01(\t\x1a\xd4\x01\n\x06Switch\x12\x36\n\x08switches\x18\x01 \x03(\x0b\x32$.DataplaneState.Switch.SwitchesEntry\x12!\n\x19switch_state_change_count\x18\x02 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x03 \x01(\t\x1aM\n\rSwitchesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.DataplaneState.SwitchStatus:\x02\x38\x01\x1a\xbe\x01\n\x05Stack\x12/\n\x05links\x18\x01 \x03(\x0b\x32 .DataplaneState.Stack.LinksEntry\x12\x1a\n\x12links_change_count\x18\x02 \x01(\x05\x12\x19\n\x11links_last_change\x18\x03 \x01(\t\x1aM\n\nLinksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12.\n\x05value\x18\x02 \x01(\x0b\x32\x1f.DataplaneState.StackLinkStatus:\x02\x38\x01\x1a\xc5\x01\n\x06\x45gress\x12\"\n\x0c\x65gress_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13\x65gress_state_detail\x18\x02 \x01(\t\x12!\n\x19\x65gress_state_change_count\x18\x03 \x01(\x05\x12 \n\x18\x65gress_state_last_change\x18\x04 \x01(\t\x12 \n\x18\x65gress_state_last_update\x18\x05 \x01(\t\x12\x13\n\x0b\x61\x63tive_root\x18\x06 \x01(\t\x1a\x32\n\x0cSwitchStatus\x12\"\n\x0cswitch_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x1a\x33\n\x0fStackLinkStatus\x12 \n\nlink_state\x18\x02 \x01(\x0e\x32\x0c.State.Stateb\x06proto3')
+  ,
+  dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
 
 
@@ -58,8 +60,8 @@ _DATAPLANESTATE_SWITCH_SWITCHESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=468,
-  serialized_end=545,
+  serialized_start=518,
+  serialized_end=595,
 )
 
 _DATAPLANESTATE_SWITCH = _descriptor.Descriptor(
@@ -102,8 +104,8 @@ _DATAPLANESTATE_SWITCH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=333,
-  serialized_end=545,
+  serialized_start=383,
+  serialized_end=595,
 )
 
 _DATAPLANESTATE_STACK_LINKSENTRY = _descriptor.Descriptor(
@@ -139,8 +141,8 @@ _DATAPLANESTATE_STACK_LINKSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=661,
-  serialized_end=738,
+  serialized_start=711,
+  serialized_end=788,
 )
 
 _DATAPLANESTATE_STACK = _descriptor.Descriptor(
@@ -183,8 +185,8 @@ _DATAPLANESTATE_STACK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=548,
-  serialized_end=738,
+  serialized_start=598,
+  serialized_end=788,
 )
 
 _DATAPLANESTATE_EGRESS = _descriptor.Descriptor(
@@ -196,8 +198,8 @@ _DATAPLANESTATE_EGRESS = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='egress_state', full_name='DataplaneState.Egress.egress_state', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -248,8 +250,8 @@ _DATAPLANESTATE_EGRESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=741,
-  serialized_end=924,
+  serialized_start=791,
+  serialized_end=988,
 )
 
 _DATAPLANESTATE_SWITCHSTATUS = _descriptor.Descriptor(
@@ -261,8 +263,8 @@ _DATAPLANESTATE_SWITCHSTATUS = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='switch_state', full_name='DataplaneState.SwitchStatus.switch_state', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -278,8 +280,8 @@ _DATAPLANESTATE_SWITCHSTATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=926,
-  serialized_end=962,
+  serialized_start=990,
+  serialized_end=1040,
 )
 
 _DATAPLANESTATE_STACKLINKSTATUS = _descriptor.Descriptor(
@@ -291,8 +293,8 @@ _DATAPLANESTATE_STACKLINKSTATUS = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='link_state', full_name='DataplaneState.StackLinkStatus.link_state', index=0,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -308,8 +310,8 @@ _DATAPLANESTATE_STACKLINKSTATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=964,
-  serialized_end=1001,
+  serialized_start=1042,
+  serialized_end=1093,
 )
 
 _DATAPLANESTATE = _descriptor.Descriptor(
@@ -342,8 +344,8 @@ _DATAPLANESTATE = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dataplane_state', full_name='DataplaneState.dataplane_state', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -387,8 +389,8 @@ _DATAPLANESTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=38,
-  serialized_end=1001,
+  serialized_start=74,
+  serialized_end=1093,
 )
 
 _DATAPLANESTATE_SWITCH_SWITCHESENTRY.fields_by_name['value'].message_type = _DATAPLANESTATE_SWITCHSTATUS
@@ -399,12 +401,16 @@ _DATAPLANESTATE_STACK_LINKSENTRY.fields_by_name['value'].message_type = _DATAPLA
 _DATAPLANESTATE_STACK_LINKSENTRY.containing_type = _DATAPLANESTATE_STACK
 _DATAPLANESTATE_STACK.fields_by_name['links'].message_type = _DATAPLANESTATE_STACK_LINKSENTRY
 _DATAPLANESTATE_STACK.containing_type = _DATAPLANESTATE
+_DATAPLANESTATE_EGRESS.fields_by_name['egress_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _DATAPLANESTATE_EGRESS.containing_type = _DATAPLANESTATE
+_DATAPLANESTATE_SWITCHSTATUS.fields_by_name['switch_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _DATAPLANESTATE_SWITCHSTATUS.containing_type = _DATAPLANESTATE
+_DATAPLANESTATE_STACKLINKSTATUS.fields_by_name['link_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _DATAPLANESTATE_STACKLINKSTATUS.containing_type = _DATAPLANESTATE
 _DATAPLANESTATE.fields_by_name['switch'].message_type = _DATAPLANESTATE_SWITCH
 _DATAPLANESTATE.fields_by_name['stack'].message_type = _DATAPLANESTATE_STACK
 _DATAPLANESTATE.fields_by_name['egress'].message_type = _DATAPLANESTATE_EGRESS
+_DATAPLANESTATE.fields_by_name['dataplane_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 DESCRIPTOR.message_types_by_name['DataplaneState'] = _DATAPLANESTATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

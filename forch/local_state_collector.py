@@ -186,11 +186,12 @@ class LocalStateCollector:
                 stats = yaml.safe_load(stats_file)
 
                 self._vrrp_state.update(self._extract_vrrp_state(stats))
-                self._active_state_handler(self._vrrp_state['is_master'])
+                active_state = State.active if self._vrrp_state['is_master'] else State.inactive
+                self._active_state_handler(active_state)
 
         except Exception as e:
             LOGGER.error("Cannot get VRRP info, setting controller to inactive: %s", e)
-            self._active_state_handler(False)
+            self._active_state_handler(State.broken)
 
     def _extract_vrrp_state(self, stats):
         """Extract vrrp state from keepalived stats data"""
