@@ -10,8 +10,7 @@ from threading import RLock
 
 # TODO: Clean up to use State enum
 from forch.constants import \
-    STATE_HEALTHY, STATE_UP, STATE_INITIALIZING, \
-    STATE_BROKEN, STATE_DOWN, STATE_ACTIVE
+    STATE_UP, STATE_INITIALIZING, STATE_BROKEN, STATE_DOWN, STATE_ACTIVE
 
 from forch.utils import dict_proto
 
@@ -184,18 +183,18 @@ class FaucetStateCollector:
         egress_detail = egress.get(EGRESS_DETAIL)
 
         if egress:
-            state = STATE_HEALTHY if egress_state == STATE_UP else STATE_BROKEN
+            state = State.healthy if egress_state == STATE_UP else State.broken
         if egress_detail:
             detail.append("egress:" + str(egress_detail))
 
         broken_sw = self._get_broken_switches(dplane_state)
         if broken_sw:
-            state = STATE_BROKEN
+            state = State.broken
             detail.append("broken switches: " + str(broken_sw))
 
         broken_links = self._get_broken_links(dplane_state)
         if broken_links:
-            state = STATE_BROKEN
+            state = State.broken
             detail.append("broken links: " + str(broken_links))
 
         dplane_state['dataplane_state'] = state
