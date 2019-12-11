@@ -1,5 +1,5 @@
 /*
- * List hosts API result
+ * list_hosts API result
  */
 syntax = "proto3";
 

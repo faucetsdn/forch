@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1b\x66orch/proto/cpn_state.proto\x1a\x1c\x66orch/proto/cpn_config.proto\x1a\"forch/proto/shared_constants.proto\"\xc0\x05\n\x08\x43pnState\x12*\n\tcpn_nodes\x18\x01 \x03(\x0b\x32\x17.CpnState.CpnNodesEntry\x12\x1f\n\tcpn_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x18\n\x10\x63pn_state_detail\x18\x03 \x01(\t\x12\x1e\n\x16\x63pn_state_change_count\x18\x04 \x01(\x05\x12\x1d\n\x15\x63pn_state_last_update\x18\x05 \x01(\t\x12\x1e\n\x16\x63pn_state_last_changed\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x1a\x42\n\rCpnNodesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.CpnState.CpnNode:\x02\x38\x01\x1a\xcb\x01\n\x07\x43pnNode\x12\"\n\nattributes\x18\x01 \x01(\x0b\x32\x0e.CpnAttributes\x12\x1b\n\x05state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12+\n\x0cping_results\x18\x03 \x01(\x0b\x32\x15.CpnState.PingResults\x12\x1a\n\x12state_change_count\x18\x04 \x01(\x05\x12\x1a\n\x12state_last_updated\x18\x05 \x01(\t\x12\x1a\n\x12state_last_changed\x18\x06 \x01(\t\x1a\x81\x01\n\x0bPingResults\x12\x13\n\x0btransmitted\x18\x01 \x01(\x05\x12\x10\n\x08received\x18\x02 \x01(\x05\x12\x17\n\x0floss_percentage\x18\x03 \x01(\x05\x12\x0f\n\x07time_ms\x18\x04 \x01(\x05\x12!\n\x06rtt_ms\x18\x05 \x01(\x0b\x32\x11.CpnState.RttInfo\x1a>\n\x07RttInfo\x12\x0b\n\x03min\x18\x01 \x01(\x02\x12\x0b\n\x03\x61vg\x18\x02 \x01(\x02\x12\x0b\n\x03max\x18\x03 \x01(\x02\x12\x0c\n\x04mdev\x18\x04 \x01(\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x1b\x66orch/proto/cpn_state.proto\x1a\x1c\x66orch/proto/cpn_config.proto\x1a\"forch/proto/shared_constants.proto\"\xbd\x05\n\x08\x43pnState\x12*\n\tcpn_nodes\x18\x01 \x03(\x0b\x32\x17.CpnState.CpnNodesEntry\x12\x1f\n\tcpn_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x18\n\x10\x63pn_state_detail\x18\x03 \x01(\t\x12\x1e\n\x16\x63pn_state_change_count\x18\x04 \x01(\x05\x12\x1d\n\x15\x63pn_state_last_update\x18\x05 \x01(\t\x12\x1d\n\x15\x63pn_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x1a\x42\n\rCpnNodesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.CpnState.CpnNode:\x02\x38\x01\x1a\xc9\x01\n\x07\x43pnNode\x12\"\n\nattributes\x18\x01 \x01(\x0b\x32\x0e.CpnAttributes\x12\x1b\n\x05state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12+\n\x0cping_results\x18\x03 \x01(\x0b\x32\x15.CpnState.PingResults\x12\x1a\n\x12state_change_count\x18\x04 \x01(\x05\x12\x19\n\x11state_last_update\x18\x05 \x01(\t\x12\x19\n\x11state_last_change\x18\x06 \x01(\t\x1a\x81\x01\n\x0bPingResults\x12\x13\n\x0btransmitted\x18\x01 \x01(\x05\x12\x10\n\x08received\x18\x02 \x01(\x05\x12\x17\n\x0floss_percentage\x18\x03 \x01(\x05\x12\x0f\n\x07time_ms\x18\x04 \x01(\x05\x12!\n\x06rtt_ms\x18\x05 \x01(\x0b\x32\x11.CpnState.RttInfo\x1a>\n\x07RttInfo\x12\x0b\n\x03min\x18\x01 \x01(\x02\x12\x0b\n\x03\x61vg\x18\x02 \x01(\x02\x12\x0b\n\x03max\x18\x03 \x01(\x02\x12\x0c\n\x04mdev\x18\x04 \x01(\x02\x62\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_cpn__config__pb2.DESCRIPTOR,forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -61,8 +61,8 @@ _CPNSTATE_CPNNODESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=334,
-  serialized_end=400,
+  serialized_start=333,
+  serialized_end=399,
 )
 
 _CPNSTATE_CPNNODE = _descriptor.Descriptor(
@@ -101,14 +101,14 @@ _CPNSTATE_CPNNODE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='state_last_updated', full_name='CpnState.CpnNode.state_last_updated', index=4,
+      name='state_last_update', full_name='CpnState.CpnNode.state_last_update', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='state_last_changed', full_name='CpnState.CpnNode.state_last_changed', index=5,
+      name='state_last_change', full_name='CpnState.CpnNode.state_last_change', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -126,8 +126,8 @@ _CPNSTATE_CPNNODE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=403,
-  serialized_end=606,
+  serialized_start=402,
+  serialized_end=603,
 )
 
 _CPNSTATE_PINGRESULTS = _descriptor.Descriptor(
@@ -184,8 +184,8 @@ _CPNSTATE_PINGRESULTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=609,
-  serialized_end=738,
+  serialized_start=606,
+  serialized_end=735,
 )
 
 _CPNSTATE_RTTINFO = _descriptor.Descriptor(
@@ -235,8 +235,8 @@ _CPNSTATE_RTTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=740,
-  serialized_end=802,
+  serialized_start=737,
+  serialized_end=799,
 )
 
 _CPNSTATE = _descriptor.Descriptor(
@@ -282,7 +282,7 @@ _CPNSTATE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='cpn_state_last_changed', full_name='CpnState.cpn_state_last_changed', index=5,
+      name='cpn_state_last_change', full_name='CpnState.cpn_state_last_change', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -308,7 +308,7 @@ _CPNSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=98,
-  serialized_end=802,
+  serialized_end=799,
 )
 
 _CPNSTATE_CPNNODESENTRY.fields_by_name['value'].message_type = _CPNSTATE_CPNNODE

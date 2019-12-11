@@ -1,5 +1,5 @@
 /*
- * Host path API result
+ * host_path API result
  */
 syntax = "proto3";
 

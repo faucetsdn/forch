@@ -9,15 +9,18 @@ import threading
 from threading import RLock
 
 from forch.constants import \
-    STATE_INACTIVE, STATE_HEALTHY, STATE_UP, STATE_INITIALIZING, \
+    STATE_HEALTHY, STATE_UP, STATE_INITIALIZING, \
     STATE_BROKEN, STATE_DOWN, STATE_ACTIVE
 
 from forch.utils import dict_proto
+
+from forch.proto.shared_constants_pb2 import State
+from forch.proto.system_state_pb2 import StateSummary
+
 from forch.proto.dataplane_state_pb2 import DataplaneState
 from forch.proto.host_path_pb2 import HostPath
 from forch.proto.list_hosts_pb2 import HostList
-from forch.proto.shared_constants_pb2 import State
-from forch.proto.system_state_pb2 import StateSummary
+from forch.proto.switch_state_pb2 import SwitchState
 
 LOGGER = logging.getLogger('fstate')
 
@@ -115,6 +118,12 @@ class FaucetStateCollector:
             self._is_state_restored = is_restored
             self._state_restore_error = restore_error
 
+    def _make_summary(self, state, detail):
+        summary = StateSummary()
+        summary.state = state
+        summary.detail = detail
+        return summary
+
     # pylint: disable=no-self-argument, protected-access
     def _pre_check(state_name):
         def pre_check(func):
@@ -122,11 +131,10 @@ class FaucetStateCollector:
                 with self._lock:
                     if not self._is_active:
                         detail = 'This controller is inactive. Please view peer controller.'
-                        return {state_name: STATE_INACTIVE, 'detail': detail}
+                        return self._make_summary(State.inactive, detail)
                     if not self._is_state_restored:
-                        error = self._state_restore_error
-                        detail = f'Cannot restore states or connect to Faucet: {error}'
-                        return {state_name: STATE_BROKEN, 'detail': detail}
+                        detail = f'Cannot state not restored: {self._state_restore_error}'
+                        return self._make_summary(State.broken, detail)
                 return func(self, *args, **kwargs)
             return wrapped
         return pre_check
@@ -160,7 +168,7 @@ class FaucetStateCollector:
             'state': dplane_state.dataplane_state,
             'detail': dplane_state.dataplane_state_detail,
             'change_count': dplane_state.dataplane_state_change_count,
-            'last_changed': dplane_state.dataplane_state_last_change
+            'last_change': dplane_state.dataplane_state_last_change
         }, StateSummary)
 
     def _update_dataplane_detail(self, dplane_state):
@@ -242,12 +250,12 @@ class FaucetStateCollector:
     def get_switch_summary(self):
         """Get summary of switch state"""
         switch_state = self._get_switch_state(None, None)
-        return {
-            'state': switch_state['switches_state'],
-            'detail': switch_state['switches_state_detail'],
-            'change_count': switch_state['switches_state_change_count'],
-            'last_change': switch_state['switches_state_last_change']
-        }
+        state_summary = StateSummary()
+        state_summary.state = switch_state.switch_state
+        state_summary.detail = switch_state.switch_state_detail
+        state_summary.change_count = switch_state.switch_state_change_count
+        state_summary.last_change = switch_state.switch_state_last_change
+        return state_summary
 
     def _augment_mac_urls(self, url_base, switch_data):
         if url_base:
@@ -275,20 +283,20 @@ class FaucetStateCollector:
             self._augment_mac_urls(url_base, switch_data)
 
         if not self.switch_states:
-            switches_state = STATE_BROKEN
+            switch_state = State.broken
             state_detail = 'No switches connected'
         elif broken:
-            switches_state = STATE_BROKEN
+            switch_state = State.broken
             state_detail = 'Switches in broken state: ' + ', '.join(broken)
         else:
-            switches_state = STATE_HEALTHY
+            switch_state = State.healthy
             state_detail = None
 
         result = {
-            'switches_state': switches_state,
-            'switches_state_detail': state_detail,
-            'switches_state_change_count': change_count,
-            'switches_state_last_change': last_change,
+            'switch_state': switch_state,
+            'switch_state_detail': state_detail,
+            'switch_state_change_count': change_count,
+            'switch_state_last_change': last_change,
             'switches': switches_data
         }
 
@@ -296,7 +304,7 @@ class FaucetStateCollector:
             result['switches'] = {switch: switches_data[switch]}
             result['switches_restrict'] = switch
 
-        return result
+        return dict_proto(result, SwitchState)
 
     def cleanup(self):
         """Clean up internal data"""

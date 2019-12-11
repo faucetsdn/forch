@@ -1,5 +1,5 @@
 /*
- * State summary of a component
+ * system_state API result.
  */
 syntax = "proto3";
 
@@ -22,8 +22,11 @@ message StateSummary {
   string last_update = 4;
 
   // Last time the state was changed
-  string last_changed = 5;
+  string last_change = 5;
 
-  //  Link to top-level system state
+  // Link to top-level system state
   string url = 6;
+
+  // Link to top-level system state in long form
+  string system_state_url = 7;
 }
