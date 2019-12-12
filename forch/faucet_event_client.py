@@ -73,6 +73,11 @@ class FaucetEventClient():
         LOGGER.info('Registering handler for event type %s', message_name)
         self._handlers[message_name] = handler
 
+    def register_handlers(self, handlers):
+        """Register a list of handler (proto, func) tuples"""
+        for handler in handlers:
+            self.register_handler(handler[0], handler[1])
+
     def _convert_to_snake_caps(self, name):
         return functools.reduce(lambda x, y: x + ('_' if y.isupper() else '') + y, name).upper()
 
@@ -184,7 +189,7 @@ class FaucetEventClient():
                 faucet_event = dict_proto(event, FaucetEvent)
                 target_event = getattr(faucet_event, target)
                 self._augment_event_proto(faucet_event, target_event)
-                LOGGER.info('dispatching %s event', target)
+                LOGGER.debug('dispatching %s event', target)
                 self._handlers[target](target_event)
                 return True
         return False
@@ -244,14 +249,6 @@ class FaucetEventClient():
         if not event or 'L2_LEARNED_MACS' not in event:
             return (None, None)
         return (event.get('dp_name'), event.get('L2_LEARNED_MACS'))
-
-    def as_lag_state(self, event):
-        """Convert event to lag status, if applicable"""
-        if not event or 'LAG_CHANGE' not in event:
-            return (None, None, None)
-        port = event['LAG_CHANGE']['port_no']
-        state = event['LAG_CHANGE']['state']
-        return (event['dp_name'], port, state)
 
     def as_port_state(self, event):
         """Convert event to a port state info, if applicable"""

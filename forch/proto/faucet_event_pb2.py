@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1e\x66orch/proto/faucet_event.proto\"\xae\x01\n\x0b\x46\x61ucetEvent\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x64p_name\x18\x02 \x01(\t\x12\r\n\x05\x64p_id\x18\x03 \x01(\x05\x12\x10\n\x08\x65vent_id\x18\x04 \x01(\x05\x12\x0c\n\x04time\x18\x05 \x01(\x02\x12\x11\n\tdebounced\x18\x06 \x01(\x08\x12-\n\x11STACK_TOPO_CHANGE\x18\x07 \x01(\x0b\x32\x10.StackTopoChangeH\x00\x42\x0c\n\nevent_data\"\x8b\x05\n\x0fStackTopoChange\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\x12\n\nstack_root\x18\x02 \x01(\t\x12*\n\x05graph\x18\x03 \x01(\x0b\x32\x1b.StackTopoChange.StackGraph\x12&\n\x03\x64ps\x18\x04 \x03(\x0b\x32\x19.StackTopoChange.DpsEntry\x1a\x44\n\x08\x44psEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\'\n\x05value\x18\x02 \x01(\x0b\x32\x18.StackTopoChange.StackDp:\x02\x38\x01\x1a\xb6\x01\n\nStackGraph\x12\x10\n\x08\x64irected\x18\x01 \x01(\x08\x12\x12\n\nmultigraph\x18\x02 \x01(\x08\x12,\n\x05graph\x18\x03 \x01(\x0b\x32\x1d.StackTopoChange.NetworkGraph\x12)\n\x05nodes\x18\x04 \x03(\x0b\x32\x1a.StackTopoChange.StackNode\x12)\n\x05links\x18\x05 \x03(\x0b\x32\x1a.StackTopoChange.StackLink\x1a\x0e\n\x0cNetworkGraph\x1a\x17\n\tStackNode\x12\n\n\x02id\x18\x01 \x01(\t\x1ah\n\tStackLink\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x0e\n\x06target\x18\x03 \x01(\t\x12.\n\x08port_map\x18\x04 \x01(\x0b\x32\x1c.StackTopoChange.LinkPortMap\x1aI\n\x0bLinkPortMap\x12\x0c\n\x04\x64p_a\x18\x01 \x01(\t\x12\x0e\n\x06port_a\x18\x02 \x01(\t\x12\x0c\n\x04\x64p_z\x18\x03 \x01(\t\x12\x0e\n\x06port_z\x18\x04 \x01(\t\x1a \n\x07StackDp\x12\x15\n\rroot_hop_port\x18\x01 \x01(\x05\x62\x06proto3')
+  serialized_pb=_b('\n\x1e\x66orch/proto/faucet_event.proto\"\xd0\x01\n\x0b\x46\x61ucetEvent\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x64p_name\x18\x02 \x01(\t\x12\r\n\x05\x64p_id\x18\x03 \x01(\x05\x12\x10\n\x08\x65vent_id\x18\x04 \x01(\x05\x12\x0c\n\x04time\x18\x05 \x01(\x02\x12\x11\n\tdebounced\x18\x06 \x01(\x08\x12-\n\x11STACK_TOPO_CHANGE\x18\x07 \x01(\x0b\x32\x10.StackTopoChangeH\x00\x12 \n\nLAG_CHANGE\x18\x08 \x01(\x0b\x32\n.LagChangeH\x00\x42\x0c\n\nevent_data\"\x8b\x05\n\x0fStackTopoChange\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\x12\n\nstack_root\x18\x02 \x01(\t\x12*\n\x05graph\x18\x03 \x01(\x0b\x32\x1b.StackTopoChange.StackGraph\x12&\n\x03\x64ps\x18\x04 \x03(\x0b\x32\x19.StackTopoChange.DpsEntry\x1a\x44\n\x08\x44psEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\'\n\x05value\x18\x02 \x01(\x0b\x32\x18.StackTopoChange.StackDp:\x02\x38\x01\x1a\xb6\x01\n\nStackGraph\x12\x10\n\x08\x64irected\x18\x01 \x01(\x08\x12\x12\n\nmultigraph\x18\x02 \x01(\x08\x12,\n\x05graph\x18\x03 \x01(\x0b\x32\x1d.StackTopoChange.NetworkGraph\x12)\n\x05nodes\x18\x04 \x03(\x0b\x32\x1a.StackTopoChange.StackNode\x12)\n\x05links\x18\x05 \x03(\x0b\x32\x1a.StackTopoChange.StackLink\x1a\x0e\n\x0cNetworkGraph\x1a\x17\n\tStackNode\x12\n\n\x02id\x18\x01 \x01(\t\x1ah\n\tStackLink\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x0e\n\x06target\x18\x03 \x01(\t\x12.\n\x08port_map\x18\x04 \x01(\x0b\x32\x1c.StackTopoChange.LinkPortMap\x1aI\n\x0bLinkPortMap\x12\x0c\n\x04\x64p_a\x18\x01 \x01(\t\x12\x0e\n\x06port_a\x18\x02 \x01(\t\x12\x0c\n\x04\x64p_z\x18\x03 \x01(\t\x12\x0e\n\x06port_z\x18\x04 \x01(\t\x1a \n\x07StackDp\x12\x15\n\rroot_hop_port\x18\x01 \x01(\x05\"O\n\tLagChange\x12\x0f\n\x07\x64p_name\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\x02\x12\x0f\n\x07port_no\x18\x03 \x01(\x05\x12\r\n\x05state\x18\x04 \x01(\x05\x62\x06proto3')
 )
 
 
@@ -81,6 +81,13 @@ _FAUCETEVENT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='LAG_CHANGE', full_name='FaucetEvent.LAG_CHANGE', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -97,7 +104,7 @@ _FAUCETEVENT = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=35,
-  serialized_end=209,
+  serialized_end=243,
 )
 
 
@@ -134,8 +141,8 @@ _STACKTOPOCHANGE_DPSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=354,
-  serialized_end=422,
+  serialized_start=388,
+  serialized_end=456,
 )
 
 _STACKTOPOCHANGE_STACKGRAPH = _descriptor.Descriptor(
@@ -192,8 +199,8 @@ _STACKTOPOCHANGE_STACKGRAPH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=425,
-  serialized_end=607,
+  serialized_start=459,
+  serialized_end=641,
 )
 
 _STACKTOPOCHANGE_NETWORKGRAPH = _descriptor.Descriptor(
@@ -215,8 +222,8 @@ _STACKTOPOCHANGE_NETWORKGRAPH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=609,
-  serialized_end=623,
+  serialized_start=643,
+  serialized_end=657,
 )
 
 _STACKTOPOCHANGE_STACKNODE = _descriptor.Descriptor(
@@ -245,8 +252,8 @@ _STACKTOPOCHANGE_STACKNODE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=625,
-  serialized_end=648,
+  serialized_start=659,
+  serialized_end=682,
 )
 
 _STACKTOPOCHANGE_STACKLINK = _descriptor.Descriptor(
@@ -296,8 +303,8 @@ _STACKTOPOCHANGE_STACKLINK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=650,
-  serialized_end=754,
+  serialized_start=684,
+  serialized_end=788,
 )
 
 _STACKTOPOCHANGE_LINKPORTMAP = _descriptor.Descriptor(
@@ -347,8 +354,8 @@ _STACKTOPOCHANGE_LINKPORTMAP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=756,
-  serialized_end=829,
+  serialized_start=790,
+  serialized_end=863,
 )
 
 _STACKTOPOCHANGE_STACKDP = _descriptor.Descriptor(
@@ -377,8 +384,8 @@ _STACKTOPOCHANGE_STACKDP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=831,
-  serialized_end=863,
+  serialized_start=865,
+  serialized_end=897,
 )
 
 _STACKTOPOCHANGE = _descriptor.Descriptor(
@@ -428,14 +435,70 @@ _STACKTOPOCHANGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=212,
-  serialized_end=863,
+  serialized_start=246,
+  serialized_end=897,
+)
+
+
+_LAGCHANGE = _descriptor.Descriptor(
+  name='LagChange',
+  full_name='LagChange',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='dp_name', full_name='LagChange.dp_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='timestamp', full_name='LagChange.timestamp', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='port_no', full_name='LagChange.port_no', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='state', full_name='LagChange.state', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=899,
+  serialized_end=978,
 )
 
 _FAUCETEVENT.fields_by_name['STACK_TOPO_CHANGE'].message_type = _STACKTOPOCHANGE
+_FAUCETEVENT.fields_by_name['LAG_CHANGE'].message_type = _LAGCHANGE
 _FAUCETEVENT.oneofs_by_name['event_data'].fields.append(
   _FAUCETEVENT.fields_by_name['STACK_TOPO_CHANGE'])
 _FAUCETEVENT.fields_by_name['STACK_TOPO_CHANGE'].containing_oneof = _FAUCETEVENT.oneofs_by_name['event_data']
+_FAUCETEVENT.oneofs_by_name['event_data'].fields.append(
+  _FAUCETEVENT.fields_by_name['LAG_CHANGE'])
+_FAUCETEVENT.fields_by_name['LAG_CHANGE'].containing_oneof = _FAUCETEVENT.oneofs_by_name['event_data']
 _STACKTOPOCHANGE_DPSENTRY.fields_by_name['value'].message_type = _STACKTOPOCHANGE_STACKDP
 _STACKTOPOCHANGE_DPSENTRY.containing_type = _STACKTOPOCHANGE
 _STACKTOPOCHANGE_STACKGRAPH.fields_by_name['graph'].message_type = _STACKTOPOCHANGE_NETWORKGRAPH
@@ -452,6 +515,7 @@ _STACKTOPOCHANGE.fields_by_name['graph'].message_type = _STACKTOPOCHANGE_STACKGR
 _STACKTOPOCHANGE.fields_by_name['dps'].message_type = _STACKTOPOCHANGE_DPSENTRY
 DESCRIPTOR.message_types_by_name['FaucetEvent'] = _FAUCETEVENT
 DESCRIPTOR.message_types_by_name['StackTopoChange'] = _STACKTOPOCHANGE
+DESCRIPTOR.message_types_by_name['LagChange'] = _LAGCHANGE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 FaucetEvent = _reflection.GeneratedProtocolMessageType('FaucetEvent', (_message.Message,), dict(
@@ -523,6 +587,13 @@ _sym_db.RegisterMessage(StackTopoChange.StackNode)
 _sym_db.RegisterMessage(StackTopoChange.StackLink)
 _sym_db.RegisterMessage(StackTopoChange.LinkPortMap)
 _sym_db.RegisterMessage(StackTopoChange.StackDp)
+
+LagChange = _reflection.GeneratedProtocolMessageType('LagChange', (_message.Message,), dict(
+  DESCRIPTOR = _LAGCHANGE,
+  __module__ = 'forch.proto.faucet_event_pb2'
+  # @@protoc_insertion_point(class_scope:LagChange)
+  ))
+_sym_db.RegisterMessage(LagChange)
 
 
 _STACKTOPOCHANGE_DPSENTRY._options = None

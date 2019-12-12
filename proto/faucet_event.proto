@@ -13,6 +13,7 @@ message FaucetEvent {
 
   oneof event_data {
     StackTopoChange STACK_TOPO_CHANGE = 7;
+    LagChange LAG_CHANGE = 8;
   }
 }
 
@@ -54,4 +55,11 @@ message StackTopoChange {
   message StackDp {
     int32 root_hop_port = 1;
   }
+}
+
+message LagChange {
+  string dp_name = 1;
+  float timestamp = 2;
+  int32 port_no = 3;
+  int32 state = 4;
 }
