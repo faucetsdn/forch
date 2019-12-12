@@ -13,19 +13,19 @@ message ProcessState {
   map<string, ProcessData> processes = 1;
 
   // Overall process state: <em>healthy, broken</em>
-  State.State processes_state = 2;
+  State.State process_state = 2;
 
   // Text description of any problems
-  string processes_state_detail = 3;
+  string process_state_detail = 3;
 
   // Number of times state has changed
-  int32 processes_state_change_count = 4;
+  int32 process_state_change_count = 4;
 
   // Last time the state was updated
-  string processes_state_last_update = 5;
+  string process_state_last_update = 5;
 
   // Last time the state was changed
-  string processes_state_last_change = 6;
+  string process_state_last_change = 6;
 
   // Link to top-level system state
   string system_state_url = 7;

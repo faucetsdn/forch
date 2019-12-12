@@ -11,6 +11,8 @@ import yaml
 
 from google.protobuf.message import Message
 
+from faucet import config_parser
+
 import forch.faucet_event_client
 import forch.http_server
 
@@ -89,10 +91,15 @@ class Forchestrator:
         self._event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
         LOGGER.info('Setting event horizon to event #%d', self._event_horizon)
 
-        current_time = time.time()
-        faucet_config = self._get_faucet_config()
-        self._faucet_collector.process_dataplane_config_change(
-            current_time, faucet_config.get('dps', {}))
+        varz_hash_info = metrics['faucet_config_hash_info']
+        assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
+        varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
+        self._restore_faucet_config(time.time(), varz_config_hashes)
+
+    def _restore_faucet_config(self, timestamp, config_hash):
+        config_info, faucet_dps, _ = self._get_faucet_config()
+        assert config_hash == config_info['hashes'], 'config hash info does not match'
+        self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
     def main_loop(self):
         """Main event processing loop"""
@@ -148,13 +155,13 @@ class Forchestrator:
             LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
             self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
 
-        (name, dpid, restart_type, dps_config) = self._faucet_events.as_config_change(event)
+        (name, dpid, restart_type, config_info) = self._faucet_events.as_config_change(event)
         if dpid is not None:
             LOGGER.debug('DP restart %s %s', name, restart_type)
             self._faucet_collector.process_dp_config_change(timestamp, name, restart_type, dpid)
-        if dps_config:
-            LOGGER.debug('Config change. New config: %s', dps_config)
-            self._faucet_collector.process_dataplane_config_change(timestamp, dps_config)
+        if config_info:
+            LOGGER.debug('Config change. New config: %s', config_info['hashes'])
+            self._restore_faucet_config(timestamp, config_info['hashes'])
 
         topo_change = self._faucet_events.as_stack_topo_change(event)
         if topo_change:
@@ -334,10 +341,21 @@ class Forchestrator:
 
         return State.active, None
 
+    def _get_faucet_config_hash_info(self, new_conf_hashes):
+        # Code taken from faucet/valves_manager.py parse_configs.
+        new_present_conf_hashes = [
+            (conf_file, conf_hash) for conf_file, conf_hash in sorted(new_conf_hashes.items())
+            if conf_hash is not None]
+        conf_files = [conf_file for conf_file, _ in new_present_conf_hashes]
+        conf_hashes = [conf_hash for _, conf_hash in new_present_conf_hashes]
+        return dict(config_files=','.join(conf_files), hashes=','.join(conf_hashes))
+
     def _get_faucet_config(self):
         try:
-            with open(self._faucet_config_file) as config_file:
-                return yaml.safe_load(config_file)
+            (new_conf_hashes, _, new_dps, top_conf) = config_parser.dp_parser(
+                self._faucet_config_file, 'fconfig')
+            config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
+            return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error("Cannot read faucet config: %s", e)
             raise e
@@ -393,7 +411,7 @@ class Forchestrator:
     def get_sys_config(self, path, params):
         """Get overall config from facuet config file"""
         try:
-            faucet_config = self._get_faucet_config()
+            _, _, faucet_config = self._get_faucet_config()
             reply = {
                 'faucet': faucet_config
             }

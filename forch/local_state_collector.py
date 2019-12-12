@@ -49,11 +49,11 @@ class LocalStateCollector:
         """Return a summary of process table"""
         process_state = self.get_process_state()
         return dict_proto({
-            'state': process_state.processes_state,
-            'detail': process_state.processes_state_detail,
-            'change_count': process_state.processes_state_change_count,
-            'last_update': process_state.processes_state_last_update,
-            'last_change': process_state.processes_state_last_change
+            'state': process_state.process_state,
+            'detail': process_state.process_state_detail,
+            'change_count': process_state.process_state_change_count,
+            'last_update': process_state.process_state_last_update,
+            'last_change': process_state.process_state_last_change
         }, StateSummary)
 
     def get_process_state(self):
@@ -89,17 +89,17 @@ class LocalStateCollector:
 
         process_state['processes'] = process_map
 
-        old_state = process_state.get('processes_state')
+        old_state = process_state.get('process_state')
         state = State.broken if broken else State.healthy
-        process_state['processes_state_last_update'] = self._current_time
+        process_state['process_state_last_update'] = self._current_time
         state_detail = 'Processes in broken state: ' + ', '.join(broken) if broken else ''
         if state != old_state:
-            state_change_count = process_state.get('processes_state_change_count', 0) + 1
+            state_change_count = process_state.get('process_state_change_count', 0) + 1
             LOGGER.info('process_state #%d is %s: %s', state_change_count, state, state_detail)
-            process_state['processes_state'] = state
-            process_state['processes_state_detail'] = state_detail
-            process_state['processes_state_change_count'] = state_change_count
-            process_state['processes_state_last_change'] = self._current_time
+            process_state['process_state'] = state
+            process_state['process_state_detail'] = state_detail
+            process_state['process_state_change_count'] = state_change_count
+            process_state['process_state_last_change'] = self._current_time
 
     def _get_target_processes(self):
         """Get target processes"""

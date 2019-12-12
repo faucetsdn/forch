@@ -31,7 +31,7 @@ if [ -n "$nolog" ]; then
     FORCH_LOG_DIR=
 fi
 
-if [ -f venv/bin/python ]; then
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
     PYTHON=venv/bin/python3
 else
     PYTHON=python3

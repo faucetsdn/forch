@@ -8,6 +8,7 @@ proto_files=`ls proto/*.proto`
 if [ "$1" == check ]; then
     sha1sum $proto_files > build/protos.hash
     diff build/protos.hash public/protos.hash
+    echo Proto hashes in public/protos.hash are up-to-date.
     exit 0
 fi
 

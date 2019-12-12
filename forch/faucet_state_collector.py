@@ -23,6 +23,8 @@ from forch.proto.list_hosts_pb2 import HostList
 from forch.proto.switch_state_pb2 import SwitchState
 
 LOGGER = logging.getLogger('fstate')
+LINK_SUBKEY_FORMAT = '%s:%s'
+LINK_KEY_FORMAT = '%s@%s'
 
 
 def _dump_states(func):
@@ -182,10 +184,8 @@ class FaucetStateCollector:
         egress_state = egress.get(EGRESS_STATE)
         egress_detail = egress.get(EGRESS_DETAIL)
 
-        if egress:
-            state = State.healthy if egress_state == STATE_UP else State.broken
-        if egress_detail:
-            detail.append("egress:" + str(egress_detail))
+        detail.append("egress: " + str(egress_detail))
+        state = State.healthy if egress_state == STATE_UP else State.broken
 
         broken_sw = self._get_broken_switches(dplane_state)
         if broken_sw:
@@ -403,8 +403,10 @@ class FaucetStateCollector:
         switch_port_attributes_map = port_map.setdefault("attributes", {})
         switch_port_attributes_map["description"] = port_attr.get('description')
         switch_port_attributes_map["port_type"] = port_attr.get('type')
-        switch_port_attributes_map["stack_peer_switch"] = port_attr.get('peer_switch')
-        switch_port_attributes_map["stack_peer_port"] = port_attr.get('peer_port')
+        switch_port_attributes_map["stack_peer_switch"] = str(port_attr.get('peer_switch'))
+        peer_port = port_attr.get('peer_port')
+        peer_port_number = peer_port.number if peer_port else None
+        switch_port_attributes_map["stack_peer_port"] = peer_port_number
 
         # port dynamics
         if PORT_STATE_UP in port_states:
@@ -449,24 +451,26 @@ class FaucetStateCollector:
 
     def _fill_path_to_root(self, switch_name, switch_map):
         """populate path to root for switch_state"""
-        switch_map["root_path"] = self.get_switch_egress_path(switch_name).get('path')
+        egress_path = self.get_switch_egress_path(switch_name)
+        switch_map["root_path"] = egress_path['path']
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
-        subkey1 = start_dp+":"+start_port
-        subkey2 = peer_dp+":"+peer_port
-        keep_order = subkey1 < subkey2
-        return subkey1+"@"+subkey2 if keep_order else subkey2+"@"+subkey1
+        subkey1 = LINK_SUBKEY_FORMAT % (start_dp, start_port)
+        subkey2 = LINK_SUBKEY_FORMAT % (peer_dp, peer_port)
+        return LINK_KEY_FORMAT % ((subkey1, subkey2) if subkey1 < subkey2 else (subkey2, subkey1))
 
     def _get_topo_map(self):
         topo_map = {}
-        config_obj = self.faucet_config.get(DPS_CFG)
-        if not config_obj:
+        dps_objs = self.faucet_config.get(DPS_CFG)
+        if not dps_objs:
             return None
-        for local_dp, dp_obj in config_obj.items():
-            for local_port, iface_obj in dp_obj.get("interfaces", {}).items():
-                peer_dp = iface_obj.get("stack", {}).get("dp")
-                peer_port = str(iface_obj.get("stack", {}).get("port"))
+        for local_dp in dps_objs:
+            for local_port, iface_obj in local_dp.interfaces.items():
+                if 'stack' not in iface_obj:
+                    continue
+                peer_dp = iface_obj['stack']['dp']
+                peer_port = iface_obj['stack']['port'].number
                 if peer_dp and peer_port:
                     key = self._make_key(local_dp, local_port, peer_dp, peer_port)
                     if key not in topo_map:
@@ -475,12 +479,16 @@ class FaucetStateCollector:
         return topo_map
 
     def _get_link_state(self, local_dp, local_port, peer_dp, peer_port):
+        local_dp = str(local_dp)
+        local_port = int(local_port)
+        peer_dp = str(peer_dp)
+        peer_port = int(peer_port)
         dps = self.topo_state.get(TOPOLOGY_DPS, {})
-        if (dps[local_dp].root_hop_port == int(local_port) or
-                dps[peer_dp].root_hop_port == int(peer_port)):
+        if (dps[local_dp].root_hop_port == local_port or
+                dps[peer_dp].root_hop_port == peer_port):
             return STATE_ACTIVE
         dp_state = self.topo_state.setdefault(LINKS_STATE, {}).setdefault(local_dp, {})
-        port_state = dp_state.setdefault(int(local_port), {}).get('state')
+        port_state = dp_state.setdefault(local_port, {}).get('state')
         if port_state == FAUCET_STACK_STATE_UP:
             return STATE_UP
         if port_state == FAUCET_STACK_STATE_BAD:
@@ -507,12 +515,11 @@ class FaucetStateCollector:
 
     def get_active_egress_path(self, src_mac):
         """Given a MAC address return active route to egress."""
-        res = {'path': []}
         if src_mac not in self.learned_macs:
-            return res
+            return None
         src_switch, src_port = self._get_access_switch(src_mac)
         if not src_switch or not src_port:
-            return res
+            return None
         return self.get_switch_egress_path(src_switch, src_port)
 
     def get_switch_egress_path(self, src_switch, src_port=None):
@@ -522,13 +529,14 @@ class FaucetStateCollector:
             link_list = self.topo_state.get(LINKS_GRAPH)
             dps = self.topo_state.get(TOPOLOGY_DPS)
             if not dps or not link_list:
-                return self._make_summary(State.broken, 'Missing state data')
+                raise Exception('missing topology dps or links')
             hop = {'switch': src_switch}
             if src_port:
                 hop['in'] = src_port
             while hop:
                 next_hop = {}
-                egress_port = dps[hop['switch']].root_hop_port
+                hop_switch = hop['switch']
+                egress_port = dps[hop_switch].root_hop_port
                 if egress_port:
                     hop['out'] = egress_port
                     for link_map in link_list:
@@ -536,17 +544,17 @@ class FaucetStateCollector:
                             continue
                         sw_1, port_1, sw_2, port_2 = \
                                 FaucetStateCollector.get_endpoints_from_link(link_map)
-                        if hop['switch'] == sw_1 and egress_port == port_1:
+                        if hop_switch == sw_1 and egress_port == port_1:
                             next_hop['switch'] = sw_2
                             next_hop['in'] = port_2
                             break
-                        if hop['switch'] == sw_2 and egress_port == port_2:
+                        if hop_switch == sw_2 and egress_port == port_2:
                             next_hop['switch'] = sw_1
                             next_hop['in'] = port_1
                             break
                     res['path'].append(hop)
-                elif hop['switch'] == self.topo_state.get(TOPOLOGY_ROOT):
-                    hop['egress'] = self._get_egress_port(hop['switch'])
+                elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
+                    hop['egress'] = self._get_egress_port(hop_switch)
                     res['path'].append(hop)
                     break
                 hop = next_hop
@@ -728,19 +736,24 @@ class FaucetStateCollector:
                 link_change_count = self._update_stack_links_stats(timestamp)
                 graph_links = [link.key for link in link_graph]
                 graph_links.sort()
-                LOGGER.info('stack_topo_links #%d links: %s', link_change_count, graph_links)
+                LOGGER.info('stack_state_links #%d links: %s', link_change_count, graph_links)
 
             stack_root = topo_change.stack_root
-            dps_hash = str(topo_change.dps)
-            prev_hash = topo_state.get(TOPOLOGY_DPS_HASH)
-            if topo_state.get(TOPOLOGY_ROOT) != stack_root or prev_hash != dps_hash:
+            msg_str = "root %s: %s" % (stack_root, self._list_root_hops(topo_change.dps))
+            prev_msg = topo_state.get(TOPOLOGY_DPS_HASH)
+            if prev_msg != msg_str:
                 topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
-                LOGGER.info('stack_topo change #%d to root %s', topo_change_count, stack_root)
+                LOGGER.info('stack_topo_change #%d to %s', topo_change_count, msg_str)
                 topo_state[TOPOLOGY_ROOT] = topo_change.stack_root
                 topo_state[TOPOLOGY_DPS] = topo_change.dps
-                topo_state[TOPOLOGY_DPS_HASH] = dps_hash
+                topo_state[TOPOLOGY_DPS_HASH] = msg_str
                 topo_state[TOPOLOGY_CHANGE_COUNT] = topo_change_count
                 topo_state[TOPOLOGY_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
+
+    def _list_root_hops(self, dps):
+        root_hops = ['%s:%d' % (dp, dps[dp].root_hop_port) for dp in dps]
+        root_hops.sort()
+        return root_hops
 
     def _update_stack_links_stats(self, timestamp):
         link_change_count = self.topo_state.get(LINKS_CHANGE_COUNT, 0) + 1
@@ -828,41 +841,42 @@ class FaucetStateCollector:
 
     def _get_port_attributes(self, switch, port):
         """Get the attributes of a port: description, type, peer_switch, peer_port"""
-        ret_attr = {}
-        cfg_switch = self.faucet_config.get(DPS_CFG, {}).get(switch)
+        dps_configs = {str(x): x for x in self.faucet_config[DPS_CFG]}
+        cfg_switch = dps_configs[switch]
         if not cfg_switch:
-            return ret_attr
+            raise Exception(f'Missing switch configuration for {switch}')
 
-        port = str(port)
-        if port in cfg_switch.get('interfaces', {}):
-            port_map = cfg_switch['interfaces'][port]
-            ret_attr['description'] = port_map.get('description')
-            if 'stack' in port_map:
+        ret_attr = {}
+        port = int(port)
+        if port in cfg_switch.interfaces:
+            port_info = cfg_switch.interfaces[port]
+            assert port_info, 'missing port_info'
+            ret_attr['description'] = port_info['description']
+            if 'stack' in port_info:
                 ret_attr['type'] = 'stack'
-                ret_attr['peer_switch'] = port_map['stack']['dp']
-                ret_attr['peer_port'] = port_map['stack']['port']
+                ret_attr['peer_switch'] = port_info['stack']['dp']
+                ret_attr['peer_port'] = port_info['stack']['port']
                 return ret_attr
 
-            if 'loop_protect_external' in port_map:
+            if 'loop_protect_external' in port_info:
                 ret_attr['type'] = 'egress'
                 return ret_attr
 
             ret_attr['type'] = 'access'
             return ret_attr
 
-        for port_range, port_map in cfg_switch.get('interface_ranges', {}).items():
+        for port_range, port_info in cfg_switch.interface_ranges.items():
             start_port = int(port_range.split('-')[0])
             end_port = int(port_range.split('-')[1])
             if start_port <= int(port) <= end_port:
-                ret_attr['description'] = port_map.get('description')
+                ret_attr['description'] = port_info['description']
                 ret_attr['type'] = 'access'
                 return ret_attr
-
-        return ret_attr
+        raise Exception(f'No valid port classificaiton for {switch}:{port}')
 
     def _get_egress_port(self, switch):
         """Get egress port of a switch"""
-        for port in self.switch_states.get(switch, {}).get(PORTS, {}):
+        for port in self.switch_states[switch][PORTS]:
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'egress':
                 return port

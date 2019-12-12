@@ -3,20 +3,21 @@
 ROOT=$(realpath $(dirname $0)/..)
 RESULTS=build/lint_results.txt
 PYLINTRC=$ROOT/.pylintrc
-VENV_PYTHON=venv/lib/python3.7/site-packages/
 
 cd $ROOT
 mkdir -p build
 
-export PYTHONPATH=forch:$VENV_PYTHON
 
-if [ -d venv ]; then
+if [ -z "$VIRTUAL_ENV" -a -d venv ]; then
     source venv/bin/activate
-    if [ ! -d $VENV_PYTHON ]; then
-        echo Missing expected python env directory $VENV_PYTHON
-        ls -ld venv/lib/python*
-        false
-    fi
+fi
+
+PY_LIB=$VIRTUAL_ENV/lib/python3.7/site-packages/
+export PYTHONPATH=forch:$PYTHONPATH
+
+if [ ! -d $PY_LIB ]; then
+    echo Missing expected python env directory $PY_LIB
+    false
 fi
 
 pip3 freeze

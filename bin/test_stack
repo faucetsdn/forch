@@ -206,6 +206,7 @@ function fetch_forch {
 }
 
 function test_forch {
+    fdesc=$1
     fout_dir=$out_dir/forch$1
     mkdir -p $fout_dir
 
@@ -227,14 +228,14 @@ function test_forch {
     fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02' 1
     fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&to_egress=true' 2
 
-    echo @system_state | tee -a $TEST_RESULTS
+    echo @system_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/system_state.json
     jq .site_name $api_result | tee -a $TEST_RESULTS
     jq .system_state_change_count $api_result | tee -a $TEST_RESULTS
     jq .peer_controller_url $api_result | tee -a $TEST_RESULTS
     jq .system_state $api_result | tee -a $TEST_RESULTS
 
-    echo @dataplane_state | tee -a $TEST_RESULTS
+    echo @dataplane_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/dataplane_state.json
     jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
     jq '.dataplane_state_detail' $api_result | tee -a $TEST_RESULTS
@@ -246,7 +247,7 @@ function test_forch {
     jq '.egress.egress_state_change_count' $api_result | tee -a $TEST_RESULT
     jq '.egress.active_root' $api_result | tee -a $TEST_RESULT
 
-    echo @switch_state | tee -a $TEST_RESULTS
+    echo @switch_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state1.json
     jq '.switch_state_change_count' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path[1].switch' $api_result | tee -a $TEST_RESULTS
@@ -259,7 +260,7 @@ function test_forch {
     api_result=$fout_dir/switch_state3.json
     jq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result | tee -a $TEST_RESULTS
 
-    echo @cpn_state | tee -a $TEST_RESULTS
+    echo @cpn_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/cpn_state.json
     jq '.cpn_state_change_count' $api_result | tee -a $TEST_RESULTS
     for node in nz-kiwi-t1sw1 nz-kiwi-t2sw2; do
@@ -267,21 +268,21 @@ function test_forch {
         jq ".cpn_nodes.\"$node\".state" $api_result | tee -a $TEST_RESULTS
     done
 
-    echo @process_state | tee -a $TEST_RESULTS
+    echo @process_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/process_state.json
-    jq .processes_state_change_count $api_result | tee -a $TEST_RESULTS
+    jq .process_state_change_count $api_result | tee -a $TEST_RESULTS
     jq .processes.faucet.state $api_result | tee -a $TEST_RESULTS
     jq .processes.sleep.state $api_result | tee -a $TEST_RESULTS
     jq .processes.sleep.cmd_line $api_result | tee -a $TEST_RESULTS
     jq '.processes.sleep.cpu_times_s | length' $api_result | tee -a $TEST_RESULTS
 
-    echo @list_hosts | tee -a $TEST_RESULTS
+    echo @list_hosts$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts1.json
     jq '.eth_srcs."9a:02:57:1e:8f:01".url' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts2.json
     jq '.eth_dsts."9a:02:57:1e:8f:02".url' $api_result | tee -a $TEST_RESULTS
 
-    echo @host_path | tee -a $TEST_RESULTS
+    echo @host_path$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path1.json
     jq .dst_ip $api_result | tee -a $TEST_RESULTS
     jq .path[1].switch $api_result | tee -a $TEST_RESULTS

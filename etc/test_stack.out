@@ -21,18 +21,18 @@ forch-faux-3: ping -c 10 192.168.1.1 10
 forch-faux-3: ping -c 10 192.168.1.2 10
 Done with stack-solid test.
 Running forch-solid tests
-@system_state
+@system_state-solid
 "nz-kiwi"
 93
 "http://localhost.n:9020"
 "split"
-@dataplane_state
+@dataplane_state-solid
 "healthy"
-"egress:nz-kiwi-t1sw1"
+"egress: nz-kiwi-t1sw1"
 75
 "active"
 "active"
-@switch_state
+@switch_state-solid
 15
 "nz-kiwi-t1sw1"
 9
@@ -41,22 +41,22 @@ Running forch-solid tests
 ""
 "active"
 3
-@cpn_state
+@cpn_state-solid
 2
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "down"
-@process_state
+@process_state-solid
 1
 "healthy"
 "broken"
 ""
 0
-@list_hosts
+@list_hosts-solid
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
-@host_path
+@host_path-solid
 "192.168.1.2"
 "nz-kiwi-t1sw1"
 10
@@ -66,18 +66,18 @@ Running forch-solid tests
 2
 %%% healthy state
 Running forch-healthy tests
-@system_state
+@system_state-healthy
 "nz-kiwi"
 95
 "http://localhost.n:9020"
 "healthy"
-@dataplane_state
+@dataplane_state-healthy
 "healthy"
-"egress:nz-kiwi-t1sw1"
+"egress: nz-kiwi-t1sw1"
 75
 "active"
 "active"
-@switch_state
+@switch_state-healthy
 15
 "nz-kiwi-t1sw1"
 9
@@ -86,22 +86,22 @@ Running forch-healthy tests
 ""
 "active"
 3
-@cpn_state
+@cpn_state-healthy
 3
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
-@process_state
+@process_state-healthy
 2
 "healthy"
 "healthy"
 "sleep 50.3231"
 3
-@list_hosts
+@list_hosts-healthy
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
-@host_path
+@host_path-healthy
 "192.168.1.2"
 "nz-kiwi-t1sw1"
 10
@@ -150,18 +150,18 @@ forch-faux-3: ping -c 10 192.168.1.1 0
 forch-faux-3: ping -c 10 192.168.1.2 0
 Done with stack-twod test.
 Running forch-twod tests
-@system_state
+@system_state-twod
 "nz-kiwi"
 153
 "http://localhost.n:9020"
 "broken"
-@dataplane_state
+@dataplane_state-twod
 "broken"
-"egress:nz-kiwi-t1sw1; broken switches: ['nz-kiwi-t2sw3']; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
+"egress: nz-kiwi-t1sw1; broken switches: ['nz-kiwi-t2sw3']; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
 112
 "active"
 "active"
-@switch_state
+@switch_state-twod
 32
 "nz-kiwi-t1sw2"
 9
@@ -170,22 +170,22 @@ Running forch-twod tests
 "Switches in broken state: nz-kiwi-t2sw3"
 "active"
 4
-@cpn_state
+@cpn_state-twod
 5
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
-@process_state
+@process_state-twod
 4
 "healthy"
 "healthy"
 "sleep 50.3231"
 3
-@list_hosts
+@list_hosts-twod
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
-@host_path
+@host_path-twod
 "192.168.1.2"
 "nz-kiwi-t1sw2"
 6
@@ -214,18 +214,18 @@ forch-faux-3: ping -c 10 192.168.1.1 10
 forch-faux-3: ping -c 10 192.168.1.2 0
 Done with stack-broken test.
 Running forch-broken tests
-@system_state
+@system_state-broken
 "nz-kiwi"
 186
 "http://localhost.n:9020"
 "broken"
-@dataplane_state
+@dataplane_state-broken
 "broken"
-"egress:nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52']"
+"egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52']"
 133
 "active"
 "down"
-@switch_state
+@switch_state-broken
 43
 null
 null
@@ -234,22 +234,22 @@ null
 ""
 "active"
 7
-@cpn_state
+@cpn_state-broken
 5
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
-@process_state
+@process_state-broken
 5
 "healthy"
 "broken"
 ""
 0
-@list_hosts
+@list_hosts-broken
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
-@host_path
+@host_path-broken
 "192.168.1.2"
 "nz-kiwi-t1sw2"
 6
@@ -278,18 +278,18 @@ forch-faux-3: ping -c 10 192.168.1.1 0
 forch-faux-3: ping -c 10 192.168.1.2 0
 Done with stack-restored test.
 Running forch-restored tests
-@system_state
+@system_state-restored
 "nz-kiwi"
 223
 "http://localhost.n:9020"
 "broken"
-@dataplane_state
+@dataplane_state-restored
 "broken"
-"egress:nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
+"egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
 160
 "active"
 "active"
-@switch_state
+@switch_state-restored
 53
 "nz-kiwi-t1sw2"
 9
@@ -298,22 +298,22 @@ Running forch-restored tests
 ""
 "active"
 9
-@cpn_state
+@cpn_state-restored
 5
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "healthy"
-@process_state
+@process_state-restored
 5
 "healthy"
 "broken"
 ""
 0
-@list_hosts
+@list_hosts-restored
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
-@host_path
+@host_path-restored
 "192.168.1.2"
 "nz-kiwi-t1sw2"
 10
@@ -323,18 +323,18 @@ null
 3
 %%% reset stack
 Running forch-reset tests
-@system_state
+@system_state-reset
 "nz-kiwi"
 251
 "http://localhost.n:9020"
 "split"
-@dataplane_state
+@dataplane_state-reset
 "broken"
-"egress:nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
+"egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
 177
 "active"
 "active"
-@switch_state
+@switch_state-reset
 63
 "nz-kiwi-t1sw1"
 9
@@ -343,22 +343,22 @@ Running forch-reset tests
 ""
 "active"
 11
-@cpn_state
+@cpn_state-reset
 6
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "down"
-@process_state
+@process_state-reset
 5
 "healthy"
 "broken"
 ""
 0
-@list_hosts
+@list_hosts-reset
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
-@host_path
+@host_path-reset
 "192.168.1.2"
 "nz-kiwi-t1sw1"
 10

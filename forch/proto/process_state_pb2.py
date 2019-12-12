@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xe4\x05\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12%\n\x0fprocesses_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1e\n\x16processes_state_detail\x18\x03 \x01(\t\x12$\n\x1cprocesses_state_change_count\x18\x04 \x01(\x05\x12#\n\x1bprocesses_state_last_update\x18\x05 \x01(\t\x12#\n\x1bprocesses_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xa3\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x30\n\x0ememory_info_mb\x18\t \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xda\x05\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xa3\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x30\n\x0ememory_info_mb\x18\t \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x62\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -60,8 +60,8 @@ _PROCESSSTATE_PROCESSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=346,
-  serialized_end=421,
+  serialized_start=336,
+  serialized_end=411,
 )
 
 _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
@@ -146,8 +146,8 @@ _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=424,
-  serialized_end=715,
+  serialized_start=414,
+  serialized_end=705,
 )
 
 _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
@@ -190,8 +190,8 @@ _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=717,
-  serialized_end=772,
+  serialized_start=707,
+  serialized_end=762,
 )
 
 _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
@@ -227,8 +227,8 @@ _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=774,
-  serialized_end=812,
+  serialized_start=764,
+  serialized_end=802,
 )
 
 _PROCESSSTATE = _descriptor.Descriptor(
@@ -246,35 +246,35 @@ _PROCESSSTATE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='processes_state', full_name='ProcessState.processes_state', index=1,
+      name='process_state', full_name='ProcessState.process_state', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='processes_state_detail', full_name='ProcessState.processes_state_detail', index=2,
+      name='process_state_detail', full_name='ProcessState.process_state_detail', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='processes_state_change_count', full_name='ProcessState.processes_state_change_count', index=3,
+      name='process_state_change_count', full_name='ProcessState.process_state_change_count', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='processes_state_last_update', full_name='ProcessState.processes_state_last_update', index=4,
+      name='process_state_last_update', full_name='ProcessState.process_state_last_update', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='processes_state_last_change', full_name='ProcessState.processes_state_last_change', index=5,
+      name='process_state_last_change', full_name='ProcessState.process_state_last_change', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -300,7 +300,7 @@ _PROCESSSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=72,
-  serialized_end=812,
+  serialized_end=802,
 )
 
 _PROCESSSTATE_PROCESSESENTRY.fields_by_name['value'].message_type = _PROCESSSTATE_PROCESSDATA
@@ -312,7 +312,7 @@ _PROCESSSTATE_PROCESSDATA.containing_type = _PROCESSSTATE
 _PROCESSSTATE_CPUTIME.containing_type = _PROCESSSTATE
 _PROCESSSTATE_MEMORYINFO.containing_type = _PROCESSSTATE
 _PROCESSSTATE.fields_by_name['processes'].message_type = _PROCESSSTATE_PROCESSESENTRY
-_PROCESSSTATE.fields_by_name['processes_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
+_PROCESSSTATE.fields_by_name['process_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 DESCRIPTOR.message_types_by_name['ProcessState'] = _PROCESSSTATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

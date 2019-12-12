@@ -1,8 +1,12 @@
-wheel
+netaddr
+networkx
 prometheus_client
 protobuf
 psutil
 pylint==2.4.2
+pytricia
 pyyaml
 requests
+ryu==4.32
 setuptools
+wheel
