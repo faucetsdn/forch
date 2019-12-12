@@ -11,7 +11,7 @@ def get_http_files():
 
 
 data_files = []
-data_files.append(('forch/public', get_http_files()))
+data_files.append(('lib/forch/public', get_http_files()))
 package_data = {'': ['GVERSION']}
 
 with open("README.md", "r") as fh:
