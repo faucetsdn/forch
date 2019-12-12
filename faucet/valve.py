@@ -1211,6 +1211,9 @@ class Valve:
         """
         # learn_port = self.flood_manager.edge_learn_port(
         #     self._stacked_valves(other_valves), pkt_meta)
+        # TODO: This combined with some other faucet-problems (non-learned flows)
+        # sometimes causes bad forwarding loops, so diable for now until the root
+        # cause can be identified and fixed.
         learn_port = pkt_meta.port
         if learn_port is not None:
             learn_flows, previous_port, update_cache = self.host_manager.learn_host_on_vlan_ports(

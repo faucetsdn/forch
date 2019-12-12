@@ -5,8 +5,6 @@
 echo TRAVIS_BRANCH: $TRAVIS_BRANCH
 echo TRAVIS_COMMIT: $TRAVIS_COMMIT
 
-ovs-vsctl -V
-
 # If PY_FILES_CHANGED is empty, run all codecheck tests (otherwise only on changed files).
 FILES_CHANGED=""
 PY_FILES_CHANGED=""
