@@ -3,18 +3,27 @@
  */
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
 message FaucetEvent {
   int32 version = 1;
-  string dp_name = 2;
-  int32 dp_id = 3;
-  int32 event_id = 4;
-  float time = 5;
+  float time = 2;
+  string dp_name = 3;
+  int32 dp_id = 4;
+  int32 event_id = 5;
   bool debounced = 6;
 
   oneof event_data {
-    StackTopoChange STACK_TOPO_CHANGE = 7;
-    LagChange LAG_CHANGE = 8;
+    LagChange LAG_CHANGE = 7;
+    StackTopoChange STACK_TOPO_CHANGE = 8;
   }
+}
+
+message LagChange {
+  float timestamp = 1;
+  string dp_name = 2;
+  int32 port_no = 3;
+  int32 state = 4;
 }
 
 message StackTopoChange {
@@ -55,11 +64,4 @@ message StackTopoChange {
   message StackDp {
     int32 root_hop_port = 1;
   }
-}
-
-message LagChange {
-  string dp_name = 1;
-  float timestamp = 2;
-  int32 port_no = 3;
-  int32 state = 4;
 }
