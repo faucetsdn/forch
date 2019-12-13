@@ -113,7 +113,7 @@ Running forch-healthy tests
 Starting stack-linkd test...
 (UNKNOWN) [192.168.1.1] 23 (?) : Connection timed out
 (UNKNOWN) [192.168.1.1] 443 (?) : Connection refused
-pcap sane 1 1 1
+pcap sane 0 1 1
 pcap bcast 1 0 1 1
 telnet 1 https 2
 forch-faux-0: ping -c 10 192.168.1.1 10
@@ -152,13 +152,13 @@ Done with stack-twod test.
 Running forch-twod tests
 @system_state-twod
 "nz-kiwi"
-153
+152
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-twod
 "broken"
 "egress: nz-kiwi-t1sw1; broken switches: ['nz-kiwi-t2sw3']; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-112
+111
 "active"
 "active"
 @switch_state-twod
@@ -216,13 +216,13 @@ Done with stack-broken test.
 Running forch-broken tests
 @system_state-broken
 "nz-kiwi"
-186
+185
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-broken
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52']"
-133
+132
 "active"
 "down"
 @switch_state-broken
@@ -325,13 +325,13 @@ null
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-251
+252
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-177
+178
 "active"
 "active"
 @switch_state-reset
