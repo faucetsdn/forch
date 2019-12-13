@@ -1,0 +1,54 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
+proto_files=`ls proto/*.proto`
+
+if [ "$1" == check ]; then
+    sha1sum $proto_files > build/protos.hash
+    diff build/protos.hash public/protos.hash
+    echo Proto hashes in public/protos.hash are up-to-date.
+    exit 0
+fi
+
+rm -rf build/ forch/proto public/proto
+mkdir build
+
+sha1sum $proto_files > public/protos.hash
+
+(
+    export PATH=$PATH:/usr/local/go/bin/
+    cd protoc-gen-doc
+    script/dist.sh
+    tar -xzvf dist/protoc-gen-doc-*.linux-amd64.go*.tar.gz
+    mkdir -p bin
+    cp protoc-gen-doc-*.linux-amd64.go*/protoc-gen-doc bin/
+)
+
+gen_path=$ROOT/protoc-gen-doc/bin/protoc-gen-doc
+
+mkdir -p build/forch/proto build/proto
+cp $proto_files build/forch/proto/
+proto_files2=
+
+mkdir -p build/proto_docs
+
+for proto in $proto_files; do
+    proto_files2+="forch/$proto "
+done
+
+(
+    cd build
+    protoc --python_out=. --plugin=protoc-gen-doc=$gen_path \
+           --doc_out=html,protos.html:. \
+           $proto_files2
+    sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' protos.html
+    sed -i'' -e 's/&lt;/</g' -e 's/&gt;/>/g' protos.html
+)
+
+mkdir -p forch/proto/
+
+touch forch/proto/__init__.py
+cp build/forch/proto/*.py forch/proto/
+cp build/protos.html public/

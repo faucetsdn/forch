@@ -30,6 +30,12 @@ function fetch_path(eth_src, eth_dst) {
   fetch_data(`host_path_${src}_${dst}`, `host_path?eth_src=${eth_src}&eth_dst=${eth_dst}`)
 }
 
+function adjust_header(api) {
+  postfix_tag = document.getElementById('header_postfix')
+  proto_path = `protos.html#forch%2fproto%2f${api}.proto`
+  postfix_tag.innerHTML = `: ${api} (<a href="${proto_path}">docs</a>)`
+}
+
 function initialize() {
   console.log('initializing viewer');
   if (window.location.search.startsWith('?')) {
@@ -39,4 +45,5 @@ function initialize() {
   }
   load_viewer();
   fetch_data(api);
+  adjust_header(api);
 }

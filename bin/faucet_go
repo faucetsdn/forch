@@ -1,0 +1,12 @@
+#!/bin/sh -ex
+
+env
+
+# User might already exist if docker restarted.
+echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
+
+sudo -u kronkiteman \
+     FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \
+     FAUCET_EVENT_SOCK_HEARTBEAT=$FAUCET_EVENT_SOCK_HEARTBEAT \
+     FAUCET_CONFIG_STAT_RELOAD=$FAUCET_CONFIG_STAT_RELOAD \
+     faucet

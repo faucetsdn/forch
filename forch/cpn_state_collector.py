@@ -1,44 +1,48 @@
 """Collecting the state of CPN components"""
 
-import copy
 from datetime import datetime
 import logging
 import os
 import os.path
 import re
 import threading
-import yaml
 
-import forch.constants as constants
+from forch.proto.cpn_config_pb2 import CpnConfig
+from forch.proto.cpn_state_pb2 import CpnState
+from forch.proto.shared_constants_pb2 import State
+from forch.proto.system_state_pb2 import StateSummary
+
 import forch.ping_manager
 
-LOGGER = logging.getLogger('cpn')
+from forch.utils import yaml_proto
+from forch.utils import proto_dict
+from forch.utils import dict_proto
 
-KEY_NODES = 'cpn_nodes'
+LOGGER = logging.getLogger('cstate')
+
 KEY_NODE_ATTRIBUTES = 'attributes'
 KEY_NODE_PING_RES = 'ping_results'
 KEY_NODE_STATE = 'state'
 KEY_NODE_STATE_COUNT = 'state_count'
-KEY_NODE_STATE_UPDATE_TS = 'state_updated'
-KEY_NODE_STATE_CHANGE_TS = 'state_changed'
+KEY_NODE_STATE_UPDATE_TS = 'state_update'
+KEY_NODE_STATE_CHANGE_TS = 'state_change'
 
 KEY_CPN_STATE = 'state'
 KEY_CPN_STATE_DETAIL = 'detail'
 KEY_CPN_STATE_COUNT = 'state_count'
-KEY_CPN_STATE_UPDATE_TS = 'state_updated'
-KEY_CPN_STATE_CHANGE_TS = 'state_changed'
+KEY_CPN_STATE_UPDATE_TS = 'state_update'
+KEY_CPN_STATE_CHANGE_TS = 'state_change'
 
 PING_SUMMARY_REGEX = {'transmitted': r'\d+(?= packets transmitted)',
                       'received': r'\d+(?= received)',
                       'loss_percentage': r'\d+(?=% packet loss)',
                       'time_ms': r'(?<=time )\d+(?=ms)'}
 
-
 class CPNStateCollector:
     """Processing and storing CPN components states"""
     def __init__(self):
         self._cpn_state = {}
-        self._node_states = self._cpn_state.setdefault(KEY_NODES, {})
+        self._node_states = {}
         self._hosts_ip = {}
         self._lock = threading.Lock()
         self._ping_manager = None
@@ -47,36 +51,40 @@ class CPNStateCollector:
         """Initialize this instance and make it go"""
         cpn_dir_name = os.getenv('FORCH_CONFIG_DIR')
         cpn_file_name = os.path.join(cpn_dir_name, 'cpn.yaml')
+        current_time = datetime.now().isoformat()
         LOGGER.info("Loading CPN config file: %s", cpn_file_name)
         try:
-            with open(cpn_file_name) as cpn_file:
-                cpn_data = yaml.safe_load(cpn_file)
-                cpn_nodes = cpn_data.get('cpn_nodes', {})
+            cpn_data = yaml_proto(cpn_file_name, CpnConfig)
+            cpn_nodes = cpn_data.cpn_nodes
 
-                for node, attr_map in cpn_nodes.items():
-                    node_state_map = self._node_states.setdefault(node, {})
-                    node_state_map[KEY_NODE_ATTRIBUTES] = copy.copy(attr_map)
-                    self._hosts_ip[node] = attr_map['cpn_ip']
+            for node, attr_map in cpn_nodes.items():
+                node_state_map = self._node_states.setdefault(node, {})
+                node_state_map[KEY_NODE_ATTRIBUTES] = attr_map
+                self._hosts_ip[node] = attr_map.cpn_ip
 
-                    self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip)
+            ping_interval = cpn_data.ping_interval if cpn_data.ping_interval else 60
+            if not self._hosts_ip:
+                raise Exception('No CPN components defined in file')
+
+            self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip, ping_interval)
+            self._update_cpn_state(current_time, State.initializing, "Initializing")
         except Exception as e:
+            LOGGER.error('Could not load config file: %s', e)
             self._node_states.clear()
-            self._update_cpn_state(datetime.now().isoformat(), detail=str(e))
-
-        self._update_cpn_state(datetime.now().isoformat(), detail="Initializing")
+            self._update_cpn_state(current_time, State.broken, str(e))
 
         if self._ping_manager:
             self._ping_manager.start_loop(self._handle_ping_result)
 
     def get_cpn_summary(self):
         """Get summary of cpn info"""
-        return {
+        return dict_proto({
             'state': self._cpn_state.get(KEY_CPN_STATE),
             'detail': self._cpn_state.get(KEY_CPN_STATE_DETAIL),
             'change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT),
             'last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS),
-            'last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
-        }
+            'last_change': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
+        }, StateSummary)
 
     def get_cpn_state(self):
         """Get CPN state"""
@@ -85,22 +93,22 @@ class CPNStateCollector:
         with self._lock:
             for cpn_node, node_state in self._node_states.items():
                 cpn_node_map = cpn_nodes.setdefault(cpn_node, {})
-                cpn_node_map['attributes'] = copy.copy(node_state.get(KEY_NODE_ATTRIBUTES, {}))
+                cpn_node_map['attributes'] = proto_dict(node_state.get(KEY_NODE_ATTRIBUTES))
                 cpn_node_map['state'] = node_state.get(KEY_NODE_STATE)
                 ping_result = node_state.get(KEY_NODE_PING_RES, {}).get('stdout')
                 cpn_node_map['ping_results'] = CPNStateCollector._get_ping_summary(ping_result)
                 cpn_node_map['state_change_count'] = node_state.get(KEY_NODE_STATE_COUNT)
-                cpn_node_map['state_last_updated'] = node_state.get(KEY_NODE_STATE_UPDATE_TS)
-                cpn_node_map['state_last_changed'] = node_state.get(KEY_NODE_STATE_CHANGE_TS)
+                cpn_node_map['state_last_update'] = node_state.get(KEY_NODE_STATE_UPDATE_TS)
+                cpn_node_map['state_last_change'] = node_state.get(KEY_NODE_STATE_CHANGE_TS)
 
-            return {
+            return dict_proto({
                 'cpn_nodes': cpn_nodes,
                 'cpn_state': self._cpn_state.get(KEY_CPN_STATE),
                 'cpn_state_detail': self._cpn_state.get(KEY_CPN_STATE_DETAIL),
                 'cpn_state_change_count': self._cpn_state.get(KEY_CPN_STATE_COUNT),
                 'cpn_state_last_update': self._cpn_state.get(KEY_CPN_STATE_UPDATE_TS),
-                'cpn_state_last_changed': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
-            }
+                'cpn_state_last_change': self._cpn_state.get(KEY_CPN_STATE_CHANGE_TS)
+            }, CpnState)
 
     def _handle_ping_result(self, ping_res_future):
         """Handle ping result for hosts"""
@@ -112,13 +120,13 @@ class CPNStateCollector:
                     continue
                 node_state_map = self._node_states[host_name]
 
-                last_state_count = node_state_map.get(KEY_NODE_STATE_COUNT, 0)
                 last_state = node_state_map.get(KEY_NODE_STATE)
                 new_state = CPNStateCollector._get_node_state(res_map)
                 if not last_state or new_state != last_state:
-                    LOGGER.info('cpn_state %s changed %s to %s', host_name, last_state, new_state)
+                    state_count = node_state_map.get(KEY_NODE_STATE_COUNT, 0) + 1
+                    LOGGER.info('cpn_state #%d host %s is %s', state_count, host_name, new_state)
                     node_state_map[KEY_NODE_STATE] = new_state
-                    node_state_map[KEY_NODE_STATE_COUNT] = last_state_count + 1
+                    node_state_map[KEY_NODE_STATE_COUNT] = state_count
                     node_state_map[KEY_NODE_STATE_CHANGE_TS] = current_time
 
                 node_state_map[KEY_NODE_STATE_UPDATE_TS] = current_time
@@ -132,10 +140,10 @@ class CPNStateCollector:
         result = re.search(r'\d+(?=% packet loss)', ping_result['stdout'])
         loss = int(result.group()) if result else 100
         if loss == 0:
-            return constants.STATE_HEALTHY
+            return State.healthy
         if loss == 100:
-            return constants.STATE_DOWN
-        return constants.STATE_DAMAGED
+            return State.down
+        return State.damaged
 
     @staticmethod
     def _get_ping_summary(ping_stdout):
@@ -153,26 +161,34 @@ class CPNStateCollector:
                 res_summary['rtt_ms'] = dict(zip(['min', 'avg', 'max', 'mdev'], rtt_vals))
         return res_summary
 
-    def _update_cpn_state(self, current_time, detail=None):
-        new_cpn_state, broken = self._get_cpn_state()
-        use_detail = detail if detail else ', '.join(broken)
+    def _update_cpn_state(self, current_time, state=None, detail=None):
+        new_cpn_state, broken = (state, None) if state else self._get_cpn_state()
+
+        if detail:
+            use_detail = detail
+        elif broken:
+            use_detail = 'CPN failures at: ' + ', '.join(broken)
+        else:
+            use_detail = ''
+
         if new_cpn_state != self._cpn_state.get(KEY_CPN_STATE):
             cpn_state_count = self._cpn_state.get(KEY_CPN_STATE_COUNT, 0) + 1
             self._cpn_state[KEY_CPN_STATE_COUNT] = cpn_state_count
+            self._cpn_state[KEY_CPN_STATE] = new_cpn_state
             self._cpn_state[KEY_CPN_STATE_CHANGE_TS] = current_time
-        self._cpn_state[KEY_CPN_STATE] = new_cpn_state
+            LOGGER.info('cpn_state #%d %s: %s', cpn_state_count, new_cpn_state, use_detail)
         self._cpn_state[KEY_CPN_STATE_DETAIL] = use_detail
         self._cpn_state[KEY_CPN_STATE_UPDATE_TS] = current_time
 
     def _get_cpn_state(self):
         broken = []
         if not self._node_states:
-            return constants.STATE_BROKEN, broken
+            return State.broken, broken
         for node_name, node_state in self._node_states.items():
-            if node_state.get(KEY_NODE_STATE) != constants.STATE_HEALTHY:
+            if node_state.get(KEY_NODE_STATE) != State.healthy:
                 broken.append(node_name)
         if not broken:
-            return constants.STATE_HEALTHY, broken
+            return State.healthy, broken
         if len(broken) == len(self._node_states):
-            return constants.STATE_DOWN, broken
-        return constants.STATE_DAMAGED, broken
+            return State.down, broken
+        return State.damaged, broken

@@ -1,0 +1,110 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+CONTAINER=forch-faucet
+INSTDIR=$ROOT/inst
+IMAGE=forch/faucet
+PROM_TARGET=9302
+FAUCET_SOCK=faucet_event.sock
+SYSTEM_CONF=system.conf
+LOCAL_CONFIG=local/$SYSTEM_CONF
+
+ext_ofpt=6653
+prom_pt=
+prom_target=
+docker_volumes=
+port_opts=
+local=
+
+cd $ROOT
+
+if [ "$1" == "local" ]; then
+    docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
+    local=local
+    shift
+fi
+
+if [ "$1" == "gauge" ]; then
+    CONTAINER=forch-gauge
+    IMAGE=forch/gauge
+    PROM_TARGET=9303
+    FAUCET_SOCK=
+    shift
+fi
+
+if [ -n "$1" ]; then
+    CONTAINER=$CONTAINER-$1
+    INSTDIR=$INSTDIR/forch-faucet-$1
+    shift
+fi
+
+if [ -n "$1" ]; then
+    ext_ofpt=$1
+    shift
+fi
+
+if [ -n "$1" ]; then
+    prom_pt=$1
+    shift
+fi
+
+echo Creating $IMAGE instance $CONTAINER on port $ext_ofpt in $INSTDIR
+
+mkdir -p $INSTDIR
+
+if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; then
+    echo -n "Clensing old container "
+    docker rm -f $CONTAINER
+fi
+
+if [ -n "$FAUCET_SOCK" ]; then
+    rm -f $INSTDIR/$FAUCET_SOCK
+    event_sock=/var/log/faucet/$FAUCET_SOCK
+fi
+
+if [ -n "$local" ]; then
+    using_faucet=$(cd faucet; git rev-parse HEAD)
+    error_label="from local faucet/"
+else
+    using_faucet=`docker inspect $IMAGE | jq -r .[0].Config.Labels.FAUCET`
+    error_label="from image $IMAGE"
+fi
+
+expected_faucet=$(cat etc/FAUCET_VERSION)
+if [ "$using_faucet" != "$expected_faucet" ]; then
+    echo Image faucet version does not match configuration.
+    echo $using_faucet $error_label
+    echo $expected_faucet from etc/FAUCET_VERSION
+    false
+fi
+
+docker_envs="\
+        --env FAUCET_CONFIG_STAT_RELOAD=1 \
+        --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
+        --env USERID=$(id -u) \
+        --env FAUCET_EVENT_SOCK=$event_sock"
+
+docker_volumes+="\
+        -v $INSTDIR:/etc/faucet \
+        -v $INSTDIR:/var/log/faucet"
+
+if [ -n "$prom_pt" ]; then
+    port_opts="-p $prom_pt:$PROM_TARGET"
+    echo $prom_pt > $INSTDIR/PROM_PORT.$PROM_TARGET
+fi
+
+cid=$(docker run -d --privileged --name $CONTAINER \
+             $docker_volumes $docker_envs \
+             -p $ext_ofpt:6653 $port_opts $IMAGE)
+
+echo Container $CONTAINER started as $cid
+
+while [ -n "$FAUCET_SOCK" -a ! -e $INSTDIR/$FAUCET_SOCK ]; do
+    status=`docker inspect $CONTAINER | jq -r '.[0].State.Status'`
+    if [ "$status" != running ]; then
+       echo Faucet docker container $CONTAINER not running, is $status
+       false
+    fi
+    echo Waiting for $INSTDIR/$FAUCET_SOCK to exist...
+    sleep 10
+done

@@ -1,0 +1,18 @@
+# Image name: daq/faux
+#
+# Faux device for framework development/testing.
+#
+
+FROM ubuntu:bionic
+
+COPY bin/retry_cmd bin/
+
+ENV AG="bin/retry_cmd apt-get -qqy --no-install-recommends -o=Dpkg::Use-Pty=0"
+
+RUN $AG update && $AG install net-tools bash iproute2 iputils-ping tcpdump strace vim \
+    jq nano ethtool netcat curl ifupdown 
+
+# Weird workaround for problem running tcdump in a privlidged container.
+RUN mv /usr/sbin/tcpdump /usr/bin/tcpdump
+
+CMD ["tail", "-f", "/dev/null"]

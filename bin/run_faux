@@ -1,0 +1,45 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+postfix=
+intf_mac=9a:02:57:1e:8f:00
+docker_args=
+container_prefix=forch-faux
+image=forch/faux
+net_opt=--net=none
+
+cd $ROOT
+
+# If the first argument is a number, then it's a port designation.
+if [ $# -gt 0 ] && [ $(($1)) -gt 0 -o "$1" == 0 ]; then
+    port_num=$1
+    postfix=-$port_num
+    intf_mac=9a:02:57:1e:8f:$(printf %02x $port_num)
+    shift
+fi
+
+FAUX_ARGS="$*"
+
+CONTAINER=$container_prefix$postfix
+
+echo Launching faux $FAUX_ARGS...
+
+if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; then
+    echo -n "Clensing old container "
+    docker rm -f $CONTAINER
+fi
+
+docker_args="$docker_args -e LOCAL_IF=$realintf"
+
+cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image $FAUX_ARGS)
+pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
+
+intf=faux$postfix
+echo Removing old interface $intf
+sudo ip link del $intf 2>/dev/null || true
+
+echo Adding new interface to $pid...
+sudo ip link add $intf type veth peer name faux-eth0 addr $intf_mac netns $pid
+sudo ip link set $intf up
+
+echo Done with faux device launch.

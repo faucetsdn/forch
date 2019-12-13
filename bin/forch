@@ -2,23 +2,67 @@
 
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
+nolog=
 
-if [ -f venv/bin/python ]; then
-    PYTHON=venv/bin/python
+FSOCK=faucet_event.sock
+
+if [ "$1" == nolog ]; then
+    nolog=nolog
+    shift
+fi
+
+if [ -n "$1" ]; then
+    FORCH_BASE=$1
+    shift
+    FAUCET_EVENT_SOCK=$FORCH_BASE/$FSOCK
+    FAUCET_CONFIG_DIR=$FORCH_BASE
+    FORCH_CONFIG_DIR=$FORCH_BASE
+    FORCH_LOG_DIR=$FORCH_BASE
+    PROM_PORT_FILE=$FORCH_BASE/PROM_PORT.9302
+else
+    FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK}
+    FAUCET_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
+    FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
+    FORCH_LOG_DIR=${FORCH_LOG_DIR:-/var/log/faucet}
+    mkdir -p $FORCH_LOG_DIR $FORCH_CONFIG_DIR
+fi
+
+if [ -n "$nolog" ]; then
+    FORCH_LOG_DIR=
+fi
+
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
+    PYTHON=venv/bin/python3
 else
     PYTHON=python3
 fi
 
-if [ -z "$HOSTNAME" ]; then
-    HOSTNAME=$(hostname -s)
+if [ -z "$CONTROLLER_NAME" ]; then
+    CONTROLLER_NAME=$(hostname -s)
+    echo Setting controller name to $CONTROLLER_NAME
+else
+    echo Using existing controller name $CONTROLLER_NAME
 fi
 
-FSOCK=faucet_event.sock
+if [ -n "$PROMETHEUS_PORT" ]; then
+    echo Using existing prometheus port $PROMETHEUS_PORT
+elif [ -f "$PROM_PORT_FILE" ]; then
+    PROMETHEUS_PORT=$(< $PROM_PORT_FILE)
+    echo Using prometheus port $PROMETHEUS_PORT from $PROM_PORT_FILE
+else
+    PROMETHEUS_PORT=9302
+    echo Using default prometheus port $PROMETHEUS_PORT
+fi
 
-sudo \
-    FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK} \
-    FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet} \
-    FORCH_RUN_DIR=${FORCH_RUN_DIR:-/var/run/faucet} \
-    HOSTNAME=$HOSTNAME \
-    PYTHONPATH=$PYTHONPATH \
-    $PYTHON -m forch.forchestrator
+if [ -n "$FORCH_LOG_DIR" ]; then
+    echo Writing forch logs to $FORCH_LOG_DIR/forch.log
+fi
+
+export CONTROLLER_NAME
+export PROMETHEUS_PORT
+export FAUCET_EVENT_SOCK
+export FAUCET_CONFIG_DIR
+export FORCH_CONFIG_DIR
+export FORCH_LOG_DIR
+export PYTHONPATH
+$PYTHON -m forch.forchestrator || tail $FORCH_LOG_DIR/forch.log && false

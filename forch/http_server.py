@@ -9,6 +9,9 @@ import socketserver
 import threading
 import urllib
 
+from google.protobuf.message import Message
+
+from forch.utils import proto_json
 
 LOGGER = logging.getLogger('httpserv')
 
@@ -27,10 +30,15 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # pylint: disable=invalid-name
     def do_GET(self):
         """Handle a basic http request get method"""
+        host = self.headers.get('Host')
+        if not host:
+            self.send_response(500)
+            self.end_headers()
+            LOGGER.warning("Host is empty. Path: %s", self.path)
+            return
         self.send_response(200)
         self.end_headers()
         parsed = urllib.parse.urlparse(self.path)
-        host = self.headers.get('Host')
         opts = {}
         opt_pairs = urllib.parse.parse_qsl(parsed.query)
         for pair in opt_pairs:
@@ -51,6 +59,7 @@ class HttpServer():
         self._root_path = config.get('http_root', 'public')
         self._port = port
         self._host = '0.0.0.0'
+        self._thread = None
 
     def start_server(self):
         """Start serving thread"""
@@ -59,9 +68,13 @@ class HttpServer():
         handler = functools.partial(RequestHandler, self)
         self._server = ThreadedHTTPServer(address, handler)
 
-        thread = threading.Thread(target=self._server.serve_forever)
-        thread.deamon = False
-        thread.start()
+        self._thread = threading.Thread(target=self._server.serve_forever)
+        self._thread.deamon = False
+        self._thread.start()
+
+    def join_thread(self):
+        """Join http server thread"""
+        self._thread.join()
 
     def _get_url_base(self):
         return 'http://%s:%s' % (self._host, self._port)
@@ -85,6 +98,8 @@ class HttpServer():
                     result = self._paths[a_path](full_path, params)
                     if isinstance(result, (bytes, str)):
                         return result
+                    if isinstance(result, Message):
+                        return proto_json(result)
                     return json.dumps(result)
             return str(self._paths)
         except Exception as e:

@@ -1,0 +1,4 @@
+inst/
+dist/
+build/
+.git/

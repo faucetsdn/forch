@@ -1,0 +1,41 @@
+/*
+ * constants
+ */
+syntax = "proto3";
+
+/*
+ * States
+ */
+message State {
+  /*
+   * Enumeration of states
+   */
+  enum State {
+    // broken: unable to function because of error (default)
+    broken = 0;
+
+    // active: in function
+    active = 1;
+
+    // damaged: partially broken
+    damaged = 2;
+
+    // down: not in function
+    down = 3;
+
+    // healthy: functioning properly
+    healthy = 4;
+
+    // inactive: controller not active
+    inactive = 5;
+
+    // initializing: in intialization after start
+    initializing = 6;
+
+    // split: controller master but can not reach peer controller
+    split = 7;
+
+    // up: up but not in function
+    up = 8;
+  }
+}

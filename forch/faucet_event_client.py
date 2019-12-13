@@ -1,5 +1,7 @@
 """Simple client for working with the faucet event socket"""
 
+import copy
+import functools
 import json
 import logging
 import os
@@ -7,6 +9,10 @@ import select
 import socket
 import threading
 import time
+
+from forch.utils import dict_proto
+
+from forch.proto.faucet_event_pb2 import FaucetEvent
 
 LOGGER = logging.getLogger('fevent')
 
@@ -21,9 +27,11 @@ class FaucetEventClient():
         self.sock = None
         self.buffer = None
         self._buffer_lock = threading.Lock()
+        self._handlers = {}
         self.previous_state = None
         self._port_debounce_sec = int(config.get('port_debounce_sec', self._PORT_DEBOUNCE_SEC))
         self._port_timers = {}
+        self.event_socket_connected = False
 
     def connect(self):
         """Make connection to sock to receive events"""
@@ -45,26 +53,52 @@ class FaucetEventClient():
         try:
             self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self.sock.connect(sock_path)
+            self.event_socket_connected = True
         except socket.error as err:
-            assert False, "Failed to connect because: %s" % err
+            self.event_socket_connected = False
+            raise ConnectionError("Failed to connect because: %s" % err)
 
     def disconnect(self):
         """Disconnect this event socket"""
-        self.sock.close()
+        if self.sock:
+            self.sock.close()
         self.sock = None
+        self.event_socket_connected = False
+        with self._buffer_lock:
+            self.buffer = None
+
+    def register_handler(self, proto, handler):
+        """Register an event handler for the given proto class"""
+        message_name = self._convert_to_snake_caps(proto.__name__)
+        LOGGER.info('Registering handler for event type %s', message_name)
+        self._handlers[message_name] = handler
+
+    def register_handlers(self, handlers):
+        """Register a list of handler (proto, func) tuples"""
+        for handler in handlers:
+            self.register_handler(handler[0], handler[1])
+
+    def _convert_to_snake_caps(self, name):
+        return functools.reduce(lambda x, y: x + ('_' if y.isupper() else '') + y, name).upper()
 
     def has_data(self):
         """Check to see if the event socket has any data to read"""
-        read, dummy_write, dummy_error = select.select([self.sock], [], [], 0)
-        return read
+        if self.sock:
+            read, dummy_write, dummy_error = select.select([self.sock], [], [], 0)
+            return read
+        return False
 
     def has_event(self, blocking=False):
         """Check if there are any queued events"""
         while True:
-            if '\n' in self.buffer:
+            if self.buffer and '\n' in self.buffer:
                 return True
-            if blocking or self.has_data():
+            if self.sock and (blocking or self.has_data()):
                 data = self.sock.recv(1024).decode('utf-8')
+                if not data:
+                    self.disconnect()
+                    time.sleep(1)
+                    return False
                 with self._buffer_lock:
                     self.buffer += data
             else:
@@ -74,22 +108,22 @@ class FaucetEventClient():
         (name, dpid, port, active) = self.as_port_state(event)
         if dpid and port:
             if not event.get('debounced'):
-                self._debounce_port_event(name, dpid, port, active)
+                self._debounce_port_event(event, port, active)
             elif self._process_state_update(dpid, port, active):
-                return event
-            return None
+                return True
+            return False
 
         (name, dpid, status) = self.as_ports_status(event)
         if dpid:
             for port in status:
                 # Prepend events so they functionally replace the current one in the queue.
-                self._prepend_event(self._make_port_state(name, dpid, port, status[port]))
-            return None
-        (name, dpid, macs, timestamp) = self.as_learned_macs(event)
-        if dpid:
+                self._prepend_event(event, self._make_port_state(port, status[port]))
+            return False
+        (name, macs) = self._as_learned_macs(event)
+        if name:
             for mac in macs:
-                self._prepend_event(self._make_l2_learn(name, dpid, mac, timestamp))
-        return event
+                self._prepend_event(event, self._make_l2_learn(mac))
+        return True
 
     def _process_state_update(self, dpid, port, active):
         state_key = '%s-%d' % (dpid, port)
@@ -99,33 +133,46 @@ class FaucetEventClient():
         self.previous_state[state_key] = active
         return True
 
-    def _debounce_port_event(self, name, dpid, port, active):
+    def _debounce_port_event(self, event, port, active):
         if not self._port_debounce_sec:
-            self._handle_debounce(name, dpid, port, active)
+            self._handle_debounce(event, port, active)
             return
-        state_key = '%s-%d' % (dpid, port)
+        state_key = '%s-%d' % (event['dp_id'], port)
         if state_key in self._port_timers:
             LOGGER.debug('Port cancel %s', state_key)
             self._port_timers[state_key].cancel()
         if active:
-            self._handle_debounce(name, dpid, port, active)
+            self._handle_debounce(event, port, active)
             return
         LOGGER.debug('Port timer %s = %s', state_key, active)
         timer = threading.Timer(self._port_debounce_sec,
-                                lambda: self._handle_debounce(name, dpid, port, active))
+                                lambda: self._handle_debounce(event, port, active))
         timer.start()
         self._port_timers[state_key] = timer
 
-    def _handle_debounce(self, name, dpid, port, active):
-        LOGGER.debug('Port handle %s-%s as %s', dpid, port, active)
-        self._append_event(self._make_port_state(name, dpid, port, active, debounced=True))
+    def _handle_debounce(self, event, port, active):
+        LOGGER.debug('Port handle %s-%s as %s', event['dp_id'], port, active)
+        self._append_event(event, self._make_port_state(port, active), debounced=True)
 
-    def _prepend_event(self, event):
+    def _merge_event(self, base, event, timestamp=None, debounced=None):
+        merged_event = copy.deepcopy(event)
+        merged_event.update({
+            'dp_name': base['dp_name'],
+            'dp_id': base['dp_id'],
+            'event_id': base['event_id'],
+            'time': timestamp if timestamp else base['time'],
+            'debounced': debounced
+        })
+        return merged_event
+
+    def _prepend_event(self, base, event):
+        merged_event = self._merge_event(base, event)
         with self._buffer_lock:
-            self.buffer = '%s\n%s' % (json.dumps(event), self.buffer)
+            self.buffer = '%s\n%s' % (json.dumps(merged_event), self.buffer)
 
-    def _append_event(self, event):
-        event_str = json.dumps(event)
+    def _append_event(self, base, event, debounced):
+        event_str = json.dumps(self._merge_event(base, event, timestamp=time.time(),
+                                                 debounced=debounced))
         with self._buffer_lock:
             index = self.buffer.rfind('\n')
             if index == len(self.buffer) - 1:
@@ -136,9 +183,20 @@ class FaucetEventClient():
                 self.buffer = '%s\n%s%s' % (self.buffer[:index], event_str, self.buffer[index:])
             LOGGER.debug('appended %s\n%s*', event_str, self.buffer)
 
+    def _dispatch_faucet_event(self, event):
+        for target in self._handlers:
+            if target in event:
+                faucet_event = dict_proto(event, FaucetEvent)
+                target_event = getattr(faucet_event, target)
+                self._augment_event_proto(faucet_event, target_event)
+                LOGGER.debug('dispatching %s event', target)
+                self._handlers[target](target_event)
+                return True
+        return False
+
     def next_event(self, blocking=False):
         """Return the next event from the queue"""
-        while self.has_event(blocking=blocking):
+        while self.event_socket_connected and self.has_event(blocking=blocking):
             with self._buffer_lock:
                 line, remainder = self.buffer.split('\n', 1)
                 self.buffer = remainder
@@ -146,40 +204,39 @@ class FaucetEventClient():
                 event = json.loads(line)
             except Exception as e:
                 LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
-            event = self._filter_faucet_event(event)
-            if event:
-                return event
+            if self._filter_faucet_event(event):
+                if not self._dispatch_faucet_event(event):
+                    return event
         return None
 
-    # pylint: disable=too-many-arguments
-    def _make_port_state(self, name, dpid, port, status, debounced=False):
-        port_change = {}
-        port_change['port_no'] = port
-        port_change['status'] = status
-        port_change['reason'] = 'MODIFY'
-        event = {}
-        event['dp_name'] = name
-        event['dp_id'] = dpid
-        event['PORT_CHANGE'] = port_change
-        event['debounced'] = debounced
-        event['time'] = time.time()
-        return event
+    def _augment_event_proto(self, event, target_event):
+        target_event.timestamp = event.time
+        if hasattr(target_event, 'dp_name'):
+            target_event.dp_name = event.dp_name
+        return target_event
 
-    def _make_l2_learn(self, name, dpid, entry, timestamp):
-        event = {}
-        event['dp_name'] = name
-        event['dp_id'] = dpid
-        event['L2_LEARN'] = entry
-        event['time'] = timestamp
-        return event
+    # pylint: disable=too-many-arguments
+    def _make_port_state(self, port, status):
+        return {
+            'PORT_CHANGE': {
+                'port_no': port,
+                'status': status,
+                'reason': 'MODIFY'
+            }
+        }
+
+    def _make_l2_learn(self, entry):
+        return {
+            'L2_LEARN': entry
+        }
 
     def as_config_change(self, event):
         """Convert the event to dp change info, if applicable"""
         if not event or 'CONFIG_CHANGE' not in event:
             return (None, None, None, None)
         restart_type = event['CONFIG_CHANGE'].get('restart_type')
-        new_dps_config = event['CONFIG_CHANGE'].get('dps_config', {}).get('dps', {})
-        return (event['dp_name'], event['dp_id'], restart_type, new_dps_config)
+        config_hash_info = event['CONFIG_CHANGE'].get('config_hash_info')
+        return (event['dp_name'], event['dp_id'], restart_type, config_hash_info)
 
     def as_ports_status(self, event):
         """Convert the event to port status info, if applicable"""
@@ -187,23 +244,11 @@ class FaucetEventClient():
             return (None, None, None)
         return (event['dp_name'], event['dp_id'], event['PORTS_STATUS'])
 
-    def as_learned_macs(self, event):
+    def _as_learned_macs(self, event):
         """Convert the event to learned macs info, if applicable"""
         if not event or 'L2_LEARNED_MACS' not in event:
-            return (None, None, None, None)
-        name = event.get('dp_name')
-        dpid = event.get('dp_id')
-        macs = event.get('L2_LEARNED_MACS')
-        timestamp = event.get('time')
-        return name, dpid, macs, timestamp
-
-    def as_lag_status(self, event):
-        """Convert event to lag status, if applicable"""
-        if not event or 'LAG_CHANGE' not in event:
-            return (None, None, None)
-        port = event['LAG_CHANGE']['port_no']
-        status = event['LAG_CHANGE']['status']
-        return (event['dp_name'], port, status)
+            return (None, None)
+        return (event.get('dp_name'), event.get('L2_LEARNED_MACS'))
 
     def as_port_state(self, event):
         """Convert event to a port state info, if applicable"""
@@ -227,14 +272,14 @@ class FaucetEventClient():
         src_ip = event['L2_LEARN']['l3_src_ip']
         return (name, dpid, port_no, eth_src, src_ip)
 
-    def as_stack_topo_change(self, event):
-        """Convert to port learning info, if applicable"""
-        if not event or 'STACK_TOPO_CHANGE' not in event:
+    def as_stack_state(self, event):
+        """Convert to stack link state info."""
+        if not event or 'STACK_STATE' not in event:
             return (None, None, None)
-        root = event['STACK_TOPO_CHANGE']['stack_root']
-        graph = event['STACK_TOPO_CHANGE']['graph']
-        dps = event['STACK_TOPO_CHANGE'].get('dps')
-        return (root, graph, dps)
+        name = event['dp_name']
+        port = event['STACK_STATE']['port']
+        state = event['STACK_STATE']['state']
+        return (name, port, state)
 
     def as_dp_change(self, event):
         """Convert to dp status"""
@@ -243,10 +288,3 @@ class FaucetEventClient():
         name = event['dp_name']
         connected = (event['DP_CHANGE']['reason'] == 'cold_start')
         return (name, connected)
-
-    def close(self):
-        """Close the faucet event socket"""
-        self.sock.close()
-        self.sock = None
-        with self._buffer_lock:
-            self.buffer = None

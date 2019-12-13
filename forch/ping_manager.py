@@ -8,7 +8,7 @@ from collections import namedtuple
 
 
 PingResult = namedtuple('PingResult', ['host_name', 'proc_code', 'stdout', 'stderr'])
-LOGGER = logging.getLogger('Ping')
+LOGGER = logging.getLogger('ping')
 
 
 class PingManager:
@@ -16,13 +16,14 @@ class PingManager:
     def __init__(self, hosts: dict, interval: int = 60, count: int = 10):
         self._hosts = hosts
         self._count = count
+        self._timeout = self._count
         self._interval = interval
         self._loop = asyncio.new_event_loop()
         asyncio.get_child_watcher().attach_loop(self._loop)
 
     async def _ping_host(self, host_name, host_ip):
         """Ping a single host"""
-        cmd = f"ping -c {self._count} {host_ip}"
+        cmd = f"ping -c {self._count} -w {self._timeout} {host_ip}"
 
         proc = await asyncio.create_subprocess_shell(cmd, stdout=PIPE, stderr=PIPE)
         proc_code = await proc.wait()

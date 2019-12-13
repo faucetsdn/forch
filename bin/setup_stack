@@ -1,0 +1,135 @@
+#!/bin/bash -e
+
+ROOT=$(dirname $0)/..
+cd $ROOT
+local=
+devices=
+
+if [ "$1" == "local" ]; then
+    local=local
+    shift
+fi
+
+if [ "$1" == "devices" ]; then
+    devices=y
+    shift
+fi
+
+if [ -z "$1" ]; then
+    mode=bond
+else
+    mode=$1
+    shift
+fi
+
+source bin/stack_functions
+
+###########################################################
+
+bin/net_clean
+
+echo Configuring mode $mode...
+
+add_br corp  0x111 6683
+add_br t1sw1 177 6001 7001
+add_br t1sw2 178 6001 7001
+add_br t2sw1 147058200627 6001 7001
+add_br t2sw2 1296 6001 7001
+add_br t2sw3 1297 6001 7001
+
+upstream1=corp-eth10
+upstream2=corp-eth20
+
+add_oeth t1sw1 28 $upstream1
+add_oeth t1sw2 28 $upstream2
+
+add_link t1sw1 6 t1sw2 6
+
+add_link t1sw1 9 t2sw1 50
+add_link t1sw1 10 t2sw2 50
+add_link t1sw1 11 t2sw3 50
+
+add_link t1sw2 9 t2sw1 52
+add_link t1sw2 10 t2sw2 52
+add_link t1sw2 11 t2sw3 52
+
+if [ $mode == bond ]; then
+    bondif=bond
+    sudo ip link del $bondif || true
+    echo Setting up $bondif interface for $upstream1 and $upstream2
+    sudo ip link add $bondif type bond mode 802.3ad
+    sudo ip link set $bondif up
+    sudo ip link set $upstream1 master $bondif
+    sudo ip link set $upstream2 master $bondif
+    upstream1=$bondif
+    upstream2=
+fi
+
+echo Connecting corp bridge
+add_iface corp 10 $upstream1
+if [ -n "$upstream2" ]; then
+    add_iface corp 20 $upstream2
+fi
+
+function add_faux {
+    switch=$1
+    port=$2
+    fnum=$3
+    bin/run_faux $fnum
+    docker exec -ti forch-faux-$fnum ip addr flush faux-eth0
+    docker exec -ti forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
+    add_iface $switch $port faux-$fnum
+}
+
+echo Connecting faux interfaces
+add_faux corp 1 0
+add_faux t2sw1 1 1
+add_faux t2sw2 1 2
+add_faux t2sw3 1 3
+
+if [ -n "$devices" ]; then
+    for fnum in {4..44}; do
+        add_faux t2sw1 $fnum $fnum
+    done
+fi
+
+echo Starting faucet instances...
+sudo rm -rf inst/
+mkdir -p inst/forch-faucet-corp
+cp etc/corp_$mode.yaml inst/forch-faucet-corp/faucet.yaml
+docker kill forch-faucet-corp || true
+sudo modprobe bonding
+bin/run_faucet corp 6683
+
+for index in 1; do
+    controller=forch-faucet-$index
+    mkdir -p inst/$controller/
+    cp topo/$mode/*.yaml inst/$controller/
+    docker kill $controller || true
+    bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+    bin/run_faucet gauge $index $((7000 + index)) $((9000 + index))
+done
+
+echo Letting system settle...
+sleep 10
+
+echo head of forch-faucet-1/faucet.log:
+head inst/forch-faucet-1/faucet.log
+echo
+
+echo Starting connection warm-up for 10s...
+docker exec forch-faux-0 ping -q -c 10 192.168.1.2 &
+docker exec forch-faux-1 ping -q -c 10 192.168.1.3 &
+docker exec forch-faux-2 ping -q -c 10 192.168.1.1 &
+docker exec forch-faux-3 ping -q -c 10 192.168.1.1 &
+
+echo Waiting for warm-ups to complete...
+wait
+
+echo Connection sanity check...
+docker exec forch-faux-0 ping -q -c 1 192.168.1.2
+docker exec forch-faux-1 ping -q -c 1 192.168.1.3
+docker exec forch-faux-2 ping -q -c 1 192.168.1.1
+docker exec forch-faux-3 ping -q -c 1 192.168.1.1
+
+echo Done with stack setup mode $mode.

@@ -1,0 +1,67 @@
+/*
+ * Encapsulation of an event on the Faucet event socket.
+ */
+syntax = "proto3";
+
+import "forch/proto/shared_constants.proto";
+
+message FaucetEvent {
+  int32 version = 1;
+  float time = 2;
+  string dp_name = 3;
+  int64 dp_id = 4;
+  int32 event_id = 5;
+  bool debounced = 6;
+
+  oneof event_data {
+    LagChange LAG_CHANGE = 7;
+    StackTopoChange STACK_TOPO_CHANGE = 8;
+  }
+}
+
+message LagChange {
+  float timestamp = 1;
+  string dp_name = 2;
+  int32 port_no = 3;
+  int32 state = 4;
+}
+
+message StackTopoChange {
+  float timestamp = 1;
+  string stack_root = 2;
+  StackGraph graph = 3;
+  map<string, StackDp> dps = 4;
+
+  message StackGraph {
+    bool directed = 1;
+    bool multigraph = 2;
+    NetworkGraph graph = 3;
+    repeated StackNode nodes = 4;
+    repeated StackLink links = 5;
+  }
+
+  message NetworkGraph {
+  }
+
+  message StackNode {
+    string id = 1;
+  }
+
+  message StackLink {
+    string key = 1;
+    string source = 2;
+    string target = 3;
+    LinkPortMap port_map = 4;
+  }
+
+  message LinkPortMap {
+    string dp_a = 1;
+    string port_a = 2;
+    string dp_z = 3;
+    string port_z = 4;
+  }
+
+  message StackDp {
+    int32 root_hop_port = 1;
+  }
+}
