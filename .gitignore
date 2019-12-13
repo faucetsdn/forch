@@ -1,3 +1,18 @@
+faucet
+inst/
+test_out/
+protoc-gen-doc/
+
+# package build files
+
+.pybuild/
+debian/files
+debian/.debhelper/
+debian/python3-forch.postinst.debhelper
+debian/python3-forch.prerm.debhelper
+debian/python3-forch.substvars
+debian/python3-forch/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -25,6 +40,11 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pybuild/
+debian/.debhelper/
+debian/files
+debian/python3-forch.substvars
+debian/python3-forch/
 MANIFEST
 
 # PyInstaller
