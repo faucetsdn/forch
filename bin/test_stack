@@ -257,6 +257,7 @@ function test_forch {
     api_result=$fout_dir/switch_state2.json
     jq '.switch_state_detail' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw2".ports."46".attributes.description' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state3.json
     jq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result | tee -a $TEST_RESULTS
 

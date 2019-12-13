@@ -72,8 +72,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interface_ranges:
-      1-46: {acl_in: uniform_acl, description: IoT Device, native_vlan: 171}
+      1-45: {acl_in: uniform_acl, description: IoT Device, native_vlan: 171}
     interfaces:
+      46:
+        acl_in: uniform_acl
+        native_vlan: 171
       50:
         description: "to t1sw1 port 10"
         stack: {dp: nz-kiwi-t1sw1, port: 10}
