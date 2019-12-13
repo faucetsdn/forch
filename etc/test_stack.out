@@ -23,13 +23,13 @@ Done with stack-solid test.
 Running forch-solid tests
 @system_state-solid
 "nz-kiwi"
-93
+94
 "http://localhost.n:9020"
 "split"
 @dataplane_state-solid
 "healthy"
 "egress: nz-kiwi-t1sw1"
-75
+76
 "active"
 "active"
 @switch_state-solid
@@ -68,13 +68,13 @@ Running forch-solid tests
 Running forch-healthy tests
 @system_state-healthy
 "nz-kiwi"
-95
+96
 "http://localhost.n:9020"
 "healthy"
 @dataplane_state-healthy
 "healthy"
 "egress: nz-kiwi-t1sw1"
-75
+76
 "active"
 "active"
 @switch_state-healthy
@@ -152,13 +152,13 @@ Done with stack-twod test.
 Running forch-twod tests
 @system_state-twod
 "nz-kiwi"
-152
+153
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-twod
 "broken"
 "egress: nz-kiwi-t1sw1; broken switches: ['nz-kiwi-t2sw3']; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-111
+112
 "active"
 "active"
 @switch_state-twod
@@ -216,13 +216,13 @@ Done with stack-broken test.
 Running forch-broken tests
 @system_state-broken
 "nz-kiwi"
-185
+186
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-broken
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52']"
-132
+133
 "active"
 "down"
 @switch_state-broken
@@ -280,13 +280,13 @@ Done with stack-restored test.
 Running forch-restored tests
 @system_state-restored
 "nz-kiwi"
-223
+224
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-restored
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-160
+161
 "active"
 "active"
 @switch_state-restored
@@ -325,13 +325,13 @@ null
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-252
+253
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-178
+179
 "active"
 "active"
 @switch_state-reset
