@@ -560,15 +560,67 @@ class FaucetStateCollector:
                 hop = next_hop
         return res
 
+    # pylint: disable=too-many-arguments
+    def _add_endpoint_to_next_hops(self, switch, mac, fr_sw, fr_port, to_sw, to_port, next_hops):
+        if not switch == fr_sw:
+            return
+        learned_switch_map = self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH, {})
+        learned_port = learned_switch_map.get(to_sw, {}).get(MAC_LEARNING_PORT)
+        if not learned_port == to_port:
+            return
+        next_hop = {'switch': to_sw, 'in': to_port, 'out': None}
+        next_hops[fr_port] = next_hop
+
+    def _get_next_hops(self, switch, mac):
+        """Given a node and mac, find connected switches and ports where the mac is learned"""
+        next_hops = {}
+        for link_map in self.topo_state.get(LINKS_GRAPH):
+            if not link_map:
+                continue
+            sw_1, p_1, sw_2, p_2 = FaucetStateCollector.get_endpoints_from_link(link_map)
+            self._add_endpoint_to_next_hops(switch, mac, sw_1, p_1, sw_2, p_2, next_hops)
+            self._add_endpoint_to_next_hops(switch, mac, sw_2, p_2, sw_1, p_1, next_hops)
+
+        return next_hops
+
+    def _get_host_path(self, src_mac, dst_mac):
+        path = []
+        src_switch, src_port = self._get_access_switch(src_mac)
+        dst_switch, dst_port = self._get_access_switch(dst_mac)
+
+        current_hop = None
+        next_hops = [{'switch': src_switch, 'in': src_port, 'out': None}]
+        last_hops = {}
+
+        while next_hops:
+            current_hop = next_hops.pop(0)
+
+            if current_hop['switch'] == dst_switch:
+                current_hop['out'] = dst_port
+                break
+
+            for out_port, next_hop in self._get_next_hops(current_hop['switch'], src_mac).items():
+                next_hops.append(next_hop)
+                current_hop['out'] = out_port
+                last_hops[next_hop['switch']] = copy.deepcopy(current_hop)
+
+        if current_hop['switch'] == dst_switch:
+            while current_hop:
+                path.append(current_hop)
+                current_hop = last_hops.get(current_hop['switch'])
+            path.reverse()
+
+        return path
+
     @_pre_check(state_name='host_path_state')
     def get_host_path(self, src_mac, dst_mac, to_egress):
         """Given two MAC addresses in the core network, find the active path between them"""
         if not src_mac:
-            return self._make_summary(State.broken,
-                                      'Empty eth_src. Please use list_hosts to get a list of hosts')
+            return self._make_summary(
+                State.broken, 'Empty eth_src. Please use list_hosts to get a list of hosts')
         if not dst_mac and not to_egress:
-            return self._make_summary(State.broken,
-                                      'Empty eth_dst. Use list_hosts, or set to_egress=true')
+            return self._make_summary(
+                State.broken, 'Empty eth_dst. Use list_hosts, or set to_egress=true')
 
         if src_mac not in self.learned_macs or dst_mac and dst_mac not in self.learned_macs:
             error_msg = 'MAC address cannot be found. Please use list_hosts to get a list of hosts'
@@ -580,30 +632,11 @@ class FaucetStateCollector:
             ret_map['src_ip'] = src_ip
             return ret_map
 
-        res = {'src_ip': self.learned_macs[src_mac].get(MAC_LEARNING_IP),
-               'dst_ip': self.learned_macs[dst_mac].get(MAC_LEARNING_IP),
-               'path': []}
-
-        src_learned_switches = self.learned_macs[src_mac].get(MAC_LEARNING_SWITCH, {})
-        dst_learned_switches = self.learned_macs[dst_mac].get(MAC_LEARNING_SWITCH, {})
-
-        next_hops = self._get_graph(src_mac, dst_mac)
-
-        if not next_hops:
-            return dict_proto(res, HostPath)
-
-        src_switch, src_port = self._get_access_switch(src_mac)
-
-        next_hop = {'switch': src_switch, 'in': src_port, 'out': None}
-
-        while next_hop['switch'] in next_hops:
-            next_hop['out'] = dst_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
-            res['path'].append(copy.copy(next_hop))
-            next_hop['switch'] = next_hops[next_hop['switch']]
-            next_hop['in'] = src_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
-
-        next_hop['out'] = dst_learned_switches[next_hop['switch']][MAC_LEARNING_PORT]
-        res['path'].append(copy.copy(next_hop))
+        res = {
+            'src_ip': self.learned_macs[src_mac].get(MAC_LEARNING_IP),
+            'dst_ip': self.learned_macs[dst_mac].get(MAC_LEARNING_IP),
+            'path': self._get_host_path(src_mac, dst_mac)
+        }
 
         return dict_proto(res, HostPath)
 
@@ -771,17 +804,6 @@ class FaucetStateCollector:
 
         return from_sw, from_port, to_sw, to_port
 
-    # pylint: disable=too-many-arguments
-    def _add_link(self, src_mac, dst_mac, sw_1, port_1, sw_2, port_2, graph):
-        """Insert link into graph if link is used by the src and dst"""
-        src_learned_switches = self.learned_macs[src_mac][MAC_LEARNING_SWITCH]
-        dst_learned_switches = self.learned_macs[dst_mac][MAC_LEARNING_SWITCH]
-        src_learned_port = src_learned_switches.get(sw_1, {}).get(MAC_LEARNING_PORT, "")
-        dst_learned_port = dst_learned_switches.get(sw_2, {}).get(MAC_LEARNING_PORT, "")
-
-        if src_learned_port == port_1 and dst_learned_port == port_2:
-            graph[sw_2] = sw_1
-
     def _get_access_switch(self, mac):
         """Get access switch and port for a given MAC"""
         learned_switches = self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH)
@@ -826,18 +848,6 @@ class FaucetStateCollector:
 
         key = 'eth_dsts' if src_mac else 'eth_srcs'
         return dict_proto({key: host_macs}, HostList)
-
-    def _get_graph(self, src_mac, dst_mac):
-        """Get a graph consists of links only used by src and dst MAC"""
-        graph = {}
-        for link_map in self.topo_state.get(LINKS_GRAPH):
-            if not link_map:
-                continue
-            sw_1, p_1, sw_2, p_2 = FaucetStateCollector.get_endpoints_from_link(link_map)
-            self._add_link(src_mac, dst_mac, sw_1, p_1, sw_2, p_2, graph)
-            self._add_link(src_mac, dst_mac, sw_2, p_2, sw_1, p_1, graph)
-
-        return graph
 
     def _get_port_attributes(self, switch, port):
         """Get the attributes of a port: description, type, peer_switch, peer_port"""
