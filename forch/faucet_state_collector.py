@@ -851,7 +851,7 @@ class FaucetStateCollector:
         if port in cfg_switch.interfaces:
             port_info = cfg_switch.interfaces[port]
             assert port_info, 'missing port_info'
-            ret_attr['description'] = port_info['description']
+            ret_attr['description'] = port_info.get('description')
             if 'stack' in port_info:
                 ret_attr['type'] = 'stack'
                 ret_attr['peer_switch'] = port_info['stack']['dp']
@@ -869,7 +869,7 @@ class FaucetStateCollector:
             start_port = int(port_range.split('-')[0])
             end_port = int(port_range.split('-')[1])
             if start_port <= int(port) <= end_port:
-                ret_attr['description'] = port_info['description']
+                ret_attr['description'] = port_info.get('description')
                 ret_attr['type'] = 'access'
                 return ret_attr
         raise Exception(f'No valid port classificaiton for {switch}:{port}')
