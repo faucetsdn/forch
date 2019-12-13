@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-source update_gmaster.cfg
+source gutil/update_gmaster.cfg
 
 TMP_SH=/tmp/update_gmaster.sh
 BASE=`git rev-parse --show-toplevel`
@@ -10,16 +10,26 @@ VFILE=$BASE/$PROJ/GVERSION
 date > $VTEMP
 UPSTREAM=`git rev-parse --abbrev-ref gupdater@{upstream}`
 REPO=${UPSTREAM%/*}
+BASELINE=gmaster
 
 if [ $0 != $TMP_SH ]; then
     echo Running out of $TMP_SH to mask local churn...
     cp $0 $TMP_SH
-    $TMP_SH; false
+    $TMP_SH $*; false
+fi
+
+if [ "$1" == reset ]; then
+    echo Reset to using master as baseline...
+    BASELINE=master
+fi
+
+if [ "$1" == reset ]; then
+    BASELINE=master
 fi
 
 branch=`git rev-parse --abbrev-ref HEAD`
 if [ "$branch" != "gupdater" ]; then
-    echo $0 should be run from the gupdater branch.
+    echo $0 should be run from the gupdater branch, not $branch.
     false
 fi
 
@@ -48,12 +58,12 @@ fi
 echo Switching to gmaster branch...
 git checkout gmaster
 
-echo Creating clean clone of master...
-git reset --hard LAST_RELEASE
-echo `git rev-parse HEAD` LAST_RELEASE >> $VTEMP
+echo Creating clean base from origin/$BASELINE...
+git reset --hard origin/$BASELINE
+echo `git rev-parse HEAD` origin/$BASELINE >> $VTEMP
 
 echo Merging feature branches...
-for branch in master $BRANCHES; do
+for branch in master gupdater $BRANCHES; do
     echo Merging $REPO/$branch...
     git merge --no-edit $REPO/$branch
     echo `git rev-parse $REPO/$branch` $branch >> $VTEMP
@@ -62,7 +72,7 @@ done
 echo `git rev-parse HEAD` gmaster >> $VTEMP
 cp $VTEMP $VFILE
 git add $VFILE
-git commit -m "Adding version history"
+git commit -m "Version assembled $(date)"
 
 echo Done with clean gmaster merge.
 echo Now time to validate and push!
