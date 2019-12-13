@@ -9,7 +9,7 @@ message FaucetEvent {
   int32 version = 1;
   float time = 2;
   string dp_name = 3;
-  int32 dp_id = 4;
+  int64 dp_id = 4;
   int32 event_id = 5;
   bool debounced = 6;
 

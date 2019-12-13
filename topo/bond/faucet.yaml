@@ -52,7 +52,7 @@ dps:
         loop_protect_external: True
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
-    dp_id: 2352
+    dp_id: 147058200627
     faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
     lacp_timeout: 5

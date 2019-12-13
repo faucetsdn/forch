@@ -1,10 +1,10 @@
 a25e80c06dc7630cf1babf5161feb3e43aa90181  proto/cpn_config.proto
 3f1365cdc6f9268230ee009999e4dba254b33c12  proto/cpn_state.proto
 1a6f37c991cddfbca75e4cb9120da46c9b872ca3  proto/dataplane_state.proto
-6eefbb0a4523f0fc3c0ee3909b7e5117c02e36d3  proto/faucet_event.proto
+dc4fbf80bb029fc42f16d834793158bf20320b7f  proto/faucet_event.proto
 af9a160b73eb912bd4aadb6e03c19be08711dc7a  proto/host_path.proto
 ff5a5588400aef3a9952b3ccfd8d24e854d4b153  proto/list_hosts.proto
 2bc29e053318fe4ab4e96c02c0d12b8eda2ea7db  proto/process_state.proto
 73945d76f4bdbb9b27a2479e5dc86bf8522203f9  proto/shared_constants.proto
-ebf668dc8bf99de00127d77644450fbcf7f4f2b7  proto/switch_state.proto
+3098a6cf5876a295a4440234922732812d0f6dfa  proto/switch_state.proto
 689a26b0a95ebb67feaaf408c610570db4cfb455  proto/system_state.proto

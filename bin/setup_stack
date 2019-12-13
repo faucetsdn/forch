@@ -33,7 +33,7 @@ echo Configuring mode $mode...
 add_br corp  0x111 6683
 add_br t1sw1 177 6001 7001
 add_br t1sw2 178 6001 7001
-add_br t2sw1 2352 6001 7001
+add_br t2sw1 147058200627 6001 7001
 add_br t2sw2 1296 6001 7001
 add_br t2sw3 1297 6001 7001
 
