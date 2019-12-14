@@ -15,6 +15,7 @@ message FaucetEvent {
 
   oneof event_data {
     LagChange LAG_CHANGE = 7;
+    StackState STACK_STATE = 9;
     StackTopoChange STACK_TOPO_CHANGE = 8;
   }
 }
@@ -25,6 +26,25 @@ message LagChange {
   int32 port_no = 3;
   int32 state = 4;
 }
+
+
+/*
+ * Event representing a stacking link state change.
+ */
+message StackState {
+  // event timestamp
+  float timestamp = 1;
+
+  // dataplane name
+  string dp_name = 2;
+
+  // switch port number
+  int32 port = 3;
+
+  // stack link state
+  State.State state = 4;
+}
+
 
 message StackTopoChange {
   float timestamp = 1;
