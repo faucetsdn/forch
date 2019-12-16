@@ -91,6 +91,8 @@ class Forchestrator:
         self._faucet_events.register_handlers([
             (FaucetEvent.LagChange, lambda event: fcoll.process_lag_state(
                 event.timestamp, event.dp_name, event.port_no, event.state)),
+            (FaucetEvent.StackState, lambda event: fcoll.process_stack_state(
+                event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
         ])
 
@@ -172,11 +174,6 @@ class Forchestrator:
         if config_info:
             LOGGER.debug('Config change. New config: %s', config_info['hashes'])
             self._restore_faucet_config(timestamp, config_info['hashes'])
-
-        (name, port, state) = self._faucet_events.as_stack_state(event)
-        if name is not None:
-            LOGGER.debug('stack stack_state change: %s:%d, %d', name, port, state)
-            self._faucet_collector.process_stack_state(timestamp, name, port, state)
 
         (name, connected) = self._faucet_events.as_dp_change(event)
         if name:

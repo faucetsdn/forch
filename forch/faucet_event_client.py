@@ -272,15 +272,6 @@ class FaucetEventClient():
         src_ip = event['L2_LEARN']['l3_src_ip']
         return (name, dpid, port_no, eth_src, src_ip)
 
-    def as_stack_state(self, event):
-        """Convert to stack link state info."""
-        if not event or 'STACK_STATE' not in event:
-            return (None, None, None)
-        name = event['dp_name']
-        port = event['STACK_STATE']['port']
-        state = event['STACK_STATE']['state']
-        return (name, port, state)
-
     def as_dp_change(self, event):
         """Convert to dp status"""
         if not event or 'DP_CHANGE' not in event:
