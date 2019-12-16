@@ -23,7 +23,6 @@ def proto_json(message):
         message,
         including_default_value_fields=True,
         preserving_proto_field_name=True,
-        float_precision=8
     )
 
 
