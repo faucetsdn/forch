@@ -175,6 +175,53 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fbuilding_schema.proto">forch/proto/building_schema.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#BuildingSchema"><span class="badge">M</span>BuildingSchema</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.Controlee"><span class="badge">M</span>BuildingSchema.Controlee</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.Controlee.MacAddrsEntry"><span class="badge">M</span>BuildingSchema.Controlee.MacAddrsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.Controller"><span class="badge">M</span>BuildingSchema.Controller</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.Controller.ControleesEntry"><span class="badge">M</span>BuildingSchema.Controller.ControleesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.DeviceInfo"><span class="badge">M</span>BuildingSchema.DeviceInfo</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.DeviceInfo.ControllersEntry"><span class="badge">M</span>BuildingSchema.DeviceInfo.ControllersEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.DeviceTarget"><span class="badge">M</span>BuildingSchema.DeviceTarget</a>
+                </li>
+              
+                <li>
+                  <a href="#BuildingSchema.MacAddrsEntry"><span class="badge">M</span>BuildingSchema.MacAddrsEntry</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2fcpn_config.proto">forch/proto/cpn_config.proto</a>
             <ul>
               
@@ -507,6 +554,261 @@
       </ul>
     </div>
 
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/building_schema.proto">forch/proto/building_schema.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="BuildingSchema">BuildingSchema</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>mac_addrs</td>
+                  <td><a href="#BuildingSchema.MacAddrsEntry">BuildingSchema.MacAddrsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.Controlee">BuildingSchema.Controlee</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>mac_addrs</td>
+                  <td><a href="#BuildingSchema.Controlee.MacAddrsEntry">BuildingSchema.Controlee.MacAddrsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.Controlee.MacAddrsEntry">BuildingSchema.Controlee.MacAddrsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#BuildingSchema.DeviceTarget">BuildingSchema.DeviceTarget</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.Controller">BuildingSchema.Controller</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>controlees</td>
+                  <td><a href="#BuildingSchema.Controller.ControleesEntry">BuildingSchema.Controller.ControleesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.Controller.ControleesEntry">BuildingSchema.Controller.ControleesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#BuildingSchema.Controlee">BuildingSchema.Controlee</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.DeviceInfo">BuildingSchema.DeviceInfo</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>type</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>group</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>controllers</td>
+                  <td><a href="#BuildingSchema.DeviceInfo.ControllersEntry">BuildingSchema.DeviceInfo.ControllersEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.DeviceInfo.ControllersEntry">BuildingSchema.DeviceInfo.ControllersEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#BuildingSchema.Controller">BuildingSchema.Controller</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="BuildingSchema.DeviceTarget">BuildingSchema.DeviceTarget</h3>
+        <p></p>
+
+        
+
+        
+      
+        <h3 id="BuildingSchema.MacAddrsEntry">BuildingSchema.MacAddrsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#BuildingSchema.DeviceInfo">BuildingSchema.DeviceInfo</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
     
       
       <div class="file-heading">

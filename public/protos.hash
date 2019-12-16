@@ -1,3 +1,4 @@
+aab2863d4ab506ff4790df644cfcf8f4f70e97bc  proto/building_schema.proto
 a25e80c06dc7630cf1babf5161feb3e43aa90181  proto/cpn_config.proto
 3f1365cdc6f9268230ee009999e4dba254b33c12  proto/cpn_state.proto
 1a6f37c991cddfbca75e4cb9120da46c9b872ca3  proto/dataplane_state.proto

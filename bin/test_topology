@@ -1,0 +1,18 @@
+#!/bin/bash
+
+TEST_OUT=test_out/test_topology.out
+
+export FORCH_CONFIG_DIR=topo/bond
+
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
+    PYTHON=venv/bin/python3
+else
+    PYTHON=python3
+fi
+
+mkdir -p test_out
+rm -f $TEST_OUT
+
+$PYTHON -m forch.topology >> $TEST_OUT
+
+diff etc/test_topology.out $TEST_OUT || exit 1
