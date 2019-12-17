@@ -1,3 +1,5 @@
+setuptools
+wheel
 netaddr
 networkx
 prometheus_client
@@ -8,5 +10,3 @@ pytricia
 pyyaml
 requests
 ryu==4.32
-setuptools
-wheel
