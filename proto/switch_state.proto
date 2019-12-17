@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "forch/proto/shared_constants.proto";
+import "forch/proto/path_node.proto";
 
 /*
  * State of switches
@@ -60,7 +61,7 @@ message SwitchState {
     int32 ports_restrict = 9;
 
     // Path from this switch to root
-    repeated NodePath root_path = 10;
+    PathState root_path = 10;
 
     // All the access port macs on this switch
     map<string, PortInfo> access_port_macs = 11;
@@ -74,21 +75,6 @@ message SwitchState {
     // Attributes about this switch
     message Attributes {
       int64 dp_id = 1;
-    }
-
-    // Information for a path
-    message NodePath {
-      // Switch name
-      string switch = 1;
-
-      // In port
-      int32 in = 2;
-
-      // Out port
-      int32 out = 3;
-
-      // Egress port
-      int32 egress = 4;
     }
   }
 
@@ -136,4 +122,14 @@ message SwitchState {
     string url = 4;
   }
 
+  message PathState {
+    // Path state
+    State.State path_state = 1;
+
+    // Path state detail
+    string path_state_detail = 2;
+
+    // Path
+    repeated PathNode path = 3;
+  }
 }

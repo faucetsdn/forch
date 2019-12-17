@@ -36,7 +36,7 @@ Running forch-solid tests
 15
 "nz-kiwi-t1sw1"
 9
-0
+28
 "147058200627"
 ""
 "active"
@@ -82,7 +82,7 @@ Running forch-healthy tests
 15
 "nz-kiwi-t1sw1"
 9
-0
+28
 "147058200627"
 ""
 "active"
@@ -194,7 +194,7 @@ null
 6
 "192.168.1.1"
 "nz-kiwi-t1sw2"
-null
+6
 3
 %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down
 Starting stack-broken test...
@@ -257,7 +257,7 @@ null
 "192.168.1.2"
 null
 null
-"192.168.1.1"
+null
 null
 null
 0
@@ -324,7 +324,7 @@ null
 10
 "192.168.1.1"
 "nz-kiwi-t1sw2"
-null
+6
 3
 %%% reset stack
 Running forch-reset tests
@@ -343,7 +343,7 @@ Running forch-reset tests
 63
 "nz-kiwi-t1sw1"
 9
-0
+28
 "147058200627"
 ""
 "active"

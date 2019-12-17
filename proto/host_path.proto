@@ -3,6 +3,8 @@
  */
 syntax = "proto3";
 
+import "forch/proto/path_node.proto";
+
 /*
  * Host path
  */
@@ -18,16 +20,4 @@ message HostPath {
 
     // link to system overview API
     string system_state_url = 4;
-
-    // Node on the host path
-    message PathNode {
-        // switch name
-        string switch = 1;
-
-        // incoming port
-        int32 in = 2;
-
-        // outgoing port
-        int32 out = 3;
-    }
 }

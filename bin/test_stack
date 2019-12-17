@@ -250,9 +250,9 @@ function test_forch {
     echo @switch_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state1.json
     jq '.switch_state_change_count' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw1".root_path[1].switch' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw1".root_path[1].in' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw1".root_path[1].out' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".root_path.path[1].switch' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".root_path.path[1].in' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".root_path.path[1].out' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".attributes.dp_id' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state2.json
     jq '.switch_state_detail' $api_result | tee -a $TEST_RESULTS
@@ -286,12 +286,12 @@ function test_forch {
     echo @host_path$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path1.json
     jq .dst_ip $api_result | tee -a $TEST_RESULTS
-    jq .path[1].switch $api_result | tee -a $TEST_RESULTS
-    jq .path[1].out $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].switch' $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].out' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path2.json
     jq .src_ip $api_result | tee -a $TEST_RESULTS
-    jq .path[1].switch $api_result | tee -a $TEST_RESULTS
-    jq .path[1].egress $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].switch' $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].out' $api_result | tee -a $TEST_RESULTS
     jq '.path | length' $api_result | tee -a $TEST_RESULTS
 }
 

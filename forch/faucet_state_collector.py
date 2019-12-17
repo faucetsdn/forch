@@ -101,7 +101,6 @@ class FaucetStateCollector:
     def __init__(self):
         self.switch_states = {}
         self.topo_state = {}
-        self.topo_state.setdefault(LINKS_GRAPH, [])
         self.learned_macs = {}
         self.faucet_config = {}
         self.lock = RLock()
@@ -109,7 +108,7 @@ class FaucetStateCollector:
         self.process_lag_state(time.time(), None, None, False)
         self._active_state = State.initializing
         self._is_state_restored = False
-        self._state_restore_error = None
+        self._state_restore_error = "Initializing"
 
     def set_active(self, active_state):
         """Set active state"""
@@ -141,7 +140,7 @@ class FaucetStateCollector:
                         detail = f'This controller is {state_name}'
                         return self._make_summary(self._active_state, detail)
                     if not self._is_state_restored:
-                        detail = f'Cannot state not restored: {self._state_restore_error}'
+                        detail = f'State is not restored: {self._state_restore_error}'
                         return self._make_summary(State.broken, detail)
                 return func(self, *args, **kwargs)
             return wrapped
@@ -496,8 +495,7 @@ class FaucetStateCollector:
 
     def _fill_path_to_root(self, switch_name, switch_map):
         """populate path to root for switch_state"""
-        egress_path = self.get_switch_egress_path(switch_name)
-        switch_map["root_path"] = egress_path['path']
+        switch_map["root_path"] = self.get_switch_egress_path(switch_name)
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
@@ -568,28 +566,48 @@ class FaucetStateCollector:
 
     def get_active_egress_path(self, src_mac):
         """Given a MAC address return active route to egress."""
-        if src_mac not in self.learned_macs:
-            return None
         src_switch, src_port = self._get_access_switch(src_mac)
         if not src_switch or not src_port:
-            return None
-        return self.get_switch_egress_path(src_switch, src_port)
+            return self._make_summary(
+                State.broken, f'Device {src_mac} is not connected to access switch')
+        egress_path_state = self.get_switch_egress_path(src_switch, src_port)
+        egress_path = egress_path_state.get('path')
+        if egress_path:
+            return dict_proto({
+                'src_ip': self.learned_macs.get(src_mac, {}).get(MAC_LEARNING_IP),
+                'path': egress_path
+            }, HostPath)
+        return self._make_summary(
+            egress_path_state['path_state'], egress_path_state['path_state_detail'])
 
     def get_switch_egress_path(self, src_switch, src_port=None):
         """"Returns path to egress from given switch. Appends ingress port to first hop if given"""
-        res = {'path': []}
         with self.lock:
             link_list = self.topo_state.get(LINKS_GRAPH)
             dps = self.topo_state.get(TOPOLOGY_DPS)
-            if not dps or not link_list:
-                raise Exception('missing topology dps or links')
+
+            if link_list is None or dps is None:
+                return {
+                    'path_state': State.broken,
+                    'path_state_detail': 'Missing topology dps or links'
+                }
+            if not link_list or not dps:
+                return {
+                    'path_state': State.broken,
+                    'path_state_detail': 'No active links available'
+                }
+
             hop = {'switch': src_switch}
+            path = []
+
             if src_port:
                 hop['in'] = src_port
+
             while hop:
                 next_hop = {}
                 hop_switch = hop['switch']
                 egress_port = dps[hop_switch].root_hop_port
+
                 if egress_port:
                     hop['out'] = egress_port
                     for link_map in link_list:
@@ -605,13 +623,20 @@ class FaucetStateCollector:
                             next_hop['switch'] = sw_1
                             next_hop['in'] = port_1
                             break
-                    res['path'].append(hop)
+                    path.append(hop)
                 elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
-                    hop['egress'] = self._get_egress_port(hop_switch)
-                    res['path'].append(hop)
+                    hop['out'] = self._get_egress_port(hop_switch)
+                    path.append(hop)
                     break
                 hop = next_hop
-        return res
+
+            if hop:
+                return {'path_state': State.healthy, 'path': path}
+
+            return {
+                'path_state': State.broken,
+                'path_state_detail': 'No path to root found'
+            }
 
     # pylint: disable=too-many-arguments
     def _add_endpoint_to_next_hops(self, switch, mac, fr_sw, fr_port, to_sw, to_port, next_hops):
@@ -627,7 +652,7 @@ class FaucetStateCollector:
     def _get_next_hops(self, switch, mac):
         """Given a node and mac, find connected switches and ports where the mac is learned"""
         next_hops = {}
-        for link_map in self.topo_state.get(LINKS_GRAPH):
+        for link_map in self.topo_state.get(LINKS_GRAPH, []):
             if not link_map:
                 continue
             sw_1, p_1, sw_2, p_2 = FaucetStateCollector.get_endpoints_from_link(link_map)
@@ -671,6 +696,7 @@ class FaucetStateCollector:
         if not src_mac:
             return self._make_summary(
                 State.broken, 'Empty eth_src. Please use list_hosts to get a list of hosts')
+
         if not dst_mac and not to_egress:
             return self._make_summary(
                 State.broken, 'Empty eth_dst. Use list_hosts, or set to_egress=true')
@@ -680,10 +706,7 @@ class FaucetStateCollector:
             return self._make_summary(State.broken, error_msg)
 
         if to_egress:
-            ret_map = self.get_active_egress_path(src_mac)
-            src_ip = self.learned_macs.get(src_mac, {}).get(MAC_LEARNING_IP)
-            ret_map['src_ip'] = src_ip
-            return ret_map
+            return self.get_active_egress_path(src_mac)
 
         res = {
             'src_ip': self.learned_macs[src_mac].get(MAC_LEARNING_IP),
