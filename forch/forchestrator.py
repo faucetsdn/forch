@@ -100,13 +100,15 @@ class Forchestrator:
         # Make sure the event socket is connected so there's no loss of information.
         assert self._faucet_events.event_socket_connected, 'restore states without connection'
         metrics = self._varz_collector.get_metrics()
-        self._event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
-        LOGGER.info('Setting event horizon to event #%d', self._event_horizon)
 
+        # restore config first before restoring from varz
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
         self._restore_faucet_config(time.time(), varz_config_hashes)
+
+        self._event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
+        LOGGER.info('Setting event horizon to event #%d', self._event_horizon)
 
     def _restore_faucet_config(self, timestamp, config_hash):
         config_info, faucet_dps, _ = self._get_faucet_config()
@@ -126,7 +128,7 @@ class Forchestrator:
                         self._restore_states()
                         self._faucet_collector.set_state_restored(True)
                     except Exception as e:
-                        LOGGER.error("Cannot restore states or connect to faucet: %s", e)
+                        LOGGER.error("Cannot restore states or connect to faucet", exc_info=True)
                         self._faucet_collector.set_state_restored(False, e)
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
@@ -443,11 +445,17 @@ def get_log_path():
     return os.path.join(forch_log_dir, 'forch.log')
 
 
-if __name__ == '__main__':
+def configure_logging():
+    """Configure logging with some basic parameters"""
     logging.basicConfig(filename=get_log_path(),
                         format=_LOG_FORMAT,
                         datefmt=_LOG_DATE_FORMAT,
                         level=logging.INFO)
+
+
+if __name__ == '__main__':
+    configure_logging()
+
     CONFIG = load_config()
     if not CONFIG:
         LOGGER.error('Invalid config, exiting.')

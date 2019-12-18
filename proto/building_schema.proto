@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+message BuildingSchema {
+  map<string, DeviceInfo> mac_addrs = 1;
+
+  message DeviceInfo {
+    string type = 1;
+    string group = 2;
+    map<string, Controller> controllers = 3;
+  }
+
+  message Controller {
+    map<string, Controlee> controlees = 1;
+  }
+
+  message Controlee {
+    map<string, DeviceTarget> mac_addrs = 1;
+  }
+
+  message DeviceTarget {
+  }
+}

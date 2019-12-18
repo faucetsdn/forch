@@ -23,20 +23,20 @@ Done with stack-solid test.
 Running forch-solid tests
 @system_state-solid
 "nz-kiwi"
-94
+95
 "http://localhost.n:9020"
 "split"
 @dataplane_state-solid
 "healthy"
 "egress: nz-kiwi-t1sw1"
-76
+77
 "active"
 "active"
 @switch_state-solid
 15
 "nz-kiwi-t1sw1"
 9
-0
+28
 "147058200627"
 ""
 "active"
@@ -69,20 +69,20 @@ null
 Running forch-healthy tests
 @system_state-healthy
 "nz-kiwi"
-96
+97
 "http://localhost.n:9020"
 "healthy"
 @dataplane_state-healthy
 "healthy"
 "egress: nz-kiwi-t1sw1"
-76
+77
 "active"
 "active"
 @switch_state-healthy
 15
 "nz-kiwi-t1sw1"
 9
-0
+28
 "147058200627"
 ""
 "active"
@@ -154,13 +154,13 @@ Done with stack-twod test.
 Running forch-twod tests
 @system_state-twod
 "nz-kiwi"
-153
+154
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-twod
 "broken"
 "egress: nz-kiwi-t1sw1; broken switches: ['nz-kiwi-t2sw3']; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-112
+113
 "active"
 "active"
 @switch_state-twod
@@ -194,7 +194,7 @@ null
 6
 "192.168.1.1"
 "nz-kiwi-t1sw2"
-null
+6
 3
 %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down
 Starting stack-broken test...
@@ -219,13 +219,13 @@ Done with stack-broken test.
 Running forch-broken tests
 @system_state-broken
 "nz-kiwi"
-186
+187
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-broken
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:10@nz-kiwi-t2sw2:52']"
-133
+134
 "active"
 "down"
 @switch_state-broken
@@ -257,7 +257,7 @@ null
 "192.168.1.2"
 null
 null
-"192.168.1.1"
+null
 null
 null
 0
@@ -284,13 +284,13 @@ Done with stack-restored test.
 Running forch-restored tests
 @system_state-restored
 "nz-kiwi"
-224
+225
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-restored
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-161
+162
 "active"
 "active"
 @switch_state-restored
@@ -324,26 +324,26 @@ null
 10
 "192.168.1.1"
 "nz-kiwi-t1sw2"
-null
+6
 3
 %%% reset stack
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-253
+254
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-179
+180
 "active"
 "active"
 @switch_state-reset
 63
 "nz-kiwi-t1sw1"
 9
-0
+28
 "147058200627"
 ""
 "active"

@@ -1,0 +1,19 @@
+/*
+ * cpn_state API result.
+ */
+syntax = "proto3";
+
+/*
+ * Switching path node
+ */
+message PathNode {
+    // switch name
+    string switch = 1;
+
+    // incoming port
+    int32 in = 2;
+
+    // outgoing port
+    int32 out = 3;
+}
+

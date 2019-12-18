@@ -1,13 +1,17 @@
 """Various constants for use throuought forch"""
 
 STATE_ACTIVE = 'active'
+LINK_STATE_ACTIVE = 'active'
 STATE_INACTIVE = 'inactive'
 STATE_SPLIT = 'split'
 STATE_HEALTHY = 'healthy'
 STATE_DAMAGED = 'damaged'
 STATE_UP = 'up'
+LINK_STATE_UP = 'up'
 STATE_DOWN = 'down'
+LINK_STATE_DOWN = 'down'
 STATE_BROKEN = 'broken'
+LINK_STATE_BROKEN = 'broken'
 STATE_INITIALIZING = 'initializing'
 
 # TODO: Remove STATUS_ constants once all references have been removed.
