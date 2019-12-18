@@ -6,7 +6,7 @@ ls -alrt git/
 uname -a
 cd git/benz-build-source
 sudo kokoro/setup.sh
-#mkdir binary/
+mkdir binary/
 #glinux-build -name="rodete" binary/
 debchange --newversion $(git describe) -b "New upstream release"
 #build-debs -b -L -d rodete
