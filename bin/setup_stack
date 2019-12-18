@@ -99,7 +99,7 @@ mkdir -p inst/forch-faucet-corp
 cp etc/corp_$mode.yaml inst/forch-faucet-corp/faucet.yaml
 docker kill forch-faucet-corp || true
 sudo modprobe bonding
-bin/run_faucet corp 6683
+bin/run_faucet $local corp 6683
 
 for index in 1; do
     controller=forch-faucet-$index
@@ -107,7 +107,7 @@ for index in 1; do
     cp topo/$mode/*.yaml inst/$controller/
     docker kill $controller || true
     bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
-    bin/run_faucet gauge $index $((7000 + index)) $((9000 + index))
+    bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
 echo Letting system settle...

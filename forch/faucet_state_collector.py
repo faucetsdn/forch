@@ -1,6 +1,5 @@
 """Processing faucet events"""
 
-import copy
 from datetime import datetime
 import json
 import logging
@@ -155,6 +154,7 @@ class FaucetStateCollector:
 
     def restore_states_from_metrics(self, metrics):
         """Restore internal states from prometheus metrics"""
+        LOGGER.info('restoring internal state from metrics')
         current_time = time.time()
         for label_name, method_map in _RESTORE_METHODS.items():
             for metric_name, restore_method in method_map.items():
@@ -165,12 +165,20 @@ class FaucetStateCollector:
                     switch = sample.labels['dp_name']
                     label = int(sample.labels.get(label_name, 0))
                     restore_method(self, current_time, switch, label, sample.value)
-        self.restore_dataplane_state_from_metrics(metrics)
+        self._restore_l2_learn_state_from_samples(metrics['l2_learn'].samples)
+        self._restore_dataplane_state_from_metrics(metrics)
         return int(metrics['faucet_event_id'].samples[0].value)
 
-    def restore_dataplane_state_from_metrics(self, metrics):
-        """Restores dataplane state from prometheus metrics. relies on STACK_STATE being restored"""
-        LOGGER.info("Anurag restore_dataplane_state_from_metrics")
+    def _restore_l2_learn_state_from_samples(self, samples):
+        timestamp = time.time()
+        for sample in samples:
+            dp_name = sample.labels['dp_name']
+            port = int(sample.value)
+            eth_src = sample.labels['eth_src']
+            l3_src_ip = sample.labels['l3_src_ip']
+            self.process_port_learn(timestamp, dp_name, port, eth_src, l3_src_ip)
+
+    def _restore_dataplane_state_from_metrics(self, metrics):
         link_graph, stack_root, dps, timestamp = [], "", {}, ""
         topo_map = self._get_topo_map(False)
         for key, status in topo_map.items():
@@ -638,55 +646,31 @@ class FaucetStateCollector:
                 'path_state_detail': 'No path to root found'
             }
 
-    # pylint: disable=too-many-arguments
-    def _add_endpoint_to_next_hops(self, switch, mac, fr_sw, fr_port, to_sw, to_port, next_hops):
-        if not switch == fr_sw:
-            return
-        learned_switch_map = self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH, {})
-        learned_port = learned_switch_map.get(to_sw, {}).get(MAC_LEARNING_PORT)
-        if not learned_port == to_port:
-            return
-        next_hop = {'switch': to_sw, 'in': to_port, 'out': None}
-        next_hops[fr_port] = next_hop
-
-    def _get_next_hops(self, switch, mac):
-        """Given a node and mac, find connected switches and ports where the mac is learned"""
-        next_hops = {}
-        for link_map in self.topo_state.get(LINKS_GRAPH, []):
-            if not link_map:
-                continue
-            sw_1, p_1, sw_2, p_2 = FaucetStateCollector.get_endpoints_from_link(link_map)
-            self._add_endpoint_to_next_hops(switch, mac, sw_1, p_1, sw_2, p_2, next_hops)
-            self._add_endpoint_to_next_hops(switch, mac, sw_2, p_2, sw_1, p_1, next_hops)
-
-        return next_hops
-
     def _get_host_path(self, src_mac, dst_mac):
         path = []
         src_switch, src_port = self._get_access_switch(src_mac)
         dst_switch, dst_port = self._get_access_switch(dst_mac)
+        switch_map = self.learned_macs[dst_mac][MAC_LEARNING_SWITCH]
 
-        current_hop = None
-        next_hops = [{'switch': src_switch, 'in': src_port, 'out': None}]
-        last_hops = {}
-
-        while next_hops:
-            current_hop = next_hops.pop(0)
-
-            if current_hop['switch'] == dst_switch:
-                current_hop['out'] = dst_port
+        current_switch = src_switch
+        max_hops = 5
+        while max_hops > 0:
+            if current_switch not in switch_map:
+                raise Exception('No route to host at %s' % current_switch)
+            out_port = switch_map[current_switch][MAC_LEARNING_PORT]
+            hop = {'switch': current_switch, 'in': src_port, 'out': out_port}
+            path.append(hop)
+            if current_switch == dst_switch:
                 break
+            link = self._get_port_attributes(current_switch, out_port)
+            current_switch = str(link['peer_switch'])
+            src_port = link['peer_port'].number
+            max_hops -= 1
 
-            for out_port, next_hop in self._get_next_hops(current_hop['switch'], src_mac).items():
-                next_hops.append(next_hop)
-                current_hop['out'] = out_port
-                last_hops[next_hop['switch']] = copy.deepcopy(current_hop)
+        if not max_hops:
+            raise Exception('Forwarding loop detected: %s' % path)
 
-        if current_hop['switch'] == dst_switch:
-            while current_hop:
-                path.append(current_hop)
-                current_hop = last_hops.get(current_hop['switch'])
-            path.reverse()
+        assert out_port == dst_port, 'last output port does not match destination port'
 
         return path
 
