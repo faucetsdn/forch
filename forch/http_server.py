@@ -30,11 +30,11 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # pylint: disable=invalid-name
     def do_GET(self):
         """Handle a basic http request get method"""
-        host = self.headers.get('Host')
-        if not host:
+        url_error = self._check_url()
+        if url_error:
             self.send_response(500)
             self.end_headers()
-            LOGGER.warning("Host is empty. Path: %s", self.path)
+            LOGGER.warning(url_error)
             return
         self.send_response(200)
         self.end_headers()
@@ -43,8 +43,19 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         opt_pairs = urllib.parse.parse_qsl(parsed.query)
         for pair in opt_pairs:
             opts[pair[0]] = pair[1]
-        message = str(self._context.get_data(host, parsed.path[1:], opts))
+        message = str(self._context.get_data(self.headers.get('Host'), parsed.path[1:], opts))
         self.wfile.write(message.encode())
+
+    def _check_url(self):
+        """Check if url is illegal"""
+        if not self.headers.get('Host'):
+            return f'Host is empty. Path: {self.path}'
+        if not self.path:
+            return f'Path is empty'
+        if '..' in self.path:
+            print(self.path)
+            return f'Path contains directory traversal notations: {self.path}'
+        return None
 
 
 class HttpServer():
