@@ -6,6 +6,7 @@ psutil
 pylint==2.4.2
 pytricia
 pyyaml
+pbr>=1.9
 requests
 ryu==4.32
 setuptools

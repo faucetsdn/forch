@@ -17,11 +17,10 @@ package_data = {'': ['GVERSION']}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-version = os.popen('git describe').read().strip()
+#version = os.popen('git describe').read().strip()
 
 setuptools.setup(
     name="forch",
-    version=version,
     description="Faucet orchestrator",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -39,8 +38,12 @@ setuptools.setup(
         'protobuf',
         'psutil',
         'pyyaml',
-        'requests'
+        'requests',
+        'pbr>=1.9',
+        'setuptools>=17.1'
     ],
+    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
     data_files=data_files,
-    scripts=['bin/forch']
+    scripts=['bin/forch'],
+    pbr=True
 )
