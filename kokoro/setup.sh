@@ -26,6 +26,8 @@ add_rapture_repo glinux-priority-rodete-stable main
 add_rapture_repo glinux-canaries-rodete-stable main
 add_rapture_repo glinux-priority-extra-rodete-stable main
 add_rapture_repo goobuntu-utils-stable main
+add_rapture_repo enterprise-sdn-faucet-core-unstable main
 
 apt-get -q update
-apt-get -q -y install build-debs rapture-archive-keyring git
+apt-get -q -y install glinux-build git devscripts
+#apt-get -q -y install build-debs rapture-archive-keyring

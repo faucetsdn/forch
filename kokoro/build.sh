@@ -13,3 +13,8 @@ build-debs -b -L -d rodete
 #cd
 #sudo apt-get install tree
 #tree
+mkdir -p "${TMPDIR}/binary/"
+mkdir -p "${TMPDIR}/glinux-build"
+glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
+cp ${TMPDIR}/binary/* binary/
+ls -alrt
