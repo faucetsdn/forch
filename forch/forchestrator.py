@@ -53,7 +53,6 @@ class Forchestrator:
         self._initialized = False
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
-        self._event_horizon = 0
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -97,39 +96,45 @@ class Forchestrator:
         ])
 
     def _restore_states(self):
-        # Make sure the event socket is connected so there's no loss of information.
+        # Make sure the event socket is connected so there's no loss of information. Ordering
+        # is important here, need to connect the socket before scraping current state to avoid
+        # loss of events inbetween.
         assert self._faucet_events.event_socket_connected, 'restore states without connection'
         metrics = self._varz_collector.get_metrics()
 
-        # restore config first before restoring from varz
+        # Restore config first before restoring all state from varz.
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
         self._restore_faucet_config(time.time(), varz_config_hashes)
 
-        self._event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
-        LOGGER.info('Setting event horizon to event #%d', self._event_horizon)
+        event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
+        self._faucet_events.set_event_horizon(event_horizon)
 
     def _restore_faucet_config(self, timestamp, config_hash):
         config_info, faucet_dps, _ = self._get_faucet_config()
         assert config_hash == config_info['hashes'], 'config hash info does not match'
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
+    def _faucet_events_connect(self):
+        LOGGER.info('Attempting faucet event sock connection...')
+        time.sleep(1)
+        try:
+            self._faucet_events.connect()
+            self._restore_states()
+            self._faucet_collector.set_state_restored(True)
+        except Exception as e:
+            LOGGER.error("Cannot restore states or connect to faucet", exc_info=True)
+            self._faucet_collector.set_state_restored(False, e)
+
     def main_loop(self):
         """Main event processing loop"""
         LOGGER.info('Entering main event loop...')
         try:
-            while self._handle_faucet_events():
+            while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
-                    LOGGER.info('Attempting faucet event sock connection...')
-                    time.sleep(1)
-                    try:
-                        self._faucet_events.connect()
-                        self._restore_states()
-                        self._faucet_collector.set_state_restored(True)
-                    except Exception as e:
-                        LOGGER.error("Cannot restore states or connect to faucet", exc_info=True)
-                        self._faucet_collector.set_state_restored(False, e)
+                    self._faucet_events_connect()
+                self._process_faucet_event()
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
@@ -137,26 +142,17 @@ class Forchestrator:
             LOGGER.error("Exception: %s", e)
             raise
 
-    # TODO: This should likely be moved into the faucet_state_collector.
-    # pylint: disable=too-many-locals
-    def _handle_faucet_events(self):
-        while self._faucet_events:
-            event = self._faucet_events.next_event(blocking=True)
-            if not event:
-                return True
-            try:
-                self._handle_faucet_event(event)
-            except Exception as e:
-                LOGGER.warning('While processing event %s', event)
-                raise e
-        return False
+    def _process_faucet_event(self):
+        event = self._faucet_events.next_event(blocking=True)
+        try:
+            self._handle_faucet_event(event)
+        except Exception as e:
+            LOGGER.warning('While processing event %s', event)
+            raise e
 
     def _handle_faucet_event(self, event):
-        # TODO: Move this down into some other class so 'event_id' isn't exposed in forchestrator.
-        if int(event.get('event_id')) < self._event_horizon:
-            LOGGER.debug('Outdated faucet event #%d', event.get('event_id'))
-            # TODO: Actually flush event (no-op) when varz sufficient.
-
+        if not event:
+            return
         timestamp = event.get("time")
         LOGGER.debug("Event: %r", event)
         (name, dpid, port, active) = self._faucet_events.as_port_state(event)
@@ -356,7 +352,7 @@ class Forchestrator:
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
             return config_hash_info, new_dps, top_conf
         except Exception as e:
-            LOGGER.error("Cannot read faucet config: %s", e)
+            LOGGER.error('Cannot read faucet config: %s', e)
             raise e
 
     def cleanup(self):

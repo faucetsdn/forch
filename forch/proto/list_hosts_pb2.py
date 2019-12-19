@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1c\x66orch/proto/list_hosts.proto\"\xc8\x02\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x18\n\x10system_state_url\x18\x03 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x46\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0f\n\x07host_ip\x18\x03 \x01(\t\x12\x0b\n\x03url\x18\x04 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x1c\x66orch/proto/list_hosts.proto\"\xdc\x02\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x46\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0f\n\x07host_ip\x18\x03 \x01(\t\x12\x0b\n\x03url\x18\x04 \x01(\tb\x06proto3')
 )
 
 
@@ -58,8 +58,8 @@ _HOSTLIST_ETHSRCSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=155,
-  serialized_end=221,
+  serialized_start=175,
+  serialized_end=241,
 )
 
 _HOSTLIST_ETHDSTSENTRY = _descriptor.Descriptor(
@@ -95,8 +95,8 @@ _HOSTLIST_ETHDSTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=223,
-  serialized_end=289,
+  serialized_start=243,
+  serialized_end=309,
 )
 
 _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
@@ -146,8 +146,8 @@ _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=291,
-  serialized_end=361,
+  serialized_start=311,
+  serialized_end=381,
 )
 
 _HOSTLIST = _descriptor.Descriptor(
@@ -172,8 +172,15 @@ _HOSTLIST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='system_state_url', full_name='HostList.system_state_url', index=2,
+      name='egress_url', full_name='HostList.egress_url', index=2,
       number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='system_state_url', full_name='HostList.system_state_url', index=3,
+      number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -191,7 +198,7 @@ _HOSTLIST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=33,
-  serialized_end=361,
+  serialized_end=381,
 )
 
 _HOSTLIST_ETHSRCSENTRY.fields_by_name['value'].message_type = _HOSTLIST_HOSTDATA

@@ -7,15 +7,17 @@ syntax = "proto3";
  * List of hosts
  */
 message HostList {
-    // List of hosts indexed by MAC addresses with networking information
+    // List of hosts indexed by MAC addresses with networking information.
     map<string, HostData> eth_srcs = 1;
 
-    // List of possible destined hosts indexed by destination MAC addresses
-    // with networking information
+    // List of possible destined hosts indexed by destination MAC addresses.
     map<string, HostData> eth_dsts = 2;
 
+    // Link for checking path to egres.
+    string egress_url = 3;
+
     // link to system overview API
-    string system_state_url = 3;
+    string system_state_url = 4;
 
     // Data for each host
     message HostData {

@@ -201,7 +201,7 @@ function fetch_forch {
     echo http://$CONTROLLER_NAME:9019/$api > $fname.txt
     jq . $fname >> $fname.txt
     echo forch $name$sub results from $api
-    jq --indent 0 . $fname
+    jq --indent 0 . $fname || cat $fname
     echo
 }
 
@@ -240,7 +240,7 @@ function test_forch {
     jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
     jq '.dataplane_state_detail' $api_result | tee -a $TEST_RESULTS
     jq '.dataplane_state_change_count' $api_result | tee -a $TEST_RESULTS
-    jq '.switch.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
+    jq '.switch.switches."nz-kiwi-t2sw3".switch_state' $api_result | tee -a $TEST_RESULTS
     jq '.stack.links."nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6".link_state' $api_result | tee -a $TEST_RESULTS
     jq '.egress.egress_state' $api_result | tee -a $TEST_RESULT
     jq '.egress.egress_state_detail' $api_result | tee -a $TEST_RESULT

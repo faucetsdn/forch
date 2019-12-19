@@ -24,8 +24,6 @@ from forch.proto.list_hosts_pb2 import HostList
 from forch.proto.switch_state_pb2 import SwitchState
 
 LOGGER = logging.getLogger('fstate')
-LINK_SUBKEY_FORMAT = '%s:%s'
-LINK_KEY_FORMAT = '%s@%s'
 
 
 def _dump_states(func):
@@ -46,6 +44,9 @@ def _dump_states(func):
 
 
 _RESTORE_METHODS = {'port': {}, 'dp': {}}
+
+LINK_SUBKEY_FORMAT = '%s:%s'
+LINK_KEY_FORMAT = '%s@%s'
 
 FAUCET_LACP_STATE_UP = 3
 FAUCET_STACK_STATE_BAD = 2
@@ -126,8 +127,8 @@ class FaucetStateCollector:
         summary.detail = detail
         return summary
 
-    # pylint: disable=no-self-argument, protected-access
-    def _pre_check(state_name):
+    # pylint: disable=no-self-argument, protected-access, no-method-argument
+    def _pre_check():
         def pre_check(func):
             def wrapped(self, *args, **kwargs):
                 with self._lock:
@@ -141,7 +142,11 @@ class FaucetStateCollector:
                     if not self._is_state_restored:
                         detail = f'State is not restored: {self._state_restore_error}'
                         return self._make_summary(State.broken, detail)
-                return func(self, *args, **kwargs)
+                    try:
+                        return func(self, *args, **kwargs)
+                    except Exception as e:
+                        LOGGER.exception(e)
+                        return self._make_summary(State.broken, str(e))
             return wrapped
         return pre_check
 
@@ -164,9 +169,9 @@ class FaucetStateCollector:
                 for sample in metrics[metric_name].samples:
                     switch = sample.labels['dp_name']
                     label = int(sample.labels.get(label_name, 0))
-                    restore_method(self, current_time, switch, label, sample.value)
-        self._restore_l2_learn_state_from_samples(metrics['l2_learn'].samples)
+                    restore_method(self, current_time, switch, label, int(sample.value))
         self._restore_dataplane_state_from_metrics(metrics)
+        self._restore_l2_learn_state_from_samples(metrics['l2_learn'].samples)
         return int(metrics['faucet_event_id'].samples[0].value)
 
     def _restore_l2_learn_state_from_samples(self, samples):
@@ -188,14 +193,16 @@ class FaucetStateCollector:
                     link_graph.append(item)
 
         samples = metrics.get('faucet_stack_root_dpid').samples
-        if samples:
-            # stack root from varz is dpid, need to convert to dp_name
-            stack_root = samples[0].value
+        assert samples, 'no faucet_stack_root_dpid samples fount'
+
+        # stack root from varz is dpid, need to convert to dp_name
+        stack_root_id = samples[0].value
+        stack_root = None
 
         for sample in metrics.get('dp_root_hop_port').samples:
             switch = sample.labels.get('dp_name')
             # convert dp_id to dp_name
-            if stack_root == int(sample.labels.get('dp_id'), 16):
+            if stack_root_id == int(sample.labels.get('dp_id'), 16):
                 stack_root = switch
             stack_dp = StackTopoChange.StackDp(root_hop_port=int(sample.value))
             dps[switch] = stack_dp
@@ -218,7 +225,7 @@ class FaucetStateCollector:
         linkobj = StackTopoChange.StackLink(key=key, source=dp_a, target=dp_z, port_map=port_map)
         return linkobj
 
-    @_pre_check(state_name='state')
+    @_pre_check()
     def get_dataplane_summary(self):
         """Get summary of dataplane"""
         dplane_state = self._get_dataplane_state()
@@ -252,7 +259,7 @@ class FaucetStateCollector:
         dplane_state['dataplane_state'] = state
         dplane_state['dataplane_state_detail'] = "; ".join(detail)
 
-    @_pre_check(state_name='dataplane_state')
+    @_pre_check()
     def get_dataplane_state(self):
         """get the topology state"""
         return self._get_dataplane_state()
@@ -301,7 +308,7 @@ class FaucetStateCollector:
         broken_links.sort()
         return broken_links
 
-    @_pre_check(state_name='state')
+    @_pre_check()
     def get_switch_summary(self):
         """Get summary of switch state"""
         switch_state = self._get_switch_state(None, None)
@@ -317,7 +324,7 @@ class FaucetStateCollector:
             for mac, mac_data in switch_data.get('access_port_macs', {}).items():
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
-    @_pre_check(state_name='switch_state')
+    @_pre_check()
     def get_switch_state(self, switch, port, url_base=None):
         """get a set of all switches"""
         return self._get_switch_state(switch, port, url_base)
@@ -409,13 +416,21 @@ class FaucetStateCollector:
         with self.lock:
             return self._get_switch_raw(switch_name, port)
 
+    def _get_switch_config(self, switch_name):
+        dps_configs = {str(x): x for x in self.faucet_config[DPS_CFG]}
+        if switch_name not in dps_configs:
+            raise Exception(f'Missing switch configuration for {switch_name}')
+        return dps_configs[switch_name]
+
     def _get_switch_raw(self, switch_name, port):
         """get switches state"""
         switch_map = {}
+
         # filling switch attributes
-        switch_states = self.switch_states.get(str(switch_name), {})
+        switch_states = self.switch_states.get(switch_name)
         attributes_map = switch_map.setdefault("attributes", {})
-        attributes_map["dp_id"] = switch_states.get(DP_ID)
+        switch_config = self._get_switch_config(switch_name)
+        attributes_map["dp_id"] = switch_config.dp_id
 
         # filling switch dynamics
         switch_map["restart_type_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
@@ -647,11 +662,11 @@ class FaucetStateCollector:
             }
 
     def _get_host_path(self, src_mac, dst_mac):
-        path = []
         src_switch, src_port = self._get_access_switch(src_mac)
         dst_switch, dst_port = self._get_access_switch(dst_mac)
         switch_map = self.learned_macs[dst_mac][MAC_LEARNING_SWITCH]
 
+        path = []
         current_switch = src_switch
         max_hops = 5
         while max_hops > 0:
@@ -674,7 +689,7 @@ class FaucetStateCollector:
 
         return path
 
-    @_pre_check(state_name='host_path_state')
+    @_pre_check()
     def get_host_path(self, src_mac, dst_mac, to_egress):
         """Given two MAC addresses in the core network, find the active path between them"""
         if not src_mac:
@@ -738,16 +753,14 @@ class FaucetStateCollector:
 
     @_dump_states
     # pylint: disable=too-many-arguments
-    def process_port_learn(self, timestamp, name, port, mac, src_ip):
+    def process_port_learn(self, timestamp, name, port, mac, ip_addr):
         """process port learn event"""
         with self.lock:
-            # update global mac table
-            global_mac_table = self.learned_macs.setdefault(mac, {})
+            mac_entry = self.learned_macs.setdefault(mac, {})
+            mac_entry[MAC_LEARNING_IP] = ip_addr
 
-            global_mac_table[MAC_LEARNING_IP] = src_ip
-
-            global_mac_switch_table = global_mac_table.setdefault(MAC_LEARNING_SWITCH, {})
-            learning_switch = global_mac_switch_table.setdefault(name, {})
+            mac_switches = mac_entry.setdefault(MAC_LEARNING_SWITCH, {})
+            learning_switch = mac_switches.setdefault(name, {})
             learning_switch[MAC_LEARNING_PORT] = port
             learning_switch[MAC_LEARNING_TS] = datetime.fromtimestamp(timestamp).isoformat()
 
@@ -756,6 +769,8 @@ class FaucetStateCollector:
                 .setdefault(name, {})\
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
+
+            LOGGER.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
@@ -797,7 +812,7 @@ class FaucetStateCollector:
         with self.lock:
             cfg_state = self.faucet_config
             change_count = cfg_state.get(DPS_CFG_CHANGE_COUNT, 0) + 1
-            LOGGER.info('dataplane_config #%d change', change_count)
+            LOGGER.info('dataplane_config #%d change: %r', change_count, dps_config)
             cfg_state[DPS_CFG] = dps_config
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
@@ -880,14 +895,14 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
-    @_pre_check(state_name='state')
+    @_pre_check()
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
         with self.lock:
             num_hosts = len(self.learned_macs)
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
-    @_pre_check(state_name='hosts_list_state')
+    @_pre_check()
     def get_list_hosts(self, url_base, src_mac):
         """Get access devices"""
         host_macs = {}
@@ -912,15 +927,15 @@ class FaucetStateCollector:
             mac_deets['url'] = url
 
         key = 'eth_dsts' if src_mac else 'eth_srcs'
-        return dict_proto({key: host_macs}, HostList)
+        egress_url = f"{url_base}?host_path?eth_src={src_mac}&to_egress=true" if src_mac else None
+        return dict_proto({
+            key: host_macs,
+            'egress_url': egress_url,
+        }, HostList)
 
     def _get_port_attributes(self, switch, port):
         """Get the attributes of a port: description, type, peer_switch, peer_port"""
-        dps_configs = {str(x): x for x in self.faucet_config[DPS_CFG]}
-        cfg_switch = dps_configs[switch]
-        if not cfg_switch:
-            raise Exception(f'Missing switch configuration for {switch}')
-
+        cfg_switch = self._get_switch_config(switch)
         ret_attr = {}
         port = int(port)
         if port in cfg_switch.interfaces:
