@@ -2,6 +2,7 @@ setuptools
 wheel
 netaddr
 networkx
+pbr>=1.9
 prometheus_client
 protobuf
 psutil
