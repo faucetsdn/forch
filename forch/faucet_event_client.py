@@ -114,7 +114,7 @@ class FaucetEventClient():
         if event_id != self._last_event_id:
             raise Exception('Out-of-sequence event id #%d' % event_id)
 
-        (name, dpid, port, active) = self.as_port_state(event)
+        (_, dpid, port, active) = self.as_port_state(event)
         if dpid and port:
             if not event.get('debounced'):
                 self._debounce_port_event(event, port, active)
@@ -122,16 +122,12 @@ class FaucetEventClient():
                 return True
             return False
 
-        (name, dpid, status) = self.as_ports_status(event)
+        (_, dpid, status) = self.as_ports_status(event)
         if dpid:
             for port in status:
                 # Prepend events so they functionally replace the current one in the queue.
                 self._prepend_event(event, self._make_port_change(port, status[port]))
             return False
-        (name, macs) = self._as_learned_macs(event)
-        if name:
-            for mac in macs:
-                self._prepend_event(event, self._make_l2_learn(mac))
         return True
 
     def _process_state_update(self, dpid, port, active):
@@ -257,12 +253,6 @@ class FaucetEventClient():
         if not event or 'PORTS_STATUS' not in event:
             return (None, None, None)
         return (event['dp_name'], event['dp_id'], event['PORTS_STATUS'])
-
-    def _as_learned_macs(self, event):
-        """Convert the event to learned macs info, if applicable"""
-        if not event or 'L2_LEARNED_MACS' not in event:
-            return (None, None)
-        return (event.get('dp_name'), event.get('L2_LEARNED_MACS'))
 
     def as_port_state(self, event):
         """Convert event to a port state info, if applicable"""

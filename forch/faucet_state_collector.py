@@ -171,17 +171,23 @@ class FaucetStateCollector:
                     label = int(sample.labels.get(label_name, 0))
                     restore_method(self, current_time, switch, label, int(sample.value))
         self._restore_dataplane_state_from_metrics(metrics)
-        self._restore_l2_learn_state_from_samples(metrics['l2_learn'].samples)
+        self._restore_l2_learn_state_from_samples(metrics['learned_l2_port'].samples)
         return int(metrics['faucet_event_id'].samples[0].value)
 
     def _restore_l2_learn_state_from_samples(self, samples):
         timestamp = time.time()
+        learned_ports = 0
         for sample in samples:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
             l3_src_ip = sample.labels['l3_src_ip']
-            self.process_port_learn(timestamp, dp_name, port, eth_src, l3_src_ip)
+            if port:
+                self.process_port_learn(timestamp, dp_name, port, eth_src, l3_src_ip)
+                learned_ports += 1
+        if not learned_ports:
+            LOGGER.info('No learned ports found.')
+            return
 
     def _restore_dataplane_state_from_metrics(self, metrics):
         link_graph, stack_root, dps, timestamp = [], "", {}, ""
