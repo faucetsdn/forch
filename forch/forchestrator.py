@@ -477,7 +477,7 @@ def main():
         http_server.map_request('sys_config', forchestrator.get_sys_config)
         http_server.map_request('', http_server.static_file(''))
     except Exception as e:
-        LOGGER.error("Cannot initialize forch: %s", e)
+        LOGGER.error("Cannot initialize forch: %s", e, exc_info=True)
         http_server.map_request('', functools.partial(show_error, e))
     finally:
         http_server.start_server()

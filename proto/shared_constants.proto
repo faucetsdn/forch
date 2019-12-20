@@ -39,3 +39,25 @@ message State {
     up = 8;
   }
 }
+
+/*
+ * LACP States
+ */
+message LacpState {
+  /*
+   * Enumeration of LACP states
+   */
+  enum LacpState {
+    // broken: unable to function because of error (default)
+    none = 0;
+
+    // active: in function
+    active = 3;
+
+    // down: not in function
+    down = 1;
+
+    // up: up but not in function
+    up = 5;
+  }
+}

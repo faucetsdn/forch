@@ -61,6 +61,7 @@ function reset_stack {
     sudo ip link set t1sw1-eth10 up
     sudo ip link set t1sw1-eth11 up
     sudo ip link set t1sw2-eth10 up
+    sudo ip link set t1sw2-eth28 up
 
     diagnose_stack
 }
@@ -355,6 +356,7 @@ test_forch -twod
 echo %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl set-controller t2sw3 $controllers
 sudo ip addr add 240.0.0.1/24 dev lo
+sudo ip link set t1sw2-eth28 down
 sudo ip link set t1sw1-eth6 down
 sudo ip link set t1sw1-eth11 down
 test_stack -broken

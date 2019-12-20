@@ -13,7 +13,7 @@ message DataplaneState {
   Switch switch = 1;
 
   // Details of all stack links in the dataplane.
-  Stack stack = 2;
+  Links stack = 2;
 
   // Details of the egress links in the dataplane.
   Egress egress = 3;
@@ -50,9 +50,9 @@ message DataplaneState {
   /*
    * Dataplane stack links details
    */
-  message Stack {
-    // Map of switch status
-    map<string, StackLinkStatus> links = 1;
+  message Links {
+    // Map of link status
+    map<string, LinkStatus> links = 1;
 
     // Number of times the state of all switches as a whole has changed
     int32 links_change_count = 2;
@@ -82,6 +82,9 @@ message DataplaneState {
 
     // Active root switch of stack
     string active_root = 6;
+    
+    // Map of link status
+    map<string, LinkStatus> links = 7;
   }
 
   /*
@@ -95,8 +98,8 @@ message DataplaneState {
   /*
    * Stack link status
    */
-  message StackLinkStatus {
+  message LinkStatus {
     // Stack link status, active, up or down
-    State.State link_state = 2;
+    State.State link_state = 1;
   }
 }

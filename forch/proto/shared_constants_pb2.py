@@ -7,6 +7,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -18,9 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/shared_constants.proto',
   package='',
   syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x7f\n\x05State\"v\n\x05State\x12\n\n\x06\x62roken\x10\x00\x12\n\n\x06\x61\x63tive\x10\x01\x12\x0b\n\x07\x64\x61maged\x10\x02\x12\x08\n\x04\x64own\x10\x03\x12\x0b\n\x07healthy\x10\x04\x12\x0c\n\x08inactive\x10\x05\x12\x10\n\x0cinitializing\x10\x06\x12\t\n\x05split\x10\x07\x12\x06\n\x02up\x10\x08\x62\x06proto3')
+  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x7f\n\x05State\"v\n\x05State\x12\n\n\x06\x62roken\x10\x00\x12\n\n\x06\x61\x63tive\x10\x01\x12\x0b\n\x07\x64\x61maged\x10\x02\x12\x08\n\x04\x64own\x10\x03\x12\x0b\n\x07healthy\x10\x04\x12\x0c\n\x08inactive\x10\x05\x12\x10\n\x0cinitializing\x10\x06\x12\t\n\x05split\x10\x07\x12\x06\n\x02up\x10\x08\"@\n\tLacpState\"3\n\tLacpState\x12\x08\n\x04none\x10\x00\x12\n\n\x06\x61\x63tive\x10\x03\x12\x08\n\x04\x64own\x10\x01\x12\x06\n\x02up\x10\x05\x62\x06proto3')
 )
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -32,47 +33,77 @@ _STATE_STATE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='broken', index=0, number=0,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='active', index=1, number=1,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='damaged', index=2, number=2,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='down', index=3, number=3,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='healthy', index=4, number=4,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='inactive', index=5, number=5,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='initializing', index=6, number=6,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='split', index=7, number=7,
-      serialized_options=None,
+      options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='up', index=8, number=8,
-      serialized_options=None,
+      options=None,
       type=None),
   ],
   containing_type=None,
-  serialized_options=None,
+  options=None,
   serialized_start=47,
   serialized_end=165,
 )
 _sym_db.RegisterEnumDescriptor(_STATE_STATE)
+
+_LACPSTATE_LACPSTATE = _descriptor.EnumDescriptor(
+  name='LacpState',
+  full_name='LacpState.LacpState',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='none', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='active', index=1, number=3,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='down', index=2, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='up', index=3, number=5,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=180,
+  serialized_end=231,
+)
+_sym_db.RegisterEnumDescriptor(_LACPSTATE_LACPSTATE)
 
 
 _STATE = _descriptor.Descriptor(
@@ -89,7 +120,7 @@ _STATE = _descriptor.Descriptor(
   enum_types=[
     _STATE_STATE,
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -99,9 +130,35 @@ _STATE = _descriptor.Descriptor(
   serialized_end=165,
 )
 
+
+_LACPSTATE = _descriptor.Descriptor(
+  name='LacpState',
+  full_name='LacpState',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _LACPSTATE_LACPSTATE,
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=167,
+  serialized_end=231,
+)
+
 _STATE_STATE.containing_type = _STATE
+_LACPSTATE_LACPSTATE.containing_type = _LACPSTATE
 DESCRIPTOR.message_types_by_name['State'] = _STATE
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+DESCRIPTOR.message_types_by_name['LacpState'] = _LACPSTATE
 
 State = _reflection.GeneratedProtocolMessageType('State', (_message.Message,), dict(
   DESCRIPTOR = _STATE,
@@ -109,6 +166,13 @@ State = _reflection.GeneratedProtocolMessageType('State', (_message.Message,), d
   # @@protoc_insertion_point(class_scope:State)
   ))
 _sym_db.RegisterMessage(State)
+
+LacpState = _reflection.GeneratedProtocolMessageType('LacpState', (_message.Message,), dict(
+  DESCRIPTOR = _LACPSTATE,
+  __module__ = 'forch.proto.shared_constants_pb2'
+  # @@protoc_insertion_point(class_scope:LacpState)
+  ))
+_sym_db.RegisterMessage(LacpState)
 
 
 # @@protoc_insertion_point(module_scope)
