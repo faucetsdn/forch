@@ -1,6 +1,7 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
 from datetime import datetime
+import argparse
 import functools
 import logging
 import os
@@ -21,6 +22,8 @@ from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
+
+from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
@@ -449,41 +452,61 @@ def configure_logging():
                         level=logging.INFO)
 
 
-if __name__ == '__main__':
+def main():
+    """main function to start forch"""
     configure_logging()
 
-    CONFIG = load_config()
-    if not CONFIG:
+    config = load_config()
+    if not config:
         LOGGER.error('Invalid config, exiting.')
         sys.exit(1)
 
-    FORCH = Forchestrator(CONFIG)
-    HTTP = forch.http_server.HttpServer(CONFIG.get('http', {}), FORCH.get_local_port())
+    forchestrator = Forchestrator(config)
+    http_server = forch.http_server.HttpServer(
+        config.get('http', {}), forchestrator.get_local_port())
 
     try:
-        FORCH.initialize()
-        HTTP.map_request('system_state', FORCH.get_system_state)
-        HTTP.map_request('dataplane_state', FORCH.get_dataplane_state)
-        HTTP.map_request('switch_state', FORCH.get_switch_state)
-        HTTP.map_request('cpn_state', FORCH.get_cpn_state)
-        HTTP.map_request('process_state', FORCH.get_process_state)
-        HTTP.map_request('host_path', FORCH.get_host_path)
-        HTTP.map_request('list_hosts', FORCH.get_list_hosts)
-        HTTP.map_request('sys_config', FORCH.get_sys_config)
-        HTTP.map_request('', HTTP.static_file(''))
+        forchestrator.initialize()
+        http_server.map_request('system_state', forchestrator.get_system_state)
+        http_server.map_request('dataplane_state', forchestrator.get_dataplane_state)
+        http_server.map_request('switch_state', forchestrator.get_switch_state)
+        http_server.map_request('cpn_state', forchestrator.get_cpn_state)
+        http_server.map_request('process_state', forchestrator.get_process_state)
+        http_server.map_request('host_path', forchestrator.get_host_path)
+        http_server.map_request('list_hosts', forchestrator.get_list_hosts)
+        http_server.map_request('sys_config', forchestrator.get_sys_config)
+        http_server.map_request('', http_server.static_file(''))
     except Exception as e:
         LOGGER.error("Cannot initialize forch: %s", e)
-        HTTP.map_request('', functools.partial(show_error, e))
+        http_server.map_request('', functools.partial(show_error, e))
     finally:
-        HTTP.start_server()
+        http_server.start_server()
 
-    if FORCH.initialized():
-        FORCH.main_loop()
+    if forchestrator.initialized():
+        forchestrator.main_loop()
     else:
         try:
-            HTTP.join_thread()
+            http_server.join_thread()
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
 
     LOGGER.warning('Exiting program')
-    HTTP.stop_server()
+    http_server.stop_server()
+
+
+def parse_args(raw_args):
+    """Parse command line arguments"""
+    parser = argparse.ArgumentParser(prog='forch', description='Process some integers.')
+    parser.add_argument('-V', '--version', action='store_true', help='print version and exit')
+    parsed = parser.parse_args(raw_args)
+    return parsed
+
+
+if __name__ == '__main__':
+    ARGS = parse_args(sys.argv[1:])
+
+    if ARGS.version:
+        print(f'Forch version {__version__}')
+        sys.exit()
+
+    main()

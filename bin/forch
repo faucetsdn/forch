@@ -2,18 +2,32 @@
 
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
+base=
 nolog=
+pyargs=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --nolog)
+            nolog=true
+            shift
+            ;;
+        -d|--base)
+            base=$2;
+            shift
+            shift
+            ;;
+        *)
+            pyargs+=("$1")
+            shift
+            ;;
+    esac
+done
 
 FSOCK=faucet_event.sock
 
-if [ "$1" == nolog ]; then
-    nolog=nolog
-    shift
-fi
-
-if [ -n "$1" ]; then
-    FORCH_BASE=$1
-    shift
+if [ -n "$base" ]; then
+    FORCH_BASE=$base
     FAUCET_EVENT_SOCK=$FORCH_BASE/$FSOCK
     FAUCET_CONFIG_DIR=$FORCH_BASE
     FORCH_CONFIG_DIR=$FORCH_BASE
@@ -27,14 +41,8 @@ else
     mkdir -p $FORCH_LOG_DIR $FORCH_CONFIG_DIR
 fi
 
-if [ -n "$nolog" ]; then
+if [ "nolog" = true ]; then
     FORCH_LOG_DIR=
-fi
-
-if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
-    PYTHON=venv/bin/python3
-else
-    PYTHON=python3
 fi
 
 if [ -z "$CONTROLLER_NAME" ]; then
@@ -58,6 +66,12 @@ if [ -n "$FORCH_LOG_DIR" ]; then
     echo Writing forch logs to $FORCH_LOG_DIR/forch.log
 fi
 
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
+    PYTHON=venv/bin/python3
+else
+    PYTHON=python3
+fi
+
 export CONTROLLER_NAME
 export PROMETHEUS_PORT
 export FAUCET_EVENT_SOCK
@@ -65,4 +79,4 @@ export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR
 export FORCH_LOG_DIR
 export PYTHONPATH
-$PYTHON -m forch.forchestrator || tail $FORCH_LOG_DIR/forch.log && false
+$PYTHON -m forch.forchestrator "${pyargs[@]}" || tail $FORCH_LOG_DIR/forch.log && false

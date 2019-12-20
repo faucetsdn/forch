@@ -183,7 +183,7 @@ function restart_forch {
     rm -f $forch_log
     tail --retry -f $forch_log &
 
-    bin/forch inst/forch-faucet-1 2>&1 &
+    bin/forch --base inst/forch-faucet-1 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
     sleep 20
