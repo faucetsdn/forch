@@ -1,1 +1,4 @@
 ['9a:02:57:1e:8f:01', '9a:02:57:1e:8f:02', '9a:02:57:1e:8f:03', '9a:02:57:1e:8f:04', '9a:02:57:1e:8f:05', '9a:02:57:1e:8f:06']
+{'device_id': '9a:02:57:1e:8f:01', 'role': 'Allow', 'segment': '1'}
+{'device_id': '9a:02:57:1e:8f:02', 'role': 'Allow', 'segment': '2'}
+{'device_id': 'unknown', 'role': 'Deny', 'segment': '404'}
