@@ -76,3 +76,261 @@ function add_oeth {
     sudo ifconfig $iface_a up
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
 }
+
+function diagnose_stack {
+    echo Stack health
+    for bridge in $(sudo ovs-vsctl list-br); do
+        cont_count=`sudo ovs-vsctl get-controller $bridge | wc -l`
+        if [ $cont_count != 2 ]; then
+            echo Switch $bridge config: $(sudo ovs-vsctl get-controller $bridge)
+        fi
+    done
+
+    ip link | fgrep M-DOWN | sed -E 's/.*:(.*):.*/\1/'
+}
+
+function reset_stack {
+    sudo ovs-vsctl set-controller t2sw3 $controllers
+    sudo ip addr del 240.0.0.253/24 dev lo
+    sudo ip addr del 240.0.0.1/24 dev lo
+    sudo ip addr del 240.0.0.2/24 dev lo
+    sudo ip link set t1sw1-eth6 up
+    sudo ip link set t1sw1-eth9 up
+    sudo ip link set t1sw1-eth10 up
+    sudo ip link set t1sw1-eth11 up
+    sudo ip link set t1sw2-eth10 up
+    sudo ip link set t1sw2-eth28 up
+
+    diagnose_stack
+}
+
+function test_pair {
+    src=$1
+    dst=$2
+
+    host=forch-faux-$src
+    out_file=$nodes_dir/$host-$dst
+    cmd="ping -c $ping_count 192.168.1.$dst"
+    echo $host: $cmd
+    echo -n $host: $cmd\ > $out_file
+    docker exec $host $cmd | fgrep time= | wc -l >> $out_file 2>/dev/null &
+}
+
+# Compare two numbers and output { -1, 0, 1 }
+function comp {
+    echo $((($1 - $2 > 0) - ($1 - $2 < 0)))
+}
+
+function restart_ovs {
+    desc=$1
+    echo $desc Restarting ovs...
+    sudo /etc/init.d/openvswitch-switch restart
+
+    echo $desc Waiting for network stability...
+    sleep 30
+}
+
+function test_stack {
+    desc=stack$1
+    echo Starting $desc test... | tee -a $TEST_RESULTS
+
+    diagnose_stack
+
+    # Some versions of OVS are somewhat unstable, so restart for consistency.
+    restart_ovs $desc
+
+    desc_dir=$out_dir/$desc
+    t1sw1p6_pcap=$desc_dir/t1sw1-eth6.pcap
+    t1sw1p28_pcap=$desc_dir/t1sw1-eth28.pcap
+    t1sw2p28_pcap=$desc_dir/t1sw2-eth28.pcap
+    t2sw1p1_pcap=$desc_dir/t2sw1-eth1.pcap
+    t2sw1p50_pcap=$desc_dir/t2sw1-eth50.pcap
+    t2sw1p52_pcap=$desc_dir/t2sw1-eth52.pcap
+    t2sw2p1_pcap=$desc_dir/t2sw2-eth1.pcap
+    nodes_dir=$desc_dir/nodes
+
+    rm -rf $nodes_dir
+    mkdir -p $nodes_dir
+
+    echo $desc Capturing pcaps for $cap_length seconds...
+    timeout $cap_length $TCPSUDO -eni t1sw1-eth6 -w $t1sw1p6_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni faux-1 -w $t2sw1p1_pcap &
+    timeout $cap_length $TCPSUDO -eni t2sw1-eth50 -w $t2sw1p50_pcap &
+    timeout $cap_length $TCPSUDO -eni t2sw1-eth52 -w $t2sw1p52_pcap &
+    timeout $cap_length $TCPSUDO -Q out -eni faux-2 -w $t2sw2p1_pcap &
+    sleep 5
+
+    echo $desc Simple tests...
+    for from in 0 1 2 3; do
+        for to in 0 1 2 3; do
+            if [ $from != $to ]; then
+                docker exec forch-faux-$from sh -c "arp -d 192.168.1.$to; ping -c 1 192.168.1.$to"
+            fi
+        done
+    done
+
+    echo $desc Pair tests...
+    for from in 0 1 2 3; do
+        for to in 0 1 2 3; do
+            if [ $from != $to ]; then
+                test_pair $from $to
+            fi
+        done
+    done
+
+    echo $desc Starting TCP probes...
+    docker exec forch-faux-0 nc -w 1 192.168.1.1 23 2>&1 | tee -a $TEST_RESULTS
+    docker exec forch-faux-0 nc -w 1 192.168.1.1 443 2>&1 | tee -a $TEST_RESULTS
+
+    echo $desc Waiting for port capture to complete...
+    sleep $cap_length
+    sudo chown -R $USER $desc_dir
+
+    bcount6=$(tcpdump -en -r $t1sw1p6_pcap | wc -l) 2>/dev/null
+    bcount50=$(tcpdump -en -r $t2sw1p50_pcap | wc -l) 2>/dev/null
+    bcount52=$(tcpdump -en -r $t2sw1p52_pcap | wc -l) 2>/dev/null
+    bcount_total=$((bcount50 + bcount52))
+    echo $desc pcap count is $bcount6 $bcount50 $bcount52 $bcount_total
+    echo pcap sane $((bcount6 < 100)) \
+         $((bcount_total > 100)) $((bcount_total < 220)) | tee -a $TEST_RESULTS
+
+    bcount1e=$(tcpdump -en -r $t1sw1p28_pcap ether broadcast| wc -l) 2>/dev/null
+    bcount2e=$(tcpdump -en -r $t1sw2p28_pcap ether broadcast| wc -l) 2>/dev/null
+    bcount1h=$(tcpdump -en -r $t2sw1p1_pcap ether broadcast | wc -l) 2>/dev/null
+    bcount2h=$(tcpdump -en -r $t2sw2p1_pcap ether broadcast | wc -l) 2>/dev/null
+    echo pcap bcast $(comp $bcount1e 4) $(comp $bcount2e 0) \
+         $(comp $bcount1h 4) $(comp $bcount2h 4) | tee -a $TEST_RESULTS
+
+    telnet50=$(tcpdump -en -r $t2sw1p50_pcap vlan and port 23 | wc -l) 2>/dev/null
+    https50=$(tcpdump -en -r $t2sw1p50_pcap vlan and port 443 | wc -l) 2>/dev/null
+    telnet52=$(tcpdump -en -r $t2sw1p52_pcap vlan and port 23 | wc -l) 2>/dev/null
+    https52=$(tcpdump -en -r $t2sw1p52_pcap vlan and port 443 | wc -l) 2>/dev/null
+    echo telnet $((telnet50 + telnet52)) https $((https50 + https52)) | tee -a $TEST_RESULTS
+
+    cat $nodes_dir/* | tee -a $TEST_RESULTS
+
+    echo Done with $desc test. | tee -a $TEST_RESULTS
+}
+
+function restart_forch {
+    echo Killing any old instances of forch...
+    kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
+
+    rm -f $forch_log
+    tail --retry -f $forch_log &
+
+    bin/forch --base inst/forch-faucet-1 2>&1 &
+
+    # Wait for system to warm-up, including background process/cpn checks.
+    sleep 20
+}
+
+function fetch_forch {
+    name=$1
+    args=$2
+    sub=$3
+
+    api=$name$args
+    fname=$fout_dir/$name$sub.json
+
+    curl http://$CONTROLLER_NAME:9019/$api > $fname
+    echo http://$CONTROLLER_NAME:9019/$api > $fname.txt
+    jq . $fname >> $fname.txt
+    echo forch $name$sub results from $api
+    jq --indent 0 . $fname || cat $fname
+    echo
+}
+
+function test_forch {
+    fdesc=$1
+    fout_dir=$out_dir/forch$1
+    mkdir -p $fout_dir
+
+    # Make sure mac addresses are still learned...
+    docker exec forch-faux-1 ping -q -c 3 192.168.1.2
+
+    echo Running forch$1 tests | tee -a $TEST_RESULTS
+    echo Current time: $(date)
+
+    fetch_forch system_state
+    fetch_forch dataplane_state
+    fetch_forch switch_state '?switch=nz-kiwi-t2sw1&port=1' 1
+    fetch_forch switch_state '?switch=nz-kiwi-t1sw2&port=10' 2
+    fetch_forch switch_state '?switch=nz-kiwi-t2sw3&port=1' 3
+    fetch_forch cpn_state
+    fetch_forch process_state
+    fetch_forch list_hosts '' 1
+    fetch_forch list_hosts ?eth_src=9a:02:57:1e:8f:01 2
+    fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02' 1
+    fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&to_egress=true' 2
+
+    echo @system_state$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/system_state.json
+    jq .site_name $api_result | tee -a $TEST_RESULTS
+    jq .system_state_change_count $api_result | tee -a $TEST_RESULTS
+    jq .peer_controller_url $api_result | tee -a $TEST_RESULTS
+    jq .system_state $api_result | tee -a $TEST_RESULTS
+
+    echo @dataplane_state$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/dataplane_state.json
+    jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
+    jq '.dataplane_state_detail' $api_result | tee -a $TEST_RESULTS
+    jq '.dataplane_state_change_count' $api_result | tee -a $TEST_RESULTS
+    jq '.switch.switches."nz-kiwi-t2sw3".switch_state' $api_result | tee -a $TEST_RESULTS
+    jq '.stack.links."nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6".link_state' $api_result | tee -a $TEST_RESULTS
+    jq '.egress.egress_state' $api_result | tee -a $TEST_RESULT
+    jq '.egress.egress_state_detail' $api_result | tee -a $TEST_RESULT
+    jq '.egress.egress_state_change_count' $api_result | tee -a $TEST_RESULT
+    jq '.egress.active_root' $api_result | tee -a $TEST_RESULT
+
+    echo @switch_state$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/switch_state1.json
+    jq '.switch_state_change_count' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".root_path.path[1].switch' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".root_path.path[1].in' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".root_path.path[1].out' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".attributes.dp_id' $api_result | tee -a $TEST_RESULTS
+    api_result=$fout_dir/switch_state2.json
+    jq '.switch_state_detail' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw2".ports."46".attributes.description' $api_result | tee -a $TEST_RESULTS
+    api_result=$fout_dir/switch_state3.json
+    jq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result | tee -a $TEST_RESULTS
+
+    echo @cpn_state$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/cpn_state.json
+    jq '.cpn_state_change_count' $api_result | tee -a $TEST_RESULTS
+    for node in nz-kiwi-t1sw1 nz-kiwi-t2sw2; do
+        jq ".cpn_nodes.\"$node\".attributes.cpn_ip" $api_result | tee -a $TEST_RESULTS
+        jq ".cpn_nodes.\"$node\".state" $api_result | tee -a $TEST_RESULTS
+    done
+
+    echo @process_state$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/process_state.json
+    jq .process_state_change_count $api_result | tee -a $TEST_RESULTS
+    jq .processes.faucet.state $api_result | tee -a $TEST_RESULTS
+    jq .processes.sleep.state $api_result | tee -a $TEST_RESULTS
+    jq .processes.sleep.cmd_line $api_result | tee -a $TEST_RESULTS
+    jq '.processes.sleep.cpu_times_s | length' $api_result | tee -a $TEST_RESULTS
+
+    echo @list_hosts$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/list_hosts1.json
+    jq '.eth_srcs."9a:02:57:1e:8f:01".url' $api_result | tee -a $TEST_RESULTS
+    api_result=$fout_dir/list_hosts2.json
+    jq '.eth_dsts."9a:02:57:1e:8f:02".url' $api_result | tee -a $TEST_RESULTS
+
+    echo @host_path$fdesc | tee -a $TEST_RESULTS
+    api_result=$fout_dir/host_path1.json
+    jq .dst_ip $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].switch' $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].out' $api_result | tee -a $TEST_RESULTS
+    api_result=$fout_dir/host_path2.json
+    jq .src_ip $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].switch' $api_result | tee -a $TEST_RESULTS
+    jq '.path[1].out' $api_result | tee -a $TEST_RESULTS
+    jq '.path | length' $api_result | tee -a $TEST_RESULTS
+}
+
