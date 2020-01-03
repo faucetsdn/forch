@@ -77,6 +77,7 @@ class EventFaucetFastAdvertise(event.EventBase):  # pylint: disable=too-few-publ
 class EventFaucetEventSockHeartbeat(event.EventBase):  # pylint: disable=too-few-public-methods
     """Event used to trigger periodic events on event sock, causing it to raise an exception if conn is broken."""
 
+
 class Faucet(RyuAppBase):
     """A RyuApp that implements an L2/L3 learning VLAN switch.
 
