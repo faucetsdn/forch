@@ -6,4 +6,5 @@ max-line-length=100
 ignored-classes=
     State, SystemState, CpnState, CpnConfig,
     FaucetEvent, ProcessState, DataplaneState, SwitchState,
-    BuildingSchema, LacpState, AuthResult
+    BuildingSchema, LacpState, AuthResult,
+    NetworkState, DeviceBehavior, MatchRule
