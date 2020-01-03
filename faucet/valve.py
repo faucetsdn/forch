@@ -130,12 +130,14 @@ class Valve:
         if labels is None:
             labels = self.dp.base_prom_labels()
         metrics_var = getattr(self.metrics, var)
+        print('_set_var', var, labels)
         metrics_var.labels(**labels).set(val)
 
     def _remove_var(self, var, labels=None):
         if labels is None:
             labels = self.dp.base_prom_labels()
         metrics_var = getattr(self.metrics, var)
+        print('_remove_var', var, labels)
         metrics_var.labels(**labels).remove()
 
     def close_logs(self):
