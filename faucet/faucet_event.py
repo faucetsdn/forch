@@ -64,9 +64,9 @@ class FaucetEventNotifier:
         self.event_id = 0
         self.thread = None
         self.lock = NonBlockLock()
-        self.new_conn_handlers = []
         # TODO: Fix event generation mechanism so this isn't an issue.
         self.event_q = eventlet.queue.Queue(500)
+        self.new_conn_handlers = []
 
     def start(self):
         """Start socket server."""
