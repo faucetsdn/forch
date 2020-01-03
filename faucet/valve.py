@@ -137,7 +137,8 @@ class Valve:
         if labels is None:
             labels = self.dp.base_prom_labels()
         metrics_var = getattr(self.metrics, var)
-        metrics_var.labels(**labels).remove()
+        label_values = [labels[key] for key in metrics_var._labelnames]
+        metrics_var.remove(*label_values)
 
     def close_logs(self):
         """Explicitly close any active loggers."""
