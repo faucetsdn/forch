@@ -133,6 +133,12 @@ class Valve:
         metrics_var = getattr(self.metrics, var)
         metrics_var.labels(**labels).set(val)
 
+    def _remove_var(self, var, labels=None):
+        if labels is None:
+            labels = self.dp.base_prom_labels()
+        metrics_var = getattr(self.metrics, var)
+        metrics_var.labels(**labels).remove()
+
     def close_logs(self):
         """Explicitly close any active loggers."""
         if self.logger is not None:
@@ -1271,6 +1277,9 @@ class Valve:
                         if previous_port.stack:
                             learn_log += ' from %s' % previous_port.stack_descr()
                 self.logger.info(learn_log)
+                learn_labels = dict(self.dp.base_prom_labels(), vid=pkt_meta.vlan.vid,
+                                    eth_src=pkt_meta.eth_src)
+                self._set_var('learned_l2_port', learn_port.number, labels=learn_labels)
                 self.notify(
                     {'L2_LEARN': {
                         'port_no': learn_port.number,
@@ -1617,6 +1626,9 @@ class Valve:
                         ofmsgs_by_valve[self].extend(
                             self.host_manager.delete_host_from_vlan(entry.eth_src, vlan))
                 for entry in expired_hosts:
+                    learn_labels = dict(self.dp.base_prom_labels(), vid=vlan.vid,
+                                        eth_src=entry.eth_src)
+                    self._remove_var('learned_l2_port', labels=learn_labels)
                     self.notify(
                         {'L2_EXPIRE': {
                             'port_no': entry.port.number,
