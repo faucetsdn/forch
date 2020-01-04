@@ -3,6 +3,7 @@
 FAUCET_REPO=https://github.com/grafnu/faucet.git
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 docker_args=
+mkdir -p build
 
 docker rmi -f forch/faux forch/faucet forch/gauge || true
 images=$(docker images | fgrep forch/ | wc -l)
@@ -12,7 +13,7 @@ if [ $images != 0 ]; then
 fi
 
 echo Building faux...
-docker build -t forch/faux -f etc/Dockerfile.faux . &
+docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
 
 if [ -d faucet ]; then
     echo Faucet already exists. Not cloning.
@@ -34,11 +35,13 @@ faucet_ver=$(cd faucet; git rev-parse HEAD)
 docker_args+=--label=FAUCET=$faucet_ver
 
 echo Building faucet and gauge...
-docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . &
-docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . &
+docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . > build/docker_faucet.log &
+docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log &
 
 echo Waiting for builds to complete.
 wait
+
+tail build/docker_*.log
 
 images=$(docker images | fgrep forch/ | wc -l)
 if [ $images != 3 ]; then
