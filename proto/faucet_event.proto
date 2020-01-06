@@ -14,6 +14,8 @@ message FaucetEvent {
   bool debounced = 6;
 
   oneof event_data {
+    ConfigChange CONFIG_CHANGE = 10;
+    DpChange DP_CHANGE = 11;
     LagChange LAG_CHANGE = 7;
     StackState STACK_STATE = 9;
     StackTopoChange STACK_TOPO_CHANGE = 8;
@@ -84,4 +86,54 @@ message StackTopoChange {
   message StackDp {
     int32 root_hop_port = 1;
   }
+}
+
+/*
+ * Event representing config change
+ */
+message ConfigChange {
+  // event timestamp
+  float timestamp = 1;
+
+  // datapath name
+  string dp_name = 2;
+
+  // restart type
+  string restart_type = 3;
+
+  // datapath id
+  string dp_id = 4;
+
+  // success
+  bool success = 5;
+
+  // config hash
+  ConfigHashInfo config_hash_info = 6;
+
+  // Config hash info: will be included in the event
+  // in case of faucet configuration changes
+  message ConfigHashInfo {
+    // config files
+    string config_files = 1;
+
+    // config hashes
+    string hashes = 2;
+
+    // error
+    string error = 3;
+  }
+}
+
+/*
+ * Event representing dp change
+ */
+message DpChange {
+  // event timestamp
+  float timestamp = 1;
+
+  // datapath name
+  string dp_name = 2;
+
+  // reason
+  string reason = 3;
 }
