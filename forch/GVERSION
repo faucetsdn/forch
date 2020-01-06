@@ -1,6 +1,7 @@
-Sun 05 Jan 2020 07:19:16 PM PST
+Sun 05 Jan 2020 08:11:15 PM PST
 upstream git@github.com:grafnu/forch.git
-gupdater eb4394cfd30614c45a5a928e1e3d296185c2e7ed
-gmaster dba35157332350d8dea612b1dc533e8053df9a8a
+gupdater 2609d905c55673e5dfd6dfedff05e7ca221c495f
+gmaster 1455bd27123fd547e68d7a8d83dfa870b4705bca
 a3e7216461b81ace0dca3b7ab46cec9e7e6e0ee1 0.25
-gmaster d7cf513c24af859e7b793a689d3f6d5a9b472b3d
+d1cf600fca13953b2f6d8b75402b1921692adf64 kokoro
+gmaster 973ea4d8f86e5458f47377c3bebb60fd46726f8b
