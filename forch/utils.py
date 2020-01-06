@@ -12,9 +12,15 @@ def yaml_proto(file_name, proto_func):
     return json_format.ParseDict(file_dict, proto_func())
 
 
-def proto_dict(message):
+def proto_dict(message,
+               including_default_value_fields=False,
+               preserving_proto_field_name=True):
     """Convert a proto message to a standard dict object"""
-    return json_format.MessageToDict(message, preserving_proto_field_name=True)
+    return json_format.MessageToDict(
+        message,
+        including_default_value_fields=including_default_value_fields,
+        preserving_proto_field_name=preserving_proto_field_name
+    )
 
 
 def proto_json(message):

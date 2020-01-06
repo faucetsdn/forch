@@ -435,6 +435,41 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fnetwork_state.proto">forch/proto/network_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
+                </li>
+              
+                <li>
+                  <a href="#MatchRule"><span class="badge">M</span>MatchRule</a>
+                </li>
+              
+                <li>
+                  <a href="#NetworkState"><span class="badge">M</span>NetworkState</a>
+                </li>
+              
+                <li>
+                  <a href="#NetworkState.DeviceMacBehaviorsEntry"><span class="badge">M</span>NetworkState.DeviceMacBehaviorsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#NetworkState.NamedMatchRulesEntry"><span class="badge">M</span>NetworkState.NamedMatchRulesEntry</a>
+                </li>
+              
+              
+                <li>
+                  <a href="#MatchRule.Action"><span class="badge">E</span>MatchRule.Action</a>
+                </li>
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2fpath_node.proto">forch/proto/path_node.proto</a>
             <ul>
               
@@ -2335,6 +2370,233 @@ or to host_path API to list path </p></td>
         
       
 
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/network_state.proto">forch/proto/network_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="DeviceBehavior">DeviceBehavior</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>vid</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>rule_names</td>
+                  <td><a href="#string">string</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="MatchRule">MatchRule</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>eth_type</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>eth_dst</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>ip_proto</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>ip_dst</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>src_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dst_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>action</td>
+                  <td><a href="#MatchRule.Action">MatchRule.Action</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="NetworkState">NetworkState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>named_match_rules</td>
+                  <td><a href="#NetworkState.NamedMatchRulesEntry">NetworkState.NamedMatchRulesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>device_mac_behaviors</td>
+                  <td><a href="#NetworkState.DeviceMacBehaviorsEntry">NetworkState.DeviceMacBehaviorsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="NetworkState.DeviceMacBehaviorsEntry">NetworkState.DeviceMacBehaviorsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="NetworkState.NamedMatchRulesEntry">NetworkState.NamedMatchRulesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#MatchRule">MatchRule</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+        <h3 id="MatchRule.Action">MatchRule.Action</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>DENY</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>ALLOW</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
       
 
       

@@ -1,0 +1,58 @@
+{
+  named_match_rules:
+    {
+      dns:
+        {
+          eth_type: 0x800,
+          ip_proto: 17,
+          dst_port: 53,
+          action: ALLOW,
+        },
+      https_to_3:
+        {
+          eth_type: 0x800,
+          eth_dst: "9a:02:57:1e:8f:03",
+          ip_proto: 6,
+          dst_port: 443,
+          action: ALLOW,
+        },
+      https_to_1:
+        {
+          eth_type: 0x800,
+          eth_dst: "9a:02:57:1e:8f:01",
+          ip_proto: 6,
+          src_port: 443,
+          action: ALLOW,
+        },
+      https_to_2:
+        {
+          eth_type: 0x800,
+          eth_dst: "9a:02:57:1e:8f:02",
+          ip_proto: 6,
+          src_port: 443,
+          action: ALLOW,
+        },
+      all:
+        {
+          action: DENY,
+        }
+    },
+  device_mac_behaviors:
+    {
+      "9a:02:57:1e:8f:01":
+        {
+          vid: 100,
+          rule_names: [all, https_to_3, dns],
+        },
+      "9a:02:57:1e:8f:02":
+        {
+          vid: 200,
+          rule_names: [all, https_to_3, dns],
+        },
+      "9a:02:57:1e:8f:03":
+        {
+          vid: 300,
+          rule_names: [all, https_to_1, https_to_2, dns],
+        }
+    }
+}
