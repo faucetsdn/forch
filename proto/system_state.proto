@@ -12,29 +12,32 @@ message SystemState {
   // Site name (prefix of most components)
   string site_name = 1;
 
+  // faucet and forch version
+  Versions versions = 2;
+
   // This controller's name
-  string controller_name = 2;
+  string controller_name = 3;
 
   // URL redirect to the peer controller
-  string peer_controller_url = 3;
+  string peer_controller_url = 4;
 
   // State of this system
-  State.State system_state = 4;
+  State.State system_state = 5;
 
   // Detail about the system state
-  string system_state_detail = 5;
+  string system_state_detail = 6;
 
   // Count of changes for the system state
-  int32 system_state_change_count = 6;
+  int32 system_state_change_count = 7;
 
   // Last change time for the state
-  string system_state_last_change = 7;
+  string system_state_last_change = 8;
 
   // Last state update time
-  string system_state_last_update = 8;
+  string system_state_last_update = 9;
 
   // Summary of the system state components
-  SummarySources summary_sources = 9;
+  SummarySources summary_sources = 10;
 
   /*
    * Summary collection of system state
@@ -54,6 +57,17 @@ message SystemState {
 
     // Host listing summary
     StateSummary list_hosts = 5;
+  }
+
+  /*
+   * Versions of components on the controller
+   */
+  message Versions {
+    // faucet version
+    string faucet = 1;
+
+    // forch version
+    string forch = 2;
   }
 }
 

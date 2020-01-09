@@ -222,6 +222,7 @@ class Forchestrator:
     def get_system_state(self, path, params):
         """Get an overview of the system state"""
         system_state = SystemState()
+        self._populate_versions(system_state.versions)
         system_state.peer_controller_url = self._get_peer_controller_url()
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.get('site', {}).get('name', 'unknown')
@@ -353,6 +354,13 @@ class Forchestrator:
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
             raise e
+
+    def _populate_versions(self, versions):
+        versions.forch = __version__
+        try:
+            versions.faucet = os.popen('faucet --version').read().strip().split()[1]
+        except Exception as e:
+            versions.faucet = f'Cannot get faucet version: {e}'
 
     def cleanup(self):
         """Clean up relevant internal data in all collectors"""
