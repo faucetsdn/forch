@@ -159,8 +159,8 @@ message PortChange {
   // reason
   string reason = 5;
 
-  // success
-  bool port_active = 6;
+  // port status
+  bool status = 6;
 }
 
 /*
