@@ -19,6 +19,8 @@ message FaucetEvent {
     LagChange LAG_CHANGE = 7;
     StackState STACK_STATE = 9;
     StackTopoChange STACK_TOPO_CHANGE = 8;
+    PortChange PORT_CHANGE = 12;
+    L2Learn L2_LEARN = 13;
   }
 }
 
@@ -136,4 +138,50 @@ message DpChange {
 
   // reason
   string reason = 3;
+}
+
+/*
+ * Event representing port change
+ */
+message PortChange {
+  // event timestamp
+  float timestamp = 1;
+
+  // datapath name
+  string dp_name = 2;
+
+  // datapath id
+  string dp_id = 3;
+
+  // datapath port number
+  int32 port = 4;
+
+  // reason
+  string reason = 5;
+
+  // success
+  bool port_active = 6;
+}
+
+/*
+ * Event representing l2 learn
+ */
+message L2Learn {
+  // event timestamp
+  float timestamp = 1;
+
+  // datapath name
+  string dp_name = 2;
+
+  // datapath id
+  string dp_id = 3;
+
+  // datapath port number
+  int32 port = 4;
+
+  // eth src MAC
+  string eth_src = 5;
+
+  // eth src IP
+  string l3_src_ip = 6;
 }
