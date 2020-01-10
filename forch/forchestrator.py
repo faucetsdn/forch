@@ -99,9 +99,9 @@ class Forchestrator:
             (FaucetEvent.StackState, lambda event: fcoll.process_stack_state(
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
-            (FaucetEvent.PortChange, lambda event: fcoll.process_port_state(
-                event.timestamp, event.dp_name, event.port_no,
-                event.status and event.reason != "DELETE")),
+            #(FaucetEvent.PortChange, lambda event: fcoll.process_port_state(
+            #    event.timestamp, event.dp_name, event.port_no,
+            #    event.status and event.reason != "DELETE")),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
         ])
@@ -172,6 +172,10 @@ class Forchestrator:
             return
         timestamp = event.get("time")
         LOGGER.debug("Event: %r", event)
+        (name, dpid, port, active) = self._faucet_events.as_port_state(event)
+        if dpid and port:
+            LOGGER.debug('Port state %s %s %s', name, port, active)
+            self._faucet_collector.process_port_state(timestamp, name, port, active)
 
     def _get_controller_info(self, target):
         controllers = self._config.get('site', {}).get('controllers', {})
