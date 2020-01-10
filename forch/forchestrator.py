@@ -292,7 +292,7 @@ class Forchestrator:
         states.list_hosts.CopyFrom(self._faucet_collector.get_host_summary())
         url_base = self._extract_url_base(path)
         for field, value in states.ListFields():
-            value.url = f'{url_base}/?{field.name}'
+            value.detail_url = f'{url_base}/?{field.name}'
         return states
 
     def _extract_url_base(self, path):
