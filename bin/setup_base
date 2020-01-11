@@ -1,9 +1,11 @@
 #!/bin/bash -e
 
-GO_VERSION=1.13.3
-
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
+
+GO_VERSION=1.13.3
+FAUCET_REPO=https://github.com/grafnu/faucet.git
+FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 
 sudo apt-get install openvswitch-switch protobuf-compiler python3-venv jq
 
@@ -42,6 +44,13 @@ fi
 rm -rf protoc-gen-doc
 git clone https://github.com/pseudomuto/protoc-gen-doc.git
 
+if [ -d faucet ]; then
+    echo Dir faucet/ already exists. Not cloning.
+else
+    echo Cloning faucet locally...
+    git clone $FAUCET_REPO faucet
+    (cd faucet; git checkout $FAUCET_HASH)
+fi
 
 echo
 echo Done with forch base setup.

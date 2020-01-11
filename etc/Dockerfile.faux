@@ -1,6 +1,6 @@
-# Image name: daq/faux
+# Image name: forch/faux
 #
-# Faux device for framework development/testing.
+# Faux reference device for framework development/testing.
 #
 
 FROM ubuntu:bionic

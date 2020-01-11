@@ -91,7 +91,7 @@ message StateSummary {
   string last_change = 5;
 
   // Link to top-level system state
-  string url = 6;
+  string detail_url = 6;
 
   // Link to top-level system state in long form
   string system_state_url = 7;
