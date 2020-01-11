@@ -1,14 +1,5 @@
 ## Image name: forch/gauge
 
-FROM faucet/python3:4.0.0
-
-RUN apk add -q tcpdump iptables sudo
-
-COPY faucet/ /faucet-src/
-
-RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
-
-# Check for target executable since installer doesn't error out properly.
-RUN which gauge
+FROM forch/faucet:latest
 
 CMD ["gauge"]

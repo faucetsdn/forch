@@ -1,4 +1,18 @@
-# Utility functions for working with the stacked setup.
+#!/bin/bash # Not needed but helps emacs figure this file out.
+#
+# Utility functions for working with stack setup and testing.
+#
+
+function preamble_setup {
+    if [ -z "$TEST_RESULTS" ]; then
+        TEST_SCRIPT=${0##*/}
+
+        OUT_DIR=${OUT_DIR:-test_out/}
+        TEST_RESULTS=$OUT_DIR/$TEST_SCRIPT.out
+
+        echo $0 > $TEST_RESULTS
+    fi
+}
 
 function add_br {
     bname=$1
@@ -89,6 +103,17 @@ function diagnose_stack {
     ip link | fgrep M-DOWN | sed -E 's/.*:(.*):.*/\1/'
 }
 
+function dump_flows {
+    foobar=$1
+    mkdir -p $OUT_DIR/$foobar/
+
+    for switch in t1sw1 t1sw2 t2sw1 t2sw2 t2sw3; do
+        echo
+        echo switch dump nz-kiwi-$switch
+        sudo ovs-ofctl dump-flows --no-names $switch > $OUT_DIR/$foobar/$switch.flows
+    done
+}
+
 function reset_stack {
     sudo ovs-vsctl set-controller t2sw3 $controllers
     sudo ip addr del 240.0.0.253/24 dev lo
@@ -99,6 +124,7 @@ function reset_stack {
     sudo ip link set t1sw1-eth10 up
     sudo ip link set t1sw1-eth11 up
     sudo ip link set t1sw2-eth10 up
+    sudo ip link set t1sw1-eth28 up
     sudo ip link set t1sw2-eth28 up
 
     diagnose_stack
@@ -139,7 +165,7 @@ function test_stack {
     # Some versions of OVS are somewhat unstable, so restart for consistency.
     restart_ovs $desc
 
-    desc_dir=$out_dir/$desc
+    desc_dir=$OUT_DIR/$desc
     t1sw1p6_pcap=$desc_dir/t1sw1-eth6.pcap
     t1sw1p28_pcap=$desc_dir/t1sw1-eth28.pcap
     t1sw2p28_pcap=$desc_dir/t1sw2-eth28.pcap
@@ -246,7 +272,7 @@ function fetch_forch {
 
 function test_forch {
     fdesc=$1
-    fout_dir=$out_dir/forch$1
+    fout_dir=$OUT_DIR/forch$1
     mkdir -p $fout_dir
 
     # Make sure mac addresses are still learned...
@@ -324,13 +350,19 @@ function test_forch {
 
     echo @host_path$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path1.json
-    jq .dst_ip $api_result | tee -a $TEST_RESULTS
     jq '.path[1].switch' $api_result | tee -a $TEST_RESULTS
     jq '.path[1].out' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path2.json
-    jq .src_ip $api_result | tee -a $TEST_RESULTS
     jq '.path[1].switch' $api_result | tee -a $TEST_RESULTS
     jq '.path[1].out' $api_result | tee -a $TEST_RESULTS
     jq '.path | length' $api_result | tee -a $TEST_RESULTS
 }
 
+function reset_system {
+    if [ -n "$local" ]; then
+        echo Restarting Faucet | tee -a $TEST_RESULTS
+        rm -f $faucet_log
+        docker restart forch-faucet-1
+        docker exec forch-faux-1 ping -c 3 192.168.1.2 || exit 1
+    fi
+}

@@ -1,8 +1,9 @@
 #!/bin/bash -e
 
-FAUCET_REPO=https://github.com/grafnu/faucet.git
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
-ALL_IMAGES="forch/faux forch/faucet forch/gauge"
 DOCKER_IMAGE_LIST=etc/docker_images.txt
 docker_args=
 mkdir -p build
@@ -27,10 +28,7 @@ if [ "$1" == pull ]; then
         docker rmi $image:$hash
     done
     echo Done with docker build pull.
-    exit 0
-fi
 
-if [ "$1" == check ]; then
     using_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET`
     using_hash=`cd faucet; git rev-list -n 1 $using_faucet`
 
@@ -46,13 +44,6 @@ if [ "$1" == check ]; then
     exit 0
 fi
 
-docker rmi -f $ALL_IMAGES || true
-images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
-if [ $images != 0 ]; then
-    echo Unexpected forch/ images found:
-    docker images | fgrep forch/
-    false
-fi
 rm -f $DOCKER_IMAGE_LIST
 
 echo Building faux...
@@ -70,12 +61,13 @@ faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 
 docker_args+=--label=FAUCET=$faucet_ver
 
-echo Building faucet and gauge...
+echo Building faucet...
 docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . > build/docker_faucet.log &
-docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log &
 
 echo Waiting for builds to complete.
 wait
+
+docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log
 
 tail build/docker_*.log
 

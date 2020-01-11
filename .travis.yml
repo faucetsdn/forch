@@ -11,14 +11,14 @@ addons:
 install:
   - set -e
   - bin/setup_base
-  - bin/build_proto check
+  - $TEST_SKIP bin/compile_ovs
+  - $TEST_SKIP bin/build_docker ${DOCKER_BUILD:-pull}
 script:
   - set -e
-  - bin/package_forch testing
-  - bin/build_docker ${DOCKER_BUILD:-pull}
-  - bin/build_docker check
-  - bin/test_topology
-  - bin/setup_stack local
-  - bin/test_stack
-  - bin/check_style
-  - bin/build_proto
+  - $TEST_SKIP bin/setup_stack local
+  - bin/run_test_set
+env:
+  matrix:
+    - TEST_SET=stack
+    - TEST_SET=reconfig
+    - TEST_SET=topology TEST_SKIP=true
