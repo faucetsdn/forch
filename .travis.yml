@@ -15,7 +15,8 @@ install:
 script:
   - set -e
   - bin/package_forch testing
-  - bin/build_docker
+  - bin/build_docker $DOCKER_BUILD
+  - bin/build_docker check
   - bin/test_topology
   - bin/setup_stack local
   - bin/test_stack
