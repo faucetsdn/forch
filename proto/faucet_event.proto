@@ -177,7 +177,7 @@ message L2Learn {
   string dp_id = 3;
 
   // datapath port number
-  int32 port = 4;
+  int32 port_no = 4;
 
   // eth src MAC
   string eth_src = 5;

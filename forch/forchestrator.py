@@ -103,7 +103,7 @@ class Forchestrator:
             #    event.timestamp, event.dp_name, event.port_no,
             #    event.status and event.reason != "DELETE")),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
-                event.timestamp, event.dp_name, event.port, event.eth_src, event.l3_src_ip)),
+                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
         ])
 
     def _restore_states(self):
@@ -177,10 +177,10 @@ class Forchestrator:
             LOGGER.debug('Port state %s %s %s', name, port, active)
             self._faucet_collector.process_port_state(timestamp, name, port, active)
 
-        (name, dpid, port, target_mac, src_ip) = self._faucet_events.as_port_learn(event)
-        if dpid and port:
-            LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
-            self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
+        #(name, dpid, port, target_mac, src_ip) = self._faucet_events.as_port_learn(event)
+        #if dpid and port:
+        #    LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
+        #    self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
 
     def _get_controller_info(self, target):
         controllers = self._config.get('site', {}).get('controllers', {})
