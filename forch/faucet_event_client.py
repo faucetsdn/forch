@@ -107,12 +107,13 @@ class FaucetEventClient():
 
     def _filter_faucet_event(self, event):
         event_id = int(event.get('event_id'))
-        if event_id <= self._last_event_id:
-            LOGGER.debug('Outdated faucet event #%d', event_id)
-            return False
-        self._last_event_id += 1
-        if event_id != self._last_event_id:
-            raise Exception('Out-of-sequence event id #%d' % event_id)
+        if not event.get('debounced'):
+            if event_id <= self._last_event_id:
+                LOGGER.debug('Outdated faucet event #%d', event_id)
+                return False
+            self._last_event_id += 1
+            if event_id != self._last_event_id:
+                raise Exception('Out-of-sequence event id #%d' % event_id)
 
         (_, dpid, port, active) = self.as_port_state(event)
         if dpid and port:
