@@ -1,15 +1,11 @@
 #!/bin/bash
 
-out_dir=test_out/
-rm -rf $out_dir
-mkdir -p $out_dir
-
 source bin/stack_functions
+
+preamble_setup
 
 export CONTROLLER_NAME=127.0.0.1
 
-TEST_RESULTS=${TEST_RESULTS:-$out_dir/test_stack.out}
-GOLDEN_RESULTS=etc/test_stack.out
 TCPSUDO="sudo tcpdump"
 controllers=`sudo ovs-vsctl get-controller t1sw1`
 
@@ -45,13 +41,9 @@ echo Capturing $faucet_log...
 rm -f $faucet_log
 tail --retry -f $faucet_log &
 
-reset_stack
+reset_system
 
-if [ -n "$local" ]; then
-    echo Restarting Faucet | tee -a $TEST_RESULTS
-    docker restart forch-faucet-1
-    docker exec forch-faux-1 ping -c 3 192.168.1.2
-fi
+reset_stack
 
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
@@ -61,12 +53,12 @@ rm faucet/faucet/python_test.py
 restart_forch
 
 # Basic one-time test of web-server and config
-curl http://$CONTROLLER_NAME:9019/index.html > $out_dir/index.html
-fgrep "Network Operations Administrative Helper" $out_dir/index.html || exit 1
-curl http://$CONTROLLER_NAME:9019/protos.html > $out_dir/protos.html
-fgrep "forch/proto/system_state.proto" $out_dir/protos.html || exit 1
-curl http://$CONTROLLER_NAME:9019/sys_config > $out_dir/sys_config.json
-jq '.faucet.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $out_dir/sys_config.json | tee -a $TEST_RESULTS
+curl http://$CONTROLLER_NAME:9019/index.html > $OUT_DIR/index.html
+fgrep "Network Operations Administrative Helper" $OUT_DIR/index.html || exit 1
+curl http://$CONTROLLER_NAME:9019/protos.html > $OUT_DIR/protos.html
+fgrep "forch/proto/system_state.proto" $OUT_DIR/protos.html || exit 1
+curl http://$CONTROLLER_NAME:9019/sys_config > $OUT_DIR/sys_config.json
+jq '.faucet.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
 
 echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid
@@ -95,6 +87,11 @@ test_stack -twod
 sleep 50.3231 &
 sleep 32
 test_forch -twod
+
+echo %%% steady state ip address check | tee -a $TEST_RESULTS
+api_result=$OUT_DIR/forch-twod/host_path2.json
+jq .src_ip $api_result | tee -a $TEST_RESULTS
+jq .dst_ip $api_result | tee -a $TEST_RESULTS
 
 echo %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl set-controller t2sw3 $controllers
@@ -125,17 +122,9 @@ test_forch -reset
 
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`
-kill `ps ax | $faucet_log | fgrep -v fgrep | awk '{print $1}'`
-kill `ps ax | $forch_log | fgrep -v fgrep | awk '{print $1}'`
 
-echo
-echo '########## Begin complete test results ##########'
-cat $TEST_RESULTS
-echo '########## End complete test_results ##########'
-echo
-echo Comparing $GOLDEN_RESULTS with $TEST_RESULTS
-diff -b $GOLDEN_RESULTS $TEST_RESULTS
-result=$?
+echo Killing tails...
+kill `ps ax | fgrep $faucet_log | fgrep -v fgrep | awk '{print $1}'`
+kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
 
-echo Result diff returned $result
-exit $result
+echo Done with test_stack.
