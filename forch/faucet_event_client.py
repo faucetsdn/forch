@@ -258,12 +258,12 @@ class FaucetEventClient():
         return (name, dpid, port_no, port_active)
 
     #def as_port_learn(self, event):
-        """Convert to port learning info, if applicable"""
-        """if not event or 'L2_LEARN' not in event:
-            return (None, None, None, None, None)
-        name = event['dp_name']
-        dpid = event['dp_id']
-        port_no = int(event['L2_LEARN']['port_no'])
-        eth_src = event['L2_LEARN']['eth_src']
-        src_ip = event['L2_LEARN']['l3_src_ip']
-        return (name, dpid, port_no, eth_src, src_ip)"""
+    #    """Convert to port learning info, if applicable"""
+    #    """if not event or 'L2_LEARN' not in event:
+    #        return (None, None, None, None, None)
+    #    name = event['dp_name']
+    #    dpid = event['dp_id']
+    #    port_no = int(event['L2_LEARN']['port_no'])
+    #    eth_src = event['L2_LEARN']['eth_src']
+    #    src_ip = event['L2_LEARN']['l3_src_ip']
+    #    return (name, dpid, port_no, eth_src, src_ip)"""
