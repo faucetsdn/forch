@@ -116,7 +116,6 @@ class FaucetEventClient():
                 raise Exception('Out-of-sequence event id #%d' % event_id)
         if not target_event:
             return False
-        #(_, dpid, port, active) = self.as_port_state(event)
         if isinstance(target_event, PortChange):
             dpid = target_event.dp_id
             port = target_event.port_no
@@ -126,7 +125,6 @@ class FaucetEventClient():
             elif self._process_state_update(dpid, port, active):
                 return True
             return False
-        #TODO: Anurag Phase out as_ports_status
         (_, dpid, status) = self.as_ports_status(event)
         if dpid:
             for port in status:
@@ -254,25 +252,3 @@ class FaucetEventClient():
         if not event or 'PORTS_STATUS' not in event:
             return (None, None, None)
         return (event['dp_name'], event['dp_id'], event['PORTS_STATUS'])
-
-    #def as_port_state(self, event):
-    #    """Convert event to a port state info, if applicable"""
-    #    if not event or 'PORT_CHANGE' not in event:
-    #        return (None, None, None, None)
-    #    name = event['dp_name']
-    #    dpid = event['dp_id']
-    #    port_no = int(event['PORT_CHANGE']['port_no'])
-    #    reason = event['PORT_CHANGE']['reason']
-    #    port_active = event['PORT_CHANGE']['status'] and reason != 'DELETE'
-    #    return (name, dpid, port_no, port_active)
-
-    #def as_port_learn(self, event):
-    #    """Convert to port learning info, if applicable"""
-    #    """if not event or 'L2_LEARN' not in event:
-    #        return (None, None, None, None, None)
-    #    name = event['dp_name']
-    #    dpid = event['dp_id']
-    #    port_no = int(event['L2_LEARN']['port_no'])
-    #    eth_src = event['L2_LEARN']['eth_src']
-    #    src_ip = event['L2_LEARN']['l3_src_ip']
-    #    return (name, dpid, port_no, eth_src, src_ip)"""
