@@ -154,7 +154,7 @@ message PortChange {
   string dp_id = 3;
 
   // datapath port number
-  int32 port = 4;
+  int32 port_no = 4;
 
   // reason
   string reason = 5;
