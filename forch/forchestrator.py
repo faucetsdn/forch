@@ -158,27 +158,11 @@ class Forchestrator:
             raise
 
     def _process_faucet_event(self):
-        event = self._faucet_events.next_event(blocking=True)
         try:
-            self._handle_faucet_event(event)
+            event = self._faucet_events.next_event(blocking=True)
         except Exception as e:
             LOGGER.warning('While processing event %s', event)
             raise e
-
-    def _handle_faucet_event(self, event):
-        if not event:
-            return
-        #timestamp = event.get("time")
-        LOGGER.debug("Event: %r", event)
-        #(name, dpid, port, active) = self._faucet_events.as_port_state(event)
-        #if dpid and port:
-        #    LOGGER.debug('Port state %s %s %s', name, port, active)
-        #    self._faucet_collector.process_port_state(timestamp, name, port, active)
-
-        #(name, dpid, port, target_mac, src_ip) = self._faucet_events.as_port_learn(event)
-        #if dpid and port:
-        #    LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
-        #    self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
 
     def _get_controller_info(self, target):
         controllers = self._config.get('site', {}).get('controllers', {})
