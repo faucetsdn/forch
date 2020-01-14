@@ -7,7 +7,8 @@ GO_VERSION=1.13.3
 FAUCET_REPO=https://github.com/grafnu/faucet.git
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 
-sudo apt-get install openvswitch-switch protobuf-compiler python3-venv jq
+sudo apt-get install openvswitch-switch protobuf-compiler \
+     python3-venv python3-dev jq docker-ce
 
 if [ -z "$VIRTUAL_ENV" ]; then
     python3 -m venv venv
@@ -28,6 +29,10 @@ else
     echo No DEF_IFACE found. If this causes problems, maybe you need ipv4!
 fi
 
+
+echo Adding $USER to docker group...
+sudo groupadd docker || true
+sudo usermod -aG docker $USER
 
 if [ -d /usr/local/go ]; then
     echo /usr/local/go already installed, `/usr/local/go/bin/go version`
