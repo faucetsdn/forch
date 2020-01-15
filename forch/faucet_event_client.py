@@ -196,7 +196,7 @@ class FaucetEventClient():
         self._last_event_id = event_horizon
         LOGGER.info('Setting event horizon to event #%d', event_horizon)
 
-    def _dispatch_faucet_event(self, target_event, target):
+    def _dispatch_faucet_event(self, target, target_event):
         if target in self._handlers:
             LOGGER.debug('dispatching %s event', target)
             self._handlers[target](target_event)
@@ -217,10 +217,10 @@ class FaucetEventClient():
             targets = (t for t in self._handlers if t in event)
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
-            target_event = getattr(faucet_event, target)
+            target_event = getattr(faucet_event, event_target)
             self._augment_event_proto(faucet_event, target_event)
             if self._filter_faucet_event(event, target_event):
-                if not self._dispatch_faucet_event(target_event, event_target):
+                if not self._dispatch_faucet_event(event_target, target_event):
                     return event
         return None
 
