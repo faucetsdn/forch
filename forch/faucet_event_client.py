@@ -106,6 +106,15 @@ class FaucetEventClient():
                 return False
 
     def _filter_faucet_event(self, event, target_event):
+        if not self._check_event_order(event):
+            return False
+        if not target_event:
+            return False
+        self._handle_port_change_debounce(event, target_event):
+        self._handle_ports_status(event)
+        return True
+
+    def _check_event_order(self, event):
         event_id = int(event.get('event_id'))
         if not event.get('debounced'):
             if event_id <= self._last_event_id:
@@ -114,8 +123,8 @@ class FaucetEventClient():
             self._last_event_id += 1
             if event_id != self._last_event_id:
                 raise Exception('Out-of-sequence event id #%d' % event_id)
-        if not target_event:
-            return False
+
+    def _handle_port_change_debounce(self, event, target_event):
         if isinstance(target_event, PortChange):
             dpid = target_event.dp_id
             port = target_event.port_no
@@ -125,6 +134,8 @@ class FaucetEventClient():
             elif self._process_state_update(dpid, port, active):
                 return True
             return False
+
+    def _handle_ports_status(self, event):
         (_, dpid, status) = self.as_ports_status(event)
         if dpid:
             for port in status:
