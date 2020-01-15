@@ -214,14 +214,11 @@ class FaucetEventClient():
             except Exception as e:
                 LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
                 continue
-            event_target = None
-            target_event = None
-            for target in self._handlers:
-                if target in event:
-                    faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
-                    target_event = getattr(faucet_event, target)
-                    self._augment_event_proto(faucet_event, target_event)
-                    event_target = target
+            targets = (t for t in self._handlers if t in event)
+            event_target = targets[0] if targets else None
+            faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
+            target_event = getattr(faucet_event, target)
+            self._augment_event_proto(faucet_event, target_event)
             if self._filter_faucet_event(event, target_event):
                 if not self._dispatch_faucet_event(target_event, event_target):
                     return event
