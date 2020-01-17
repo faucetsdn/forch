@@ -91,6 +91,9 @@ class Forchestrator:
     def _register_handlers(self):
         fcoll = self._faucet_collector
         self._faucet_events.register_handlers([
+            (FaucetEvent.ConfigChange, self._process_config_change),
+            (FaucetEvent.DpChange, lambda event: fcoll.process_dp_change(
+                event.timestamp, event.dp_name, None, event.reason == "cold_start")),
             (FaucetEvent.LagChange, lambda event: fcoll.process_lag_state(
                 event.timestamp, event.dp_name, event.port_no, event.state)),
             (FaucetEvent.StackState, lambda event: fcoll.process_stack_state(
@@ -118,6 +121,12 @@ class Forchestrator:
         config_info, faucet_dps, _ = self._get_faucet_config()
         assert config_hash == config_info['hashes'], 'config hash info does not match'
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
+
+    def _process_config_change(self, event):
+        self._faucet_collector.process_dp_config_change(
+            event.timestamp, event.dp_name, event.restart_type, event.dp_id)
+        if event.config_hash_info.hashes:
+            self._restore_faucet_config(event.timestamp, event.config_hash_info.hashes)
 
     def _faucet_events_connect(self):
         LOGGER.info('Attempting faucet event sock connection...')
@@ -168,19 +177,6 @@ class Forchestrator:
             LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
             self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
 
-        (name, dpid, restart_type, config_info) = self._faucet_events.as_config_change(event)
-        if dpid is not None:
-            LOGGER.debug('DP restart %s %s', name, restart_type)
-            self._faucet_collector.process_dp_config_change(timestamp, name, restart_type, dpid)
-        if config_info:
-            LOGGER.debug('Config change. New config: %s', config_info['hashes'])
-            self._restore_faucet_config(timestamp, config_info['hashes'])
-
-        (name, connected) = self._faucet_events.as_dp_change(event)
-        if name:
-            LOGGER.debug('DP %s connected %r', name, connected)
-            self._faucet_collector.process_dp_change(timestamp, name, None, connected)
-
     def _get_controller_info(self, target):
         controllers = self._config.get('site', {}).get('controllers', {})
         if target not in controllers:
@@ -226,6 +222,7 @@ class Forchestrator:
     def get_system_state(self, path, params):
         """Get an overview of the system state"""
         system_state = SystemState()
+        self._populate_versions(system_state.versions)
         system_state.peer_controller_url = self._get_peer_controller_url()
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.get('site', {}).get('name', 'unknown')
@@ -295,7 +292,7 @@ class Forchestrator:
         states.list_hosts.CopyFrom(self._faucet_collector.get_host_summary())
         url_base = self._extract_url_base(path)
         for field, value in states.ListFields():
-            value.url = f'{url_base}/?{field.name}'
+            value.detail_url = f'{url_base}/?{field.name}'
         return states
 
     def _extract_url_base(self, path):
@@ -357,6 +354,13 @@ class Forchestrator:
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
             raise e
+
+    def _populate_versions(self, versions):
+        versions.forch = __version__
+        try:
+            versions.faucet = os.popen('faucet --version').read().strip().split()[1]
+        except Exception as e:
+            versions.faucet = f'Cannot get faucet version: {e}'
 
     def cleanup(self):
         """Clean up relevant internal data in all collectors"""

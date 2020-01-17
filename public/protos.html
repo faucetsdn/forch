@@ -342,6 +342,18 @@
             <ul>
               
                 <li>
+                  <a href="#ConfigChange"><span class="badge">M</span>ConfigChange</a>
+                </li>
+              
+                <li>
+                  <a href="#ConfigChange.ConfigHashInfo"><span class="badge">M</span>ConfigChange.ConfigHashInfo</a>
+                </li>
+              
+                <li>
+                  <a href="#DpChange"><span class="badge">M</span>DpChange</a>
+                </li>
+              
+                <li>
                   <a href="#FaucetEvent"><span class="badge">M</span>FaucetEvent</a>
                 </li>
               
@@ -615,6 +627,10 @@
               
                 <li>
                   <a href="#SystemState.SummarySources"><span class="badge">M</span>SystemState.SummarySources</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.Versions"><span class="badge">M</span>SystemState.Versions</a>
                 </li>
               
               
@@ -1700,6 +1716,141 @@
       <p>Encapsulation of an event on the Faucet event socket.</p>
 
       
+        <h3 id="ConfigChange">ConfigChange</h3>
+        <p>Event representing config change</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>timestamp</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>event timestamp </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>datapath name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>restart_type</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>restart type </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>datapath id </p></td>
+                </tr>
+              
+                <tr>
+                  <td>success</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p>success </p></td>
+                </tr>
+              
+                <tr>
+                  <td>config_hash_info</td>
+                  <td><a href="#ConfigChange.ConfigHashInfo">ConfigChange.ConfigHashInfo</a></td>
+                  <td></td>
+                  <td><p>config hash </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ConfigChange.ConfigHashInfo">ConfigChange.ConfigHashInfo</h3>
+        <p>Config hash info: will be included in the event</p><p>in case of faucet configuration changes</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>config_files</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>config files </p></td>
+                </tr>
+              
+                <tr>
+                  <td>hashes</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>config hashes </p></td>
+                </tr>
+              
+                <tr>
+                  <td>error</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>error </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DpChange">DpChange</h3>
+        <p>Event representing dp change</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>timestamp</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>event timestamp </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>datapath name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>reason</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>reason </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="FaucetEvent">FaucetEvent</h3>
         <p></p>
 
@@ -1748,6 +1899,20 @@
                 <tr>
                   <td>debounced</td>
                   <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>CONFIG_CHANGE</td>
+                  <td><a href="#ConfigChange">ConfigChange</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>DP_CHANGE</td>
+                  <td><a href="#DpChange">DpChange</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -3636,7 +3801,7 @@ or to host_path API to list path </p></td>
                 </tr>
               
                 <tr>
-                  <td>url</td>
+                  <td>detail_url</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Link to top-level system state </p></td>
@@ -3671,6 +3836,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Site name (prefix of most components) </p></td>
+                </tr>
+              
+                <tr>
+                  <td>versions</td>
+                  <td><a href="#SystemState.Versions">SystemState.Versions</a></td>
+                  <td></td>
+                  <td><p>faucet and forch version </p></td>
                 </tr>
               
                 <tr>
@@ -3779,6 +3951,37 @@ or to host_path API to list path </p></td>
                   <td><a href="#StateSummary">StateSummary</a></td>
                   <td></td>
                   <td><p>Host listing summary </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.Versions">SystemState.Versions</h3>
+        <p>Versions of components on the controller</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>faucet</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>faucet version </p></td>
+                </tr>
+              
+                <tr>
+                  <td>forch</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>forch version </p></td>
                 </tr>
               
             </tbody>

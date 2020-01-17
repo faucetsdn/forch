@@ -196,7 +196,7 @@ class FaucetEventClient():
     def _dispatch_faucet_event(self, event):
         for target in self._handlers:
             if target in event:
-                faucet_event = dict_proto(event, FaucetEvent)
+                faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
                 target_event = getattr(faucet_event, target)
                 self._augment_event_proto(faucet_event, target_event)
                 LOGGER.debug('dispatching %s event', target)
@@ -240,14 +240,6 @@ class FaucetEventClient():
             'L2_LEARN': entry
         }
 
-    def as_config_change(self, event):
-        """Convert the event to dp change info, if applicable"""
-        if not event or 'CONFIG_CHANGE' not in event:
-            return (None, None, None, None)
-        restart_type = event['CONFIG_CHANGE'].get('restart_type')
-        config_hash_info = event['CONFIG_CHANGE'].get('config_hash_info')
-        return (event['dp_name'], event['dp_id'], restart_type, config_hash_info)
-
     def as_ports_status(self, event):
         """Convert the event to port status info, if applicable"""
         if not event or 'PORTS_STATUS' not in event:
@@ -275,11 +267,3 @@ class FaucetEventClient():
         eth_src = event['L2_LEARN']['eth_src']
         src_ip = event['L2_LEARN']['l3_src_ip']
         return (name, dpid, port_no, eth_src, src_ip)
-
-    def as_dp_change(self, event):
-        """Convert to dp status"""
-        if not event or 'DP_CHANGE' not in event:
-            return (None, None)
-        name = event['dp_name']
-        connected = (event['DP_CHANGE']['reason'] == 'cold_start')
-        return (name, connected)

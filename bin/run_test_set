@@ -1,0 +1,38 @@
+#!/bin/bash -e
+
+if [ -n "$1" ]; then
+    TEST_SET=$1
+fi
+
+if [ -z "$TEST_SET" ]; then
+    echo TEST_SET not defined.
+    false
+fi
+
+echo Running $TEST_SET tests...
+
+OUT_DIR=test_out/
+rm -rf $OUT_DIR
+mkdir -p $OUT_DIR
+echo Writing output to $OUT_DIR
+
+GOLDEN_RESULTS=etc/test_$TEST_SET.out
+TEST_RESULTS=$OUT_DIR/test_$TEST_SET.out
+
+bin/test_${TEST_SET}
+
+pwd
+ls -l etc/ test_out/
+
+echo
+ls -l $TEST_RESULTS
+echo '########## Begin complete test results ##########'
+cat $TEST_RESULTS
+echo '########## End complete test_results ##########'
+echo
+echo Comparing $GOLDEN_RESULTS with $TEST_RESULTS
+diff -b $GOLDEN_RESULTS $TEST_RESULTS
+result=$?
+
+echo Result diff returned $result
+exit $result

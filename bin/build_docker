@@ -1,53 +1,86 @@
 #!/bin/bash -e
 
-FAUCET_REPO=https://github.com/grafnu/faucet.git
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
+DOCKER_IMAGE_LIST=etc/docker_images.txt
 docker_args=
 mkdir -p build
+pull=
 
-docker rmi -f forch/faux forch/faucet forch/gauge || true
-images=$(docker images | fgrep forch/ | wc -l)
-if [ $images != 0 ]; then
-    echo Unexpected forch/ images found:
-    docker images | fgrep forch/
+if [ "$1" == push ]; then
+    cat $DOCKER_IMAGE_LIST | while read image hash other; do
+        echo Push $hash as $image:$hash to dockerhub...
+        docker tag $hash $image:$hash
+        docker push $image:$hash
+        docker rmi $image:$hash
+    done
+    echo Done with docker build push.
+    exit 0
 fi
+
+if [ "$1" == pull ]; then
+    cat $DOCKER_IMAGE_LIST | while read image hash other; do
+        echo Pulling $image:$hash from dockerhub...
+        docker pull $image:$hash
+        docker tag $hash $image:latest
+        docker rmi $image:$hash
+    done
+    echo Done with docker build pull.
+
+    using_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET`
+    using_hash=`cd faucet; git rev-list -n 1 $using_faucet`
+
+    expected_faucet=$(cat etc/FAUCET_VERSION)
+    expected_hash=`cd faucet; git rev-list -n 1 $expected_faucet`
+
+    if [ "$using_hash" != "$expected_hash" ]; then
+        echo Docker faucet image does not match configuration.
+        echo $using_hash from forch/faucet:latest $using_faucet
+        echo $expected_hash from etc/FAUCET_VERSION $expected_faucet
+        false
+    fi
+    exit 0
+fi
+
+rm -f $DOCKER_IMAGE_LIST
 
 echo Building faux...
 docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
 
-if [ -d faucet ]; then
-    echo Faucet already exists. Not cloning.
-    faucet_ver=$(cd faucet; git rev-parse HEAD)
-    if [ "$faucet_ver" != $FAUCET_HASH ]; then
-        echo Local faucet version not as expected.
-        echo $FAUCET_HASH from etc/FAUCET_VERSION
-        echo $faucet_ver in faucet/
-        false
-    fi
-else
-    echo Cloning faucet locally...
-    git clone $FAUCET_REPO faucet
-    (cd faucet; git checkout $FAUCET_HASH)
+faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
+if [ "$faucet_ver" != $FAUCET_HASH ]; then
+    echo Local faucet version not as expected.
+    echo $FAUCET_HASH from etc/FAUCET_VERSION
+    echo $faucet_ver in faucet/
+    false
 fi
 
-faucet_ver=$(cd faucet; git rev-parse HEAD)
+faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 
 docker_args+=--label=FAUCET=$faucet_ver
 
-echo Building faucet and gauge...
+echo Building faucet...
 docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . > build/docker_faucet.log &
-docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log &
 
 echo Waiting for builds to complete.
 wait
 
+docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log
+
 tail build/docker_*.log
 
-images=$(docker images | fgrep forch/ | wc -l)
+images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
 if [ $images != 3 ]; then
     echo Did not find expected 3 forch images:
-    docker images | fgrep forch/
+    docker images | fgrep forch/ | fgrep latest
     false
 fi
+
+echo Updating $DOCKER_IMAGE_LIST...
+docker images | fgrep forch/ | fgrep latest | while read image tag hash other; do
+    echo $image $hash >> $DOCKER_IMAGE_LIST
+done
 
 echo Done with successful docker build.

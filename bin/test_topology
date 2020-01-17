@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/bin/bash -e
 
-TEST_OUT=test_out/test_topology.out
+source bin/stack_functions
+
+preamble_setup
+
+# Could be run as its own test shard, if desired.
+bin/test_basics
 
 export FORCH_CONFIG_DIR=topo/bond
 
@@ -10,11 +15,6 @@ else
     PYTHON=python3
 fi
 
-mkdir -p test_out
-rm -f $TEST_OUT
-
-$PYTHON -m forch.topology >> $TEST_OUT
-$PYTHON -m forch.faucetizer >> $TEST_OUT
-$PYTHON -m forch.authenticator >> $TEST_OUT
-
-diff etc/test_topology.out $TEST_OUT || exit 1
+$PYTHON -m forch.topology >> $TEST_RESULTS
+$PYTHON -m forch.faucetizer >> $TEST_RESULTS
+$PYTHON -m forch.authenticator >> $TEST_RESULTS

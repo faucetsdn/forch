@@ -4,6 +4,7 @@ testing=
 rm -rf dist/
 
 if [ "$1" == testing ]; then
+    echo Actual version is `git describe --dirty`
     testing=$1
     shift
     echo Forcing tag 0.0.0 for testing.
@@ -11,7 +12,8 @@ if [ "$1" == testing ]; then
     git tag -a 0.0.0 -m "Testing"
 fi
 
-version=`git describe`
+version=`git describe --dirty`
+echo Packaging version $version
 
 sudo apt-get install devscripts equivs
 
