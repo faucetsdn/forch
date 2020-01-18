@@ -26,7 +26,8 @@ if [ -n "$DEF_IFACE" ]; then
     sudo iptables -o docker0 -i $DEF_IFACE -A FORWARD -j ACCEPT
     sudo iptables -i docker0 -o $DEF_IFACE -A FORWARD -j ACCEPT
 else
-    echo No DEF_IFACE found. If this causes problems, maybe you need ipv4!
+    echo No default interface found. If this causes problems, maybe you need ipv4!
+    false
 fi
 
 
