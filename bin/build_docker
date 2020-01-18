@@ -88,7 +88,7 @@ if [ "$built_faucet" != $FAUCET_HASH ]; then
 fi
 
 echo Updating $DOCKER_IMAGE_LIST...
-docker images | fgrep forch/ | fgrep latest | while read image tag hash other; do
+docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash other; do
     echo $image $hash >> $DOCKER_IMAGE_LIST
 done
 
