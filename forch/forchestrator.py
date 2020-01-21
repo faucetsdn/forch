@@ -161,7 +161,7 @@ class Forchestrator:
         try:
             event = self._faucet_events.next_event(blocking=True)
         except Exception as e:
-            LOGGER.warning('While processing event %s', str(e))
+            LOGGER.warning('While processing event %s exception: %s', event, str(e))
             raise e
 
     def _get_controller_info(self, target):

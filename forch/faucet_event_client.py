@@ -110,9 +110,7 @@ class FaucetEventClient():
             return False
         if not target_event:
             return False
-        dispatch = self._handle_port_change_debounce(event, target_event)
-        dispatch = dispatch and self._handle_ports_status(event)
-        return dispatch
+        return True
 
     def _check_event_order(self, event):
         event_id = int(event.get('event_id'))
@@ -231,7 +229,10 @@ class FaucetEventClient():
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
             target_event = getattr(faucet_event, str(event_target), None)
-            if self._filter_faucet_event(event, target_event):
+            dispatch = self._filter_faucet_event(event, target_event)
+            dispatch = dispatch and self._handle_port_change_debounce(event, target_event)
+            dispatch = dispatch and self._handle_ports_status(event)
+            if dispatch:
                 self._augment_event_proto(faucet_event, target_event)
                 if not self._dispatch_faucet_event(event_target, target_event):
                     return event
