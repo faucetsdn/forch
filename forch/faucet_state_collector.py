@@ -1012,7 +1012,7 @@ class FaucetStateCollector:
 
     def _get_egress_port(self, switch):
         """Get egress port of a switch"""
-        for port in self.switch_states[switch][PORTS]:
+        for port in self.switch_states[switch].get(PORTS, {}):
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'egress':
                 return port

@@ -1,11 +1,13 @@
 #!/bin/bash -e
 
-FAUCET_REPO=https://github.com/grafnu/faucet.git
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
-ALL_IMAGES="forch/faux forch/faucet forch/gauge"
 DOCKER_IMAGE_LIST=etc/docker_images.txt
 docker_args=
 mkdir -p build
+rm -f build/docker_*.log
 pull=
 
 if [ "$1" == push ]; then
@@ -27,11 +29,8 @@ if [ "$1" == pull ]; then
         docker rmi $image:$hash
     done
     echo Done with docker build pull.
-    exit 0
-fi
 
-if [ "$1" == check ]; then
-    using_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET`
+    using_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET_HASH`
     using_hash=`cd faucet; git rev-list -n 1 $using_faucet`
 
     expected_faucet=$(cat etc/FAUCET_VERSION)
@@ -46,13 +45,6 @@ if [ "$1" == check ]; then
     exit 0
 fi
 
-docker rmi -f $ALL_IMAGES || true
-images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
-if [ $images != 0 ]; then
-    echo Unexpected forch/ images found:
-    docker images | fgrep forch/
-    false
-fi
 rm -f $DOCKER_IMAGE_LIST
 
 echo Building faux...
@@ -68,14 +60,17 @@ fi
 
 faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 
-docker_args+=--label=FAUCET=$faucet_ver
+echo Labelling faucet image with faucet version $faucet_ver
 
-echo Building faucet and gauge...
+docker_args+=--label=FAUCET_HASH=$faucet_ver
+
+echo Building faucet...
 docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . > build/docker_faucet.log &
-docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log &
 
 echo Waiting for builds to complete.
 wait
+
+docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log
 
 tail build/docker_*.log
 
@@ -86,8 +81,14 @@ if [ $images != 3 ]; then
     false
 fi
 
+built_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET_HASH`
+if [ "$built_faucet" != $FAUCET_HASH ]; then
+    echo Faucet image hash mismatch.
+    false
+fi
+
 echo Updating $DOCKER_IMAGE_LIST...
-docker images | fgrep forch/ | fgrep latest | while read image tag hash other; do
+docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash other; do
     echo $image $hash >> $DOCKER_IMAGE_LIST
 done
 

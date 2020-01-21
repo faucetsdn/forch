@@ -63,18 +63,21 @@ if [ -n "$FAUCET_SOCK" ]; then
 fi
 
 if [ -n "$local" ]; then
-    using_faucet=$(cd faucet; git rev-parse HEAD)
+    using_faucet=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
     error_label="from local faucet/"
 else
-    using_faucet=`docker inspect $IMAGE | jq -r .[0].Config.Labels.FAUCET`
+    using_faucet=`docker inspect $IMAGE | jq -r .[0].Config.Labels.FAUCET_HASH`
     error_label="from image $IMAGE"
 fi
 
 expected_faucet=$(cat etc/FAUCET_VERSION)
-if [ "$using_faucet" != "$expected_faucet" ]; then
+
+using_hash=`git rev-parse $using_faucet`
+expected_hash=`git rev-parse $expected_faucet`
+if [ "$using_hash" != "$expected_hash" ]; then
     echo Image faucet version does not match configuration.
-    echo $using_faucet $error_label
-    echo $expected_faucet from etc/FAUCET_VERSION
+    echo $using_hash $error_label $using_faucet
+    echo $expected_hash from etc/FAUCET_VERSION $expected_faucet
     false
 fi
 
