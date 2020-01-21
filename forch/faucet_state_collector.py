@@ -800,6 +800,7 @@ class FaucetStateCollector:
     # pylint: disable=too-many-arguments
     def process_port_learn(self, timestamp, name, port, mac, ip_addr):
         """process port learn event"""
+        LOGGER.info("Aunrag process_port_learn: mac: %s", mac)
         with self.lock:
             mac_entry = self.learned_macs.setdefault(mac, {})
             mac_entry[MAC_LEARNING_IP] = ip_addr

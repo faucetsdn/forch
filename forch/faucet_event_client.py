@@ -110,9 +110,9 @@ class FaucetEventClient():
             return False
         if not target_event:
             return False
-        self._handle_port_change_debounce(event, target_event):
-        self._handle_ports_status(event)
-        return True
+        dispatch = self._handle_port_change_debounce(event, target_event)
+        dispatch = dispatch and self._handle_ports_status(event)
+        return dispatch
 
     def _check_event_order(self, event):
         event_id = int(event.get('event_id'))
@@ -123,6 +123,7 @@ class FaucetEventClient():
             self._last_event_id += 1
             if event_id != self._last_event_id:
                 raise Exception('Out-of-sequence event id #%d' % event_id)
+        return True
 
     def _handle_port_change_debounce(self, event, target_event):
         if isinstance(target_event, PortChange):
@@ -134,6 +135,7 @@ class FaucetEventClient():
             elif self._process_state_update(dpid, port, active):
                 return True
             return False
+        return True
 
     def _handle_ports_status(self, event):
         (_, dpid, status) = self.as_ports_status(event)
@@ -225,12 +227,12 @@ class FaucetEventClient():
             except Exception as e:
                 LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
                 continue
-            targets = (t for t in self._handlers if t in event)
+            targets = list(t for t in self._handlers if t in event)
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
-            target_event = getattr(faucet_event, event_target)
-            self._augment_event_proto(faucet_event, target_event)
+            target_event = getattr(faucet_event, str(event_target), None)
             if self._filter_faucet_event(event, target_event):
+                self._augment_event_proto(faucet_event, target_event)
                 if not self._dispatch_faucet_event(event_target, target_event):
                     return event
         return None
