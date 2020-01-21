@@ -105,22 +105,16 @@ class FaucetEventClient():
             else:
                 return False
 
-    def _filter_faucet_event(self, event, target_event):
-        if not self._check_event_order(event):
+    def _valid_event_order(self, event):
+        if event.get('debounced'):
+            return True
+        event_id = int(event['event_id'])
+        if event_id <= self._last_event_id:
+            LOGGER.debug('Outdated faucet event #%d', event_id)
             return False
-        if not target_event:
-            return False
-        return True
-
-    def _check_event_order(self, event):
-        event_id = int(event.get('event_id'))
-        if not event.get('debounced'):
-            if event_id <= self._last_event_id:
-                LOGGER.debug('Outdated faucet event #%d', event_id)
-                return False
-            self._last_event_id += 1
-            if event_id != self._last_event_id:
-                raise Exception('Out-of-sequence event id #%d' % event_id)
+        self._last_event_id += 1
+        if event_id != self._last_event_id:
+            raise Exception('Out-of-sequence event id #%d' % event_id)
         return True
 
     def _handle_port_change_debounce(self, event, target_event):
@@ -229,7 +223,7 @@ class FaucetEventClient():
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
             target_event = getattr(faucet_event, str(event_target), None)
-            dispatch = self._filter_faucet_event(event, target_event)
+            dispatch = self._valid_event_order(event) and target_event
             dispatch = dispatch and self._handle_port_change_debounce(event, target_event)
             dispatch = dispatch and self._handle_ports_status(event)
             if dispatch:
