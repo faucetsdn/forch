@@ -99,6 +99,9 @@ class Forchestrator:
             (FaucetEvent.StackState, lambda event: fcoll.process_stack_state(
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
+            (FaucetEvent.PortChange, fcoll.process_port_change),
+            (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
+                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
         ])
 
     def _restore_states(self):
@@ -155,27 +158,11 @@ class Forchestrator:
             raise
 
     def _process_faucet_event(self):
-        event = self._faucet_events.next_event(blocking=True)
         try:
-            self._handle_faucet_event(event)
+            event = self._faucet_events.next_event(blocking=True)
         except Exception as e:
-            LOGGER.warning('While processing event %s', event)
+            LOGGER.warning('While processing event %s exception: %s', event, str(e))
             raise e
-
-    def _handle_faucet_event(self, event):
-        if not event:
-            return
-        timestamp = event.get("time")
-        LOGGER.debug("Event: %r", event)
-        (name, dpid, port, active) = self._faucet_events.as_port_state(event)
-        if dpid and port:
-            LOGGER.debug('Port state %s %s %s', name, port, active)
-            self._faucet_collector.process_port_state(timestamp, name, port, active)
-
-        (name, dpid, port, target_mac, src_ip) = self._faucet_events.as_port_learn(event)
-        if dpid and port:
-            LOGGER.debug('Port learn %s %s %s', name, port, target_mac)
-            self._faucet_collector.process_port_learn(timestamp, name, port, target_mac, src_ip)
 
     def _get_controller_info(self, target):
         controllers = self._config.get('site', {}).get('controllers', {})
