@@ -1,13 +1,18 @@
 syntax = "proto3";
 
 message NetworkState {
-  map<string, MatchRule> named_match_rules = 1;
+  map<string, DeviceLearning> device_mac_learnings = 1;
   map<string, DeviceBehavior> device_mac_behaviors = 2;
+}
+
+message DeviceLearning {
+  string switch = 1;
+  int32 port = 2;
 }
 
 message DeviceBehavior {
   int32 vid = 1;
-  repeated string rule_names = 2;
+  string role = 2;
 }
 
 message MatchRule {

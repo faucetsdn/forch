@@ -1,58 +1,38 @@
 {
-  named_match_rules:
+  device_mac_learnings:
     {
-      dns:
+      "9a:02:57:1e:8f:01":
         {
-          eth_type: 0x800,
-          ip_proto: 17,
-          dst_port: 53,
-          action: ALLOW,
+          switch: "nz-kiwi-t2sw1",
+          port: 1,
         },
-      https_to_3:
+      "9a:02:57:1e:8f:02":
         {
-          eth_type: 0x800,
-          eth_dst: "9a:02:57:1e:8f:03",
-          ip_proto: 6,
-          dst_port: 443,
-          action: ALLOW,
+          switch: "nz-kiwi-t2sw2",
+          port: 1,
         },
-      https_to_1:
+      "9a:02:57:1e:8f:03":
         {
-          eth_type: 0x800,
-          eth_dst: "9a:02:57:1e:8f:01",
-          ip_proto: 6,
-          src_port: 443,
-          action: ALLOW,
+          switch: "nz-kiwi-t2sw3",
+          port: 1,
         },
-      https_to_2:
-        {
-          eth_type: 0x800,
-          eth_dst: "9a:02:57:1e:8f:02",
-          ip_proto: 6,
-          src_port: 443,
-          action: ALLOW,
-        },
-      all:
-        {
-          action: DENY,
-        }
     },
   device_mac_behaviors:
     {
       "9a:02:57:1e:8f:01":
         {
-          vid: 100,
-          rule_names: [all, https_to_3, dns],
+          vid: 200,
+          role: "red",
         },
       "9a:02:57:1e:8f:02":
         {
-          vid: 200,
-          rule_names: [all, https_to_3, dns],
+          vid: 300,
+          role: "green",
         },
       "9a:02:57:1e:8f:03":
         {
           vid: 300,
-          rule_names: [all, https_to_1, https_to_2, dns],
+          role: "yellow"
         }
     }
 }
