@@ -1,0 +1,38 @@
+{
+  device_mac_learnings:
+    {
+      "9a:02:57:1e:8f:01":
+        {
+          switch: "nz-kiwi-t2sw1",
+          port: 1,
+        },
+      "9a:02:57:1e:8f:02":
+        {
+          switch: "nz-kiwi-t2sw2",
+          port: 1,
+        },
+      "9a:02:57:1e:8f:03":
+        {
+          switch: "nz-kiwi-t2sw3",
+          port: 1,
+        },
+    },
+  device_mac_behaviors:
+    {
+      "9a:02:57:1e:8f:01":
+        {
+          vid: 200,
+          role: "red",
+        },
+      "9a:02:57:1e:8f:02":
+        {
+          vid: 300,
+          role: "green",
+        },
+      "9a:02:57:1e:8f:03":
+        {
+          vid: 300,
+          role: "yellow"
+        }
+    }
+}

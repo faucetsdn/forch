@@ -1,7 +1,9 @@
 """Collect Faucet information and generate ACLs"""
 
+import argparse
 import logging
 import os
+import sys
 import yaml
 
 from forch.forchestrator import configure_logging
@@ -21,6 +23,7 @@ class Faucetizer:
         self._output_file = output_file
 
     def process_network_state(self, network_state):
+        """Process network state input"""
         macs = set()
         for mac, learning in network_state.device_mac_learnings.items():
             macs.add(mac)
@@ -113,18 +116,16 @@ class Faucetizer:
         LOGGER.info('Config wrote to %s', self._output_file)
 
 
-def load_network_state(base_dir_name):
+def load_network_state(file):
     """Load network state file"""
-    file = os.path.join(base_dir_name, 'network_state.yaml')
     LOGGER.info('Loading network state file %s', file)
     network_state = yaml_proto(file, NetworkState)
     LOGGER.info('Loaded %d devices', len(network_state.device_mac_behaviors))
     return network_state
 
 
-def load_faucet_config(base_dir_name):
+def load_faucet_config(file):
     """Load network state file"""
-    file = os.path.join(base_dir_name, 'faucet_base.yaml')
     LOGGER.info('Loading faucet config file %s', file)
     with open(file) as config_file:
         faucet_config = yaml.safe_load(config_file)
@@ -132,16 +133,32 @@ def load_faucet_config(base_dir_name):
     return faucet_config
 
 
+def parse_args(raw_args):
+    """Parse sys args"""
+    parser = argparse.ArgumentParser(prog='faucetizer', description='faucetizer')
+    parser.add_argument('-s', '--state-input', type=str, default='network_state.yaml',
+                        help='network state input')
+    parser.add_argument('-c', '--config-input', type=str, default='faucet.yaml',
+                        help='faucet base config input')
+    parser.add_argument('-o', '--output', type=str, default='faucet.yaml',
+                        help='faucet orchestration config output')
+    return parser.parse_args(raw_args)
+
+
 if __name__ == '__main__':
     configure_logging()
     FORCH_BASE_DIR = os.getenv('FORCH_CONFIG_DIR')
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
+    print(sys.argv)
+    ARGS = parse_args(sys.argv[1:])
 
-    OUTPUT = os.path.join(FAUCET_BASE_DIR, 'faucet.yaml')
-    FAUCETIZER = Faucetizer(OUTPUT)
+    OUTPUT_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
+    FAUCETIZER = Faucetizer(OUTPUT_FILE)
 
-    NETWORK_STATE_SAMPLES = load_network_state(FORCH_BASE_DIR)
+    NETWORK_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
+    NETWORK_STATE_SAMPLES = load_network_state(NETWORK_STATE_FILE)
     FAUCETIZER.process_network_state(NETWORK_STATE_SAMPLES)
 
-    FAUCET_CONFIG = load_faucet_config(FORCH_BASE_DIR)
+    FAUCET_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
+    FAUCET_CONFIG = load_faucet_config(FAUCET_CONFIG_FILE)
     FAUCETIZER.process_faucet_config(FAUCET_CONFIG)
