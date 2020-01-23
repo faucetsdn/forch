@@ -1,20 +1,13 @@
 """Collect Faucet information and generate ACLs"""
 
-import json
 import logging
 import os
-from queue import SimpleQueue
-import sys
-import threading
 import yaml
 
-from faucet import config_parser
-
 from forch.forchestrator import configure_logging
-from forch.utils import proto_dict
 from forch.utils import yaml_proto
 
-from forch.proto.network_state_pb2 import NetworkState, DeviceLearning, DeviceBehavior
+from forch.proto.network_state_pb2 import NetworkState
 
 LOGGER = logging.getLogger('faucetizer')
 
@@ -25,11 +18,9 @@ class Faucetizer:
         self._devices = {}
         self._base_faucet_config = None
         self._faucet_config = None
-        self._queue = SimpleQueue()
-        self._worker_thread = threading.Thread(target=self._main_loop)
         self._output_file = output_file
 
-    def _process_network_state(self, network_state):
+    def process_network_state(self, network_state):
         macs = set()
         for mac, learning in network_state.device_mac_learnings.items():
             macs.add(mac)
@@ -50,7 +41,7 @@ class Faucetizer:
         device_map['vlan'] = behavior.vid
         device_map['role'] = behavior.role
 
-    def _process_faucet_config(self, faucet_config):
+    def process_faucet_config(self, faucet_config):
         """Process faucet config when base faucet config changes"""
         self._base_faucet_config = faucet_config
         self._faucet_config = faucet_config
@@ -83,7 +74,7 @@ class Faucetizer:
                 port_config = switch_config.get('interfaces', {}).get(new_port)
                 if not port_config:
                     LOGGER.warning('Switch or port not defined in faucet config: %s %s',
-                                 new_switch, new_port)
+                                   new_switch, new_port)
                     continue
                 port_config['native_vlan'] = vlan
                 port_config['acls_in'] = [f'role_{role}']
@@ -121,22 +112,6 @@ class Faucetizer:
 
         LOGGER.info('Config wrote to %s', self._output_file)
 
-    def _main_loop(self):
-        while True:
-            message = self._queue.get()
-            if isinstance(message, NetworkState):
-                self._process_network_state(message)
-            elif 'dps' in message: # TODO: need a faucet config proto
-                self._process_faucet_config(message)
-            else:
-                LOGGER.warning('Received unknown type message: %s', type(message))
-
-    def enqueue(self, message):
-        self._queue.put(message, block=True)
-
-    def start(self):
-        self._worker_thread.start()
-
 
 def load_network_state(base_dir_name):
     """Load network state file"""
@@ -152,7 +127,7 @@ def load_faucet_config(base_dir_name):
     file = os.path.join(base_dir_name, 'faucet_base.yaml')
     LOGGER.info('Loading faucet config file %s', file)
     with open(file) as config_file:
-          faucet_config = yaml.safe_load(config_file)
+        faucet_config = yaml.safe_load(config_file)
     LOGGER.info('Loaded base faucet config')
     return faucet_config
 
@@ -164,10 +139,9 @@ if __name__ == '__main__':
 
     OUTPUT = os.path.join(FAUCET_BASE_DIR, 'faucet.yaml')
     FAUCETIZER = Faucetizer(OUTPUT)
-    FAUCETIZER.start()
 
     NETWORK_STATE_SAMPLES = load_network_state(FORCH_BASE_DIR)
-    FAUCETIZER.enqueue(NETWORK_STATE_SAMPLES)
+    FAUCETIZER.process_network_state(NETWORK_STATE_SAMPLES)
 
     FAUCET_CONFIG = load_faucet_config(FORCH_BASE_DIR)
-    FAUCETIZER.enqueue(FAUCET_CONFIG)
+    FAUCETIZER.process_faucet_config(FAUCET_CONFIG)
