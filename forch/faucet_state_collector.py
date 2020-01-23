@@ -737,6 +737,11 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
+    def process_port_change(self, event):
+        """Wrapper for process_port_state"""
+        state = event.status and event.reason != 'DELETE'
+        self.process_port_state(event.timestamp, event.dp_name, event.port_no, state)
+
     @_dump_states
     @_register_restore_state_method(label_name='port', metric_name='port_lacp_state')
     def process_lag_state(self, timestamp, name, port, lacp_state):

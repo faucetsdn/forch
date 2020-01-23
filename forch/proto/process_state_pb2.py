@@ -7,6 +7,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,10 +20,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/process_state.proto',
   package='',
   syntax='proto3',
-  serialized_options=None,
   serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xda\x05\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xa3\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x30\n\x0ememory_info_mb\x18\t \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x62\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -40,21 +41,21 @@ _PROCESSSTATE_PROCESSESENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='ProcessState.ProcessesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -77,70 +78,70 @@ _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='detail', full_name='ProcessState.ProcessData.detail', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='cmd_line', full_name='ProcessState.ProcessData.cmd_line', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='create_time', full_name='ProcessState.ProcessData.create_time', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='create_time_change_count', full_name='ProcessState.ProcessData.create_time_change_count', index=4,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='create_time_last_update', full_name='ProcessState.ProcessData.create_time_last_update', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='create_time_last_change', full_name='ProcessState.ProcessData.create_time_last_change', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='cpu_times_s', full_name='ProcessState.ProcessData.cpu_times_s', index=7,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='memory_info_mb', full_name='ProcessState.ProcessData.memory_info_mb', index=8,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -163,28 +164,28 @@ _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='system', full_name='ProcessState.CpuTime.system', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='iowait', full_name='ProcessState.CpuTime.iowait', index=2,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -207,21 +208,21 @@ _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='vms', full_name='ProcessState.MemoryInfo.vms', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -244,56 +245,56 @@ _PROCESSSTATE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='process_state', full_name='ProcessState.process_state', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='process_state_detail', full_name='ProcessState.process_state_detail', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='process_state_change_count', full_name='ProcessState.process_state_change_count', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='process_state_last_update', full_name='ProcessState.process_state_last_update', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='process_state_last_change', full_name='ProcessState.process_state_last_change', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='system_state_url', full_name='ProcessState.system_state_url', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[_PROCESSSTATE_PROCESSESENTRY, _PROCESSSTATE_PROCESSDATA, _PROCESSSTATE_CPUTIME, _PROCESSSTATE_MEMORYINFO, ],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -314,7 +315,6 @@ _PROCESSSTATE_MEMORYINFO.containing_type = _PROCESSSTATE
 _PROCESSSTATE.fields_by_name['processes'].message_type = _PROCESSSTATE_PROCESSESENTRY
 _PROCESSSTATE.fields_by_name['process_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 DESCRIPTOR.message_types_by_name['ProcessState'] = _PROCESSSTATE
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ProcessState = _reflection.GeneratedProtocolMessageType('ProcessState', (_message.Message,), dict(
 
@@ -356,5 +356,6 @@ _sym_db.RegisterMessage(ProcessState.CpuTime)
 _sym_db.RegisterMessage(ProcessState.MemoryInfo)
 
 
-_PROCESSSTATE_PROCESSESENTRY._options = None
+_PROCESSSTATE_PROCESSESENTRY.has_options = True
+_PROCESSSTATE_PROCESSESENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 # @@protoc_insertion_point(module_scope)

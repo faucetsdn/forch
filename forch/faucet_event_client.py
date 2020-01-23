@@ -12,7 +12,7 @@ import time
 
 from forch.utils import dict_proto
 
-from forch.proto.faucet_event_pb2 import FaucetEvent
+from forch.proto.faucet_event_pb2 import FaucetEvent, PortChange
 
 LOGGER = logging.getLogger('fevent')
 
@@ -105,23 +105,31 @@ class FaucetEventClient():
             else:
                 return False
 
-    def _filter_faucet_event(self, event):
-        event_id = int(event.get('event_id'))
+    def _valid_event_order(self, event):
+        if event.get('debounced'):
+            return True
+        event_id = int(event['event_id'])
         if event_id <= self._last_event_id:
             LOGGER.debug('Outdated faucet event #%d', event_id)
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
             raise Exception('Out-of-sequence event id #%d' % event_id)
+        return True
 
-        (_, dpid, port, active) = self.as_port_state(event)
-        if dpid and port:
+    def _handle_port_change_debounce(self, event, target_event):
+        if isinstance(target_event, PortChange):
+            dpid = target_event.dp_id
+            port = target_event.port_no
+            active = target_event.status and target_event.reason != 'DELETE'
             if not event.get('debounced'):
                 self._debounce_port_event(event, port, active)
             elif self._process_state_update(dpid, port, active):
                 return True
             return False
+        return True
 
+    def _handle_ports_status(self, event):
         (_, dpid, status) = self.as_ports_status(event)
         if dpid:
             for port in status:
@@ -193,15 +201,11 @@ class FaucetEventClient():
         self._last_event_id = event_horizon
         LOGGER.info('Setting event horizon to event #%d', event_horizon)
 
-    def _dispatch_faucet_event(self, event):
-        for target in self._handlers:
-            if target in event:
-                faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
-                target_event = getattr(faucet_event, target)
-                self._augment_event_proto(faucet_event, target_event)
-                LOGGER.debug('dispatching %s event', target)
-                self._handlers[target](target_event)
-                return True
+    def _dispatch_faucet_event(self, target, target_event):
+        if target in self._handlers:
+            LOGGER.debug('dispatching %s event', target)
+            self._handlers[target](target_event)
+            return True
         return False
 
     def next_event(self, blocking=False):
@@ -215,8 +219,16 @@ class FaucetEventClient():
             except Exception as e:
                 LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
                 continue
-            if self._filter_faucet_event(event):
-                if not self._dispatch_faucet_event(event):
+            targets = list(t for t in self._handlers if t in event)
+            event_target = targets[0] if targets else None
+            faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
+            target_event = getattr(faucet_event, str(event_target), None)
+            dispatch = self._valid_event_order(event) and target_event
+            dispatch = dispatch and self._handle_port_change_debounce(event, target_event)
+            dispatch = dispatch and self._handle_ports_status(event)
+            if dispatch:
+                self._augment_event_proto(faucet_event, target_event)
+                if not self._dispatch_faucet_event(event_target, target_event):
                     return event
         return None
 
@@ -245,25 +257,3 @@ class FaucetEventClient():
         if not event or 'PORTS_STATUS' not in event:
             return (None, None, None)
         return (event['dp_name'], event['dp_id'], event['PORTS_STATUS'])
-
-    def as_port_state(self, event):
-        """Convert event to a port state info, if applicable"""
-        if not event or 'PORT_CHANGE' not in event:
-            return (None, None, None, None)
-        name = event['dp_name']
-        dpid = event['dp_id']
-        port_no = int(event['PORT_CHANGE']['port_no'])
-        reason = event['PORT_CHANGE']['reason']
-        port_active = event['PORT_CHANGE']['status'] and reason != 'DELETE'
-        return (name, dpid, port_no, port_active)
-
-    def as_port_learn(self, event):
-        """Convert to port learning info, if applicable"""
-        if not event or 'L2_LEARN' not in event:
-            return (None, None, None, None, None)
-        name = event['dp_name']
-        dpid = event['dp_id']
-        port_no = int(event['L2_LEARN']['port_no'])
-        eth_src = event['L2_LEARN']['eth_src']
-        src_ip = event['L2_LEARN']['l3_src_ip']
-        return (name, dpid, port_no, eth_src, src_ip)
