@@ -19,6 +19,7 @@ LOGGER = logging.getLogger('httpserv')
 class HttpException(Exception):
     """Http exception base class"""
     def __init__(self, message, http_status):
+        super.__init__()
         self.message = message
         self.http_status = http_status
 
