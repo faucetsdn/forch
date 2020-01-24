@@ -1,6 +1,7 @@
 """Collect Faucet information and generate ACLs"""
 
 import argparse
+import copy
 import logging
 import os
 import sys
@@ -15,34 +16,27 @@ LOGGER = logging.getLogger('faucetizer')
 
 
 class Device:
+    """A device with learning and behavior"""
     def __init__(self):
-        self._old_learning = None
-        self._new_learning = None
-        self._behavior = None
+        self.old_learning = None
+        self.new_learning = None
+        self.behavior = None
 
     def has_migrated(self):
         """Determine if the switch or port of a device has changed"""
-        if not self._old_learning:
+        if not self.old_learning:
             return False
-        is_same_switch = self._old_learning.switch != self._new_learning.switch
-        is_same_port = self._old_learning.port != self._new_learning.port
+        is_same_switch = self.old_learning.switch != self.new_learning.switch
+        is_same_port = self.old_learning.port != self.new_learning.port
         return not is_same_switch or not is_same_port
 
     def is_fulfilled(self):
         """Determine if the info of device is enough to update output faucet config"""
-        return self._new_learning and self._behavior
+        return self.new_learning and self.behavior
 
-    def get_old_learning(self):
-        """Return the old learning"""
-        return self._old_learning
-
-    def get_new_learning(self):
-        """Return the new learning"""
-        return self._new_learning
-
-    def get_behavior(self):
-        """Return the behavior"""
-        return self._behavior
+    def commit(self):
+        self.old_learning = copy.deepcopy(self.new_learning)
+        print(f'** old_learning: {self.old_learning}')
 
 
 class Faucetizer:
@@ -70,7 +64,7 @@ class Faucetizer:
         device.new_learning = learning
 
     def _process_device_behavior(self, mac, behavior):
-        device = self._devices.setdefault(mac, Device)
+        device = self._devices.setdefault(mac, Device())
         device.behavior = behavior
 
     def process_faucet_config(self, faucet_config):
@@ -96,16 +90,16 @@ class Faucetizer:
                 commit = True
 
             if device.is_fulfilled():
-                switch = device.get_new_learning().port
-                port = device.get_new_learning().port
+                switch = device.new_learning.switch
+                port = device.new_learning.port
                 switch_config = self._faucet_config.get('dps', {}).get(switch, {})
                 port_config = switch_config.get('interfaces', {}).get(port)
                 if not port_config:
                     LOGGER.warning('Switch or port not defined in faucet config: %s %s',
                                    switch, port)
                     continue
-                port_config['native_vlan'] = device.get_behavior().vlan
-                role = device.get_behavior().role
+                port_config['native_vlan'] = device.behavior.vid
+                role = device.behavior.role
                 if role:
                     port_config['acls_in'] = [f'role_{role}']
                 commit = True
@@ -114,8 +108,8 @@ class Faucetizer:
             self._commit_faucet_config(macs)
 
     def _reset_port_config(self, device):
-        switch = device.get_old_learning().switch
-        port = device.get_old_learning().port
+        switch = device.old_learning.switch
+        port = device.old_learning.port
         switch_config = self._faucet_config.get('dps', {}).get(switch, {})
         port_config = switch_config.get('interfaces', {}).get(port)
         if not port_config:
@@ -132,9 +126,8 @@ class Faucetizer:
 
     def _commit_faucet_config(self, macs):
         for mac in macs:
-            device_map = self._devices[mac]
-            device_map['old_switch'] = device_map['new_switch']
-            device_map['old_port'] = device_map['new_port']
+            device = self._devices[mac]
+            device.commit()
 
         with open(self._output_file, 'w') as config_output:
             yaml.dump(self._faucet_config, config_output)
