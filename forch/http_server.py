@@ -129,7 +129,12 @@ class HttpServer():
         full_path = os.path.join(self._root_path, path)
         if os.path.isdir(full_path):
             full_path = os.path.join(full_path, self._DEFAULT_FILE)
-        return self.read_file(full_path)
+        try:
+            content = self.read_file(full_path)
+            return content
+        except Exception as error:
+            LOGGER.warning("Received illegal request: %s", req_path)
+            return str(error)
 
     def static_file(self, base_path):
         """Map a static file handler to a simple request"""
