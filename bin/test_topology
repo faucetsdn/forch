@@ -19,11 +19,11 @@ fi
 function test_faucetizer {
     test_case=$1
     fc_file=faucet.yaml
-    ns_file=ns_$test_case.yaml
+    state_file=state_$test_case.yaml
     output_file=faucet_$test_case.yaml
     sample_file=faucet_$test_case.yaml
 
-    $PYTHON -m forch.faucetizer -s $ns_file -c $fc_file -o $output_file
+    $PYTHON -m forch.faucetizer -s $state_file -c $fc_file -o $output_file
     echo Comparing $OUT_DIR/$output_file and $FORCH_CONFIG_DIR/$sample_file
     (diff $OUT_DIR/$output_file $FORCH_CONFIG_DIR/$sample_file && echo 0 || echo 1) >> $TEST_RESULTS
 }

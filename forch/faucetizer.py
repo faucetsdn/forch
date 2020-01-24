@@ -14,6 +14,37 @@ from forch.proto.network_state_pb2 import NetworkState
 LOGGER = logging.getLogger('faucetizer')
 
 
+class Device:
+    def __init__(self):
+        self._old_learning = None
+        self._new_learning = None
+        self._behavior = None
+
+    def has_migrated(self):
+        """Determine if the switch or port of a device has changed"""
+        if not self._old_learning:
+            return False
+        is_same_switch = self._old_learning.switch != self._new_learning.switch
+        is_same_port = self._old_learning.port != self._new_learning.port
+        return not is_same_switch or not is_same_port
+
+    def is_fulfilled(self):
+        """Determine if the info of device is enough to update output faucet config"""
+        return self._new_learning and self._behavior
+
+    def get_old_learning(self):
+        """Return the old learning"""
+        return self._old_learning
+
+    def get_new_learning(self):
+        """Return the new learning"""
+        return self._new_learning
+
+    def get_behavior(self):
+        """Return the behavior"""
+        return self._behavior
+
+
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     def __init__(self, output_file):
@@ -35,14 +66,12 @@ class Faucetizer:
         self._faucetize(macs)
 
     def _process_device_learning(self, mac, learning):
-        device_map = self._devices.setdefault(mac, {})
-        device_map['new_switch'] = learning.switch
-        device_map['new_port'] = learning.port
+        device = self._devices.setdefault(mac, Device())
+        device.new_learning = learning
 
     def _process_device_behavior(self, mac, behavior):
-        device_map = self._devices.setdefault(mac, {})
-        device_map['vlan'] = behavior.vid
-        device_map['role'] = behavior.role
+        device = self._devices.setdefault(mac, Device)
+        device.behavior = behavior
 
     def process_faucet_config(self, faucet_config):
         """Process faucet config when base faucet config changes"""
@@ -60,43 +89,40 @@ class Faucetizer:
         commit = False
 
         for mac in macs:
-            old_switch = self._devices.get(mac, {}).get('old_switch')
-            old_port = self._devices.get(mac, {}).get('old_port')
-            new_switch = self._devices.get(mac, {}).get('new_switch')
-            new_port = self._devices.get(mac, {}).get('new_port')
+            device = self._devices[mac]
 
-            if old_switch != new_switch or old_port != new_port:
-                self._reset_port_config(old_switch, old_port)
+            if device.has_migrated():
+                self._reset_port_config(device)
                 commit = True
 
-            vlan = self._devices.get(mac, {}).get('vlan')
-            role = self._devices.get(mac, {}).get('role')
-
-            if new_switch and vlan and role:
-                switch_config = self._faucet_config.get('dps', {}).get(new_switch, {})
-                port_config = switch_config.get('interfaces', {}).get(new_port)
+            if device.is_fulfilled():
+                switch = device.get_new_learning().port
+                port = device.get_new_learning().port
+                switch_config = self._faucet_config.get('dps', {}).get(switch, {})
+                port_config = switch_config.get('interfaces', {}).get(port)
                 if not port_config:
                     LOGGER.warning('Switch or port not defined in faucet config: %s %s',
-                                   new_switch, new_port)
+                                   switch, port)
                     continue
-                port_config['native_vlan'] = vlan
-                port_config['acls_in'] = [f'role_{role}']
+                port_config['native_vlan'] = device.get_behavior().vlan
+                role = device.get_behavior().role
+                if role:
+                    port_config['acls_in'] = [f'role_{role}']
                 commit = True
 
         if commit:
             self._commit_faucet_config(macs)
 
-    def _reset_port_config(self, switch, port):
-        if not switch or not port:
-            return
-
-        switch_config = self._faucet_config.get('dps', {}).get('switch', {})
+    def _reset_port_config(self, device):
+        switch = device.get_old_learning().switch
+        port = device.get_old_learning().port
+        switch_config = self._faucet_config.get('dps', {}).get(switch, {})
         port_config = switch_config.get('interfaces', {}).get(port)
         if not port_config:
             LOGGER.warning('Switch or port not defined in faucet config: %s %s', switch, port)
             return
 
-        base_switch_config = self._base_faucet_config.get('dps', {}).get('switch', {})
+        base_switch_config = self._base_faucet_config.get('dps', {}).get(switch, {})
         base_port_config = base_switch_config.get('interfaces', {}).get(port)
         if not base_port_config:
             LOGGER.warning('Switch or port not defined in base faucet config: %s %s', switch, port)
