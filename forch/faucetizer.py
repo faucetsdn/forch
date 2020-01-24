@@ -140,7 +140,7 @@ class Faucetizer:
         except IOError as error:
             LOGGER.error('Cannot write faucet config: %s', error)
         except Exception as error:
-            LOGGER.error('Cannot commit config: $s', error)
+            LOGGER.error('Cannot commit config: %s', error)
 
         LOGGER.info('Config wrote to %s', self._output_file)
 
