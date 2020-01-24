@@ -36,7 +36,6 @@ class Device:
 
     def commit(self):
         self.old_learning = copy.deepcopy(self.new_learning)
-        print(f'** old_learning: {self.old_learning}')
 
 
 class Faucetizer:
