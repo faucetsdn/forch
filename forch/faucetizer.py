@@ -22,7 +22,7 @@ class Device:
         self.new_learning = None
         self.behavior = None
 
-    def has_migrated(self):
+    def is_dirty(self):
         """Determine if the switch or port of a device has changed"""
         if not self.old_learning:
             return False
@@ -30,7 +30,7 @@ class Device:
         is_same_port = self.old_learning.port != self.new_learning.port
         return not is_same_switch or not is_same_port
 
-    def is_fulfilled(self):
+    def is_complete(self):
         """Determine if the info of device is enough to update output faucet config"""
         return self.new_learning and self.behavior
 
@@ -43,7 +43,7 @@ class Faucetizer:
     def __init__(self, output_file):
         self._devices = {}
         self._base_faucet_config = None
-        self._faucet_config = None
+        self._out_faucet_config = None
         self._output_file = output_file
 
     def process_network_state(self, network_state):
@@ -69,29 +69,30 @@ class Faucetizer:
     def process_faucet_config(self, faucet_config):
         """Process faucet config when base faucet config changes"""
         self._base_faucet_config = faucet_config
-        self._faucet_config = faucet_config
+        self._out_faucet_config = faucet_config
         self._faucetize()
 
     def _faucetize(self, macs=None):
-        if not self._faucet_config:
+        if not self._out_faucet_config:
             return
 
         if not macs:
             macs = self._devices.keys()
 
         commit = False
+        out_faucet_config = self._out_faucet_config
 
         for mac in macs:
             device = self._devices[mac]
 
-            if device.has_migrated():
-                self._reset_port_config(device)
+            if device.is_dirty():
+                self._reset_port_config(device, out_faucet_config)
                 commit = True
 
-            if device.is_fulfilled():
+            if device.is_complete():
                 switch = device.new_learning.switch
                 port = device.new_learning.port
-                switch_config = self._faucet_config.get('dps', {}).get(switch, {})
+                switch_config = out_faucet_config.get('dps', {}).get(switch, {})
                 port_config = switch_config.get('interfaces', {}).get(port)
                 if not port_config:
                     LOGGER.warning('Switch or port not defined in faucet config: %s %s',
@@ -104,12 +105,12 @@ class Faucetizer:
                 commit = True
 
         if commit:
-            self._commit_faucet_config(macs)
+            self._commit_faucet_config(macs, out_faucet_config)
 
-    def _reset_port_config(self, device):
+    def _reset_port_config(self, device, out_faucet_config):
         switch = device.old_learning.switch
         port = device.old_learning.port
-        switch_config = self._faucet_config.get('dps', {}).get(switch, {})
+        switch_config = out_faucet_config.get('dps', {}).get(switch, {})
         port_config = switch_config.get('interfaces', {}).get(port)
         if not port_config:
             LOGGER.warning('Switch or port not defined in faucet config: %s %s', switch, port)
@@ -123,13 +124,15 @@ class Faucetizer:
 
         port_config.update(base_port_config)
 
-    def _commit_faucet_config(self, macs):
+    def _commit_faucet_config(self, macs, out_faucet_config):
+        with open(self._output_file, 'w') as config_output:
+            yaml.dump(out_faucet_config, config_output)
+
+        self._out_faucet_config = out_faucet_config
+
         for mac in macs:
             device = self._devices[mac]
             device.commit()
-
-        with open(self._output_file, 'w') as config_output:
-            yaml.dump(self._faucet_config, config_output)
 
         LOGGER.info('Config wrote to %s', self._output_file)
 
