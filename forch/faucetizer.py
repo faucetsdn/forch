@@ -35,6 +35,7 @@ class Device:
         return self.new_learning and self.behavior
 
     def commit(self):
+        """Commit changes of this device"""
         self.old_learning = copy.deepcopy(self.new_learning)
 
 
@@ -86,8 +87,8 @@ class Faucetizer:
             device = self._devices[mac]
 
             if device.is_dirty():
-                self._reset_port_config(device, out_faucet_config)
-                commit = True
+                if self._reset_port_config(device, out_faucet_config):
+                    commit = True
 
             if device.is_complete():
                 switch = device.new_learning.switch
@@ -114,25 +115,32 @@ class Faucetizer:
         port_config = switch_config.get('interfaces', {}).get(port)
         if not port_config:
             LOGGER.warning('Switch or port not defined in faucet config: %s %s', switch, port)
-            return
+            return False
 
         base_switch_config = self._base_faucet_config.get('dps', {}).get(switch, {})
         base_port_config = base_switch_config.get('interfaces', {}).get(port)
         if not base_port_config:
             LOGGER.warning('Switch or port not defined in base faucet config: %s %s', switch, port)
-            return
+            return False
 
         port_config.update(base_port_config)
 
+        return True
+
     def _commit_faucet_config(self, macs, out_faucet_config):
-        with open(self._output_file, 'w') as config_output:
-            yaml.dump(out_faucet_config, config_output)
+        try:
+            with open(self._output_file, 'w') as config_output:
+                yaml.dump(out_faucet_config, config_output)
 
-        self._out_faucet_config = out_faucet_config
+            self._out_faucet_config = out_faucet_config
 
-        for mac in macs:
-            device = self._devices[mac]
-            device.commit()
+            for mac in macs:
+                device = self._devices[mac]
+                device.commit()
+        except IOError as error:
+            LOGGER.error('Cannot write faucet config: %s', error)
+        except Exception as error:
+            LOGGER.error('Cannot commit config: $s', error)
 
         LOGGER.info('Config wrote to %s', self._output_file)
 
