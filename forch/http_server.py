@@ -20,7 +20,6 @@ class HttpException(Exception):
     """Http exception base class"""
     def __init__(self, message, http_status):
         Exception.__init__(self, message)
-        self.message = message
         self.http_status = http_status
 
 
@@ -56,7 +55,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         except Exception as exception:
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
-            LOGGER.warning('Unhandled exception: %s', exception)
+            LOGGER.error('Unhandled exception: %s', exception)
 
     def _check_url(self):
         """Check if url is illegal"""
