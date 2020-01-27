@@ -4,7 +4,7 @@ ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
 GO_VERSION=1.13.3
-FAUCET_REPO=https://github.com/grafnu/faucet.git
+FAUCET_REPO=https://github.com/anurag6/faucet.git
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 
 sudo apt-get install openvswitch-switch protobuf-compiler \
