@@ -19,7 +19,7 @@ LOGGER = logging.getLogger('httpserv')
 class HttpException(Exception):
     """Http exception base class"""
     def __init__(self, message, http_status):
-        super.__init__()
+        Exception.__init__(self, message)
         self.message = message
         self.http_status = http_status
 
@@ -52,7 +52,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         except HttpException as http_exception:
             self.send_response(http_exception.http_status)
             self.end_headers()
-            LOGGER.warning(http_exception.message)
+            LOGGER.warning(http_exception)
         except Exception as exception:
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
