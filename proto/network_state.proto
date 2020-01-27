@@ -8,6 +8,7 @@ message NetworkState {
 message DeviceLearning {
   string switch = 1;
   int32 port = 2;
+  bool connecting = 3;
 }
 
 message DeviceBehavior {

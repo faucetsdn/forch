@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x66orch/proto/network_state.proto\"\xb0\x02\n\x0cNetworkState\x12\x43\n\x14\x64\x65vice_mac_learnings\x18\x01 \x03(\x0b\x32%.NetworkState.DeviceMacLearningsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.NetworkState.DeviceMacBehaviorsEntry\x1aJ\n\x17\x44\x65viceMacLearningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceLearning:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\".\n\x0e\x44\x65viceLearning\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"+\n\x0e\x44\x65viceBehavior\x12\x0b\n\x03vid\x18\x01 \x01(\x05\x12\x0c\n\x04role\x18\x02 \x01(\t\"\xb6\x01\n\tMatchRule\x12\x10\n\x08\x65th_type\x18\x01 \x01(\x05\x12\x0f\n\x07\x65th_dst\x18\x02 \x01(\t\x12\x10\n\x08ip_proto\x18\x03 \x01(\x05\x12\x0e\n\x06ip_dst\x18\x04 \x01(\t\x12\x10\n\x08src_port\x18\x05 \x01(\x05\x12\x10\n\x08\x64st_port\x18\x06 \x01(\x05\x12!\n\x06\x61\x63tion\x18\x07 \x01(\x0e\x32\x11.MatchRule.Action\"\x1d\n\x06\x41\x63tion\x12\x08\n\x04\x44\x45NY\x10\x00\x12\t\n\x05\x41LLOW\x10\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1f\x66orch/proto/network_state.proto\"\xb0\x02\n\x0cNetworkState\x12\x43\n\x14\x64\x65vice_mac_learnings\x18\x01 \x03(\x0b\x32%.NetworkState.DeviceMacLearningsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.NetworkState.DeviceMacBehaviorsEntry\x1aJ\n\x17\x44\x65viceMacLearningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceLearning:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"B\n\x0e\x44\x65viceLearning\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x12\n\nconnecting\x18\x03 \x01(\x08\"+\n\x0e\x44\x65viceBehavior\x12\x0b\n\x03vid\x18\x01 \x01(\x05\x12\x0c\n\x04role\x18\x02 \x01(\t\"\xb6\x01\n\tMatchRule\x12\x10\n\x08\x65th_type\x18\x01 \x01(\x05\x12\x0f\n\x07\x65th_dst\x18\x02 \x01(\t\x12\x10\n\x08ip_proto\x18\x03 \x01(\x05\x12\x0e\n\x06ip_dst\x18\x04 \x01(\t\x12\x10\n\x08src_port\x18\x05 \x01(\x05\x12\x10\n\x08\x64st_port\x18\x06 \x01(\x05\x12!\n\x06\x61\x63tion\x18\x07 \x01(\x0e\x32\x11.MatchRule.Action\"\x1d\n\x06\x41\x63tion\x12\x08\n\x04\x44\x45NY\x10\x00\x12\t\n\x05\x41LLOW\x10\x01\x62\x06proto3')
 )
 
 
@@ -41,8 +41,8 @@ _MATCHRULE_ACTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=589,
-  serialized_end=618,
+  serialized_start=609,
+  serialized_end=638,
 )
 _sym_db.RegisterEnumDescriptor(_MATCHRULE_ACTION)
 
@@ -180,6 +180,13 @@ _DEVICELEARNING = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='connecting', full_name='DeviceLearning.connecting', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -193,7 +200,7 @@ _DEVICELEARNING = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=342,
-  serialized_end=388,
+  serialized_end=408,
 )
 
 
@@ -230,8 +237,8 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=390,
-  serialized_end=433,
+  serialized_start=410,
+  serialized_end=453,
 )
 
 
@@ -304,8 +311,8 @@ _MATCHRULE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=436,
-  serialized_end=618,
+  serialized_start=456,
+  serialized_end=638,
 )
 
 _NETWORKSTATE_DEVICEMACLEARNINGSENTRY.fields_by_name['value'].message_type = _DEVICELEARNING

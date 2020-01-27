@@ -7,7 +7,7 @@ f73248e5e2d2257c8b173c3d98ff6bad94d4af22  proto/device.proto
 0375e5ead2240cd2829b8c2569cbb0df97b569c1  proto/faucet_event.proto
 a789b25478572164f36ab66e011857d9fa0651b3  proto/host_path.proto
 503374b74d3c8190eaa3911879eeea0eab2bb6e2  proto/list_hosts.proto
-85ade2ab504eae15ba1c5901a6eef1bb9d9be0a7  proto/network_state.proto
+36e0a61ad0e4e51b36e03b23e071594fa0e2ff4f  proto/network_state.proto
 db4d1bf4d1b4ac1a575853833ecbd9571d784203  proto/path_node.proto
 2bc29e053318fe4ab4e96c02c0d12b8eda2ea7db  proto/process_state.proto
 78648f71a4ea2f0131359716dde96e0db34004d2  proto/shared_constants.proto

@@ -33,8 +33,11 @@ class Faucetizer:
         self._faucetize()
 
     def _process_device_learning(self, mac, learning):
-        device = self._devices.setdefault(mac, Device())
-        device.learning.CopyFrom(learning)
+        if learning.connecting:
+            device = self._devices.setdefault(mac, Device())
+            device.learning.CopyFrom(learning)
+        else:
+            self._devices.pop(mac, None)
 
     def _process_device_behavior(self, mac, behavior):
         device = self._devices.setdefault(mac, Device())
