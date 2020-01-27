@@ -67,7 +67,9 @@ class Faucetizer:
                 if role:
                     port_config['acls_in'] = [f'role_{role}']
 
-    def _generate_faucet_config(self, macs, out_faucet_config):
+        self._generate_faucet_config(out_faucet_config)
+
+    def _generate_faucet_config(self, out_faucet_config):
         try:
             with open(self._output_file, 'w') as config_output:
                 yaml.dump(out_faucet_config, config_output)
