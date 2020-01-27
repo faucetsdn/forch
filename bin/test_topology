@@ -5,7 +5,7 @@ source bin/stack_functions
 preamble_setup
 
 # Could be run as its own test shard, if desired.
-bin/test_basics
+#bin/test_basics
 
 export FORCH_CONFIG_DIR=topo/dva
 export FAUCET_CONFIG_DIR=$OUT_DIR
