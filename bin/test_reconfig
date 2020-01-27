@@ -17,6 +17,8 @@ function simple_ping {
     sudo timeout 3s tcpdump -lw $OUT_DIR/t1sw1-eth6.pcap -i t1sw1-eth6 &
     sleep 0.5
     ping=`docker exec forch-faux-1 ping -q -c 2 192.168.1.0 | fgrep packets`
+    echo Base ping results $ping
+    ping=${ping%received,*}
     sleep 2.5
     sw1=`tcpdump -r $OUT_DIR/faux-1.pcap | wc -l`
     sw2=`tcpdump -r $OUT_DIR/t1sw2-eth28.pcap | wc -l`
@@ -47,6 +49,7 @@ function multi_ping {
 }
 
 rm -f $faucet_log inst/forch-faucet-1/ofchannel.log
+tail -F $faucet_log &
 
 reset_system
 reset_stack
@@ -55,20 +58,36 @@ restart_ovs init
 simple_ping initstate
 
 sudo ip link set t1sw2-eth28 down
-echo ping sw2down01 `date`
+echo ping sw2down `date`
 simple_ping sw2down01
 simple_ping sw2down02
 
 sudo ip link set t1sw2-eth28 up
-echo ping sw2isup01 `date`
+echo ping sw2isup `date`
 simple_ping sw2isup01
 simple_ping sw2isup02
+
+sudo ip link set t1sw1-eth6 down
+sudo ip link set t1sw1-eth9 down
+sudo ip link set t1sw1-eth10 down
+sudo ip link set t1sw1-eth11 down
+sleep 20
+echo ping sw1orph `date`
+echo TODO: The orphan results should work. | tee -a $TEST_RESULTS
+simple_ping sw1orph01
+simple_ping sw1orph02
+
+sudo ip link set t1sw1-eth6 up
+sudo ip link set t1sw1-eth9 up
+sudo ip link set t1sw1-eth10 up
+sudo ip link set t1sw1-eth11 up
+sleep 20
+echo ping sw1noor `date`
+simple_ping sw1noor01
+simple_ping sw1noor02
 
 sudo ip link set t1sw1-eth28 down
 echo ping sw1down `date`
 multi_ping sw1down
-
-echo Dump nz-kiwi-t1sw2 faucet.log
-fgrep nz-kiwi-t1sw2 inst/forch-faucet-1/faucet.log
 
 echo Done with test_reconfig. | tee -a $TEST_RESULTS
