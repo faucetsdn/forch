@@ -338,21 +338,6 @@
         
           
           <li>
-            <a href="#forch%2fproto%2fdevice.proto">forch/proto/device.proto</a>
-            <ul>
-              
-                <li>
-                  <a href="#Device"><span class="badge">M</span>Device</a>
-                </li>
-              
-              
-              
-              
-            </ul>
-          </li>
-        
-          
-          <li>
             <a href="#forch%2fproto%2ffaucet_event.proto">forch/proto/faucet_event.proto</a>
             <ul>
               
@@ -472,6 +457,10 @@
           <li>
             <a href="#forch%2fproto%2fnetwork_state.proto">forch/proto/network_state.proto</a>
             <ul>
+              
+                <li>
+                  <a href="#Device"><span class="badge">M</span>Device</a>
+                </li>
               
                 <li>
                   <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
@@ -1738,51 +1727,6 @@
     
       
       <div class="file-heading">
-        <h2 id="forch/proto/device.proto">forch/proto/device.proto</h2><a href="#title">Top</a>
-      </div>
-      <p>Encapsulation of device for DVA and role-based ACL assignment</p>
-
-      
-        <h3 id="Device">Device</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>learning</td>
-                  <td><a href="#DeviceLearning">DeviceLearning</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>behavior</td>
-                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-
-      
-
-      
-
-      
-    
-      
-      <div class="file-heading">
         <h2 id="forch/proto/faucet_event.proto">forch/proto/faucet_event.proto</h2><a href="#title">Top</a>
       </div>
       <p>Encapsulation of an event on the Faucet event socket.</p>
@@ -2752,6 +2696,37 @@ or to host_path API to list path </p></td>
       <p></p>
 
       
+        <h3 id="Device">Device</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>learning</td>
+                  <td><a href="#DeviceLearning">DeviceLearning</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>behavior</td>
+                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="DeviceBehavior">DeviceBehavior</h3>
         <p></p>
 
@@ -2808,7 +2783,7 @@ or to host_path API to list path </p></td>
                 </tr>
               
                 <tr>
-                  <td>connecting</td>
+                  <td>connected</td>
                   <td><a href="#bool">bool</a></td>
                   <td></td>
                   <td><p> </p></td>

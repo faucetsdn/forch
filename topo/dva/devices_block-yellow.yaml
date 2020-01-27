@@ -5,19 +5,19 @@
         {
           switch: "nz-kiwi-t2sw1",
           port: 1,
-          connecting: True,
+          connected: True,
         },
       "9a:02:57:1e:8f:02":
         {
           switch: "nz-kiwi-t2sw2",
           port: 1,
-          connecting: True,
+          connected: True,
         },
       "9a:02:57:1e:8f:03":
         {
           switch: "nz-kiwi-t2sw3",
           port: 1,
-          connecting: True,
+          connected: True,
         },
     },
   device_mac_behaviors:

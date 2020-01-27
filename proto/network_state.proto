@@ -5,10 +5,15 @@ message NetworkState {
   map<string, DeviceBehavior> device_mac_behaviors = 2;
 }
 
+message Device {
+    DeviceLearning learning = 1;
+    DeviceBehavior behavior = 2;
+}
+
 message DeviceLearning {
   string switch = 1;
   int32 port = 2;
-  bool connecting = 3;
+  bool connected = 3;
 }
 
 message DeviceBehavior {
