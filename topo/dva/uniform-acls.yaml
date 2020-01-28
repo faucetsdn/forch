@@ -1,0 +1,18 @@
+acls:
+  uniform_100:
+    - rule:
+        actions:
+          allow: True
+  uniform_200:
+    - rule:
+        actions:
+          allow: True
+  uniform_300:
+    - rule:
+        actions:
+          allow: True
+  uniform_400:
+    - rule:
+        actions:
+          allow: False
+

@@ -459,7 +459,15 @@
             <ul>
               
                 <li>
+                  <a href="#Device"><span class="badge">M</span>Device</a>
+                </li>
+              
+                <li>
                   <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
+                </li>
+              
+                <li>
+                  <a href="#DeviceLearning"><span class="badge">M</span>DeviceLearning</a>
                 </li>
               
                 <li>
@@ -475,7 +483,7 @@
                 </li>
               
                 <li>
-                  <a href="#NetworkState.NamedMatchRulesEntry"><span class="badge">M</span>NetworkState.NamedMatchRulesEntry</a>
+                  <a href="#NetworkState.DeviceMacLearningsEntry"><span class="badge">M</span>NetworkState.DeviceMacLearningsEntry</a>
                 </li>
               
               
@@ -2688,6 +2696,37 @@ or to host_path API to list path </p></td>
       <p></p>
 
       
+        <h3 id="Device">Device</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>learning</td>
+                  <td><a href="#DeviceLearning">DeviceLearning</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>behavior</td>
+                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="DeviceBehavior">DeviceBehavior</h3>
         <p></p>
 
@@ -2706,9 +2745,47 @@ or to host_path API to list path </p></td>
                 </tr>
               
                 <tr>
-                  <td>rule_names</td>
+                  <td>role</td>
                   <td><a href="#string">string</a></td>
-                  <td>repeated</td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DeviceLearning">DeviceLearning</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switch</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>connected</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
                   <td><p> </p></td>
                 </tr>
               
@@ -2796,8 +2873,8 @@ or to host_path API to list path </p></td>
             <tbody>
               
                 <tr>
-                  <td>named_match_rules</td>
-                  <td><a href="#NetworkState.NamedMatchRulesEntry">NetworkState.NamedMatchRulesEntry</a></td>
+                  <td>device_mac_learnings</td>
+                  <td><a href="#NetworkState.DeviceMacLearningsEntry">NetworkState.DeviceMacLearningsEntry</a></td>
                   <td>repeated</td>
                   <td><p> </p></td>
                 </tr>
@@ -2847,7 +2924,7 @@ or to host_path API to list path </p></td>
 
         
       
-        <h3 id="NetworkState.NamedMatchRulesEntry">NetworkState.NamedMatchRulesEntry</h3>
+        <h3 id="NetworkState.DeviceMacLearningsEntry">NetworkState.DeviceMacLearningsEntry</h3>
         <p></p>
 
         
@@ -2866,7 +2943,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>value</td>
-                  <td><a href="#MatchRule">MatchRule</a></td>
+                  <td><a href="#DeviceLearning">DeviceLearning</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
