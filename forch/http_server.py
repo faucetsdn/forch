@@ -16,6 +16,13 @@ from forch.utils import proto_json
 LOGGER = logging.getLogger('httpserv')
 
 
+class HttpException(Exception):
+    """Http exception base class"""
+    def __init__(self, message, http_status):
+        Exception.__init__(self, message)
+        self.http_status = http_status
+
+
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     """Handle requests in a separate thread."""
 
@@ -30,32 +37,36 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # pylint: disable=invalid-name
     def do_GET(self):
         """Handle a basic http request get method"""
-        url_error = self._check_url()
-        if url_error:
-            self.send_response(500)
+        try:
+            self._check_url()
+            parsed = urllib.parse.urlparse(self.path)
+            opts = {}
+            opt_pairs = urllib.parse.parse_qsl(parsed.query)
+            for pair in opt_pairs:
+                opts[pair[0]] = pair[1]
+            message = str(self._context.get_data(self.headers.get('Host'), parsed.path[1:], opts))
+            self.send_response(http.HTTPStatus.OK)
             self.end_headers()
-            LOGGER.warning(url_error)
-            return
-        self.send_response(200)
-        self.end_headers()
-        parsed = urllib.parse.urlparse(self.path)
-        opts = {}
-        opt_pairs = urllib.parse.parse_qsl(parsed.query)
-        for pair in opt_pairs:
-            opts[pair[0]] = pair[1]
-        message = str(self._context.get_data(self.headers.get('Host'), parsed.path[1:], opts))
-        self.wfile.write(message.encode())
+            self.wfile.write(message.encode())
+        except HttpException as http_exception:
+            self.send_response(http_exception.http_status)
+            self.end_headers()
+            LOGGER.warning(http_exception)
+        except Exception as exception:
+            self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR)
+            self.end_headers()
+            LOGGER.error('Unhandled exception: %s', exception)
 
     def _check_url(self):
         """Check if url is illegal"""
         if not self.headers.get('Host'):
-            return f'Host is empty. Path: {self.path}'
+            raise HttpException(f'Host is empty. Path: {self.path}',
+                                http.HTTPStatus.BAD_REQUEST)
         if not self.path:
-            return f'Path is empty'
+            raise HttpException(f'Path is empty', http.HTTPStatus.BAD_REQUEST)
         if '..' in self.path:
-            print(self.path)
-            return f'Path contains directory traversal notations: {self.path}'
-        return None
+            raise HttpException(f'Path contains directory traversal notations: {self.path}',
+                                http.HTTPStatus.BAD_REQUEST)
 
 
 class HttpServer():
@@ -102,19 +113,16 @@ class HttpServer():
 
     def get_data(self, host, path, params):
         """Get data for a particular request path and query params"""
-        try:
-            for a_path in self._paths:
-                if path.startswith(a_path):
-                    full_path = host + '/' + path
-                    result = self._paths[a_path](full_path, params)
-                    if isinstance(result, (bytes, str)):
-                        return result
-                    if isinstance(result, Message):
-                        return proto_json(result)
-                    return json.dumps(result)
-            return str(self._paths)
-        except Exception as e:
-            LOGGER.exception('Handling request %s: %s', path, str(e))
+        for a_path in self._paths:
+            if path.startswith(a_path):
+                full_path = host + '/' + path
+                result = self._paths[a_path](full_path, params)
+                if isinstance(result, (bytes, str)):
+                    return result
+                if isinstance(result, Message):
+                    return proto_json(result)
+                return json.dumps(result)
+        return str(self._paths)
 
     def read_file(self, full_path):
         """Read a file and return the entire contents"""
@@ -129,7 +137,12 @@ class HttpServer():
         full_path = os.path.join(self._root_path, path)
         if os.path.isdir(full_path):
             full_path = os.path.join(full_path, self._DEFAULT_FILE)
-        return self.read_file(full_path)
+        try:
+            content = self.read_file(full_path)
+            return content
+        except Exception as e:
+            raise HttpException(str(e), http.HTTPStatus.BAD_REQUEST)
+
 
     def static_file(self, base_path):
         """Map a static file handler to a simple request"""
