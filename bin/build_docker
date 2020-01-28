@@ -84,6 +84,7 @@ fi
 built_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET_HASH`
 if [ "$built_faucet" != $FAUCET_HASH ]; then
     echo Faucet image hash mismatch.
+    echo Built $built_faucet, expected $FAUCET_HASH
     false
 fi
 
