@@ -16,7 +16,7 @@ GIT_PEER=`echo $GIT_URL | sed s/forch/faucet/`
 echo Auto-generated faucet git repo $GIT_PEER
 
 FAUCET_REPO=$GIT_PEER
-FAUCET_HASH=$(cat etc/FAUCET_VERSION)
+FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
 
 if [ -z "$VIRTUAL_ENV" ]; then
     python3 -m venv venv
@@ -31,5 +31,5 @@ if [ -d faucet ]; then
 else
     echo Cloning faucet locally...
     git clone $FAUCET_REPO faucet
-    (cd faucet; git checkout $FAUCET_HASH)
+    (cd faucet; git checkout $FAUCET_VERSION)
 fi
