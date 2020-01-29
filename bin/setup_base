@@ -3,8 +3,15 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
+GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+GIT_REMOTE=`git config branch.$GIT_BRANCH.remote`
+GIT_URL=`git remote get-url $GIT_REMOTE`
+echo Build branch $GIT_BRANCH from $GIT_REMOTE at $GIT_URL
+GIT_PEER=`echo $GIT_URL | sed s/forch/faucet/`
+echo Auto-generated faucet git repo $GIT_PEER
+
 GO_VERSION=1.13.3
-FAUCET_REPO=https://github.com/faucetsdn/faucet.git
+FAUCET_REPO=$GIT_PEER
 FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 
 sudo apt-get install openvswitch-switch protobuf-compiler \
