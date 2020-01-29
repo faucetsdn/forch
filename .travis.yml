@@ -9,7 +9,7 @@ addons:
   apt:
     update: true
 install:
-  - set -e
+  #- set -e
   - bin/setup_base
   - $TEST_SKIP bin/compile_ovs
   - $TEST_SKIP bin/build_docker ${DOCKER_BUILD:-pull}
@@ -17,8 +17,6 @@ script:
   - set -e
   - $TEST_SKIP bin/setup_stack local
   - bin/run_test_set
-after_script:
-  - sleep 20
 env:
   matrix:
     - TEST_SET=stack
