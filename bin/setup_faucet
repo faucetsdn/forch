@@ -1,0 +1,35 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+cd $ROOT
+
+if [ -n "$TRAVIS_BRANCH" ]; then
+    GIT_BRANCH=$TRAVIS_BRANCH
+else
+    GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+fi
+
+GIT_REMOTE=`git config branch.$GIT_BRANCH.remote`
+GIT_URL=`git remote get-url $GIT_REMOTE`
+echo Build branch $GIT_BRANCH from $GIT_REMOTE at $GIT_URL
+GIT_PEER=`echo $GIT_URL | sed s/forch/faucet/`
+echo Auto-generated faucet git repo $GIT_PEER
+
+FAUCET_REPO=$GIT_PEER
+FAUCET_HASH=$(cat etc/FAUCET_VERSION)
+
+if [ -z "$VIRTUAL_ENV" ]; then
+    python3 -m venv venv
+    source venv/bin/activate
+fi
+
+rm -f $VIRTUAL_ENV/lib/python3.7/site-packages/faucet
+ln -s $ROOT/faucet/faucet $VIRTUAL_ENV/lib/python3.7/site-packages/faucet
+
+if [ -d faucet ]; then
+    echo Dir faucet/ already exists. Not cloning.
+else
+    echo Cloning faucet locally...
+    git clone $FAUCET_REPO faucet
+    (cd faucet; git checkout $FAUCET_HASH)
+fi
