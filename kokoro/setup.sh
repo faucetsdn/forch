@@ -28,4 +28,4 @@ add_rapture_repo glinux-priority-extra-rodete-stable main
 add_rapture_repo goobuntu-utils-stable main
 
 apt-get -q update
-apt-get -q -y install build-debs rapture-archive-keyring git
+apt-get -q -y install build-debs rapture-archive-keyring git python3-venv

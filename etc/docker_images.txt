@@ -1,3 +1,0 @@
-forch/faucet f071035b4416
-forch/faux 6a0b0b26b620
-forch/gauge 1a3ddf1dffc8

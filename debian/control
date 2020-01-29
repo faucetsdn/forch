@@ -23,7 +23,7 @@ Vcs-Browser: https://github.com/faucetsdn/forch
 
 Package: python3-forch
 Architecture: all
-Depends: python3-faucet (= 1.9.31.1),
+Depends: python3-faucet (= FAUCET_VERSION),
          python3-netaddr,
          python3-networkx,
          python3-protobuf,
