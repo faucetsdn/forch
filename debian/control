@@ -30,11 +30,4 @@ Depends: python3-faucet (= 1.9.31.2),
          python3-psutil,
          python3-requests,
          python3-yaml,
-Suggests: forch
-Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
-
-Package: forch
-Architecture: all
-Depends: python3-forch
-Suggests: forch
 Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
