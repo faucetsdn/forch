@@ -42,5 +42,5 @@ echo Created version $version '(from most recent annotated tag)'
 
 if [ -n "$testing" ]; then
     echo Checking contents of generated debian package...
-    dpkg -c dist/python3-forch_0.0.0_all.deb | fgrep forch/http_server.py
+    dpkg -c dist/python3-forch_0.0.0-dirty_all.deb | fgrep forch/http_server.py
 fi
