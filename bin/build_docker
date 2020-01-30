@@ -53,13 +53,14 @@ docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
 
 faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
-    echo Local faucet version not as expected.
-    echo $FAUCET_HASH from etc/FAUCET_VERSION
-    echo $faucet_ver in faucet/
-    false
+    echo Local faucet version not as expected, attempting conversion...
+    (cd faucet && git fetch && git checkout $FAUCET_HASH)
+    faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
+    if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
+	echo Well, that didn\'t work.
+	false
+    fi
 fi
-
-faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 
 echo Labelling faucet image with faucet version $faucet_ver
 
