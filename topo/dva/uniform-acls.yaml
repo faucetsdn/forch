@@ -1,8 +1,15 @@
 acls:
   uniform_100:
     - rule:
+        dl_type: 0x0800
+        ip_proto: 17
+        ipv4_dst: 192.168.1.254
+        udp_dst: 67
         actions:
-          allow: True
+           allow: True
+    - rule:
+        actions:
+          allow: False
   uniform_200:
     - rule:
         actions:

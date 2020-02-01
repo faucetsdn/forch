@@ -11,14 +11,14 @@ addons:
 install:
   - set -e
   - bin/setup_base
-  - $TEST_SKIP bin/compile_ovs
-  - $TEST_SKIP bin/build_docker ${DOCKER_BUILD:-pull}
+  - $SKIP_INSTALL bin/compile_ovs
+  - $SKIP_INSTALL bin/build_docker ${DOCKER_BUILD:-pull}
 script:
   - set -e
-  - $TEST_SKIP bin/setup_stack local
+  - $SKIP_STACK bin/setup_stack local $MODE
   - bin/run_test_set
 env:
   matrix:
     - TEST_SET=stack
     - TEST_SET=reconfig
-    - TEST_SET=topology TEST_SKIP=true
+    - TEST_SET=topology SKIP_INSTALL=true MODE=dva

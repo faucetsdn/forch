@@ -18,17 +18,32 @@ fi
 
 function test_faucetizer {
     test_case=$1
-    fc_file=faucet.yaml
+    fc_file=faucet_structural.yaml
     state_file=devices_$test_case.yaml
-    output_file=faucet_$test_case.yaml
     sample_file=faucet_$test_case.yaml
+    output_file=faucet_faucet.yaml
 
     $PYTHON -m forch.faucetizer -s $state_file -c $fc_file -o $output_file
     echo Comparing $OUT_DIR/$output_file and $FORCH_CONFIG_DIR/$sample_file
     (diff $OUT_DIR/$output_file $FORCH_CONFIG_DIR/$sample_file && echo 0 || echo 1) >> $TEST_RESULTS
 }
 
+function test_stack {
+    desc=stack-$1
+    echo Starting $desc test... | tee -a $TEST_RESULTS
+    wget localhost:8001 -O- 2>/dev/null | grep 'nz-kiwi-t2sw1' | grep -oE '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+}
+
 $PYTHON -m forch.topology >> $TEST_RESULTS
 $PYTHON -m forch.authenticator >> $TEST_RESULTS
+
+echo %%% intitial | tee -a $TEST_RESULTS
+test_stack intitial
+
+echo %%% l2-learning | tee -a $TEST_RESULTS
+docker exec forch-faux-1 arp -s 192.168.1.254 02:00:00:00:00:00
+docker exec forch-faux-1 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/67"
+sleep 1
+test_stack l2-learning
 
 test_faucetizer block-yellow
