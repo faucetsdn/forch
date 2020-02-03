@@ -4,11 +4,13 @@ source bin/stack_functions
 
 preamble_setup
 
+PROM_PT=8001
+
 function test_access {
     desc=access-$1
     echo Starting $desc test... | tee -a $TEST_RESULTS
-    wget localhost:8001 -O- 2>/dev/null | grep 'nz-kiwi-t2sw1' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
-    wget localhost:8001 -O- 2>/dev/null | grep 'nz-kiwi-t2sw2' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep 'nz-kiwi-t2sw1' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep 'nz-kiwi-t2sw2' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
