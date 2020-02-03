@@ -1,0 +1,9 @@
+bin/test_access
+%%% initial
+Starting access-initial test...
+%%% l2-learning
+Starting access-l2-learning test...
+9a:02:57:1e:8f:01
+%%% deny
+Starting access-deny test...
+9a:02:57:1e:8f:01

@@ -3,9 +3,4 @@ bin/test_topology
 {'device_id': '9a:02:57:1e:8f:01', 'role': 'Allow', 'segment': '1'}
 {'device_id': '9a:02:57:1e:8f:02', 'role': 'Allow', 'segment': '2'}
 {'device_id': 'unknown', 'role': 'Deny', 'segment': '404'}
-%%% intitial
-Starting stack-intitial test...
-%%% l2-learning
-Starting stack-l2-learning test...
-9a:02:57:1e:8f:01
 0

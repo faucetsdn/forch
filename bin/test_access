@@ -1,0 +1,27 @@
+#!/bin/bash
+
+source bin/stack_functions
+
+preamble_setup
+
+function test_access {
+    desc=access-$1
+    echo Starting $desc test... | tee -a $TEST_RESULTS
+    wget localhost:8001 -O- 2>/dev/null | grep 'nz-kiwi-t2sw1' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+    wget localhost:8001 -O- 2>/dev/null | grep 'nz-kiwi-t2sw2' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+}
+
+echo %%% initial | tee -a $TEST_RESULTS
+test_access initial
+
+echo %%% l2-learning | tee -a $TEST_RESULTS
+docker exec forch-faux-1 arp -s 192.168.1.254 02:00:00:00:00:00
+docker exec forch-faux-1 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/67"
+sleep 1
+test_access l2-learning
+
+echo %%% deny | tee -a $TEST_RESULTS
+docker exec forch-faux-2 arp -s 192.168.1.254 02:00:00:00:00:00
+docker exec forch-faux-2 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/68"
+sleep 1
+test_access deny
