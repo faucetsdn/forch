@@ -3,6 +3,7 @@ import copy
 import hashlib
 import hmac
 import struct
+import logging
 
 import binascii
 from forch.radius_attributes import ATTRIBUTE_TYPES, Attribute, MessageAuthenticator
@@ -13,6 +14,7 @@ RADIUS_HEADER_LENGTH = 1 + 1 + 2 + 16
 
 PACKET_TYPE_PARSERS = {}
 
+LOGGER = logging.getLogger('radius')
 
 class InvalidResponseAuthenticatorError(Exception):
     """To be used when the ResponseAuthenticator hashes

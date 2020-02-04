@@ -2,7 +2,10 @@
 from queue import Queue
 import socket
 import logging
+import os
 from time import sleep
+import json
+
 from forch.radius import RadiusAttributesList, RadiusAccessRequest, Radius
 from forch.radius_attributes import CallingStationId, UserName, MessageAuthenticator, \
         NASPort, UserPassword
@@ -66,14 +69,12 @@ class RadiusQuery:
                 radius = self.decode_radius_response(packed_message)
             except MessageParseError as exception:
                 LOGGER.warning("exception: %s. message: %s", packed_message, exception)
-            LOGGER.info("Received RADIUS msg: %s", radius)
+            LOGGER.info("Received RADIUS msg: Code:%s packet_id:%s attributes:%s", radius.CODE, radius.packet_id, radius.attributes.to_dict())
 
     def send_mab_request(self, src_mac, port_id):
-        LOGGER,info("sending MAB reqest for %s", src_mac)
         req_packet = self.encode_mab_message(src_mac, port_id)
-        LOGGER.info("encoded MAB message for %s", src_mac)
+        LOGGER.info("Sending MAB request for mac %s", src_mac)
         self.radius_socket.send(req_packet)
-        LOGGER.info("sent MAB request for %s", src_mac)
 
     def encode_mab_message(self, src_mac, port_id=None):
         radius_id = self.get_next_radius_pkt_id()
@@ -83,7 +84,7 @@ class RadiusQuery:
 
         attr_list = []
         mac_str = str(src_mac).replace(':', "")
-        attr_list.append(UserName.create(no_dots_mac))
+        attr_list.append(UserName.create(mac_str))
         attr_list.append(CallingStationId.create(str(src_mac).replace(':', '-')))
 
         if port_id:
@@ -98,15 +99,15 @@ class RadiusQuery:
 
         attributes = RadiusAttributesList(attr_list)
         access_request = RadiusAccessRequest(radius_id, req_authenticator, attributes)
-        LOGGER.info("encoded %s successfully", src_mac)
         return access_request.build(self.radius_secret)
 
     def decode_radius_response(self, packed_msg):
-        return Radius.parse(packed_msg, self.secret, self.packet_id_to_req_authenticator)
+        return Radius.parse(packed_msg, self.radius_secret, self.packet_id_to_req_authenticator)
 
     def get_next_radius_pkt_id(self):
         radius_id = self.next_radius_id
         self.next_radius_id = (self.next_radius_id + 1) % 256
+        return radius_id
 
     def get_req_authenticator(self):
         return os.urandom(16)

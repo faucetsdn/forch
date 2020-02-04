@@ -61,7 +61,7 @@ class Authenticator:
         socket_info = Socket('0.0.0.0', 0, '172.17.0.5', 1812)
         radius_query = RadiusQuery(socket_info, 'SECRET')
         LOGGER.info('sending MAB request')
-        radius_query.send_mab_request('8e:00:00:00:01:02', '12345')
+        radius_query.send_mab_request('8e:00:00:00:01:02', 12345)
         radius_query.receive_radius_messages()
 
 if __name__ == '__main__':
