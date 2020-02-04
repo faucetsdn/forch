@@ -18,12 +18,8 @@ test_access initial
 
 echo %%% l2-learning | tee -a $TEST_RESULTS
 docker exec forch-faux-1 arp -s 192.168.1.254 02:00:00:00:00:00
-docker exec forch-faux-1 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/67"
-sleep 1
-test_access l2-learning
-
-echo %%% deny | tee -a $TEST_RESULTS
 docker exec forch-faux-2 arp -s 192.168.1.254 02:00:00:00:00:00
+docker exec forch-faux-1 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/67"
 docker exec forch-faux-2 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/68"
 sleep 1
-test_access deny
+test_access l2-learning
