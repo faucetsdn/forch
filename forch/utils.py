@@ -35,3 +35,7 @@ def proto_json(message):
 def dict_proto(message, proto_func, ignore_unknown_fields=False):
     """Convert a standard dict object to a proto object"""
     return json_format.ParseDict(message, proto_func(), ignore_unknown_fields)
+
+class MessageParseError(Exception):
+    """Error for when parsing cannot be successfully completed."""
+    pass

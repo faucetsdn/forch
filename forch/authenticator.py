@@ -4,8 +4,10 @@ import logging
 import sys
 import os
 import yaml
+import collections
 
 from forch.forchestrator import configure_logging
+from forch.radius_query import RadiusQuery
 from forch.utils import proto_dict, dict_proto
 
 from forch.proto.authentication_pb2 import AuthResult
@@ -54,8 +56,16 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
+    def do_mab_request(self):
+        Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
+        socket_info = Socket('0.0.0.0', 0, '172.17.0.5', 1812)
+        radius_query = RadiusQuery(socket_info, 'SECRET')
+        LOGGER.info('sending MAB request')
+        radius_query.send_mab_request('8e:00:00:00:01:02', '12345')
+        radius_query.receive_radius_messages()
 
 if __name__ == '__main__':
     configure_logging()
     AUTHENTICATOR = Authenticator()
     AUTHENTICATOR.process_auth_result()
+    AUTHENTICATOR.do_mab_request()
