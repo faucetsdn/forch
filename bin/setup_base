@@ -4,8 +4,6 @@ ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
 GO_VERSION=1.13.3
-FAUCET_REPO=https://github.com/faucetsdn/faucet.git
-FAUCET_HASH=$(cat etc/FAUCET_VERSION)
 
 sudo apt-get install openvswitch-switch protobuf-compiler \
      python3-venv python3-dev jq docker-ce
@@ -16,9 +14,6 @@ if [ -z "$VIRTUAL_ENV" ]; then
 fi
 
 pip3 install -r etc/requirements.txt
-
-rm -f $VIRTUAL_ENV/lib/python3.7/site-packages/faucet
-ln -s $ROOT/faucet/faucet $VIRTUAL_ENV/lib/python3.7/site-packages/faucet
 
 DEF_IFACE=`route -n | fgrep UG | awk '{print $8}'`
 if [ -n "$DEF_IFACE" ]; then
@@ -49,14 +44,6 @@ fi
 
 rm -rf protoc-gen-doc
 git clone https://github.com/pseudomuto/protoc-gen-doc.git
-
-if [ -d faucet ]; then
-    echo Dir faucet/ already exists. Not cloning.
-else
-    echo Cloning faucet locally...
-    git clone $FAUCET_REPO faucet
-    (cd faucet; git checkout $FAUCET_HASH)
-fi
 
 echo
 echo Done with forch base setup.

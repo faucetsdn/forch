@@ -11,6 +11,7 @@ addons:
 install:
   - set -e
   - bin/setup_base
+  - bin/setup_faucet
   - $TEST_SKIP bin/compile_ovs
   - $TEST_SKIP bin/build_docker ${DOCKER_BUILD:-pull}
 script:
