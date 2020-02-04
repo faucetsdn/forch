@@ -2,6 +2,7 @@
 
 testing=
 rm -rf dist/
+FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
 
 if [ "$1" == testing ]; then
     echo Actual version is `git describe --dirty`
@@ -10,7 +11,13 @@ if [ "$1" == testing ]; then
     echo Forcing tag 0.0.0 for testing.
     git tag -d 0.0.0 || true
     git tag -a 0.0.0 -m "Testing"
+    FAUCET_VERSION=0.0.0
 fi
+
+echo Fixing debian faucet version to $FAUCET_VERSION
+fgrep -v $FAUCET_VERSION debian/control > /dev/null
+sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
+fgrep $FAUCET_VERSION debian/control
 
 version=`git describe --dirty`
 echo Packaging version $version
@@ -35,5 +42,5 @@ echo Created version $version '(from most recent annotated tag)'
 
 if [ -n "$testing" ]; then
     echo Checking contents of generated debian package...
-    dpkg -c dist/python3-forch_0.0.0_all.deb | fgrep forch/http_server.py
+    dpkg -c dist/python3-forch_0.0.0-dirty_all.deb | fgrep forch/http_server.py
 fi

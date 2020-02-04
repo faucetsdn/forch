@@ -3,7 +3,8 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-FAUCET_HASH=$(cat etc/FAUCET_VERSION)
+FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
+FAUCET_HASH=$(cd faucet; git rev-list -n 1 $FAUCET_VERSION)
 DOCKER_IMAGE_LIST=etc/docker_images.txt
 docker_args=
 mkdir -p build
@@ -51,14 +52,15 @@ echo Building faux...
 docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
 
 faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
-if [ "$faucet_ver" != $FAUCET_HASH ]; then
-    echo Local faucet version not as expected.
-    echo $FAUCET_HASH from etc/FAUCET_VERSION
-    echo $faucet_ver in faucet/
-    false
+if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
+    echo Local faucet version not as expected, attempting conversion...
+    (cd faucet && git fetch && git checkout $FAUCET_HASH)
+    faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
+    if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
+	echo Well, that didn\'t work.
+	false
+    fi
 fi
-
-faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 
 echo Labelling faucet image with faucet version $faucet_ver
 
@@ -84,6 +86,7 @@ fi
 built_faucet=`docker inspect forch/faucet:latest | jq -r .[0].Config.Labels.FAUCET_HASH`
 if [ "$built_faucet" != $FAUCET_HASH ]; then
     echo Faucet image hash mismatch.
+    echo Built $built_faucet, expected $FAUCET_HASH
     false
 fi
 
