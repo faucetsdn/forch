@@ -9,17 +9,16 @@ class RadiusSocket:
     """Handle the RADIUS socket"""
 
     def __init__(self, listen_ip, listen_port, server_ip,  # pylint: disable=too-many-arguments
-                 server_port, logger):
+                 server_port):
         self.socket = None
         self.listen_ip = listen_ip
         self.listen_port = listen_port
         self.server_ip = server_ip
         self.server_port = server_port
-        self.logger = logger
 
     def setup(self):
         """Setup RADIUS Socket"""
-        self.logger.info("Setting up radius socket.")
+        LOGGER.info("Setting up radius socket.")
         try:
             self.socket = socket.socket(socket.AF_INET,
                                         socket.SOCK_DGRAM)
