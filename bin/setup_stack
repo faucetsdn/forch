@@ -132,7 +132,7 @@ docker exec forch-faux-3 ping -q -c 10 192.168.1.1 &
 echo Waiting for warm-ups to complete...
 wait
 
-if [ -n "$skip_conn_check" ]; then
+if [ -z "$skip_conn_check" ]; then
     echo Connection sanity check...
     docker exec forch-faux-0 ping -q -c 1 192.168.1.2
     docker exec forch-faux-1 ping -q -c 1 192.168.1.3
