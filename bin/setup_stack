@@ -4,6 +4,7 @@ ROOT=$(dirname $0)/..
 cd $ROOT
 local=
 devices=
+skip_conn_check=
 
 if [ "$1" == "local" ]; then
     local=local
@@ -15,17 +16,15 @@ if [ "$1" == "devices" ]; then
     shift
 fi
 
-if [ -z "$1" ]; then
-    mode=bond
-else
-    mode=$1
+if [ "$1" == "skip-conn-check" ]; then
+    skip_conn_check=y
     shift
 fi
 
 if [ -z "$1" ]; then
-    skip_conn_check=false
+    mode=bond
 else
-    skip_conn_check="$1"
+    mode=$1
     shift
 fi
 
@@ -133,7 +132,7 @@ docker exec forch-faux-3 ping -q -c 10 192.168.1.1 &
 echo Waiting for warm-ups to complete...
 wait
 
-if [ "$skip_conn_check" = false ]; then
+if [ -n "$skip_conn_check" ]; then
     echo Connection sanity check...
     docker exec forch-faux-0 ping -q -c 1 192.168.1.2
     docker exec forch-faux-1 ping -q -c 1 192.168.1.3

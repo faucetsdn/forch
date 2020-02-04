@@ -16,11 +16,11 @@ install:
   - $TEST_SKIP bin/build_docker ${DOCKER_BUILD:-pull}
 script:
   - set -e
-  - $TEST_SKIP bin/setup_stack local $MODE $SKIP_CONN_CHECK
+  - $TEST_SKIP bin/setup_stack local $CONN_CHECK $MODE
   - bin/run_test_set
 env:
   matrix:
     - TEST_SET=stack
     - TEST_SET=reconfig
     - TEST_SET=topology TEST_SKIP=true
-    - TEST_SET=access MODE=dva $SKIP_CONN_CHECK=true
+    - TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
