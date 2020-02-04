@@ -80,6 +80,7 @@ def parse_args(raw_args):
                         help='Unique identifier for physical port device is on')
     return parser.parse_args(raw_args)
 
+
 if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])

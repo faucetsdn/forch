@@ -34,7 +34,7 @@ _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
-_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(filename)s:%(lineno)s - %(funcName)20s() %(message)s'
+_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 
 class Forchestrator:

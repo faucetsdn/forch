@@ -15,6 +15,7 @@ LOGGER = logging.getLogger('rquery')
 
 RADIUS_HEADER_LENGTH = 1 + 1 + 2 + 16
 
+
 class RadiusQuery:
     """Maintains socket information and sends out and receives requests form RADIUS server"""
     def __init__(self, socket_info, radius_secret):
@@ -28,7 +29,6 @@ class RadiusQuery:
         self.radius_socket = RadiusSocket(socket_info.listen_ip, socket_info.listen_port, \
                                           socket_info.server_ip, socket_info.server_port)
         self.radius_socket.setup()
-        #self.receive_radius_messages()
 
     def receive_radius_messages(self):
         while self.running:
@@ -38,7 +38,8 @@ class RadiusQuery:
                 radius = self.decode_radius_response(packed_message)
             except MessageParseError as exception:
                 LOGGER.warning("exception: %s. message: %s", packed_message, exception)
-            LOGGER.info("Received RADIUS msg: Code:%s packet_id:%s attributes:%s", radius.CODE, radius.packet_id, radius.attributes.to_dict())
+            LOGGER.info("Received RADIUS msg: Code:%s packet_id:%s attributes:%s",
+                        radius.CODE, radius.packet_id, radius.attributes.to_dict())
 
     def send_mab_request(self, src_mac, port_id):
         req_packet = self.encode_mab_message(src_mac, port_id)
@@ -52,15 +53,14 @@ class RadiusQuery:
         self.packet_id_to_req_authenticator[radius_id] = req_authenticator
 
         attr_list = []
-        mac_str = str(src_mac).replace(':', "")
-        attr_list.append(UserName.create(mac_str))
+        attr_list.append(UserName.create(str(src_mac).replace(':', "")))
         attr_list.append(CallingStationId.create(str(src_mac).replace(':', '-')))
 
         if port_id:
             #TODO: Need to figure out if this is needed
             attr_list.append(NASPort.create(port_id))
 
-        ciphertext = UserPassword.encrypt(self.radius_secret, req_authenticator, mac_str)
+        ciphertext = UserPassword.encrypt(self.radius_secret, req_authenticator, str(src_mac).replace(':', ""))
         attr_list.append(UserPassword.create(ciphertext))
 
         attr_list.append(MessageAuthenticator.create(

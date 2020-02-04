@@ -6,8 +6,7 @@ from forch.utils import MessageParseError
 
 
 class DataType():
-    """Parent datatype class, subclass should provide implementation for abstractmethods.
-    May """
+    """Parent datatype class, subclass should provide implementation for abstractmethods."""
     DATA_TYPE_VALUE = None
     AVP_HEADER_LEN = 1 + 1
     MAX_DATA_LENGTH = 253
@@ -196,7 +195,8 @@ class Concat(DataType):
         # Parsing is (generally) for packets coming from the radius server.
         # Packing is (generally) for packets going to the radius server.
         #
-        # Therefore we error out if length is too long (you are not allowed to have AVP that are too long)
+        # Therefore we error out if length is too long
+        # (you are not allowed to have AVP that are too long)
         try:
             return cls(struct.unpack("!%ds" % len(packed_value), packed_value)[0])
         except struct.error as exception:
