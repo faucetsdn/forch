@@ -23,6 +23,8 @@ from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
+from forch.faucetizer import Faucetizer
+
 from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
@@ -53,6 +55,9 @@ class Forchestrator:
         self._varz_collector = None
         self._local_collector = None
         self._cpn_collector = None
+
+        self._faucetizer = None
+
         self._initialized = False
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
@@ -81,12 +86,22 @@ class Forchestrator:
         self._local_collector.initialize()
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
+
+        self._faucetizer = Faucetizer()
+        devices_state = load_devices_state()
+        for mac, device_beahvior in devices_state.device_mac_behaviors:
+            self.process_device_behavior(mac, device_behavior)
+
         self._register_handlers()
         self._initialized = True
 
     def initialized(self):
         """If forch is initialized or not"""
         return self._initialized
+
+    def process_device_behavior(self, mac, device_behavior):
+        if self._faucetizer:
+            self._faucetizer(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
