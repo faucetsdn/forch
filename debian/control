@@ -30,4 +30,9 @@ Depends: python3-faucet (= FAUCET_VERSION),
          python3-psutil,
          python3-requests,
          python3-yaml,
+Description: Source code for Faucet Orchestrator.
+
+Package: forch
+Architecture: all
+Depends: python3-forch,
 Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
