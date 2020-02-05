@@ -80,6 +80,7 @@ def parse_args(raw_args):
                         help='MAC addr to authenticate')
     parser.add_argument('-i', '--port-id', type=int, default=12345,
                         help='Unique identifier for physical port device is on')
+    parser.add_argument('--mab', action='store_true')
     return parser.parse_args(raw_args)
 
 
@@ -88,4 +89,5 @@ if __name__ == '__main__':
     ARGS = parse_args(sys.argv[1:])
     AUTHENTICATOR = Authenticator()
     AUTHENTICATOR.process_auth_result()
-    AUTHENTICATOR.do_mab_request(ARGS)
+    if ARGS.mab:
+        AUTHENTICATOR.do_mab_request(ARGS)
