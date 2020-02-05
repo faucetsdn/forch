@@ -11,10 +11,8 @@ import yaml
 from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
-from forch.proto.network_state_pb2 import DevicesState
-from forch.proto.network_state_pb2 import Device
-from forch.proto.network_state_pb2 import DevicePlacement
-from forch.proto.network_state_pb2 import DeviceBehavior
+from forch.proto.devices_state_pb2 import DevicesState
+from forch.proto.devices_state_pb2 import Device
 
 LOGGER = logging.getLogger('faucetizer')
 
@@ -46,7 +44,6 @@ class Faucetizer:
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
-            self._faucetize()
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -60,27 +57,35 @@ class Faucetizer:
 
                 if not port_cfg:
                     LOGGER.warning('Switch or port not defined in faucet config: %s %s',
-                                   device.switch, device.port)
+                                   device.placement.switch, device.placement.port)
                     continue
 
-                port_cfg['native_vlan'] = device.vid
-                if device.role:
-                    port_cfg['acls_in'] = [f'role_{device.role}']
+                port_cfg['native_vlan'] = device.behavior.vid
+                if device.behavior.role:
+                    port_cfg['acls_in'] = [f'role_{device.behavior.role}']
 
         self._dynamic_faucet_config = dynamic_faucet_config
 
     def get_dynamic_faucet_config(self):
         """Return dynamic faucet config"""
         with self._lock:
+            self._faucetize()
             return self._dynamic_faucet_config
 
 
-def load_network_state(file):
+def load_devices_state(file):
     """Load network state file"""
     LOGGER.info('Loading network state file %s', file)
-    network_state = yaml_proto(file, DevicesState)
-    LOGGER.info('Loaded %d devices', len(network_state.device_mac_behaviors))
-    return network_state
+    devices_state = yaml_proto(file, DevicesState)
+    LOGGER.info('Loaded %d devices', len(devices_state.device_mac_behaviors))
+    return devices_state
+
+
+def process_devices_state(faucetizer: Faucetizer, devices_state: DevicesState):
+    for mac, device_placement in devices_state.device_mac_placements.items():
+        faucetizer.process_device_placement(mac, device_placement)
+    for mac, device_behavor in devices_state.device_mac_behaviors.items():
+        faucetizer.process_device_behavior(mac, device_behavor)
 
 
 def load_faucet_config(file):
@@ -88,7 +93,7 @@ def load_faucet_config(file):
     LOGGER.info('Loading faucet config file %s', file)
     with open(file) as config_file:
         faucet_config = yaml.safe_load(config_file)
-    LOGGER.info('Loaded base faucet config')
+    LOGGER.info('Loaded faucet config from %s', file)
     return faucet_config
 
 
@@ -120,15 +125,13 @@ if __name__ == '__main__':
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
     ARGS = parse_args(sys.argv[1:])
 
-    FAUCETIZER = Faucetizer()
+    STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
+    STRUCTURAL_CONFIG = load_faucet_config(STRUCTURAL_CONFIG_FILE)
+    FAUCETIZER = Faucetizer(STRUCTURAL_CONFIG)
 
-    FAUCET_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
-    FAUCET_CONFIG = load_faucet_config(FAUCET_CONFIG_FILE)
-    FAUCETIZER.process_faucet_config(FAUCET_CONFIG)
-
-    NETWORK_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
-    NETWORK_STATE_SAMPLES = load_network_state(NETWORK_STATE_FILE)
-    FAUCETIZER.process_network_state(NETWORK_STATE_SAMPLES)
+    DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
+    DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)
+    process_devices_state(FAUCETIZER, DEVICES_STATE)
 
     OUTPUT_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
     write_faucet_config(FAUCETIZER.get_dynamic_faucet_config(), OUTPUT_FILE)

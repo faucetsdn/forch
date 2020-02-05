@@ -338,6 +338,41 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fdevices_state.proto">forch/proto/devices_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#Device"><span class="badge">M</span>Device</a>
+                </li>
+              
+                <li>
+                  <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
+                </li>
+              
+                <li>
+                  <a href="#DevicePlacement"><span class="badge">M</span>DevicePlacement</a>
+                </li>
+              
+                <li>
+                  <a href="#DevicesState"><span class="badge">M</span>DevicesState</a>
+                </li>
+              
+                <li>
+                  <a href="#DevicesState.DeviceMacBehaviorsEntry"><span class="badge">M</span>DevicesState.DeviceMacBehaviorsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#DevicesState.DeviceMacPlacementsEntry"><span class="badge">M</span>DevicesState.DeviceMacPlacementsEntry</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2ffaucet_event.proto">forch/proto/faucet_event.proto</a>
             <ul>
               
@@ -447,49 +482,6 @@
                   <a href="#HostList.HostData"><span class="badge">M</span>HostList.HostData</a>
                 </li>
               
-              
-              
-              
-            </ul>
-          </li>
-        
-          
-          <li>
-            <a href="#forch%2fproto%2fnetwork_state.proto">forch/proto/network_state.proto</a>
-            <ul>
-              
-                <li>
-                  <a href="#Device"><span class="badge">M</span>Device</a>
-                </li>
-              
-                <li>
-                  <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
-                </li>
-              
-                <li>
-                  <a href="#DevicePlacement"><span class="badge">M</span>DevicePlacement</a>
-                </li>
-              
-                <li>
-                  <a href="#DevicesState"><span class="badge">M</span>DevicesState</a>
-                </li>
-              
-                <li>
-                  <a href="#DevicesState.DeviceMacBehaviorsEntry"><span class="badge">M</span>DevicesState.DeviceMacBehaviorsEntry</a>
-                </li>
-              
-                <li>
-                  <a href="#DevicesState.DeviceMacLearningsEntry"><span class="badge">M</span>DevicesState.DeviceMacLearningsEntry</a>
-                </li>
-              
-                <li>
-                  <a href="#MatchRule"><span class="badge">M</span>MatchRule</a>
-                </li>
-              
-              
-                <li>
-                  <a href="#MatchRule.Action"><span class="badge">E</span>MatchRule.Action</a>
-                </li>
               
               
               
@@ -1727,6 +1719,213 @@
     
       
       <div class="file-heading">
+        <h2 id="forch/proto/devices_state.proto">forch/proto/devices_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="Device">Device</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>placement</td>
+                  <td><a href="#DevicePlacement">DevicePlacement</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>behavior</td>
+                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DeviceBehavior">DeviceBehavior</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>vid</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>role</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DevicePlacement">DevicePlacement</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>switch</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>connected</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DevicesState">DevicesState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>device_mac_placements</td>
+                  <td><a href="#DevicesState.DeviceMacPlacementsEntry">DevicesState.DeviceMacPlacementsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>device_mac_behaviors</td>
+                  <td><a href="#DevicesState.DeviceMacBehaviorsEntry">DevicesState.DeviceMacBehaviorsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DevicesState.DeviceMacBehaviorsEntry">DevicesState.DeviceMacBehaviorsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DevicesState.DeviceMacPlacementsEntry">DevicesState.DeviceMacPlacementsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#DevicePlacement">DevicePlacement</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
         <h2 id="forch/proto/faucet_event.proto">forch/proto/faucet_event.proto</h2><a href="#title">Top</a>
       </div>
       <p>Encapsulation of an event on the Faucet event socket.</p>
@@ -2683,302 +2882,6 @@ or to host_path API to list path </p></td>
         
       
 
-      
-
-      
-
-      
-    
-      
-      <div class="file-heading">
-        <h2 id="forch/proto/network_state.proto">forch/proto/network_state.proto</h2><a href="#title">Top</a>
-      </div>
-      <p></p>
-
-      
-        <h3 id="Device">Device</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>placement</td>
-                  <td><a href="#DevicePlacement">DevicePlacement</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>behavior</td>
-                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="DeviceBehavior">DeviceBehavior</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>vid</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>role</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="DevicePlacement">DevicePlacement</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>switch</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>connected</td>
-                  <td><a href="#bool">bool</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="DevicesState">DevicesState</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>device_mac_learnings</td>
-                  <td><a href="#DevicesState.DeviceMacLearningsEntry">DevicesState.DeviceMacLearningsEntry</a></td>
-                  <td>repeated</td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>device_mac_behaviors</td>
-                  <td><a href="#DevicesState.DeviceMacBehaviorsEntry">DevicesState.DeviceMacBehaviorsEntry</a></td>
-                  <td>repeated</td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="DevicesState.DeviceMacBehaviorsEntry">DevicesState.DeviceMacBehaviorsEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="DevicesState.DeviceMacLearningsEntry">DevicesState.DeviceMacLearningsEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#DevicePlacement">DevicePlacement</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="MatchRule">MatchRule</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>eth_type</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>eth_dst</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>ip_proto</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>ip_dst</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>src_port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>dst_port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>action</td>
-                  <td><a href="#MatchRule.Action">MatchRule.Action</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-
-      
-        <h3 id="MatchRule.Action">MatchRule.Action</h3>
-        <p></p>
-        <table class="enum-table">
-          <thead>
-            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
-          </thead>
-          <tbody>
-            
-              <tr>
-                <td>DENY</td>
-                <td>0</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>ALLOW</td>
-                <td>1</td>
-                <td><p></p></td>
-              </tr>
-            
-          </tbody>
-        </table>
       
 
       
