@@ -5,6 +5,10 @@ import yaml
 from google.protobuf import json_format
 
 
+class MessageParseError(Exception):
+    """Error for when parsing cannot be successfully completed."""
+
+
 def yaml_proto(file_name, proto_func):
     """Load a yaml file into a proto object"""
     with open(file_name) as stream:

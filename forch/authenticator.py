@@ -3,9 +3,12 @@
 import logging
 import sys
 import os
+import collections
+import argparse
 import yaml
 
 from forch.forchestrator import configure_logging
+from forch.radius_query import RadiusQuery
 from forch.utils import proto_dict, dict_proto
 
 from forch.proto.authentication_pb2 import AuthResult
@@ -54,8 +57,37 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
+    def do_mab_request(self, _args):
+        """Initiate MAB request"""
+        Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
+        socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
+        radius_query = RadiusQuery(socket_info, _args.radius_secret)
+        LOGGER.info('sending MAB request')
+        radius_query.send_mab_request(_args.src_mac, _args.port_id)
+        radius_query.receive_radius_messages()
+
+
+def parse_args(raw_args):
+    """Parse sys args"""
+    parser = argparse.ArgumentParser(prog='authenticator', description='authenticator')
+    parser.add_argument('-s', '--server-ip', type=str, default='0.0.0.0',
+                        help='RADIUS server ip')
+    parser.add_argument('-p', '--server-port', type=int, default=1812,
+                        help='Server port that freeradius is listening on')
+    parser.add_argument('-r', '--radius-secret', type=str, default='SECRET',
+                        help='RADIUS server secret')
+    parser.add_argument('-m', '--src_mac', type=str, default='8e:00:00:00:01:02',
+                        help='MAC addr to authenticate')
+    parser.add_argument('-i', '--port-id', type=int, default=12345,
+                        help='Unique identifier for physical port device is on')
+    parser.add_argument('--mab', action='store_true')
+    return parser.parse_args(raw_args)
+
 
 if __name__ == '__main__':
     configure_logging()
+    ARGS = parse_args(sys.argv[1:])
     AUTHENTICATOR = Authenticator()
     AUTHENTICATOR.process_auth_result()
+    if ARGS.mab:
+        AUTHENTICATOR.do_mab_request(ARGS)
