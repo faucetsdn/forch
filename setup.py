@@ -12,7 +12,6 @@ def get_http_files():
 
 data_files = []
 data_files.append(('lib/forch/public', get_http_files()))
-package_data = {'': ['GVERSION']}
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -24,7 +23,6 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    package_data=package_data,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
