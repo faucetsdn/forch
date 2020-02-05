@@ -5,82 +5,80 @@ import copy
 import logging
 import os
 import sys
+import threading
 import yaml
 
-from forch.forchestrator import configure_logging
+from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
-from forch.proto.network_state_pb2 import NetworkState
+from forch.proto.network_state_pb2 import DevicesState
 from forch.proto.network_state_pb2 import Device
+from forch.proto.network_state_pb2 import DevicePlacement
+from forch.proto.network_state_pb2 import DeviceBehavior
 
 LOGGER = logging.getLogger('faucetizer')
 
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
-    def __init__(self):
+    def __init__(self, structural_faucet_config):
         self._devices = {}
-        self._base_faucet_config = None
+        self._structural_faucet_config = structural_faucet_config
         self._dynamic_faucet_config = None
+        self._lock = threading.Lock()
 
-    def process_network_state(self, network_state):
-        """Process network state input"""
-        for mac, learning in network_state.device_mac_learnings.items():
-            self._process_device_learning(mac, learning)
-        for mac, behavior in network_state.device_mac_behaviors.items():
-            self._process_device_behavior(mac, behavior)
+    def process_device_placement(self, eth_src, placement):
+        """Process device placement"""
+        with self._lock:
+            if placement.connected:
+                device = self._devices.setdefault(eth_src, Device())
+                device.placement.CopyFrom(placement)
+            else:
+                self._devices.pop(placement.eth_src, None)
 
-        self._faucetize()
-
-    def _process_device_learning(self, mac, learning):
-        if learning.connected:
-            device = self._devices.setdefault(mac, Device())
-            device.learning.CopyFrom(learning)
-        else:
-            self._devices.pop(mac, None)
-
-    def _process_device_behavior(self, mac, behavior):
-        device = self._devices.setdefault(mac, Device())
-        device.behavior.CopyFrom(behavior)
+    def process_device_behavior(self, eth_src, behavior):
+        """Process device placement"""
+        with self._lock:
+            device = self._devices.setdefault(eth_src, Device())
+            device.behavior.CopyFrom(behavior)
 
     def process_faucet_config(self, faucet_config):
-        """Process faucet config when base faucet config changes"""
-        self._base_faucet_config = faucet_config
-        self._faucetize()
+        """Process faucet config when structural faucet config changes"""
+        with self._lock:
+            self._structural_faucet_config = copy.copy(faucet_config)
+            self._faucetize()
 
     def _faucetize(self):
-        if not self._base_faucet_config:
-            raise Exception("Base faucet configuration not provided")
+        if not self._structural_faucet_config:
+            raise Exception("Structural faucet configuration not provided")
 
-        dynamic_faucet_config = copy.deepcopy(self._base_faucet_config)
+        dynamic_faucet_config = copy.deepcopy(self._structural_faucet_config)
         for mac, device in self._devices.items():
-            if device.learning and device.behavior:
-                switch = device.learning.switch
-                port = device.learning.port
-                switch_config = dynamic_faucet_config.get('dps', {}).get(switch, {})
-                port_config = switch_config.get('interfaces', {}).get(port)
+            if device.placement and device.behavior:
+                switch_cfg = dynamic_faucet_config.get('dps', {}).get(device.placement.switch, {})
+                port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
 
-                if not port_config:
+                if not port_cfg:
                     LOGGER.warning('Switch or port not defined in faucet config: %s %s',
-                                   switch, port)
+                                   device.switch, device.port)
                     continue
 
-                port_config['native_vlan'] = device.behavior.vid
-                role = device.behavior.role
-                if role:
-                    port_config['acls_in'] = [f'role_{role}']
+                port_cfg['native_vlan'] = device.vid
+                if device.role:
+                    port_cfg['acls_in'] = [f'role_{device.role}']
 
         self._dynamic_faucet_config = dynamic_faucet_config
 
     def get_dynamic_faucet_config(self):
         """Return dynamic faucet config"""
-        return self._dynamic_faucet_config
+        with self._lock:
+            return self._dynamic_faucet_config
 
 
 def load_network_state(file):
     """Load network state file"""
     LOGGER.info('Loading network state file %s', file)
-    network_state = yaml_proto(file, NetworkState)
+    network_state = yaml_proto(file, DevicesState)
     LOGGER.info('Loaded %d devices', len(network_state.device_mac_behaviors))
     return network_state
 

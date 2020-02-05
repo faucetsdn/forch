@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-message NetworkState {
-  map<string, DeviceLearning> device_mac_learnings = 1;
+message DevicesState {
+  map<string, DevicePlacement> device_mac_learnings = 1;
   map<string, DeviceBehavior> device_mac_behaviors = 2;
 }
 
 message Device {
-    DeviceLearning learning = 1;
+    DevicePlacement placement = 1;
     DeviceBehavior behavior = 2;
 }
 
-message DeviceLearning {
+message DevicePlacement {
   string switch = 1;
   int32 port = 2;
   bool connected = 3;

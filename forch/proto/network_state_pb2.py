@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x66orch/proto/network_state.proto\"\xb0\x02\n\x0cNetworkState\x12\x43\n\x14\x64\x65vice_mac_learnings\x18\x01 \x03(\x0b\x32%.NetworkState.DeviceMacLearningsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.NetworkState.DeviceMacBehaviorsEntry\x1aJ\n\x17\x44\x65viceMacLearningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceLearning:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"N\n\x06\x44\x65vice\x12!\n\x08learning\x18\x01 \x01(\x0b\x32\x0f.DeviceLearning\x12!\n\x08\x62\x65havior\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior\"A\n\x0e\x44\x65viceLearning\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"+\n\x0e\x44\x65viceBehavior\x12\x0b\n\x03vid\x18\x01 \x01(\x05\x12\x0c\n\x04role\x18\x02 \x01(\t\"\xb6\x01\n\tMatchRule\x12\x10\n\x08\x65th_type\x18\x01 \x01(\x05\x12\x0f\n\x07\x65th_dst\x18\x02 \x01(\t\x12\x10\n\x08ip_proto\x18\x03 \x01(\x05\x12\x0e\n\x06ip_dst\x18\x04 \x01(\t\x12\x10\n\x08src_port\x18\x05 \x01(\x05\x12\x10\n\x08\x64st_port\x18\x06 \x01(\x05\x12!\n\x06\x61\x63tion\x18\x07 \x01(\x0e\x32\x11.MatchRule.Action\"\x1d\n\x06\x41\x63tion\x12\x08\n\x04\x44\x45NY\x10\x00\x12\t\n\x05\x41LLOW\x10\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1f\x66orch/proto/network_state.proto\"\xb1\x02\n\x0c\x44\x65vicesState\x12\x43\n\x14\x64\x65vice_mac_learnings\x18\x01 \x03(\x0b\x32%.DevicesState.DeviceMacLearningsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aK\n\x17\x44\x65viceMacLearningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"P\n\x06\x44\x65vice\x12#\n\tplacement\x18\x01 \x01(\x0b\x32\x10.DevicePlacement\x12!\n\x08\x62\x65havior\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"+\n\x0e\x44\x65viceBehavior\x12\x0b\n\x03vid\x18\x01 \x01(\x05\x12\x0c\n\x04role\x18\x02 \x01(\t\"\xb6\x01\n\tMatchRule\x12\x10\n\x08\x65th_type\x18\x01 \x01(\x05\x12\x0f\n\x07\x65th_dst\x18\x02 \x01(\t\x12\x10\n\x08ip_proto\x18\x03 \x01(\x05\x12\x0e\n\x06ip_dst\x18\x04 \x01(\t\x12\x10\n\x08src_port\x18\x05 \x01(\x05\x12\x10\n\x08\x64st_port\x18\x06 \x01(\x05\x12!\n\x06\x61\x63tion\x18\x07 \x01(\x0e\x32\x11.MatchRule.Action\"\x1d\n\x06\x41\x63tion\x12\x08\n\x04\x44\x45NY\x10\x00\x12\t\n\x05\x41LLOW\x10\x01\x62\x06proto3')
 )
 
 
@@ -41,28 +41,28 @@ _MATCHRULE_ACTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=688,
-  serialized_end=717,
+  serialized_start=692,
+  serialized_end=721,
 )
 _sym_db.RegisterEnumDescriptor(_MATCHRULE_ACTION)
 
 
-_NETWORKSTATE_DEVICEMACLEARNINGSENTRY = _descriptor.Descriptor(
+_DEVICESSTATE_DEVICEMACLEARNINGSENTRY = _descriptor.Descriptor(
   name='DeviceMacLearningsEntry',
-  full_name='NetworkState.DeviceMacLearningsEntry',
+  full_name='DevicesState.DeviceMacLearningsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='NetworkState.DeviceMacLearningsEntry.key', index=0,
+      name='key', full_name='DevicesState.DeviceMacLearningsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='value', full_name='NetworkState.DeviceMacLearningsEntry.value', index=1,
+      name='value', full_name='DevicesState.DeviceMacLearningsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -81,25 +81,25 @@ _NETWORKSTATE_DEVICEMACLEARNINGSENTRY = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=190,
-  serialized_end=264,
+  serialized_end=265,
 )
 
-_NETWORKSTATE_DEVICEMACBEHAVIORSENTRY = _descriptor.Descriptor(
+_DEVICESSTATE_DEVICEMACBEHAVIORSENTRY = _descriptor.Descriptor(
   name='DeviceMacBehaviorsEntry',
-  full_name='NetworkState.DeviceMacBehaviorsEntry',
+  full_name='DevicesState.DeviceMacBehaviorsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='NetworkState.DeviceMacBehaviorsEntry.key', index=0,
+      name='key', full_name='DevicesState.DeviceMacBehaviorsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='value', full_name='NetworkState.DeviceMacBehaviorsEntry.value', index=1,
+      name='value', full_name='DevicesState.DeviceMacBehaviorsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -117,26 +117,26 @@ _NETWORKSTATE_DEVICEMACBEHAVIORSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=266,
-  serialized_end=340,
+  serialized_start=267,
+  serialized_end=341,
 )
 
-_NETWORKSTATE = _descriptor.Descriptor(
-  name='NetworkState',
-  full_name='NetworkState',
+_DEVICESSTATE = _descriptor.Descriptor(
+  name='DevicesState',
+  full_name='DevicesState',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='device_mac_learnings', full_name='NetworkState.device_mac_learnings', index=0,
+      name='device_mac_learnings', full_name='DevicesState.device_mac_learnings', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='device_mac_behaviors', full_name='NetworkState.device_mac_behaviors', index=1,
+      name='device_mac_behaviors', full_name='DevicesState.device_mac_behaviors', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -145,7 +145,7 @@ _NETWORKSTATE = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_NETWORKSTATE_DEVICEMACLEARNINGSENTRY, _NETWORKSTATE_DEVICEMACBEHAVIORSENTRY, ],
+  nested_types=[_DEVICESSTATE_DEVICEMACLEARNINGSENTRY, _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -155,7 +155,7 @@ _NETWORKSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=36,
-  serialized_end=340,
+  serialized_end=341,
 )
 
 
@@ -167,7 +167,7 @@ _DEVICE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='learning', full_name='Device.learning', index=0,
+      name='placement', full_name='Device.placement', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -192,34 +192,34 @@ _DEVICE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=342,
-  serialized_end=420,
+  serialized_start=343,
+  serialized_end=423,
 )
 
 
-_DEVICELEARNING = _descriptor.Descriptor(
-  name='DeviceLearning',
-  full_name='DeviceLearning',
+_DEVICEPLACEMENT = _descriptor.Descriptor(
+  name='DevicePlacement',
+  full_name='DevicePlacement',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='switch', full_name='DeviceLearning.switch', index=0,
+      name='switch', full_name='DevicePlacement.switch', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='port', full_name='DeviceLearning.port', index=1,
+      name='port', full_name='DevicePlacement.port', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='connected', full_name='DeviceLearning.connected', index=2,
+      name='connected', full_name='DevicePlacement.connected', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
@@ -237,8 +237,8 @@ _DEVICELEARNING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=422,
-  serialized_end=487,
+  serialized_start=425,
+  serialized_end=491,
 )
 
 
@@ -275,8 +275,8 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=489,
-  serialized_end=532,
+  serialized_start=493,
+  serialized_end=536,
 )
 
 
@@ -349,49 +349,49 @@ _MATCHRULE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=535,
-  serialized_end=717,
+  serialized_start=539,
+  serialized_end=721,
 )
 
-_NETWORKSTATE_DEVICEMACLEARNINGSENTRY.fields_by_name['value'].message_type = _DEVICELEARNING
-_NETWORKSTATE_DEVICEMACLEARNINGSENTRY.containing_type = _NETWORKSTATE
-_NETWORKSTATE_DEVICEMACBEHAVIORSENTRY.fields_by_name['value'].message_type = _DEVICEBEHAVIOR
-_NETWORKSTATE_DEVICEMACBEHAVIORSENTRY.containing_type = _NETWORKSTATE
-_NETWORKSTATE.fields_by_name['device_mac_learnings'].message_type = _NETWORKSTATE_DEVICEMACLEARNINGSENTRY
-_NETWORKSTATE.fields_by_name['device_mac_behaviors'].message_type = _NETWORKSTATE_DEVICEMACBEHAVIORSENTRY
-_DEVICE.fields_by_name['learning'].message_type = _DEVICELEARNING
+_DEVICESSTATE_DEVICEMACLEARNINGSENTRY.fields_by_name['value'].message_type = _DEVICEPLACEMENT
+_DEVICESSTATE_DEVICEMACLEARNINGSENTRY.containing_type = _DEVICESSTATE
+_DEVICESSTATE_DEVICEMACBEHAVIORSENTRY.fields_by_name['value'].message_type = _DEVICEBEHAVIOR
+_DEVICESSTATE_DEVICEMACBEHAVIORSENTRY.containing_type = _DEVICESSTATE
+_DEVICESSTATE.fields_by_name['device_mac_learnings'].message_type = _DEVICESSTATE_DEVICEMACLEARNINGSENTRY
+_DEVICESSTATE.fields_by_name['device_mac_behaviors'].message_type = _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY
+_DEVICE.fields_by_name['placement'].message_type = _DEVICEPLACEMENT
 _DEVICE.fields_by_name['behavior'].message_type = _DEVICEBEHAVIOR
 _MATCHRULE.fields_by_name['action'].enum_type = _MATCHRULE_ACTION
 _MATCHRULE_ACTION.containing_type = _MATCHRULE
-DESCRIPTOR.message_types_by_name['NetworkState'] = _NETWORKSTATE
+DESCRIPTOR.message_types_by_name['DevicesState'] = _DEVICESSTATE
 DESCRIPTOR.message_types_by_name['Device'] = _DEVICE
-DESCRIPTOR.message_types_by_name['DeviceLearning'] = _DEVICELEARNING
+DESCRIPTOR.message_types_by_name['DevicePlacement'] = _DEVICEPLACEMENT
 DESCRIPTOR.message_types_by_name['DeviceBehavior'] = _DEVICEBEHAVIOR
 DESCRIPTOR.message_types_by_name['MatchRule'] = _MATCHRULE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-NetworkState = _reflection.GeneratedProtocolMessageType('NetworkState', (_message.Message,), dict(
+DevicesState = _reflection.GeneratedProtocolMessageType('DevicesState', (_message.Message,), dict(
 
   DeviceMacLearningsEntry = _reflection.GeneratedProtocolMessageType('DeviceMacLearningsEntry', (_message.Message,), dict(
-    DESCRIPTOR = _NETWORKSTATE_DEVICEMACLEARNINGSENTRY,
+    DESCRIPTOR = _DEVICESSTATE_DEVICEMACLEARNINGSENTRY,
     __module__ = 'forch.proto.network_state_pb2'
-    # @@protoc_insertion_point(class_scope:NetworkState.DeviceMacLearningsEntry)
+    # @@protoc_insertion_point(class_scope:DevicesState.DeviceMacLearningsEntry)
     ))
   ,
 
   DeviceMacBehaviorsEntry = _reflection.GeneratedProtocolMessageType('DeviceMacBehaviorsEntry', (_message.Message,), dict(
-    DESCRIPTOR = _NETWORKSTATE_DEVICEMACBEHAVIORSENTRY,
+    DESCRIPTOR = _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY,
     __module__ = 'forch.proto.network_state_pb2'
-    # @@protoc_insertion_point(class_scope:NetworkState.DeviceMacBehaviorsEntry)
+    # @@protoc_insertion_point(class_scope:DevicesState.DeviceMacBehaviorsEntry)
     ))
   ,
-  DESCRIPTOR = _NETWORKSTATE,
+  DESCRIPTOR = _DEVICESSTATE,
   __module__ = 'forch.proto.network_state_pb2'
-  # @@protoc_insertion_point(class_scope:NetworkState)
+  # @@protoc_insertion_point(class_scope:DevicesState)
   ))
-_sym_db.RegisterMessage(NetworkState)
-_sym_db.RegisterMessage(NetworkState.DeviceMacLearningsEntry)
-_sym_db.RegisterMessage(NetworkState.DeviceMacBehaviorsEntry)
+_sym_db.RegisterMessage(DevicesState)
+_sym_db.RegisterMessage(DevicesState.DeviceMacLearningsEntry)
+_sym_db.RegisterMessage(DevicesState.DeviceMacBehaviorsEntry)
 
 Device = _reflection.GeneratedProtocolMessageType('Device', (_message.Message,), dict(
   DESCRIPTOR = _DEVICE,
@@ -400,12 +400,12 @@ Device = _reflection.GeneratedProtocolMessageType('Device', (_message.Message,),
   ))
 _sym_db.RegisterMessage(Device)
 
-DeviceLearning = _reflection.GeneratedProtocolMessageType('DeviceLearning', (_message.Message,), dict(
-  DESCRIPTOR = _DEVICELEARNING,
+DevicePlacement = _reflection.GeneratedProtocolMessageType('DevicePlacement', (_message.Message,), dict(
+  DESCRIPTOR = _DEVICEPLACEMENT,
   __module__ = 'forch.proto.network_state_pb2'
-  # @@protoc_insertion_point(class_scope:DeviceLearning)
+  # @@protoc_insertion_point(class_scope:DevicePlacement)
   ))
-_sym_db.RegisterMessage(DeviceLearning)
+_sym_db.RegisterMessage(DevicePlacement)
 
 DeviceBehavior = _reflection.GeneratedProtocolMessageType('DeviceBehavior', (_message.Message,), dict(
   DESCRIPTOR = _DEVICEBEHAVIOR,
@@ -422,6 +422,6 @@ MatchRule = _reflection.GeneratedProtocolMessageType('MatchRule', (_message.Mess
 _sym_db.RegisterMessage(MatchRule)
 
 
-_NETWORKSTATE_DEVICEMACLEARNINGSENTRY._options = None
-_NETWORKSTATE_DEVICEMACBEHAVIORSENTRY._options = None
+_DEVICESSTATE_DEVICEMACLEARNINGSENTRY._options = None
+_DEVICESSTATE_DEVICEMACBEHAVIORSENTRY._options = None
 # @@protoc_insertion_point(module_scope)
