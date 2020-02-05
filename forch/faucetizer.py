@@ -22,8 +22,6 @@ class Faucetizer:
         self._devices = {}
         self._base_faucet_config = None
         self._dynamic_faucet_config = None
-        self.faucetizer = None
-        self.authenticator = None
 
     def process_network_state(self, network_state):
         """Process network state input"""
@@ -49,12 +47,6 @@ class Faucetizer:
         """Process faucet config when base faucet config changes"""
         self._base_faucet_config = faucet_config
         self._faucetize()
-
-    def process_device_placement(self, device_placement):
-        if self.faucetizer:
-            self.faucetizer.process_device_placement(device_placement)
-        if self.authenticator:
-            self.authenticator.process_device_placement(device_placement)
 
     def _faucetize(self):
         if not self._base_faucet_config:

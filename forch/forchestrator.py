@@ -54,6 +54,8 @@ class Forchestrator:
         self._local_collector = None
         self._cpn_collector = None
         self._initialized = False
+        self._faucetizer = None
+        self._authenticator = None
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
 
@@ -407,6 +409,12 @@ class Forchestrator:
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
+
+    def process_device_placement(self, device_placement):
+        if self._faucetizer:
+            self._faucetizer.process_device_placement(device_placement)
+        if self._authenticator:
+            self._authenticator.process_device_placement(device_placement)
 
 
 def load_config():
