@@ -103,8 +103,8 @@ class RadiusPacket(Radius):
         self.attributes = attributes
 
     @classmethod
-    def parse(cls, packet_id, request_authenticator, attributes):  # pylint: disable=arguments-differ
-        return cls(packet_id, request_authenticator, attributes)
+    def parse(cls, packet_id, req_authenticator, attributes):  # pylint: disable=arguments-differ
+        return cls(packet_id, req_authenticator, attributes)
 
     def pack(self):
         header = struct.pack("!BBH16s", self.CODE, self.packet_id,

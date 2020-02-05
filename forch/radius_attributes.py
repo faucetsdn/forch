@@ -316,7 +316,8 @@ class EAPMessage(Attribute):
         Returns:
             Attribute subclass.
         """
-        from chewie.message_parser import MessagePacker, EapMessage  # pylint: disable=import-outside-toplevel
+        from chewie.message_parser \
+            import MessagePacker, EapMessage  # pylint: disable=import-outside-toplevel
         if isinstance(data, EapMessage):
             return cls(cls.DATA_TYPE(
                 bytes_data=MessagePacker.eap_pack(data)[2]))  # pylint: disable=not-callable
