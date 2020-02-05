@@ -15,11 +15,11 @@ class DataType():
     bytes_data = None  # bytes version of raw_data
 
     def parse(self, packed_value):
-        """"""
+        """parse"""
         return
 
     def pack(self, attribute_type):
-        """"""
+        """pack"""
         return
 
     def data(self):
@@ -48,6 +48,7 @@ class DataType():
 
     @classmethod
     def is_valid_length(cls, packed_value):
+        """Validate data length"""
         length = len(packed_value)
         if length < cls.MIN_DATA_LENGTH \
                 or length > cls.MAX_DATA_LENGTH \
@@ -59,6 +60,7 @@ class DataType():
 
 
 class Integer(DataType):
+    """Integer type"""
     DATA_TYPE_VALUE = 1
     MAX_DATA_LENGTH = 4
     MIN_DATA_LENGTH = 4
@@ -67,7 +69,7 @@ class Integer(DataType):
         if raw_data:
             try:
                 bytes_data = raw_data.to_bytes(self.MAX_DATA_LENGTH, "big")
-            except OverflowError as exception:
+            except OverflowError:
                 raise ValueError("Integer must be >= 0  and <= 2^32-1, was %d" %
                                  raw_data)
         self.bytes_data = bytes_data
@@ -92,6 +94,7 @@ class Integer(DataType):
 
 
 class Enum(DataType):
+    """Enum datatype"""
     DATA_TYPE_VALUE = 2
     MAX_DATA_LENGTH = 4
     MIN_DATA_LENGTH = 4
@@ -123,6 +126,7 @@ class Enum(DataType):
 
 
 class Text(DataType):
+    """Text datatype"""
     DATA_TYPE_VALUE = 4
 
     def __init__(self, bytes_data=None, raw_data=None):
@@ -150,6 +154,7 @@ class Text(DataType):
 
 
 class String(DataType):
+    """String data type"""
     # how is this different from Text?? - text is utf8
     DATA_TYPE_VALUE = 5
 
@@ -208,11 +213,11 @@ class Concat(DataType):
             length = self.MAX_DATA_LENGTH
             list_length = len(data)
             return_chunks = []
-            for i in range(0, list_length, self.MAX_DATA_LENGTH):
-                if i + self.MAX_DATA_LENGTH > list_length:
+            for _iter in range(0, list_length, self.MAX_DATA_LENGTH):
+                if _iter + self.MAX_DATA_LENGTH > list_length:
                     length = list_length % self.MAX_DATA_LENGTH
 
-                chunk = data[i:i + length]
+                chunk = data[_iter:_iter + length]
                 chunk_length = len(chunk)
                 packed = struct.pack("!BB%ds" % chunk_length, attribute_type,
                                      chunk_length + self.AVP_HEADER_LEN,
@@ -236,6 +241,7 @@ class Concat(DataType):
 
 
 class Vsa(DataType):
+    """Vendor Specific Attributes"""
     DATA_TYPE_VALUE = 14
     VENDOR_ID_LEN = 4
     MIN_DATA_LENGTH = 5

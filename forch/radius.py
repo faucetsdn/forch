@@ -20,14 +20,12 @@ LOGGER = logging.getLogger('radius')
 class InvalidResponseAuthenticatorError(Exception):
     """To be used when the ResponseAuthenticator hashes
      (received in packet, and calculated) do not match."""
-    pass
 
 
 class InvalidMessageAuthenticatorError(Exception):
     """To be used when the Message-Authenticator hashes
      (received in packet, and calculated) do not match.
     Received packets that throw this error should be 'silently dropped' (logging is fine)."""
-    pass
 
 
 class Radius:
@@ -55,7 +53,7 @@ class Radius:
             MessageParseError: if packed_message cannot be parsed
         """
         try:
-            code, packet_id, length, authenticator = struct.unpack(
+            code, packet_id, _, authenticator = struct.unpack(
                 "!BBH16s", packed_message[:RADIUS_HEADER_LENGTH])
         except struct.error as exception:
             raise MessageParseError('Unable to unpack first 20 bytes of RADIUS header') \
@@ -85,10 +83,11 @@ class Radius:
         raise MessageParseError("Unable to parse radius code: %d" % code)
 
     def pack(self):
-        pass
+        """pack"""
 
 
 def register_packet_type_parser(cls):
+    """register packet type parser"""
     PACKET_TYPE_PARSERS[cls.CODE] = cls.parse
     return cls
 
@@ -104,7 +103,7 @@ class RadiusPacket(Radius):
         self.attributes = attributes
 
     @classmethod
-    def parse(cls, packet_id, request_authenticator, attributes):
+    def parse(cls, packet_id, request_authenticator, attributes): # pylint: disable=arguments-differ
         return cls(packet_id, request_authenticator, attributes)
 
     def pack(self):
@@ -135,8 +134,8 @@ class RadiusPacket(Radius):
             message_authenticator = bytearray(hmac.new(secret.encode(), self.packed, 'md5')
                                               .digest())
 
-            for i in range(16):
-                self.packed[i + position] = message_authenticator[i]
+            for index in range(16):
+                self.packed[index + position] = message_authenticator[index]
         return self.packed
 
     def validate_packet(self, secret, request_authenticator=None, code=None):
@@ -165,6 +164,7 @@ class RadiusPacket(Radius):
 
     @staticmethod
     def validate_response_authenticator(radius_packet, request_authenticator, secret, code):
+        """Validate response authenticator"""
         if request_authenticator and code in [Radius.ACCESS_REJECT,
                                               Radius.ACCESS_ACCEPT,
                                               Radius.ACCESS_CHALLENGE]:
@@ -182,6 +182,7 @@ class RadiusPacket(Radius):
 
     @staticmethod
     def validate_message_authenticator(radius_packet, secret, request_authenticator):
+        """Validate message authenticator"""
         message_authenticator = radius_packet.attributes.find(MessageAuthenticator.DESCRIPTION)
         if message_authenticator:
 
@@ -206,21 +207,25 @@ class RadiusPacket(Radius):
 
 @register_packet_type_parser
 class RadiusAccessRequest(RadiusPacket):
+    """RADIUS Request packet"""
     CODE = Radius.ACCESS_REQUEST
 
 
 @register_packet_type_parser
 class RadiusAccessAccept(RadiusPacket):
+    """RADIUS Accept packet"""
     CODE = Radius.ACCESS_ACCEPT
 
 
 @register_packet_type_parser
 class RadiusAccessReject(RadiusPacket):
+    """RADIUS Reject packet"""
     CODE = Radius.ACCESS_REJECT
 
 
 @register_packet_type_parser
 class RadiusAccessChallenge(RadiusPacket):
+    """RADIUS Challenge packet"""
     CODE = Radius.ACCESS_CHALLENGE
 
 
@@ -268,17 +273,18 @@ class RadiusAttributesList:
         concatenated_attributes = []
         for value, list_ in attributes_to_concat.items():
             concatenated_data = b""
-            for d, i in list_:
-                concatenated_data += d.bytes_data
+            index = 0
+            for data, index in list_:
+                concatenated_data += data.bytes_data
             concatenated_attributes.append(tuple((ATTRIBUTE_TYPES[value].parse(concatenated_data),
-                                                  i)))
+                                                  index)))
         # Remove old Attributes that were concatenated.
-        for ca, _ in concatenated_attributes:
-            attributes = [x for x in attributes if x.TYPE != ca.TYPE]
+        for concat_attr, _ in concatenated_attributes:
+            attributes = [x for x in attributes if x.TYPE != concat_attr.TYPE]
 
         # need to put them back in the same position.
-        for ca, i in concatenated_attributes:
-            attributes.insert(i, ca)
+        for concat_attr, index in concatenated_attributes:
+            attributes.insert(index, concat_attr)
 
         return attributes
 
@@ -348,14 +354,14 @@ class RadiusAttributesList:
         Raises:
             ValueErrpr: if cannot find item
         """
-        i = 0
+        index = 0
         for attr in self.attributes:
             if item == attr.DESCRIPTION:
                 break
-            i += attr.full_length()
+            index += attr.full_length()
         else:
             raise ValueError("Cannot find item: %s in attributes list" % item)
-        return i
+        return index
 
     def __len__(self):
         total = 0
@@ -364,13 +370,15 @@ class RadiusAttributesList:
         return total
 
     def pack(self):
+        """pack and return attributes"""
         packed_attributes = bytes()
         for attr in self.attributes:
             packed_attributes += attr.pack()
         return packed_attributes
 
     def to_dict(self):
+        """Convert object to dict"""
         ret = {}
-        for a in self.attributes:
-            ret[a.DESCRIPTION] = a.data()
+        for attr in self.attributes:
+            ret[attr.DESCRIPTION] = attr.data()
         return ret

@@ -3,9 +3,9 @@
 import logging
 import sys
 import os
-import yaml
 import collections
 import argparse
+import yaml
 
 from forch.forchestrator import configure_logging
 from forch.radius_query import RadiusQuery
@@ -57,13 +57,15 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
-    def do_mab_request(self, ARGS):
+    def do_mab_request(self, _args):
+        """Initiate MAB request"""
         Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', 0, ARGS.server_ip, ARGS.server_port)
-        radius_query = RadiusQuery(socket_info, ARGS.radius_secret)
+        socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
+        radius_query = RadiusQuery(socket_info, _args.radius_secret)
         LOGGER.info('sending MAB request')
-        radius_query.send_mab_request(ARGS.src_mac, ARGS.port_id)
+        radius_query.send_mab_request(_args.src_mac, _args.port_id)
         radius_query.receive_radius_messages()
+
 
 def parse_args(raw_args):
     """Parse sys args"""

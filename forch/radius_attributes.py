@@ -51,9 +51,9 @@ class Attribute():
         Returns:
             packed attribute (including header) bytes
         """
-        tl = struct.pack("!BB", self.TYPE, self.full_length())
-        v = self._data_type.pack(self.TYPE)
-        return tl + v
+        tlv_tl = struct.pack("!BB", self.TYPE, self.full_length())
+        tlv_v = self._data_type.pack(self.TYPE)
+        return tlv_tl + tlv_v
 
     def full_length(self):
         """
@@ -63,10 +63,12 @@ class Attribute():
         return self._data_type.full_length()
 
     def data(self):
+        """get data"""
         return self._data_type.data()
 
     @property
     def bytes_data(self):
+        """get bytes_data"""
         return self._data_type.bytes_data
 
     @bytes_data.setter
@@ -100,24 +102,25 @@ class UserPassword(Attribute):
     # cannot be in pack / unpack due to RA / secret requirements
     @staticmethod
     def encrypt(secret, req_authenticator, password):
-        def string_pop(s, length):
-            return s[:length], s[length:]
+        """Encrypt"""
+        def string_pop(string, length):
+            return string[:length], string[length:]
 
-        if type(secret) is str:
+        if isinstance(secret, str):
             secret = secret.encode()
 
-        if type(req_authenticator) is int:
+        if isinstance(req_authenticator, int):
             req_authenticator = req_authenticator.to_bytes(16, 'big')
 
-        BASE = 16
+        base = 16
         ciphertext = bytes()
 
-        padded_width = math.ceil(len(password) / BASE) * BASE
+        padded_width = math.ceil(len(password) / base) * base
         padded_password = password.ljust(padded_width, chr(0)).encode()
         b_sec = md5(secret + req_authenticator).digest()
 
         while len(padded_password) > 0:
-            p_sec, padded_password = string_pop(padded_password, BASE)
+            p_sec, padded_password = string_pop(padded_password, base)
             cipher_array = [x ^ y for x, y in zip(b_sec, p_sec)]
             c_sec = bytes(cipher_array)
             ciphertext += c_sec
@@ -128,21 +131,22 @@ class UserPassword(Attribute):
 
     @staticmethod
     def decrypt(secret, req_authenticator, ciphertext):
-        def string_pop(s, length):
-            return s[:length], s[length:]
+        """decrypt"""
+        def string_pop(string, length):
+            return string[:length], string[length:]
 
-        if type(secret) is str:
+        if isinstance(secret, str):
             secret = secret.encode()
 
-        if type(req_authenticator) is int:
+        if isinstance(req_authenticator, int):
             req_authenticator = req_authenticator.to_bytes(16, 'big')
 
-        BASE = 16
+        base = 16
         cleartext = ""
         b_sec = md5(secret + req_authenticator).digest()
 
         while len(ciphertext) > 0:
-            c_sec, ciphertext = string_pop(ciphertext, BASE)
+            c_sec, ciphertext = string_pop(ciphertext, base)
             pass_array = [x ^ y for x, y in zip(b_sec, c_sec)]
             p_sec = bytes(pass_array)
             cleartext += p_sec.decode('ascii')
@@ -292,6 +296,7 @@ class ConnectInfo(Attribute):
 @register_attribute_type
 class EAPMessage(Attribute):
     """EAP-Message (RADIUS Extensions) https://tools.ietf.org/html/rfc2869#section-5.13"""
+    # TODO: Deal with it when dot1x is needed
     TYPE = 79
     DATA_TYPE = Concat
     DESCRIPTION = "EAP-Message"
@@ -311,15 +316,15 @@ class EAPMessage(Attribute):
         Returns:
             Attribute subclass.
         """
-        from chewie.message_parser import MessagePacker, EapMessage
+        from chewie.message_parser import MessagePacker, EapMessage # pylint: disable=import-outside-toplevel
         if isinstance(data, EapMessage):
             return cls(cls.DATA_TYPE(
                 bytes_data=MessagePacker.eap_pack(data)[2]))  # pylint: disable=not-callable
-        else:
-            return super(EAPMessage, cls).create(data)
+        return super(EAPMessage, cls).create(data)
 
     def data(self):
-        from chewie.message_parser import MessageParser
+        """returns data"""
+        from chewie.message_parser import MessageParser # pylint: disable=import-outside-toplevel
         return MessageParser.eap_parse(self._data_type.data(), None)
 
 

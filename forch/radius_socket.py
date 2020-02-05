@@ -24,7 +24,7 @@ class RadiusSocket:
                                         socket.SOCK_DGRAM)
             self.socket.bind((self.listen_ip, self.listen_port))
         except socket.error as err:
-            self.logger.error("Unable to setup socket: %s", str(err))
+            LOGGER.error("Unable to setup socket: %s", str(err))
             raise err
 
     def send(self, data):
