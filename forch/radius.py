@@ -103,7 +103,7 @@ class RadiusPacket(Radius):
         self.attributes = attributes
 
     @classmethod
-    def parse(cls, packet_id, request_authenticator, attributes): # pylint: disable=arguments-differ
+    def parse(cls, packet_id, request_authenticator, attributes):  # pylint: disable=arguments-differ
         return cls(packet_id, request_authenticator, attributes)
 
     def pack(self):

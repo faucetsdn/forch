@@ -5,6 +5,7 @@ import logging
 
 LOGGER = logging.getLogger('rsocket')
 
+
 class RadiusSocket:
     """Handle the RADIUS socket"""
 
