@@ -14,6 +14,7 @@ class HeartbeatScheduler:
         self._run = False
 
     def add_callback(self, callback):
+        """Add callback"""
         self._callbacks.append(callback)
 
     def _periodic_task(self):
