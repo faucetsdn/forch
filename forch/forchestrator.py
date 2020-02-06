@@ -23,7 +23,7 @@ from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-from forch.faucetizer import Faucetizer
+import forch.faucetizer as faucetizer
 
 from forch.__version__ import __version__
 
@@ -87,8 +87,13 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        self._faucetizer = Faucetizer()
-        devices_state = load_devices_state()
+        with open(self._faucet_config_file) as structural_config_file:
+            structural_config = yaml.safe_load(structural_config_file)
+            self._faucetizer = faucetizer.Faucetizer(structural_config)
+
+        static_behaviors_file = self._config.get('static_device_file', {}).get('static_device_behavior')
+        if static_behaviors_file:
+            devices_state = fauload_devices_state()
         for mac, device_beahvior in devices_state.device_mac_behaviors:
             self.process_device_behavior(mac, device_behavior)
 
