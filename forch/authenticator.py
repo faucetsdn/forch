@@ -6,6 +6,7 @@ import os
 import collections
 import argparse
 import yaml
+from threading import RLock
 
 from forch.forchestrator import configure_logging
 from forch.radius_query import RadiusQuery
@@ -19,8 +20,14 @@ AUTH_FILE_NAME = 'auth.yaml'
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self):
+    def __init__(self, radius_ip=None, radius_port=None, radius_secret=None):
         self.auth_map = self._get_auth_map()
+        self.radius_query = None
+        if radius_ip and radius_port and radius_secret:
+            Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
+            socket_info = Socket('0.0.0.0', 0, self.radius_ip, self.radius_port)
+            self.radius_query = RadiusQuery(socket_info, self.radius_secret)
+            self.radius_query.lock = Rlock()
 
     def _get_auth_map(self):
         base_dir = os.getenv('FORCH_CONFIG_DIR')
@@ -65,6 +72,9 @@ class Authenticator:
         LOGGER.info('sending MAB request')
         radius_query.send_mab_request(_args.src_mac, _args.port_id)
         radius_query.receive_radius_messages()
+
+    def process_device_placement(eth_src, device_placement):
+        """Process device placement info and initiate mab query"""
 
 
 def parse_args(raw_args):

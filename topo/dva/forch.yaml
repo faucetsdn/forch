@@ -7,6 +7,7 @@ site:
       port: 9020
 static_device_info:
     static_device_placement: placement.yaml
+    static_device_behavior: behavior.yaml
 process:
   scan_interval_sec: 10
   processes:

@@ -17,6 +17,7 @@ from faucet import config_parser
 
 import forch.faucet_event_client
 import forch.http_server
+from forch.utils import yaml_proto
 
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
@@ -27,6 +28,7 @@ from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
+from forch.proto.network_state_pb2 import NetworkState
 
 LOGGER = logging.getLogger('forch')
 
@@ -84,6 +86,13 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
         self._register_handlers()
+        device_info = self._config.get('static_device_info', {})
+        if 'static_device_placement' in device_info:
+            placement_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), device_info['static_device_placement'])
+            device_placement_info = yaml_proto(placement_file, NetworkState).device_mac_learnings
+            for eth_src, device_placement in device_placement_info.items():
+                self.process_device_placement(eth_src, device_placement)
         self._initialized = True
 
     def initialized(self):
@@ -400,7 +409,7 @@ class Forchestrator:
         return self._augment_state_reply(reply, path)
 
     def get_sys_config(self, path, params):
-        """Get overall config from facuet config file"""
+        """Get overall config from faucet config file"""
         try:
             _, _, faucet_config = self._get_faucet_config()
             reply = {
@@ -410,11 +419,13 @@ class Forchestrator:
         except Exception as e:
             return f"Cannot read faucet config: {e}"
 
-    def process_device_placement(self, device_placement):
+    def process_device_placement(self, eth_src, device_placement_info):
+        """Call device placement API for faucetizer/authenticator"""
+        LOGGER.info('Anurag process_device_placement %s', eth_src)
         if self._faucetizer:
-            self._faucetizer.process_device_placement(device_placement)
+            self._faucetizer.process_device_placement(eth_src, device_placement)
         if self._authenticator:
-            self._authenticator.process_device_placement(device_placement)
+            self._authenticator.process_device_placement(eth_src, device_placement)
 
 
 def load_config():
