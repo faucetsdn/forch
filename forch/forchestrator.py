@@ -15,13 +15,12 @@ from forch.proto import faucet_event_pb2 as FaucetEvent
 
 from faucet import config_parser
 
-from forch.authenticator import Authenticator
 import forch.faucet_event_client
 import forch.http_server
+
+from forch.authenticator import Authenticator
 from forch.utils import yaml_proto
-
 from forch.utils import configure_logging
-
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector

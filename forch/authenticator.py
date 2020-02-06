@@ -5,8 +5,8 @@ import sys
 import os
 import collections
 import argparse
-import yaml
 import threading
+import yaml
 
 from forch.radius_query import RadiusQuery
 from forch.utils import configure_logging

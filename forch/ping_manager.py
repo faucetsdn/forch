@@ -54,5 +54,5 @@ class PingManager:
 
     def start_loop(self, handler):
         """Start ping loop"""
-        thread = threading.Thread(target=self._periodic_ping_hosts, args=(handler,))
+        thread = threading.Thread(target=self._periodic_ping_hosts, args=(handler,), daemon=True)
         thread.start()
