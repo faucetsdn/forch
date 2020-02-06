@@ -1,7 +1,9 @@
 """Talks and listens to RADIUS. Takes a packet object as input"""
-from queue import Queue
 import logging
 import os
+
+from queue import Queue
+from threading import RLock
 
 from forch.radius import RadiusAttributesList, RadiusAccessRequest, Radius
 from forch.radius_attributes import CallingStationId, UserName, MessageAuthenticator, \
@@ -27,6 +29,7 @@ class RadiusQuery:
         self.radius_socket = RadiusSocket(socket_info.listen_ip, socket_info.listen_port,
                                           socket_info.server_ip, socket_info.server_port)
         self.radius_socket.setup()
+        self.radius_socket.lock = RLock()
 
     def get_mac_from_packet_id(self, packet_id):
         """Returns MAC addr for stored packet ID"""
@@ -57,8 +60,9 @@ class RadiusQuery:
     def send_mab_request(self, src_mac, port_id):
         """Encode and send MAB request for MAC address"""
         req_packet = self._encode_mab_message(src_mac, port_id)
-        LOGGER.info("Sending MAB request for mac %s", src_mac)
-        self.radius_socket.send(req_packet)
+        with self.radius_socket.lock:
+            LOGGER.info("Sending MAB request for mac %s", src_mac)
+            self.radius_socket.send(req_packet)
 
     def _encode_mab_message(self, src_mac, port_id=None):
         radius_id = self._get_next_radius_pkt_id()

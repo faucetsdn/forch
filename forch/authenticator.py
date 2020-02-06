@@ -28,7 +28,6 @@ class Authenticator:
                 'Socket', 'listen_ip, listen_port, server_ip, server_port')
             socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
             self.radius_query = RadiusQuery(socket_info, radius_secret)
-            self.radius_query.lock = threading.RLock()
             threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
 
