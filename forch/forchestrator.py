@@ -114,6 +114,7 @@ class Forchestrator:
         return self._initialized
 
     def process_device_behavior(self, mac, device_behavior):
+        """Function interface of process device behavior"""
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior)
 
