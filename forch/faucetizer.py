@@ -74,7 +74,7 @@ class Faucetizer:
 
 
 def load_devices_state(file):
-    """Load network state file"""
+    """Load devices state file"""
     LOGGER.info('Loading network state file %s', file)
     devices_state = yaml_proto(file, DevicesState)
     LOGGER.info('Loaded %d devices', len(devices_state.device_mac_behaviors))
@@ -82,6 +82,7 @@ def load_devices_state(file):
 
 
 def process_devices_state(faucetizer: Faucetizer, devices_state: DevicesState):
+    """Process devices state"""
     for mac, device_placement in devices_state.device_mac_placements.items():
         faucetizer.process_device_placement(mac, device_placement)
     for mac, device_behavor in devices_state.device_mac_behaviors.items():
