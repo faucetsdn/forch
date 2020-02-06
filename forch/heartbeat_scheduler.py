@@ -25,7 +25,7 @@ class HeartbeatScheduler:
             try:
                 callback()
             except Exception as error:
-                LOGGER.error("Running %s: %s", callback, error)
+                LOGGER.error("Error in running %s: %s", callback, error)
 
         threading.Timer(self._interval, self._periodic_task).start()
 
@@ -37,12 +37,3 @@ class HeartbeatScheduler:
     def stop(self):
         """Stop periodic task"""
         self._run = False
-
-
-if __name__ == '__main__':
-    HEARTBEAT_SCHEDULER = HeartbeatScheduler(1)
-    HEARTBEAT_SCHEDULER.add_callback(functools.partial(print, 'Hello'))
-    HEARTBEAT_SCHEDULER.add_callback(functools.partial(print, 'World'))
-    HEARTBEAT_SCHEDULER.start()
-    time.sleep(5)
-    HEARTBEAT_SCHEDULER.stop()
