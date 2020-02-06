@@ -15,6 +15,7 @@ from forch.proto import faucet_event_pb2 as FaucetEvent
 
 from faucet import config_parser
 
+from forch.authenticator import Authenticator
 import forch.faucet_event_client
 import forch.http_server
 from forch.utils import yaml_proto
@@ -86,6 +87,11 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
         self._register_handlers()
+
+        r_info = self._config.get('radius_info')
+        if r_info:
+            self._authenticator = Authenticator(r_info['server_ip'], r_info['server_port'], r_info['radius_secret'])
+
         device_info = self._config.get('static_device_info', {})
         if 'static_device_placement' in device_info:
             placement_file = os.path.join(
