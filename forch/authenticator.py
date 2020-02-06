@@ -8,8 +8,8 @@ import argparse
 import yaml
 from threading import RLock
 
-from forch.forchestrator import configure_logging
 from forch.radius_query import RadiusQuery
+from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto
 
 from forch.proto.authentication_pb2 import AuthResult

@@ -20,6 +20,8 @@ import forch.faucet_event_client
 import forch.http_server
 from forch.utils import yaml_proto
 
+from forch.utils import configure_logging
+
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
@@ -37,8 +39,6 @@ _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
-_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
-_LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -450,22 +450,6 @@ def load_config():
 def show_error(error, path, params):
     """Display errors"""
     return f"Cannot initialize forch: {str(error)}"
-
-
-def get_log_path():
-    """Get path for logging"""
-    forch_log_dir = os.getenv('FORCH_LOG_DIR')
-    if not forch_log_dir:
-        return None
-    return os.path.join(forch_log_dir, 'forch.log')
-
-
-def configure_logging():
-    """Configure logging with some basic parameters"""
-    logging.basicConfig(filename=get_log_path(),
-                        format=_LOG_FORMAT,
-                        datefmt=_LOG_DATE_FORMAT,
-                        level=logging.INFO)
 
 
 def main():
