@@ -66,25 +66,26 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
-    def do_mab_request(self, _args):
+    def do_mab_request(self, src_mac, port_id):
         """Initiate MAB request"""
         #Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
         #socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
         #radius_query = RadiusQuery(socket_info, _args.radius_secret)
-        LOGGER.info('sending MAB request for %s', eth_src, port_id)
-        self.radius_query.send_mab_request(eth_src, port_id)
-        self.radius_query.receive_radius_messages()
+        LOGGER.info('sending MAB request for %s', src_mac)
+        self.radius_query.send_mab_request(src_mac, port_id)
 
-    def process_device_placement(self, eth_src, device_placement):
+    def process_device_placement(self, src_mac, device_placement):
         """Process device placement info and initiate mab query"""
         if not self.radius_query:
-            LOGGER.warning("RADIUS query module not setup. Ignoring auth request for %s", eth_src)
+            LOGGER.warning("RADIUS query module not setup. Ignoring auth request for %s", src_mac)
             return
         if not device_placement.connected:
-            LOGGER.warning("Device not connected. Ignoring auth request for %s", eth_src)
+            LOGGER.warning("Device not connected. Ignoring auth request for %s", src_mac)
             return
-        port_id = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
-        LOGGER.info('Anurag process_device_placement mac: %s port_id:%s', eth_src, port_id)
+        portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
+        port_id = int(portid_hash[:6], 16)
+        LOGGER.info('Anurag process_device_placement mac: %s port_id:%s', src_mac, port_id)
+        self.do_mab_request(src_mac, port_id)
 
 
 
