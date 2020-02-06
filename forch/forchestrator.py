@@ -31,7 +31,7 @@ from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
-from forch.proto.network_state_pb2 import NetworkState
+from forch.proto.devices_state_pb2 import DevicesState
 
 LOGGER = logging.getLogger('forch')
 
@@ -90,13 +90,13 @@ class Forchestrator:
 
         r_info = self._config.get('radius_info')
         if r_info:
-            self._authenticator = Authenticator(r_info['server_ip'], r_info['server_port'], r_info['radius_secret'])
+            self._authenticator = Authenticator(r_info['server_ip'], r_info['server_port'], r_info['secret'])
 
         device_info = self._config.get('static_device_info', {})
         if 'static_device_placement' in device_info:
             placement_file = os.path.join(
                 os.getenv('FAUCET_CONFIG_DIR'), device_info['static_device_placement'])
-            device_placement_info = yaml_proto(placement_file, NetworkState).device_mac_learnings
+            device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
             for eth_src, device_placement in device_placement_info.items():
                 self.process_device_placement(eth_src, device_placement)
         self._initialized = True
@@ -425,7 +425,7 @@ class Forchestrator:
         except Exception as e:
             return f"Cannot read faucet config: {e}"
 
-    def process_device_placement(self, eth_src, device_placement_info):
+    def process_device_placement(self, eth_src, device_placement):
         """Call device placement API for faucetizer/authenticator"""
         LOGGER.info('Anurag process_device_placement %s', eth_src)
         if self._faucetizer:
