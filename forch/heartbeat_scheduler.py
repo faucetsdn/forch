@@ -1,8 +1,7 @@
 """Schedule heart beat with functions that have to be called in order"""
-import functools
+
 import logging
 import threading
-import time
 
 LOGGER = logging.getLogger('heartbeat')
 
