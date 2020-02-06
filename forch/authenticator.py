@@ -24,7 +24,8 @@ class Authenticator:
         self.auth_map = self._get_auth_map()
         self.radius_query = None
         if radius_ip and radius_port and radius_secret:
-            Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
+            Socket = collections.namedtuple(
+                'Socket', 'listen_ip, listen_port, server_ip, server_port')
             socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
             self.radius_query = RadiusQuery(socket_info, radius_secret)
             self.radius_query.lock = threading.RLock()
@@ -68,9 +69,6 @@ class Authenticator:
 
     def do_mab_request(self, src_mac, port_id):
         """Initiate MAB request"""
-        #Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
-        #socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
-        #radius_query = RadiusQuery(socket_info, _args.radius_secret)
         LOGGER.info('sending MAB request for %s', src_mac)
         self.radius_query.send_mab_request(src_mac, port_id)
 

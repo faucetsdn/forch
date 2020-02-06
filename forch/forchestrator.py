@@ -90,7 +90,13 @@ class Forchestrator:
 
         r_info = self._config.get('radius_info')
         if r_info:
-            self._authenticator = Authenticator(r_info['server_ip'], r_info['server_port'], r_info['secret'])
+            radius_ip = r_info.get('server_ip')
+            radius_port = r_info.get('server_port')
+            secret = r_info.get('secret')
+            if not (radius_ip and radius_port and secret):
+                LOGGER.warning('Invalid radius_info in config.')
+            else:
+                self._authenticator = Authenticator(radius_ip, radius_port, secret)
 
         device_info = self._config.get('static_device_info', {})
         if 'static_device_placement' in device_info:
