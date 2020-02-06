@@ -88,18 +88,21 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        structural_config_file = self.config.get('dva', {}).get(
-            'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
-        structural_config_path = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
-        if self._config.get('dva', {}).get('run_faucetizer', False):
+        if self._config.get('orchestration', {}).get('run_faucetizer', False):
+            structural_config_file = self._config.get('orchestration', {}).get(
+                'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
+            structural_config_path = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
             with open(structural_config_path) as file:
                 structural_config = yaml.safe_load(file)
+                LOGGER.info('Loaded structural config from %s', structural_config_path)
                 self._faucetizer = faucetizer.Faucetizer(structural_config)
 
-        static_behaviors_file = self._config.get('dva', {}).get('static_device_behavior')
+        static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
         if static_behaviors_file:
-            devices_state = faucetizer.load_devices_state(static_behaviors_file)
+            static_behaviors_path = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
+            devices_state = faucetizer.load_devices_state(static_behaviors_path)
             for mac, device_behavior in devices_state.device_mac_behaviors.items():
                 self.process_device_behavior(mac, device_behavior)
 
