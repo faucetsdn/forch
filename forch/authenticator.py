@@ -20,14 +20,14 @@ AUTH_FILE_NAME = 'auth.yaml'
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, radius_ip=None, radius_port=None, radius_secret=None):
+    def __init__(self, radius_ip, radius_port, radius_secret):
         self.auth_map = self._get_auth_map()
         self.radius_query = None
         if radius_ip and radius_port and radius_secret:
             Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
             socket_info = Socket('0.0.0.0', 0, self.radius_ip, self.radius_port)
             self.radius_query = RadiusQuery(socket_info, self.radius_secret)
-            self.radius_query.lock = Rlock()
+            self.radius_query.lock = RLock()
 
     def _get_auth_map(self):
         base_dir = os.getenv('FORCH_CONFIG_DIR')
@@ -66,15 +66,21 @@ class Authenticator:
 
     def do_mab_request(self, _args):
         """Initiate MAB request"""
-        Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
-        radius_query = RadiusQuery(socket_info, _args.radius_secret)
-        LOGGER.info('sending MAB request')
-        radius_query.send_mab_request(_args.src_mac, _args.port_id)
-        radius_query.receive_radius_messages()
+        #Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
+        #socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
+        #radius_query = RadiusQuery(socket_info, _args.radius_secret)
+        LOGGER.info('sending MAB request for %s', eth_src, port_id)
+        self.radius_query.send_mab_request(eth_src, port_id)
+        self.radius_query.receive_radius_messages()
 
     def process_device_placement(eth_src, device_placement):
         """Process device placement info and initiate mab query"""
+        if not self.radius_query:
+            LOGGER.warning("RADIUS query module not setup. Ignoring auth request for %s", eth_src)
+            return
+        port_id = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
+        LOGGER.info('Anurag process_device_placement mac: %s port_id:%s', eth_src, port_id)
+
 
 
 def parse_args(raw_args):
@@ -97,7 +103,7 @@ def parse_args(raw_args):
 if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
-    AUTHENTICATOR = Authenticator()
+    AUTHENTICATOR = Authenticator(ARGS.server_ip, ARGS.server_port, ARGS.radius_secret)
     AUTHENTICATOR.process_auth_result()
     if ARGS.mab:
-        AUTHENTICATOR.do_mab_request(ARGS)
+        AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)
