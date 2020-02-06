@@ -35,6 +35,7 @@ from forch.proto.system_state_pb2 import SystemState
 LOGGER = logging.getLogger('forch')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
+_STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
@@ -87,15 +88,19 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
+        structural_config_file = self.config.get('dva', {}).get(
+            'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
+        structural_config_path = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
         if self._config.get('dva', {}).get('run_faucetizer', False):
-            with open(self._faucet_config_file) as structural_config_file:
-                structural_config = yaml.safe_load(structural_config_file)
+            with open(structural_config_path) as file:
+                structural_config = yaml.safe_load(file)
                 self._faucetizer = faucetizer.Faucetizer(structural_config)
 
         static_behaviors_file = self._config.get('dva', {}).get('static_device_behavior')
         if static_behaviors_file:
             devices_state = faucetizer.load_devices_state(static_behaviors_file)
-            for mac, device_behavior in devices_state.device_mac_behaviors:
+            for mac, device_behavior in devices_state.device_mac_behaviors.items():
                 self.process_device_behavior(mac, device_behavior)
 
         self._register_handlers()
@@ -107,7 +112,7 @@ class Forchestrator:
 
     def process_device_behavior(self, mac, device_behavior):
         if self._faucetizer:
-            self._faucetizer(mac, device_behavior)
+            self._faucetizer.process_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
