@@ -1,20 +1,26 @@
 """Schedule heart beat with functions that have to be called in order"""
+import functools
 import logging
 import threading
+import time
 
-LOGGER = logging.getLogger('HeartBeat')
+LOGGER = logging.getLogger('heartbeat')
 
 
-class HeartBeatScheduler:
+class HeartbeatScheduler:
     """Heart beat scheduler"""
     def __init__(self, interval):
         self._interval = interval
         self._callbacks = []
+        self._run = False
 
     def add_callback(self, callback):
         self._callbacks.append(callback)
 
     def _periodic_task(self):
+        if not self._run:
+            return
+
         for callback in self._callbacks:
             try:
                 callback()
@@ -25,4 +31,18 @@ class HeartBeatScheduler:
 
     def start(self):
         """Start periodic task"""
+        self._run = True
         threading.Thread(target=self._periodic_task).start()
+
+    def stop(self):
+        """Stop periodic task"""
+        self._run = False
+
+
+if __name__ == '__main__':
+    HEARTBEAT_SCHEDULER = HeartbeatScheduler(1)
+    HEARTBEAT_SCHEDULER.add_callback(functools.partial(print, 'Hello'))
+    HEARTBEAT_SCHEDULER.add_callback(functools.partial(print, 'World'))
+    HEARTBEAT_SCHEDULER.start()
+    time.sleep(5)
+    HEARTBEAT_SCHEDULER.stop()
