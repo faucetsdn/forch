@@ -427,7 +427,6 @@ class Forchestrator:
 
     def process_device_placement(self, eth_src, device_placement):
         """Call device placement API for faucetizer/authenticator"""
-        LOGGER.info('Anurag process_device_placement %s', eth_src)
         if self._faucetizer:
             self._faucetizer.process_device_placement(eth_src, device_placement)
         if self._authenticator:

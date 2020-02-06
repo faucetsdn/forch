@@ -84,7 +84,6 @@ class Authenticator:
             return
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
-        LOGGER.info('Anurag process_device_placement mac: %s port_id:%s', src_mac, port_id)
         self.do_mab_request(src_mac, port_id)
 
 
