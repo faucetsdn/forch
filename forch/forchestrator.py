@@ -18,6 +18,8 @@ from faucet import config_parser
 import forch.faucet_event_client
 import forch.http_server
 
+from forch.utils import configure_logging
+
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
@@ -36,8 +38,6 @@ _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
-_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
-_LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -87,15 +87,16 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        with open(self._faucet_config_file) as structural_config_file:
-            structural_config = yaml.safe_load(structural_config_file)
-            self._faucetizer = faucetizer.Faucetizer(structural_config)
+        if self._config.get('dva', {}).get('run_faucetizer', False):
+            with open(self._faucet_config_file) as structural_config_file:
+                structural_config = yaml.safe_load(structural_config_file)
+                self._faucetizer = faucetizer.Faucetizer(structural_config)
 
-        static_behaviors_file = self._config.get('static_device_file', {}).get('static_device_behavior')
+        static_behaviors_file = self._config.get('dva', {}).get('static_device_behavior')
         if static_behaviors_file:
-            devices_state = fauload_devices_state()
-        for mac, device_beahvior in devices_state.device_mac_behaviors:
-            self.process_device_behavior(mac, device_behavior)
+            devices_state = faucetizer.load_devices_state(static_behaviors_file)
+            for mac, device_behavior in devices_state.device_mac_behaviors:
+                self.process_device_behavior(mac, device_behavior)
 
         self._register_handlers()
         self._initialized = True
@@ -445,22 +446,6 @@ def load_config():
 def show_error(error, path, params):
     """Display errors"""
     return f"Cannot initialize forch: {str(error)}"
-
-
-def get_log_path():
-    """Get path for logging"""
-    forch_log_dir = os.getenv('FORCH_LOG_DIR')
-    if not forch_log_dir:
-        return None
-    return os.path.join(forch_log_dir, 'forch.log')
-
-
-def configure_logging():
-    """Configure logging with some basic parameters"""
-    logging.basicConfig(filename=get_log_path(),
-                        format=_LOG_FORMAT,
-                        datefmt=_LOG_DATE_FORMAT,
-                        level=logging.INFO)
 
 
 def main():

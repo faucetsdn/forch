@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-from forch.forchestrator import configure_logging
+from forch.utils import configure_logging
 
 from forch.utils import yaml_proto
 

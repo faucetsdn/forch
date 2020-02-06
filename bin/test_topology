@@ -21,7 +21,7 @@ function test_faucetizer {
     fc_file=faucet.yaml
     state_file=devices_$test_case.yaml
     sample_file=faucet_$test_case.yaml
-    output_file=faucet_faucet.yaml
+    output_file=faucet_$test_case.yaml
 
     $PYTHON -m forch.faucetizer -s $state_file -c $fc_file -o $output_file
     echo Comparing $OUT_DIR/$output_file and $FORCH_CONFIG_DIR/$sample_file
