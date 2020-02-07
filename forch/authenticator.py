@@ -73,9 +73,6 @@ class Authenticator:
 
     def process_device_placement(self, src_mac, device_placement):
         """Process device placement info and initiate mab query"""
-        if not self.radius_query:
-            LOGGER.warning("RADIUS query module not setup. Ignoring auth request for %s", src_mac)
-            return
         if not device_placement.connected:
             LOGGER.warning("Device not connected. Ignoring auth request for %s", src_mac)
             return

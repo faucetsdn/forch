@@ -2,7 +2,6 @@
 import logging
 import os
 
-from queue import Queue
 from threading import RLock
 
 from forch.radius import RadiusAttributesList, RadiusAccessRequest, Radius
@@ -23,7 +22,6 @@ class RadiusQuery:
         self._packet_id_to_mac = {}
         self.packet_id_to_req_authenticator = {}
         self.running = True
-        self.radius_output_q = Queue()
         # TODO: Find better way to handle secret
         self.radius_secret = radius_secret
         self.radius_socket = RadiusSocket(socket_info.listen_ip, socket_info.listen_port,

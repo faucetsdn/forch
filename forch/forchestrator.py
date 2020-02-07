@@ -19,8 +19,7 @@ import forch.faucet_event_client
 import forch.http_server
 
 from forch.authenticator import Authenticator
-from forch.utils import yaml_proto
-from forch.utils import configure_logging
+from forch.utils import yaml_proto, configure_logging, ConfigError
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
@@ -87,15 +86,19 @@ class Forchestrator:
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
         self._register_handlers()
 
-        r_info = self._config.get('radius_info')
-        if r_info:
-            radius_ip = r_info.get('server_ip')
-            radius_port = r_info.get('server_port')
-            secret = r_info.get('secret')
+        radius_info = self._config.get('radius_info')
+        if radius_info:
+            radius_ip = radius_info.get('server_ip')
+            radius_port = radius_info.get('server_port')
+            secret = radius_info.get('secret')
             if not (radius_ip and radius_port and secret):
-                LOGGER.warning('Invalid radius_info in config.')
+                LOGGER.warning('Invalid radius_info in config. Radius IP: %s; Radius port: %s Secret present: %s',
+                               radius_ip, radius_port, bool(secret))
+                raise ConfigError
             else:
                 self._authenticator = Authenticator(radius_ip, radius_port, secret)
+                LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+                            radius_ip, radius_port)
 
         device_info = self._config.get('static_device_info', {})
         if 'static_device_placement' in device_info:
