@@ -85,7 +85,18 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
         self._register_handlers()
+        self._create_authenticator()
 
+        device_info = self._config.get('static_device_info', {})
+        if 'static_device_placement' in device_info:
+            placement_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), device_info['static_device_placement'])
+            device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
+            for eth_src, device_placement in device_placement_info.items():
+                self.process_device_placement(eth_src, device_placement)
+        self._initialized = True
+
+    def _create_authenticator(self):
         radius_info = self._config.get('radius_info')
         if radius_info:
             radius_ip = radius_info.get('server_ip')
@@ -99,15 +110,6 @@ class Forchestrator:
             self._authenticator = Authenticator(radius_ip, radius_port, secret)
             LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
                         radius_ip, radius_port)
-
-        device_info = self._config.get('static_device_info', {})
-        if 'static_device_placement' in device_info:
-            placement_file = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), device_info['static_device_placement'])
-            device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
-            for eth_src, device_placement in device_placement_info.items():
-                self.process_device_placement(eth_src, device_placement)
-        self._initialized = True
 
     def initialized(self):
         """If forch is initialized or not"""
