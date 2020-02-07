@@ -6,7 +6,7 @@ import yaml
 
 from google.protobuf import json_format
 
-_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
+_LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 
 

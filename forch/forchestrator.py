@@ -25,6 +25,8 @@ from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
+import forch.faucetizer as faucetizer
+
 from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
@@ -33,6 +35,7 @@ from forch.proto.system_state_pb2 import SystemState
 LOGGER = logging.getLogger('forch')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
+_STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
@@ -53,6 +56,9 @@ class Forchestrator:
         self._varz_collector = None
         self._local_collector = None
         self._cpn_collector = None
+
+        self._faucetizer = None
+
         self._initialized = False
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
@@ -81,12 +87,36 @@ class Forchestrator:
         self._local_collector.initialize()
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
+
+        if self._config.get('orchestration', {}).get('run_faucetizer', False):
+            structural_config_file = self._config.get('orchestration', {}).get(
+                'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
+            structural_config_path = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+            LOGGER.info('Loading structural config from %s', structural_config_path)
+            with open(structural_config_path) as file:
+                structural_config = yaml.safe_load(file)
+                self._faucetizer = faucetizer.Faucetizer(structural_config)
+
+        static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
+        if static_behaviors_file:
+            static_behaviors_path = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
+            devices_state = faucetizer.load_devices_state(static_behaviors_path)
+            for mac, device_behavior in devices_state.device_mac_behaviors.items():
+                self.process_device_behavior(mac, device_behavior)
+
         self._register_handlers()
         self._initialized = True
 
     def initialized(self):
         """If forch is initialized or not"""
         return self._initialized
+
+    def process_device_behavior(self, mac, device_behavior):
+        """Function interface of process device behavior"""
+        if self._faucetizer:
+            self._faucetizer.process_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
