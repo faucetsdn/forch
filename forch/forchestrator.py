@@ -92,13 +92,13 @@ class Forchestrator:
             radius_port = radius_info.get('server_port')
             secret = radius_info.get('secret')
             if not (radius_ip and radius_port and secret):
-                LOGGER.warning('Invalid radius_info in config. Radius IP: %s; Radius port: %s Secret present: %s',
+                LOGGER.warning('Invalid radius_info in config. \
+                               Radius IP: %s; Radius port: %s Secret present: %s',
                                radius_ip, radius_port, bool(secret))
                 raise ConfigError
-            else:
-                self._authenticator = Authenticator(radius_ip, radius_port, secret)
-                LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
-                            radius_ip, radius_port)
+            self._authenticator = Authenticator(radius_ip, radius_port, secret)
+            LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+                        radius_ip, radius_port)
 
         device_info = self._config.get('static_device_info', {})
         if 'static_device_placement' in device_info:
