@@ -90,7 +90,7 @@ class HttpServer():
         handler = functools.partial(RequestHandler, self)
         self._server = ThreadedHTTPServer(address, handler)
 
-        self._thread = threading.Thread(target=self._server.serve_forever)
+        self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         self._thread.deamon = False
         self._thread.start()
 

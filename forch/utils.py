@@ -14,6 +14,10 @@ class MessageParseError(Exception):
     """Error for when parsing cannot be successfully completed."""
 
 
+class ConfigError(Exception):
+    """Error for when config isn't valid."""
+
+
 def get_log_path():
     """Get path for logging"""
     forch_log_dir = os.getenv('FORCH_LOG_DIR')

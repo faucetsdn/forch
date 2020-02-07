@@ -7,6 +7,10 @@ site:
       port: 9020
 static_device_info:
     static_device_placement: placement.yaml
+radius_info:
+    server_ip: 172.17.0.5
+    server_port: 1812
+    secret: SECRET
 process:
   scan_interval_sec: 10
   processes:

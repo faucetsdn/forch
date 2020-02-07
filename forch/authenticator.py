@@ -5,6 +5,7 @@ import sys
 import os
 import collections
 import argparse
+import threading
 import yaml
 
 from forch.radius_query import RadiusQuery
@@ -19,8 +20,16 @@ AUTH_FILE_NAME = 'auth.yaml'
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self):
+    def __init__(self, radius_ip, radius_port, radius_secret):
         self.auth_map = self._get_auth_map()
+        self.radius_query = None
+        if radius_ip and radius_port and radius_secret:
+            Socket = collections.namedtuple(
+                'Socket', 'listen_ip, listen_port, server_ip, server_port')
+            socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
+            self.radius_query = RadiusQuery(socket_info, radius_secret)
+            threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
+
 
     def _get_auth_map(self):
         base_dir = os.getenv('FORCH_CONFIG_DIR')
@@ -57,14 +66,20 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
-    def do_mab_request(self, _args):
+    def do_mab_request(self, src_mac, port_id):
         """Initiate MAB request"""
-        Socket = collections.namedtuple('Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', 0, _args.server_ip, _args.server_port)
-        radius_query = RadiusQuery(socket_info, _args.radius_secret)
-        LOGGER.info('sending MAB request')
-        radius_query.send_mab_request(_args.src_mac, _args.port_id)
-        radius_query.receive_radius_messages()
+        LOGGER.info('sending MAB request for %s', src_mac)
+        self.radius_query.send_mab_request(src_mac, port_id)
+
+    def process_device_placement(self, src_mac, device_placement):
+        """Process device placement info and initiate mab query"""
+        if not device_placement.connected:
+            LOGGER.warning("Device not connected. Ignoring auth request for %s", src_mac)
+            return
+        portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
+        port_id = int(portid_hash[:6], 16)
+        self.do_mab_request(src_mac, port_id)
+
 
 
 def parse_args(raw_args):
@@ -87,7 +102,7 @@ def parse_args(raw_args):
 if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
-    AUTHENTICATOR = Authenticator()
+    AUTHENTICATOR = Authenticator(ARGS.server_ip, ARGS.server_port, ARGS.radius_secret)
     AUTHENTICATOR.process_auth_result()
     if ARGS.mab:
-        AUTHENTICATOR.do_mab_request(ARGS)
+        AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)

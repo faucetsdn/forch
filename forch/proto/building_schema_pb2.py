@@ -7,6 +7,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -18,9 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/building_schema.proto',
   package='',
   syntax='proto3',
-  serialized_options=None,
   serialized_pb=_b('\n!forch/proto/building_schema.proto\"\x93\x05\n\x0e\x42uildingSchema\x12\x30\n\tmac_addrs\x18\x01 \x03(\x0b\x32\x1d.BuildingSchema.MacAddrsEntry\x1aK\n\rMacAddrsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.BuildingSchema.DeviceInfo:\x02\x38\x01\x1a\xbb\x01\n\nDeviceInfo\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\r\n\x05group\x18\x02 \x01(\t\x12@\n\x0b\x63ontrollers\x18\x03 \x03(\x0b\x32+.BuildingSchema.DeviceInfo.ControllersEntry\x1aN\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.BuildingSchema.Controller:\x02\x38\x01\x1a\x9a\x01\n\nController\x12>\n\ncontrolees\x18\x01 \x03(\x0b\x32*.BuildingSchema.Controller.ControleesEntry\x1aL\n\x0f\x43ontroleesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.BuildingSchema.Controlee:\x02\x38\x01\x1a\x96\x01\n\tControlee\x12:\n\tmac_addrs\x18\x01 \x03(\x0b\x32\'.BuildingSchema.Controlee.MacAddrsEntry\x1aM\n\rMacAddrsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.BuildingSchema.DeviceTarget:\x02\x38\x01\x1a\x0e\n\x0c\x44\x65viceTargetb\x06proto3')
 )
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -38,21 +39,21 @@ _BUILDINGSCHEMA_MACADDRSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='BuildingSchema.MacAddrsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -75,21 +76,21 @@ _BUILDINGSCHEMA_DEVICEINFO_CONTROLLERSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='BuildingSchema.DeviceInfo.ControllersEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -112,28 +113,28 @@ _BUILDINGSCHEMA_DEVICEINFO = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='group', full_name='BuildingSchema.DeviceInfo.group', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='controllers', full_name='BuildingSchema.DeviceInfo.controllers', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[_BUILDINGSCHEMA_DEVICEINFO_CONTROLLERSENTRY, ],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -156,21 +157,21 @@ _BUILDINGSCHEMA_CONTROLLER_CONTROLEESENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='BuildingSchema.Controller.ControleesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -193,14 +194,14 @@ _BUILDINGSCHEMA_CONTROLLER = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[_BUILDINGSCHEMA_CONTROLLER_CONTROLEESENTRY, ],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -223,21 +224,21 @@ _BUILDINGSCHEMA_CONTROLEE_MACADDRSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
     _descriptor.FieldDescriptor(
       name='value', full_name='BuildingSchema.Controlee.MacAddrsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=_b('8\001'),
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -260,14 +261,14 @@ _BUILDINGSCHEMA_CONTROLEE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[_BUILDINGSCHEMA_CONTROLEE_MACADDRSENTRY, ],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -290,7 +291,7 @@ _BUILDINGSCHEMA_DEVICETARGET = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -313,14 +314,14 @@ _BUILDINGSCHEMA = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      options=None),
   ],
   extensions=[
   ],
   nested_types=[_BUILDINGSCHEMA_MACADDRSENTRY, _BUILDINGSCHEMA_DEVICEINFO, _BUILDINGSCHEMA_CONTROLLER, _BUILDINGSCHEMA_CONTROLEE, _BUILDINGSCHEMA_DEVICETARGET, ],
   enum_types=[
   ],
-  serialized_options=None,
+  options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -347,7 +348,6 @@ _BUILDINGSCHEMA_CONTROLEE.containing_type = _BUILDINGSCHEMA
 _BUILDINGSCHEMA_DEVICETARGET.containing_type = _BUILDINGSCHEMA
 _BUILDINGSCHEMA.fields_by_name['mac_addrs'].message_type = _BUILDINGSCHEMA_MACADDRSENTRY
 DESCRIPTOR.message_types_by_name['BuildingSchema'] = _BUILDINGSCHEMA
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 BuildingSchema = _reflection.GeneratedProtocolMessageType('BuildingSchema', (_message.Message,), dict(
 
@@ -421,8 +421,12 @@ _sym_db.RegisterMessage(BuildingSchema.Controlee.MacAddrsEntry)
 _sym_db.RegisterMessage(BuildingSchema.DeviceTarget)
 
 
-_BUILDINGSCHEMA_MACADDRSENTRY._options = None
-_BUILDINGSCHEMA_DEVICEINFO_CONTROLLERSENTRY._options = None
-_BUILDINGSCHEMA_CONTROLLER_CONTROLEESENTRY._options = None
-_BUILDINGSCHEMA_CONTROLEE_MACADDRSENTRY._options = None
+_BUILDINGSCHEMA_MACADDRSENTRY.has_options = True
+_BUILDINGSCHEMA_MACADDRSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_BUILDINGSCHEMA_DEVICEINFO_CONTROLLERSENTRY.has_options = True
+_BUILDINGSCHEMA_DEVICEINFO_CONTROLLERSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_BUILDINGSCHEMA_CONTROLLER_CONTROLEESENTRY.has_options = True
+_BUILDINGSCHEMA_CONTROLLER_CONTROLEESENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_BUILDINGSCHEMA_CONTROLEE_MACADDRSENTRY.has_options = True
+_BUILDINGSCHEMA_CONTROLEE_MACADDRSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 # @@protoc_insertion_point(module_scope)

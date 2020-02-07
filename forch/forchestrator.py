@@ -18,8 +18,8 @@ from faucet import config_parser
 import forch.faucet_event_client
 import forch.http_server
 
-from forch.utils import configure_logging
-
+from forch.authenticator import Authenticator
+from forch.utils import yaml_proto, configure_logging, ConfigError
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.local_state_collector import LocalStateCollector
@@ -31,6 +31,7 @@ from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
+from forch.proto.devices_state_pb2 import DevicesState
 
 LOGGER = logging.getLogger('forch')
 
@@ -60,6 +61,8 @@ class Forchestrator:
         self._faucetizer = None
 
         self._initialized = False
+        self._faucetizer = None
+        self._authenticator = None
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
 
@@ -107,7 +110,34 @@ class Forchestrator:
                 self.process_device_behavior(mac, device_behavior)
 
         self._register_handlers()
+        self._attempt_authenticator_initialise()
+        self._process_static_device_placement()
+
         self._initialized = True
+
+    def _attempt_authenticator_initialise(self):
+        radius_info = self._config.get('radius_info')
+        if radius_info:
+            radius_ip = radius_info.get('server_ip')
+            radius_port = radius_info.get('server_port')
+            secret = radius_info.get('secret')
+            if not (radius_ip and radius_port and secret):
+                LOGGER.warning('Invalid radius_info in config. \
+                               Radius IP: %s; Radius port: %s Secret present: %s',
+                               radius_ip, radius_port, bool(secret))
+                raise ConfigError
+            self._authenticator = Authenticator(radius_ip, radius_port, secret)
+            LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+                        radius_ip, radius_port)
+
+    def _process_static_device_placement(self):
+        device_info = self._config.get('static_device_info', {})
+        if 'static_device_placement' in device_info:
+            placement_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), device_info['static_device_placement'])
+            device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
+            for eth_src, device_placement in device_placement_info.items():
+                self.process_device_placement(eth_src, device_placement)
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -428,7 +458,7 @@ class Forchestrator:
         return self._augment_state_reply(reply, path)
 
     def get_sys_config(self, path, params):
-        """Get overall config from facuet config file"""
+        """Get overall config from faucet config file"""
         try:
             _, _, faucet_config = self._get_faucet_config()
             reply = {
@@ -437,6 +467,13 @@ class Forchestrator:
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
+
+    def process_device_placement(self, eth_src, device_placement):
+        """Call device placement API for faucetizer/authenticator"""
+        if self._faucetizer:
+            self._faucetizer.process_device_placement(eth_src, device_placement)
+        if self._authenticator:
+            self._authenticator.process_device_placement(eth_src, device_placement)
 
 
 def load_config():
