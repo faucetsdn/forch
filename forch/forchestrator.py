@@ -22,6 +22,7 @@ from forch.authenticator import Authenticator
 from forch.utils import yaml_proto, configure_logging, ConfigError
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
@@ -37,7 +38,7 @@ LOGGER = logging.getLogger('forch')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
-_FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
+_DYNAMIC_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
 
@@ -59,10 +60,10 @@ class Forchestrator:
         self._cpn_collector = None
 
         self._faucetizer = None
+        self._authenticator = None
+        self._faucetize_scheduler = None
 
         self._initialized = False
-        self._faucetizer = None
-        self._authenticator = None
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
 
@@ -74,7 +75,7 @@ class Forchestrator:
         self._cpn_collector = CPNStateCollector()
 
         self._faucet_config_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), _FAUCET_CONFIG_DEFAULT)
+            os.getenv('FAUCET_CONFIG_DIR'), _DYNAMIC_CONFIG_DEFAULT)
         if not self._faucet_config_file or not os.path.exists(self._faucet_config_file):
             raise Exception(f"Faucet config file does not exist: {self._faucet_config_file}")
 
@@ -91,60 +92,87 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        if self._config.get('orchestration', {}).get('run_faucetizer', False):
-            structural_config_file = self._config.get('orchestration', {}).get(
-                'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
-            structural_config_path = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
-            LOGGER.info('Loading structural config from %s', structural_config_path)
-            with open(structural_config_path) as file:
-                structural_config = yaml.safe_load(file)
-                self._faucetizer = faucetizer.Faucetizer(structural_config)
-
-        static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
-        if static_behaviors_file:
-            static_behaviors_path = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
-            devices_state = faucetizer.load_devices_state(static_behaviors_path)
-            for mac, device_behavior in devices_state.device_mac_behaviors.items():
-                self.process_device_behavior(mac, device_behavior)
-
-        self._register_handlers()
+        self._initialize_faucetizer()
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
+        self._process_static_device_behavior()
+
+        self._register_handlers()
 
         self._initialized = True
 
     def _attempt_authenticator_initialise(self):
         radius_info = self._config.get('radius_info')
-        if radius_info:
-            radius_ip = radius_info.get('server_ip')
-            radius_port = radius_info.get('server_port')
-            secret = radius_info.get('secret')
-            if not (radius_ip and radius_port and secret):
-                LOGGER.warning('Invalid radius_info in config. \
-                               Radius IP: %s; Radius port: %s Secret present: %s',
-                               radius_ip, radius_port, bool(secret))
-                raise ConfigError
-            self._authenticator = Authenticator(radius_ip, radius_port, secret)
-            LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
-                        radius_ip, radius_port)
+        if not radius_info:
+            return
+        radius_ip = radius_info.get('server_ip')
+        radius_port = radius_info.get('server_port')
+        secret = radius_info.get('secret')
+        if not (radius_ip and radius_port and secret):
+            LOGGER.warning('Invalid radius_info in config. \
+                           Radius IP: %s; Radius port: %s Secret present: %s',
+                           radius_ip, radius_port, bool(secret))
+            raise ConfigError
+        self._authenticator = Authenticator(radius_ip, radius_port, secret)
+        LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+                    radius_ip, radius_port)
 
     def _process_static_device_placement(self):
-        device_info = self._config.get('static_device_info', {})
-        if 'static_device_placement' in device_info:
-            placement_file = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), device_info['static_device_placement'])
-            device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
-            for eth_src, device_placement in device_placement_info.items():
-                self.process_device_placement(eth_src, device_placement)
+        static_placement_file = self._config.get('orchestration', {}).get('static_device_placement')
+        if not static_placement_file:
+            return
+        placement_file = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
+        device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
+        for eth_src, device_placement in device_placement_info.items():
+            self.process_device_placement(eth_src, device_placement)
+
+    def _process_static_device_behavior(self):
+        static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
+        if not static_behaviors_file:
+            return
+        static_behaviors_path = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
+        devices_state = faucetizer.load_devices_state(static_behaviors_path)
+        for mac, device_behavior in devices_state.device_mac_behaviors.items():
+            self.process_device_behavior(mac, device_behavior)
+
+    def _initialize_faucetizer(self):
+        if not self._config.get('orchestration', {}).get('run_faucetizer'):
+            return
+        structural_config_file = self._config.get('orchestration', {}).get(
+            'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
+        structural_config_path = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+        LOGGER.info('Loading structural config from %s', structural_config_path)
+        with open(structural_config_path) as file:
+            structural_config = yaml.safe_load(file)
+            self._faucetizer = faucetizer.Faucetizer(structural_config)
+
+        interval = self._config.get('orchestration', {}).get('faucetize_interval', 1)
+        dynamic_config_file = self._config.get('orchestration', {}).get(
+            'dynamic_config_file', _DYNAMIC_CONFIG_DEFAULT)
+        dynamic_config_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
+        self._faucetize_scheduler = HeartbeatScheduler(interval)
+        self._faucetize_scheduler.add_callback(functools.partial(
+            faucetizer.update_structural_config, self._faucetizer, structural_config_path))
+        self._faucetize_scheduler.add_callback(functools.partial(
+            faucetizer.write_dynamic_config, self._faucetizer, dynamic_config_path))
+        self._faucetize_scheduler.start()
 
     def initialized(self):
         """If forch is initialized or not"""
         return self._initialized
 
+    def process_device_placement(self, eth_src, device_placement):
+        """Call device placement API for faucetizer/authenticator"""
+        if self._faucetizer:
+            self._faucetizer.process_device_placement(eth_src, device_placement)
+        if self._authenticator:
+            self._authenticator.process_device_placement(eth_src, device_placement)
+
     def process_device_behavior(self, mac, device_behavior):
-        """Function interface of process device behavior"""
+        """Function interface of processing device behavior"""
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior)
 
@@ -216,6 +244,11 @@ class Forchestrator:
         except Exception as e:
             LOGGER.error("Exception: %s", e)
             raise
+
+    def stop_schedulers(self):
+        """Stop schedulers"""
+        if self._faucetize_scheduler:
+            self._faucetize_scheduler.stop()
 
     def _process_faucet_event(self):
         try:
@@ -468,13 +501,6 @@ class Forchestrator:
         except Exception as e:
             return f"Cannot read faucet config: {e}"
 
-    def process_device_placement(self, eth_src, device_placement):
-        """Call device placement API for faucetizer/authenticator"""
-        if self._faucetizer:
-            self._faucetizer.process_device_placement(eth_src, device_placement)
-        if self._authenticator:
-            self._authenticator.process_device_placement(eth_src, device_placement)
-
 
 def load_config():
     """Load configuration from the configuration file"""
@@ -534,6 +560,7 @@ def main():
 
     LOGGER.warning('Exiting program')
     http_server.stop_server()
+    forchestrator.stop_schedulers()
 
 
 def parse_args(raw_args):

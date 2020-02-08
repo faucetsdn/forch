@@ -14,7 +14,7 @@ from forch.utils import proto_dict, dict_proto
 
 from forch.proto.authentication_pb2 import AuthResult
 
-LOGGER = logging.getLogger('authenticator')
+LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
 
 

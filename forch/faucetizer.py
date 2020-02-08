@@ -51,12 +51,12 @@ class Faucetizer:
 
         dynamic_faucet_config = copy.deepcopy(self._structural_faucet_config)
         for mac, device in self._devices.items():
-            if device.placement and device.behavior:
+            if device.placement.switch and device.behavior.vid:
                 switch_cfg = dynamic_faucet_config.get('dps', {}).get(device.placement.switch, {})
                 port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
 
                 if not port_cfg:
-                    LOGGER.warning('Switch or port not defined in faucet config: %s %s',
+                    LOGGER.warning('Switch or port not defined in faucet config: %s, %s',
                                    device.placement.switch, device.placement.port)
                     continue
 
@@ -91,21 +91,23 @@ def process_devices_state(faucetizer: Faucetizer, devices_state: DevicesState):
 
 def load_faucet_config(file):
     """Load network state file"""
-    LOGGER.info('Loading faucet config file %s', file)
     with open(file) as config_file:
         faucet_config = yaml.safe_load(config_file)
-    LOGGER.info('Loaded faucet config from %s', file)
     return faucet_config
 
 
-def write_faucet_config(faucet_config, out_path):
-    """Write faucet config to file"""
-    try:
-        with open(out_path, 'w') as out_file:
-            yaml.dump(faucet_config, out_file)
-        LOGGER.info('Config wrote to %s', out_path)
-    except Exception as error:
-        LOGGER.error('Cannot write faucet config: %s', error)
+def update_structural_config(faucetizer: Faucetizer, file):
+    """Read structural config from file and update in faucetizer"""
+    with open(file) as structural_config_file:
+        structural_config = yaml.safe_load(structural_config_file)
+        faucetizer.process_faucet_config(structural_config)
+
+
+def write_dynamic_config(faucetizer: Faucetizer, file):
+    """Get dynamic config from faucetizer and write to file"""
+    dynamic_config = faucetizer.get_dynamic_faucet_config()
+    with open(file, 'w') as dynamic_config_file:
+        yaml.dump(dynamic_config, dynamic_config_file)
 
 
 def parse_args(raw_args):
@@ -128,6 +130,8 @@ if __name__ == '__main__':
 
     STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
     STRUCTURAL_CONFIG = load_faucet_config(STRUCTURAL_CONFIG_FILE)
+    LOGGER.info('Loaded structural faucet config from %s', STRUCTURAL_CONFIG_FILE)
+
     FAUCETIZER = Faucetizer(STRUCTURAL_CONFIG)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
@@ -135,4 +139,5 @@ if __name__ == '__main__':
     process_devices_state(FAUCETIZER, DEVICES_STATE)
 
     OUTPUT_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
-    write_faucet_config(FAUCETIZER.get_dynamic_faucet_config(), OUTPUT_FILE)
+    write_dynamic_config(FAUCETIZER, OUTPUT_FILE)
+    LOGGER.info('Config wrote to %s', OUTPUT_FILE)
