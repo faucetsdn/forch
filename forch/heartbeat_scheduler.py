@@ -32,7 +32,7 @@ class HeartbeatScheduler:
     def start(self):
         """Start periodic task"""
         self._run = True
-        threading.Thread(target=self._periodic_task).start()
+        threading.Thread(target=self._periodic_task, daemon=True).start()
 
     def stop(self):
         """Stop periodic task"""
