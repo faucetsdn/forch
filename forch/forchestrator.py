@@ -99,6 +99,8 @@ class Forchestrator:
 
         self._register_handlers()
 
+        self.start()
+
         self._initialized = True
 
     def _attempt_authenticator_initialise(self):
@@ -138,8 +140,10 @@ class Forchestrator:
             self.process_device_behavior(mac, device_behavior)
 
     def _initialize_faucetizer(self):
-        if not self._config.get('orchestration', {}).get('run_faucetizer'):
+        dynamic_config_file = self._config.get('orchestration', {}).get('dynamic_config_file')
+        if not dynamic_config_file:
             return
+
         structural_config_file = self._config.get('orchestration', {}).get(
             'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
         structural_config_path = os.path.join(
@@ -149,16 +153,13 @@ class Forchestrator:
             structural_config = yaml.safe_load(file)
             self._faucetizer = faucetizer.Faucetizer(structural_config)
 
-        interval = self._config.get('orchestration', {}).get('faucetize_interval', 1)
-        dynamic_config_file = self._config.get('orchestration', {}).get(
-            'dynamic_config_file', _DYNAMIC_CONFIG_DEFAULT)
+        interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
         dynamic_config_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
         self._faucetize_scheduler = HeartbeatScheduler(interval)
         self._faucetize_scheduler.add_callback(functools.partial(
             faucetizer.update_structural_config, self._faucetizer, structural_config_path))
         self._faucetize_scheduler.add_callback(functools.partial(
             faucetizer.write_dynamic_config, self._faucetizer, dynamic_config_path))
-        self._faucetize_scheduler.start()
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -245,8 +246,13 @@ class Forchestrator:
             LOGGER.error("Exception: %s", e)
             raise
 
-    def stop_schedulers(self):
-        """Stop schedulers"""
+    def start(self):
+        """Start forchestrator components"""
+        if self._faucetize_scheduler:
+            self._faucetize_scheduler.start()
+
+    def stop(self):
+        """Stop forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.stop()
 
@@ -560,7 +566,7 @@ def main():
 
     LOGGER.warning('Exiting program')
     http_server.stop_server()
-    forchestrator.stop_schedulers()
+    forchestrator.stop()
 
 
 def parse_args(raw_args):

@@ -92,8 +92,7 @@ def process_devices_state(faucetizer: Faucetizer, devices_state: DevicesState):
 def load_faucet_config(file):
     """Load network state file"""
     with open(file) as config_file:
-        faucet_config = yaml.safe_load(config_file)
-    return faucet_config
+        return yaml.safe_load(config_file)
 
 
 def update_structural_config(faucetizer: Faucetizer, file):
