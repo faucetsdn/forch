@@ -50,7 +50,7 @@ class Forchestrator:
 
     def __init__(self, config):
         self._config = config
-        self._faucet_config_file = None
+        self._behavior_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
 
@@ -92,11 +92,11 @@ class Forchestrator:
         self._process_static_device_placement()
         self._process_static_device_behavior()
 
-        if not self._faucet_config_file:
-            self._faucet_config_file = os.path.join(
+        if not self._behavior_config_file:
+            self._behavior_config_file = os.path.join(
                 os.getenv('FAUCET_CONFIG_DIR'), _FAUCET_CONFIG_DEFAULT)
-            if not os.path.exists(self._faucet_config_file):
-                raise Exception(f"Faucet config file does not exist: {self._faucet_config_file}")
+            if not os.path.exists(self._behavior_config_file):
+                raise Exception(f"Faucet config file does not exist: {self._behavior_config_file}")
 
         self._register_handlers()
 
@@ -155,12 +155,12 @@ class Forchestrator:
             self._faucetizer = faucetizer.Faucetizer(structural_config)
 
         interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
-        self._faucet_config_file = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
+        self._behavior_config_file = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
         self._faucetize_scheduler = HeartbeatScheduler(interval)
         self._faucetize_scheduler.add_callback(functools.partial(
             faucetizer.update_structural_config, self._faucetizer, structural_config_path))
         self._faucetize_scheduler.add_callback(functools.partial(
-            faucetizer.write_dynamic_config, self._faucetizer, self._faucet_config_file))
+            faucetizer.write_dynamic_config, self._faucetizer, self._behavior_config_file))
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -435,7 +435,7 @@ class Forchestrator:
     def _get_faucet_config(self):
         try:
             (new_conf_hashes, _, new_dps, top_conf) = config_parser.dp_parser(
-                self._faucet_config_file, 'fconfig')
+                self._behavior_config_file, 'fconfig')
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
             return config_hash_info, new_dps, top_conf
         except Exception as e:
