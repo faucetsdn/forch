@@ -38,7 +38,7 @@ LOGGER = logging.getLogger('forch')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
-_DYNAMIC_CONFIG_DEFAULT = 'faucet.yaml'
+_FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
 
@@ -74,11 +74,6 @@ class Forchestrator:
             self._config.get('process'), self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
-        self._faucet_config_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), _DYNAMIC_CONFIG_DEFAULT)
-        if not self._faucet_config_file or not os.path.exists(self._faucet_config_file):
-            raise Exception(f"Faucet config file does not exist: {self._faucet_config_file}")
-
         prom_port = os.getenv('PROMETHEUS_PORT')
         if not prom_port:
             raise Exception("PROMETHEUS_PORT is not set")
@@ -96,6 +91,12 @@ class Forchestrator:
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
+
+        if not self._faucet_config_file:
+            self._faucet_config_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), _FAUCET_CONFIG_DEFAULT)
+            if not os.path.exists(self._faucet_config_file):
+                raise Exception(f"Faucet config file does not exist: {self._faucet_config_file}")
 
         self._register_handlers()
 
@@ -154,12 +155,12 @@ class Forchestrator:
             self._faucetizer = faucetizer.Faucetizer(structural_config)
 
         interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
-        dynamic_config_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
+        self._faucet_config_file = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
         self._faucetize_scheduler = HeartbeatScheduler(interval)
         self._faucetize_scheduler.add_callback(functools.partial(
             faucetizer.update_structural_config, self._faucetizer, structural_config_path))
         self._faucetize_scheduler.add_callback(functools.partial(
-            faucetizer.write_dynamic_config, self._faucetizer, dynamic_config_path))
+            faucetizer.write_dynamic_config, self._faucetizer, self._faucet_config_file))
 
     def initialized(self):
         """If forch is initialized or not"""
