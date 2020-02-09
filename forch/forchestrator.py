@@ -155,7 +155,8 @@ class Forchestrator:
             self._faucetizer = faucetizer.Faucetizer(structural_config)
 
         interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
-        self._behavior_config_file = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
+        self._behavior_config_file = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), dynamic_config_file)
         self._faucetize_scheduler = HeartbeatScheduler(interval)
         self._faucetize_scheduler.add_callback(functools.partial(
             faucetizer.update_structural_config, self._faucetizer, structural_config_path))
