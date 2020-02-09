@@ -1,18 +1,14 @@
 {
-  device_mac_behaviors:
-    {
-      "9a:02:57:1e:8f:01":
-        {
+  device_mac_behaviors: {
+      "9a:02:57:1e:8f:01": {
           vid: 200,
           role: "red",
         },
-      "9a:02:57:1e:8f:02":
-        {
+      "9a:02:57:1e:8f:02": {
           vid: 300,
           role: "green",
         },
-      "9a:02:57:1e:8f:03":
-        {
+      "9a:02:57:1e:8f:03": {
           vid: 300,
           role: "yellow"
         }
