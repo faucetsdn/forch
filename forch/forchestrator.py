@@ -163,7 +163,7 @@ class Forchestrator:
         segments_vlans_file = self._config.get('orchestration', {}).get(
             'segments_vlans_file', _SEGMENTS_VLAN_DEFAULT)
         segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
-        LOGGER.info('Loading segment to vlan mappings')
+        LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
         self._faucetizer = faucetizer.Faucetizer(structural_config, segments_to_vlans)

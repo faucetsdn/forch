@@ -40,10 +40,6 @@ class Faucetizer:
             device = self._devices.setdefault(eth_src, Device())
             device.behavior.CopyFrom(behavior)
 
-    def process_segments_to_vlans(self, segments_to_vlans):
-        """Process single segment vlan mapping"""
-        self._segments_to_vlans.update(segments_to_vlans.segments_to_vlans)
-
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
@@ -67,8 +63,10 @@ class Faucetizer:
 
                 vid = self._segments_to_vlans.get(device.behavior.segment)
                 if not vid:
-                    raise Exception('Device segment does not have a matching vlan %s %s',
-                                    mac, device.behavior.segment)
+                    LOGGER.warning('Device segment does not have a matching vlan: %s, %s',
+                                   mac, device.behavior.segment)
+                    continue
+
                 port_cfg['native_vlan'] = vid
                 if device.behavior.role:
                     port_cfg['acls_in'] = [f'role_{device.behavior.role}']
