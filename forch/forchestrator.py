@@ -165,7 +165,7 @@ class Forchestrator:
 
         update_write_faucet_config = (lambda: (
             faucetizer.update_structural_config(self._faucetizer, structural_config_path),
-            faucetizer.write_dynamic_config(self._faucetizer, self._behavior_config_file)))
+            faucetizer.write_behavioral_config(self._faucetizer, self._behavior_config_file)))
         self._faucetize_scheduler.add_callback(update_write_faucet_config)
 
     def initialized(self):
