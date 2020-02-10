@@ -163,10 +163,10 @@ class Forchestrator:
         interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
         self._faucetize_scheduler = HeartbeatScheduler(interval)
 
-        self._faucetize_scheduler.add_callback(functools.partial(
-            faucetizer.update_structural_config, self._faucetizer, structural_config_path))
-        self._faucetize_scheduler.add_callback(functools.partial(
-            faucetizer.write_behavioral_config, self._faucetizer, self._behavioral_config_file))
+        update_write_faucet_config = (lambda: (
+            faucetizer.update_structural_config(self._faucetizer, structural_config_path),
+            faucetizer.write_dynamic_config(self._faucetizer, self._behavior_config_file)))
+        self._faucetize_scheduler.add_callback(update_write_faucet_config)
 
     def initialized(self):
         """If forch is initialized or not"""
