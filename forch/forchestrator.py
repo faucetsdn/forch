@@ -145,7 +145,8 @@ class Forchestrator:
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), _BEHAVIORAL_CONFIG_DEFAULT)
         if not os.path.exists(self._behavioral_config_file):
-            raise Exception(f"Behavioral config file does not exist: {self._behavioral_config_file}")
+            raise Exception(
+                f"Behavioral config file does not exist: {self._behavioral_config_file}")
 
         return False
 

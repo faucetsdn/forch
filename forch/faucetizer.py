@@ -52,7 +52,8 @@ class Faucetizer:
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
         for mac, device in self._devices.items():
             if device.placement.switch and device.behavior.vid:
-                switch_cfg = behavioral_faucet_config.get('dps', {}).get(device.placement.switch, {})
+                switch_cfg = behavioral_faucet_config.get('dps', {}).get(
+                    device.placement.switch, {})
                 port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
 
                 if not port_cfg:
@@ -64,7 +65,7 @@ class Faucetizer:
                 if device.behavior.role:
                     port_cfg['acls_in'] = [f'role_{device.behavior.role}']
 
-        self._behavioral_faucet_config = _behavioral_faucet_config
+        self._behavioral_faucet_config = behavioral_faucet_config
 
     def get_behavioral_faucet_config(self):
         """Return behavioral faucet config"""
