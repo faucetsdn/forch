@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x66orch/proto/devices_state.proto\"\xb4\x02\n\x0c\x44\x65vicesState\x12\x45\n\x15\x64\x65vice_mac_placements\x18\x01 \x03(\x0b\x32&.DevicesState.DeviceMacPlacementsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aL\n\x18\x44\x65viceMacPlacementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"P\n\x06\x44\x65vice\x12#\n\tplacement\x18\x01 \x01(\x0b\x32\x10.DevicePlacement\x12!\n\x08\x62\x65havior\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"+\n\x0e\x44\x65viceBehavior\x12\x0b\n\x03vid\x18\x01 \x01(\x05\x12\x0c\n\x04role\x18\x02 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x1f\x66orch/proto/devices_state.proto\"\xb4\x02\n\x0c\x44\x65vicesState\x12\x45\n\x15\x64\x65vice_mac_placements\x18\x01 \x03(\x0b\x32&.DevicesState.DeviceMacPlacementsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aL\n\x18\x44\x65viceMacPlacementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"P\n\x06\x44\x65vice\x12#\n\tplacement\x18\x01 \x01(\x0b\x32\x10.DevicePlacement\x12!\n\x08\x62\x65havior\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"/\n\x0e\x44\x65viceBehavior\x12\x0f\n\x07segment\x18\x01 \x01(\t\x12\x0c\n\x04role\x18\x02 \x01(\t\"\x8b\x01\n\x0fSegmentsToVlans\x12@\n\x11segments_to_vlans\x18\x01 \x03(\x0b\x32%.SegmentsToVlans.SegmentsToVlansEntry\x1a\x36\n\x14SegmentsToVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x62\x06proto3')
 )
 
 
@@ -228,9 +228,9 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='vid', full_name='DeviceBehavior.vid', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      name='segment', full_name='DeviceBehavior.segment', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -254,7 +254,75 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=496,
-  serialized_end=539,
+  serialized_end=543,
+)
+
+
+_SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY = _descriptor.Descriptor(
+  name='SegmentsToVlansEntry',
+  full_name='SegmentsToVlans.SegmentsToVlansEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='SegmentsToVlans.SegmentsToVlansEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='SegmentsToVlans.SegmentsToVlansEntry.value', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=631,
+  serialized_end=685,
+)
+
+_SEGMENTSTOVLANS = _descriptor.Descriptor(
+  name='SegmentsToVlans',
+  full_name='SegmentsToVlans',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='segments_to_vlans', full_name='SegmentsToVlans.segments_to_vlans', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=546,
+  serialized_end=685,
 )
 
 _DEVICESSTATE_DEVICEMACPLACEMENTSENTRY.fields_by_name['value'].message_type = _DEVICEPLACEMENT
@@ -265,10 +333,13 @@ _DEVICESSTATE.fields_by_name['device_mac_placements'].message_type = _DEVICESSTA
 _DEVICESSTATE.fields_by_name['device_mac_behaviors'].message_type = _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY
 _DEVICE.fields_by_name['placement'].message_type = _DEVICEPLACEMENT
 _DEVICE.fields_by_name['behavior'].message_type = _DEVICEBEHAVIOR
+_SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY.containing_type = _SEGMENTSTOVLANS
+_SEGMENTSTOVLANS.fields_by_name['segments_to_vlans'].message_type = _SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY
 DESCRIPTOR.message_types_by_name['DevicesState'] = _DEVICESSTATE
 DESCRIPTOR.message_types_by_name['Device'] = _DEVICE
 DESCRIPTOR.message_types_by_name['DevicePlacement'] = _DEVICEPLACEMENT
 DESCRIPTOR.message_types_by_name['DeviceBehavior'] = _DEVICEBEHAVIOR
+DESCRIPTOR.message_types_by_name['SegmentsToVlans'] = _SEGMENTSTOVLANS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 DevicesState = _reflection.GeneratedProtocolMessageType('DevicesState', (_message.Message,), dict(
@@ -315,7 +386,23 @@ DeviceBehavior = _reflection.GeneratedProtocolMessageType('DeviceBehavior', (_me
   ))
 _sym_db.RegisterMessage(DeviceBehavior)
 
+SegmentsToVlans = _reflection.GeneratedProtocolMessageType('SegmentsToVlans', (_message.Message,), dict(
+
+  SegmentsToVlansEntry = _reflection.GeneratedProtocolMessageType('SegmentsToVlansEntry', (_message.Message,), dict(
+    DESCRIPTOR = _SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY,
+    __module__ = 'forch.proto.devices_state_pb2'
+    # @@protoc_insertion_point(class_scope:SegmentsToVlans.SegmentsToVlansEntry)
+    ))
+  ,
+  DESCRIPTOR = _SEGMENTSTOVLANS,
+  __module__ = 'forch.proto.devices_state_pb2'
+  # @@protoc_insertion_point(class_scope:SegmentsToVlans)
+  ))
+_sym_db.RegisterMessage(SegmentsToVlans)
+_sym_db.RegisterMessage(SegmentsToVlans.SegmentsToVlansEntry)
+
 
 _DEVICESSTATE_DEVICEMACPLACEMENTSENTRY._options = None
 _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY._options = None
+_SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

@@ -24,17 +24,17 @@
     {
       "9a:02:57:1e:8f:01":
         {
-          vid: 200,
+          segment: INFRA,
           role: "red",
         },
       "9a:02:57:1e:8f:02":
         {
-          vid: 300,
+          segment: BOS,
           role: "green",
         },
       "9a:02:57:1e:8f:03":
         {
-          vid: 300,
+          segment: BOS,
           role: "yellow"
         }
     }
