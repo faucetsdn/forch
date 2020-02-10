@@ -1,26 +1,26 @@
 syntax = "proto3";
 
 message DevicesState {
-    map<string, DevicePlacement> device_mac_placements = 1;
-    map<string, DeviceBehavior> device_mac_behaviors = 2;
+  map<string, DevicePlacement> device_mac_placements = 1;
+  map<string, DeviceBehavior> device_mac_behaviors = 2;
 }
 
 message Device {
-    DevicePlacement placement = 1;
-    DeviceBehavior behavior = 2;
+  DevicePlacement placement = 1;
+  DeviceBehavior behavior = 2;
 }
 
 message DevicePlacement {
-    string switch = 1;
-    int32 port = 2;
-    bool connected = 3;
+  string switch = 1;
+  int32 port = 2;
+  bool connected = 3;
 }
 
 message DeviceBehavior {
-    string segment = 1;
-    string role = 2;
+  string segment = 1;
+  string role = 2;
 }
 
 message SegmentsToVlans {
-    map<string, int32> segments_to_vlans = 1;
+  map<string, int32> segments_to_vlans = 1;
 }

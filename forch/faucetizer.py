@@ -24,8 +24,6 @@ class Faucetizer:
         self._structural_faucet_config = structural_faucet_config
         self._behavioral_faucet_config = None
         self._lock = threading.Lock()
-        print(self._structural_faucet_config)
-        print(self._segments_to_vlans)
 
     def process_device_placement(self, eth_src, placement):
         """Process device placement"""
@@ -134,9 +132,9 @@ def parse_args(raw_args):
     parser.add_argument('-g', '--segments-vlans', type=str, default='segments-to-vlans.yaml',
                         help='segments to vlans mapping input file')
     parser.add_argument('-c', '--config-input', type=str, default='faucet.yaml',
-                        help='faucet base config input')
+                        help='structural faucet config input')
     parser.add_argument('-o', '--output', type=str, default='faucet.yaml',
-                        help='faucet orchestration config output')
+                        help='behavioral faucet config output')
     return parser.parse_args(raw_args)
 
 
