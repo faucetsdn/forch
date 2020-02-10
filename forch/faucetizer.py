@@ -22,7 +22,7 @@ class Faucetizer:
     def __init__(self, structural_faucet_config):
         self._devices = {}
         self._structural_faucet_config = structural_faucet_config
-        self._dynamic_faucet_config = None
+        self._behavioral_faucet_config = None
         self._lock = threading.Lock()
 
     def process_device_placement(self, eth_src, placement):
@@ -49,10 +49,10 @@ class Faucetizer:
         if not self._structural_faucet_config:
             raise Exception("Structural faucet configuration not provided")
 
-        dynamic_faucet_config = copy.deepcopy(self._structural_faucet_config)
+        behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
         for mac, device in self._devices.items():
             if device.placement.switch and device.behavior.vid:
-                switch_cfg = dynamic_faucet_config.get('dps', {}).get(device.placement.switch, {})
+                switch_cfg = behavioral_faucet_config.get('dps', {}).get(device.placement.switch, {})
                 port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
 
                 if not port_cfg:
@@ -64,13 +64,13 @@ class Faucetizer:
                 if device.behavior.role:
                     port_cfg['acls_in'] = [f'role_{device.behavior.role}']
 
-        self._dynamic_faucet_config = dynamic_faucet_config
+        self._behavioral_faucet_config = _behavioral_faucet_config
 
-    def get_dynamic_faucet_config(self):
-        """Return dynamic faucet config"""
+    def get_behavioral_faucet_config(self):
+        """Return behavioral faucet config"""
         with self._lock:
             self._faucetize()
-            return self._dynamic_faucet_config
+            return self._behavioral_faucet_config
 
 
 def load_devices_state(file):
@@ -102,11 +102,11 @@ def update_structural_config(faucetizer: Faucetizer, file):
         faucetizer.process_faucet_config(structural_config)
 
 
-def write_dynamic_config(faucetizer: Faucetizer, file):
-    """Get dynamic config from faucetizer and write to file"""
-    dynamic_config = faucetizer.get_dynamic_faucet_config()
-    with open(file, 'w') as dynamic_config_file:
-        yaml.dump(dynamic_config, dynamic_config_file)
+def write_behavioral_config(faucetizer: Faucetizer, file):
+    """Get behavioral config from faucetizer and write to file"""
+    behavioral_config = faucetizer.get_behavioral_faucet_config()
+    with open(file, 'w') as behavioral_config_file:
+        yaml.dump(behavioral_config, behavioral_config_file)
 
 
 def parse_args(raw_args):
@@ -138,5 +138,5 @@ if __name__ == '__main__':
     process_devices_state(FAUCETIZER, DEVICES_STATE)
 
     OUTPUT_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
-    write_dynamic_config(FAUCETIZER, OUTPUT_FILE)
+    write_behavioral_config(FAUCETIZER, OUTPUT_FILE)
     LOGGER.info('Config wrote to %s', OUTPUT_FILE)

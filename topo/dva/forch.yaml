@@ -6,7 +6,7 @@ site:
       fqdn: localhost.n
       port: 9020
 orchestration:
-    dynamic_config_file: faucet_dynamic.yaml
+    behavioral_config_file: faucet_dynamic.yaml
     static_device_placement: placement.yaml
     static_device_behavior: behaviors_block-yellow.yaml
 radius_info:
