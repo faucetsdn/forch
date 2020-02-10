@@ -39,6 +39,7 @@ LOGGER = logging.getLogger('forch')
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
+_SEGMENTS_VLAN_DEFAULT = 'segments_to_vlans.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
 
@@ -159,8 +160,10 @@ class Forchestrator:
         with open(structural_config_path) as file:
             structural_config = yaml.safe_load(file)
 
-        segments_vlans_file = self._config.get('orchestration', {}).get('segments_vlans_file')
+        segments_vlans_file = self._config.get('orchestration', {}).get(
+            'segments_vlans_file', _SEGMENTS_VLAN_DEFAULT)
         segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
+        LOGGER.info('Loading segment to vlan mappings')
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
         self._faucetizer = faucetizer.Faucetizer(structural_config, segments_to_vlans)

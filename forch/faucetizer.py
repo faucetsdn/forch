@@ -102,9 +102,7 @@ def process_devices_state(faucetizer: Faucetizer, devices_state: DevicesState):
 
 def load_segments_to_vlans(file):
     """Load segments to vlans mapping from file"""
-    LOGGER.info('Loading segments to vlans from file %s', file)
     segments_to_vlans = yaml_proto(file, SegmentsToVlans)
-    LOGGER.info('Loaded %d mappings', len(segments_to_vlans.segments_to_vlans))
     return segments_to_vlans
 
 
@@ -154,6 +152,8 @@ if __name__ == '__main__':
 
     SEGMENTS_VLANS_FILE = os.path.join(FORCH_BASE_DIR, ARGS.segments_vlans)
     SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
+    LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
+
     FAUCETIZER = Faucetizer(STRUCTURAL_CONFIG, SEGMENTS_TO_VLANS.segments_to_vlans)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
