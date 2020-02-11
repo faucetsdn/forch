@@ -20,14 +20,14 @@ AUTH_FILE_NAME = 'auth.yaml'
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, radius_ip, radius_port, radius_secret):
+    def __init__(self, radius_ip, radius_port, radius_secret, auth_callback=None):
         self.auth_map = self._get_auth_map()
         self.radius_query = None
         if radius_ip and radius_port and radius_secret:
             Socket = collections.namedtuple(
                 'Socket', 'listen_ip, listen_port, server_ip, server_port')
             socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
-            self.radius_query = RadiusQuery(socket_info, radius_secret)
+            self.radius_query = RadiusQuery(socket_info, radius_secret, auth_callback)
             threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
 

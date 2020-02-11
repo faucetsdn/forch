@@ -32,7 +32,7 @@ from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
-from forch.proto.devices_state_pb2 import DevicesState
+from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
 
 LOGGER = logging.getLogger('forch')
 
@@ -113,7 +113,7 @@ class Forchestrator:
                            Radius IP: %s; Radius port: %s Secret present: %s',
                            radius_ip, radius_port, bool(secret))
             raise ConfigError
-        self._authenticator = Authenticator(radius_ip, radius_port, secret)
+        self._authenticator = Authenticator(radius_ip, radius_port, secret, self.handle_auth_result)
         LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
                     radius_ip, radius_port)
 
@@ -192,6 +192,11 @@ class Forchestrator:
         """Function interface of processing device behavior"""
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior)
+
+    def handle_auth_result(self, mac, segment, role):
+        """Method passed as callback to authenticator to forward auth results"""
+        device_behavior = DeviceBehavior(segment=segment, role=role)
+        self.process_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
