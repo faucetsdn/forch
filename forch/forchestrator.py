@@ -70,7 +70,7 @@ class Forchestrator:
     def initialize(self):
         """Initialize forchestrator instance"""
         self._faucet_collector = FaucetStateCollector()
-        self._faucet_collector.add_placement_callback(self.process_device_placement)
+        self._faucet_collector.set_placement_callback(self.process_device_placement)
         self._local_collector = LocalStateCollector(
             self._config.get('process'), self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()

@@ -1023,6 +1023,6 @@ class FaucetStateCollector:
                 return port
         return None
 
-    def add_placement_callback(self, callback):
+    def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
         self._placement_callback = callback
