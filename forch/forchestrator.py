@@ -16,17 +16,17 @@ from forch.proto import faucet_event_pb2 as FaucetEvent
 from faucet import config_parser
 
 import forch.faucet_event_client
+import forch.faucetizer as faucetizer
 import forch.http_server
 
 from forch.authenticator import Authenticator
-from forch.utils import yaml_proto, configure_logging, ConfigError
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-import forch.faucetizer as faucetizer
+from forch.utils import configure_logging, yaml_proto, ConfigError
 
 from forch.__version__ import __version__
 
@@ -39,6 +39,7 @@ LOGGER = logging.getLogger('forch')
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
+_SEGMENTS_VLAN_DEFAULT = 'segments_to_vlans.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
 
@@ -158,7 +159,14 @@ class Forchestrator:
         LOGGER.info('Loading structural config from %s', structural_config_path)
         with open(structural_config_path) as file:
             structural_config = yaml.safe_load(file)
-            self._faucetizer = faucetizer.Faucetizer(structural_config)
+
+        segments_vlans_file = self._config.get('orchestration', {}).get(
+            'segments_vlans_file', _SEGMENTS_VLAN_DEFAULT)
+        segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
+        LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
+        segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
+
+        self._faucetizer = faucetizer.Faucetizer(structural_config, segments_to_vlans)
 
         interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
         self._faucetize_scheduler = HeartbeatScheduler(interval)

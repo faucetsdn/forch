@@ -365,6 +365,14 @@
                   <a href="#DevicesState.DeviceMacPlacementsEntry"><span class="badge">M</span>DevicesState.DeviceMacPlacementsEntry</a>
                 </li>
               
+                <li>
+                  <a href="#SegmentsToVlans"><span class="badge">M</span>SegmentsToVlans</a>
+                </li>
+              
+                <li>
+                  <a href="#SegmentsToVlans.SegmentsToVlansEntry"><span class="badge">M</span>SegmentsToVlans.SegmentsToVlansEntry</a>
+                </li>
+              
               
               
               
@@ -1766,8 +1774,8 @@
             <tbody>
               
                 <tr>
-                  <td>vid</td>
-                  <td><a href="#int32">int32</a></td>
+                  <td>segment</td>
+                  <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -1906,6 +1914,61 @@
                 <tr>
                   <td>value</td>
                   <td><a href="#DevicePlacement">DevicePlacement</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SegmentsToVlans">SegmentsToVlans</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>segments_to_vlans</td>
+                  <td><a href="#SegmentsToVlans.SegmentsToVlansEntry">SegmentsToVlans.SegmentsToVlansEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SegmentsToVlans.SegmentsToVlansEntry">SegmentsToVlans.SegmentsToVlansEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>

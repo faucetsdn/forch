@@ -11,16 +11,16 @@ import yaml
 from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
-from forch.proto.devices_state_pb2 import DevicesState
-from forch.proto.devices_state_pb2 import Device
+from forch.proto.devices_state_pb2 import DevicesState, Device, SegmentsToVlans
 
 LOGGER = logging.getLogger('faucetizer')
 
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
-    def __init__(self, structural_faucet_config):
+    def __init__(self, structural_faucet_config, segments_to_vlans):
         self._devices = {}
+        self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = structural_faucet_config
         self._behavioral_faucet_config = None
         self._lock = threading.Lock()
@@ -51,7 +51,7 @@ class Faucetizer:
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
         for mac, device in self._devices.items():
-            if device.placement.switch and device.behavior.vid:
+            if device.placement.switch and device.behavior.segment:
                 switch_cfg = behavioral_faucet_config.get('dps', {}).get(
                     device.placement.switch, {})
                 port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
@@ -61,7 +61,13 @@ class Faucetizer:
                                    device.placement.switch, device.placement.port)
                     continue
 
-                port_cfg['native_vlan'] = device.behavior.vid
+                vid = self._segments_to_vlans.get(device.behavior.segment)
+                if not vid:
+                    LOGGER.warning('Device segment does not have a matching vlan: %s, %s',
+                                   mac, device.behavior.segment)
+                    continue
+
+                port_cfg['native_vlan'] = vid
                 if device.behavior.role:
                     port_cfg['acls_in'] = [f'role_{device.behavior.role}']
 
@@ -90,6 +96,12 @@ def process_devices_state(faucetizer: Faucetizer, devices_state: DevicesState):
         faucetizer.process_device_behavior(mac, device_behavor)
 
 
+def load_segments_to_vlans(file):
+    """Load segments to vlans mapping from file"""
+    segments_to_vlans = yaml_proto(file, SegmentsToVlans)
+    return segments_to_vlans
+
+
 def load_faucet_config(file):
     """Load network state file"""
     with open(file) as config_file:
@@ -113,12 +125,14 @@ def write_behavioral_config(faucetizer: Faucetizer, file):
 def parse_args(raw_args):
     """Parse sys args"""
     parser = argparse.ArgumentParser(prog='faucetizer', description='faucetizer')
-    parser.add_argument('-s', '--state-input', type=str, default='network_state.yaml',
-                        help='network state input')
+    parser.add_argument('-s', '--state-input', type=str, default='devices_state.yaml',
+                        help='devices state input')
+    parser.add_argument('-g', '--segments-vlans', type=str, default='segments-to-vlans.yaml',
+                        help='segments to vlans mapping input file')
     parser.add_argument('-c', '--config-input', type=str, default='faucet.yaml',
-                        help='faucet base config input')
+                        help='structural faucet config input')
     parser.add_argument('-o', '--output', type=str, default='faucet.yaml',
-                        help='faucet orchestration config output')
+                        help='behavioral faucet config output')
     return parser.parse_args(raw_args)
 
 
@@ -132,7 +146,11 @@ if __name__ == '__main__':
     STRUCTURAL_CONFIG = load_faucet_config(STRUCTURAL_CONFIG_FILE)
     LOGGER.info('Loaded structural faucet config from %s', STRUCTURAL_CONFIG_FILE)
 
-    FAUCETIZER = Faucetizer(STRUCTURAL_CONFIG)
+    SEGMENTS_VLANS_FILE = os.path.join(FORCH_BASE_DIR, ARGS.segments_vlans)
+    SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
+    LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
+
+    FAUCETIZER = Faucetizer(STRUCTURAL_CONFIG, SEGMENTS_TO_VLANS.segments_to_vlans)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)

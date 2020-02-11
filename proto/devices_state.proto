@@ -6,8 +6,8 @@ message DevicesState {
 }
 
 message Device {
-    DevicePlacement placement = 1;
-    DeviceBehavior behavior = 2;
+  DevicePlacement placement = 1;
+  DeviceBehavior behavior = 2;
 }
 
 message DevicePlacement {
@@ -17,6 +17,10 @@ message DevicePlacement {
 }
 
 message DeviceBehavior {
-  int32 vid = 1;
+  string segment = 1;
   string role = 2;
+}
+
+message SegmentsToVlans {
+  map<string, int32> segments_to_vlans = 1;
 }
