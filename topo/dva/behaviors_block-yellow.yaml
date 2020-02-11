@@ -1,16 +1,10 @@
-{
-  device_mac_behaviors: {
-      "9a:02:57:1e:8f:01": {
-          vid: 200,
-          role: "red",
-        },
-      "9a:02:57:1e:8f:02": {
-          vid: 300,
-          role: "green",
-        },
-      "9a:02:57:1e:8f:03": {
-          vid: 300,
-          role: "yellow"
-        }
-    }
-}
+device_mac_behaviors:
+  "9a:02:57:1e:8f:01":
+    segment: INFRA
+    role: red
+  "9a:02:57:1e:8f:02":
+    segment: BOS
+    role: green
+  "9a:02:57:1e:8f:03":
+    segment: BOS
+    role: yellow
