@@ -212,6 +212,8 @@ class Forchestrator:
             (FaucetEvent.PortChange, fcoll.process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
+            (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
+                event.timestamp, event.dp_name, event.port_no, event.eth_src)),
         ])
 
     def _restore_states(self):

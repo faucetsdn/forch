@@ -824,6 +824,13 @@ class FaucetStateCollector:
                 self._placement_callback(mac, devices_placement)
 
     @_dump_states
+    # pylint: disable=too-many-arguments
+    def process_port_expire(self, timestamp, name, port, mac):
+        """process port learn event"""
+        with self.lock:
+            LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
+
+    @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
         """process config change event"""
         with self.lock:
