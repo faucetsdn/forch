@@ -15,9 +15,10 @@ RADIUS_HEADER_LENGTH = 1 + 1 + 2 + 16
 
 class RadiusQuery:
     """Maintains socket information and sends out and receives requests form RADIUS server"""
-    def __init__(self, socket_info, radius_secret):
+    def __init__(self, socket_info, radius_secret, auth_callback):
         self.next_radius_id = 0
         self._packet_id_to_mac = {}
+        self.auth_callback = auth_callback
         self.packet_id_to_req_authenticator = {}
         self.running = True
         # TODO: Find better way to handle secret
