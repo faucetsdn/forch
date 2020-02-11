@@ -51,7 +51,7 @@ class Faucetizer:
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
         for mac, device in self._devices.items():
-            if device.placement.switch and device.behavior.vid:
+            if device.placement.switch and device.behavior.segment:
                 switch_cfg = behavioral_faucet_config.get('dps', {}).get(
                     device.placement.switch, {})
                 port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
