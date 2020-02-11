@@ -113,7 +113,7 @@ class Forchestrator:
                            Radius IP: %s; Radius port: %s Secret present: %s',
                            radius_ip, radius_port, bool(secret))
             raise ConfigError
-        self._authenticator = Authenticator(radius_ip, radius_port, secret, self.process_auth_result)
+        self._authenticator = Authenticator(radius_ip, radius_port, secret, self.handle_auth_result)
         LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
                     radius_ip, radius_port)
 
@@ -193,7 +193,7 @@ class Forchestrator:
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior)
 
-    def process_auth_result(self, mac, segment, role):
+    def handle_auth_result(self, mac, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         device_behavior = DeviceBehavior(segment=segment, role=role)
         self.process_device_behavior(mac, device_behavior)
