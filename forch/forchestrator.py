@@ -97,12 +97,13 @@ class Forchestrator:
         if self._faucetizer:
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
 
-        # wait for faucet to load config
         while True:
-            time.sleep(1)
-            _, _, varz_config_error = self._get_varz_config()
-            if not varz_config_error:
+            time.sleep(10)
+            try:
+                _, _, varz_config_error = self._get_varz_config()
                 break
+            except Exception as e:
+                LOGGER.error(f'Waiting for varz config: {e}')
 
         self._register_handlers()
 
@@ -231,6 +232,9 @@ class Forchestrator:
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
         varz_config_error = varz_hash_info.samples[0].labels['error']
 
+        if varz_config_error:
+            raise Exception(f'Varz config error: {varz_config_error}')
+
         return metrics, varz_config_hashes, varz_config_error
 
     def _restore_states(self):
@@ -241,8 +245,6 @@ class Forchestrator:
 
         # Restore config first before restoring all state from varz.
         metrics, varz_config_hashes, varz_config_error = self._get_varz_config()
-        if varz_config_error:
-            raise Exception(f'Varz config error: {varz_config_error}')
         self._restore_faucet_config(time.time(), varz_config_hashes)
 
         event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
