@@ -825,7 +825,7 @@ class FaucetStateCollector:
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
-        """process port learn event"""
+        """process port expire event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
             if not self.learned_macs.pop(mac, None):
