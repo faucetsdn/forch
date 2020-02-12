@@ -35,8 +35,6 @@ function simple_ping {
     tcpdump -r $OUT_DIR/t1sw2-eth28.pcap | head
     echo t1sw1 cross pcap
     tcpdump -r $OUT_DIR/t1sw1-eth6.pcap | head
-    echo t1sw1 ovs flows
-    ovs-ofctl dump-flows t1sw1
 }
 
 function multi_ping {
