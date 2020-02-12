@@ -16,14 +16,14 @@ function simple_ping {
     sudo timeout 3s tcpdump -lw $OUT_DIR/t1sw2-eth28.pcap -i t1sw2-eth28 &
     sudo timeout 3s tcpdump -lw $OUT_DIR/t1sw1-eth6.pcap -i t1sw1-eth6 &
     sleep 0.5
-    ping=`docker exec forch-faux-1 ping -q -c 2 192.168.1.0 | fgrep packets`
-    echo Base ping results $ping
-    ping=${ping%received,*}
+    ping_base=`docker exec forch-faux-1 ping -q -c 2 192.168.1.0 | fgrep packets`
+    ping=${ping_base%received,*}
     sleep 2.5
     sw1=`tcpdump -r $OUT_DIR/faux-1.pcap | wc -l`
     sw2=`tcpdump -r $OUT_DIR/t1sw2-eth28.pcap | wc -l`
     sw3=`tcpdump -r $OUT_DIR/t1sw1-eth6.pcap | wc -l`
     pingc=`echo $ping | sed -e 's/, time.*//'`
+    echo base $label $sw1 $sw2 $sw3 $ping_base
     echo ping $label \
          $((sw1 > 3)) $((sw1 < 10)) \
          $((sw2 > 0)) $((sw2 < 16)) \
@@ -35,6 +35,8 @@ function simple_ping {
     tcpdump -r $OUT_DIR/t1sw2-eth28.pcap | head
     echo t1sw1 cross pcap
     tcpdump -r $OUT_DIR/t1sw1-eth6.pcap | head
+    echo t1sw1 ovs flows
+    ovs-ofctl dump-flows t1sw1
 }
 
 function multi_ping {

@@ -59,23 +59,16 @@ add_link t1sw2 9 t2sw1 52
 add_link t1sw2 10 t2sw2 52
 add_link t1sw2 11 t2sw3 52
 
-if [ $mode == bond ]; then
-    bondif=bond
-    sudo ip link del $bondif || true
-    echo Setting up $bondif interface for $upstream1 and $upstream2
-    sudo ip link add $bondif type bond mode 802.3ad
-    sudo ip link set $bondif up
-    sudo ip link set $upstream1 master $bondif
-    sudo ip link set $upstream2 master $bondif
-    upstream1=$bondif
-    upstream2=
-fi
+bondif=bond
+sudo ip link del $bondif || true
+echo Setting up $bondif interface for $upstream1 and $upstream2
+sudo ip link add $bondif type bond mode 802.3ad
+sudo ip link set $bondif up
+sudo ip link set $upstream1 master $bondif
+sudo ip link set $upstream2 master $bondif
 
 echo Connecting corp bridge
-add_iface corp 10 $upstream1
-if [ -n "$upstream2" ]; then
-    add_iface corp 20 $upstream2
-fi
+add_iface corp 10 bond
 
 function add_faux {
     switch=$1
@@ -102,7 +95,7 @@ fi
 echo Starting faucet instances...
 sudo rm -rf inst/
 mkdir -p inst/forch-faucet-corp
-cp etc/corp_$mode.yaml inst/forch-faucet-corp/faucet.yaml
+cp topo/$mode/corp_conf.yaml inst/forch-faucet-corp/faucet.yaml
 docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet $local corp 6683
