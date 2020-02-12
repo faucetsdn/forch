@@ -224,8 +224,7 @@ class Forchestrator:
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
         ])
 
-    def _get_varz_config(self):
-        metrics = self._varz_collector.get_metrics()
+    def _get_varz_config(self, metrics):
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -238,9 +237,10 @@ class Forchestrator:
         # is important here, need to connect the socket before scraping current state to avoid
         # loss of events inbetween.
         assert self._faucet_events.event_socket_connected, 'restore states without connection'
+        metrics = self._varz_collector.get_metrics()
 
         # Restore config first before restoring all state from varz.
-        varz_config_hashes, varz_config_error = self._get_varz_config()
+        varz_config_hashes, varz_config_error = self._get_varz_config(metrics)
         if varz_config_error:
             raise Exception(f'Varz config error: {varz_config_error}')
         self._restore_faucet_config(time.time(), varz_config_hashes)
