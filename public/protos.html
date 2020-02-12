@@ -401,6 +401,10 @@
                 </li>
               
                 <li>
+                  <a href="#L2Expire"><span class="badge">M</span>L2Expire</a>
+                </li>
+              
+                <li>
                   <a href="#L2Learn"><span class="badge">M</span>L2Learn</a>
                 </li>
               
@@ -2228,6 +2232,65 @@
                   <td><a href="#L2Learn">L2Learn</a></td>
                   <td></td>
                   <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>L2_EXPIRE</td>
+                  <td><a href="#L2Expire">L2Expire</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="L2Expire">L2Expire</h3>
+        <p>Event representing l2 expire</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>timestamp</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>event timestamp </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>datapath name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dp_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>datapath id </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port_no</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>datapath port number </p></td>
+                </tr>
+              
+                <tr>
+                  <td>eth_src</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>eth src MAC </p></td>
                 </tr>
               
             </tbody>

@@ -21,6 +21,7 @@ message FaucetEvent {
     StackTopoChange STACK_TOPO_CHANGE = 8;
     PortChange PORT_CHANGE = 12;
     L2Learn L2_LEARN = 13;
+    L2Expire L2_EXPIRE = 14;
   }
 }
 
@@ -184,4 +185,24 @@ message L2Learn {
 
   // eth src IP
   string l3_src_ip = 6;
+}
+
+/*
+ * Event representing l2 expire
+ */
+message L2Expire {
+  // event timestamp
+  float timestamp = 1;
+
+  // datapath name
+  string dp_name = 2;
+
+  // datapath id
+  string dp_id = 3;
+
+  // datapath port number
+  int32 port_no = 4;
+
+  // eth src MAC
+  string eth_src = 5;
 }
