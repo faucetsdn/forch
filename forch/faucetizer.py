@@ -32,13 +32,16 @@ class Faucetizer:
                 device = self._devices.setdefault(eth_src, Device())
                 device.placement.CopyFrom(placement)
             else:
-                self._devices.pop(placement.eth_src, None)
+                self._devices.pop(eth_src, None)
 
     def process_device_behavior(self, eth_src, behavior):
         """Process device placement"""
         with self._lock:
-            device = self._devices.setdefault(eth_src, Device())
-            device.behavior.CopyFrom(behavior)
+            if behavior.segment:
+                device = self._devices.setdefault(eth_src, Device())
+                device.behavior.CopyFrom(behavior)
+            else:
+                self._devices.pop(eth_src, None)
 
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
