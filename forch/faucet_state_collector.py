@@ -824,21 +824,17 @@ class FaucetStateCollector:
                 self._placement_callback(mac, devices_placement)
 
     @_dump_states
-    # pylint: disable=too-many-arguments
     def process_port_expire(self, timestamp, name, port, mac):
         """process port learn event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
-            if self.learned_macs:
-                entry = self.learned_macs.pop(mac, None)
-                if not entry:
-                    LOGGER.debug('Entry %s doesnt exist in learned macs dict', mac)
-            if name in self.switch_states:
-                learned_macs = self.switch_states[name][LEARNED_MACS]
-                if mac in learned_macs:
-                    learned_macs.remove(mac)
-                else:
-                    LOGGER.debug('Entry %s doesnt exist in learned macs set', mac)
+            if not self.learned_macs.pop(mac, None):
+                LOGGER.debug('Entry %s doesnt exist in learned macs dict', mac)
+            learned_macs = self.switch_states[name][LEARNED_MACS]
+            if mac in learned_macs:
+                learned_macs.remove(mac)
+            else:
+                LOGGER.debug('Entry %s doesnt exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
