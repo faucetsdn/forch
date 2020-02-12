@@ -100,7 +100,7 @@ class Forchestrator:
         # wait for faucet to load config
         while True:
             time.sleep(1)
-            varz_config_hashes, varz_config_error = self._get_varz_config()
+            _, _, varz_config_error = self._get_varz_config()
             if not varz_config_error:
                 break
 
@@ -275,7 +275,7 @@ class Forchestrator:
         LOGGER.info('Entering main event loop...')
         try:
             while self._faucet_events:
-                while not self._faucet_events.event_socket_connected or s:
+                while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
                 self._process_faucet_event()
         except KeyboardInterrupt:
