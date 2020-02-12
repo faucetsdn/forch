@@ -828,13 +828,17 @@ class FaucetStateCollector:
         """process port expire event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
-            if not self.learned_macs.pop(mac, None):
-                LOGGER.debug('Entry %s doesnt exist in learned macs dict', mac)
             learned_macs = self.switch_states[name][LEARNED_MACS]
             if mac in learned_macs:
                 learned_macs.remove(mac)
             else:
-                LOGGER.debug('Entry %s doesnt exist in learned macs set', mac)
+                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
+            is_last_mac_entry = True
+            for switch_state in self.switch_states.values():
+                if LEARNED_MACS in switch_state and mac in switch_state[LEARNED_MACS]:
+                    is_last_mac_entry = False
+            if is_last_mac_entry and not self.learned_macs.pop(mac, None):
+                LOGGER.warning('Entry %s doesnt exist in learned macs dict', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
