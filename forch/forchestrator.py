@@ -100,7 +100,7 @@ class Forchestrator:
         while True:
             time.sleep(10)
             try:
-                _, _, varz_config_error = self._get_varz_config()
+                self._get_varz_config()
                 break
             except Exception as e:
                 LOGGER.error(f'Waiting for varz config: {e}')
