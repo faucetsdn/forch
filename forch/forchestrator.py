@@ -97,6 +97,13 @@ class Forchestrator:
         if self._faucetizer:
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
 
+        # wait for faucet to load config
+        while True:
+            time.sleep(1)
+            varz_config_hashes, varz_config_error = self._get_varz_config()
+            if not varz_config_error:
+                break
+
         self._register_handlers()
 
         self.start()
@@ -169,7 +176,8 @@ class Forchestrator:
         LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
-        self._faucetizer = faucetizer.Faucetizer(structural_config, segments_to_vlans)
+        self._faucetizer = faucetizer.Faucetizer(
+            structural_config, segments_to_vlans.segments_to_vlans)
 
         interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
         self._faucetize_scheduler = HeartbeatScheduler(interval)
@@ -216,17 +224,25 @@ class Forchestrator:
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
         ])
 
+    def _get_varz_config(self):
+        metrics = self._varz_collector.get_metrics()
+        varz_hash_info = metrics['faucet_config_hash_info']
+        assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
+        varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
+        varz_config_error = varz_hash_info.samples[0].labels['error']
+
+        return varz_config_hashes, varz_config_error
+
     def _restore_states(self):
         # Make sure the event socket is connected so there's no loss of information. Ordering
         # is important here, need to connect the socket before scraping current state to avoid
         # loss of events inbetween.
         assert self._faucet_events.event_socket_connected, 'restore states without connection'
-        metrics = self._varz_collector.get_metrics()
 
         # Restore config first before restoring all state from varz.
-        varz_hash_info = metrics['faucet_config_hash_info']
-        assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
-        varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
+        varz_config_hashes, varz_config_error = self._get_varz_config()
+        if varz_config_error:
+            raise Exception(f'Varz config error: {varz_config_error}')
         self._restore_faucet_config(time.time(), varz_config_hashes)
 
         event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
@@ -259,7 +275,7 @@ class Forchestrator:
         LOGGER.info('Entering main event loop...')
         try:
             while self._faucet_events:
-                while not self._faucet_events.event_socket_connected:
+                while not self._faucet_events.event_socket_connected or s:
                     self._faucet_events_connect()
                 self._process_faucet_event()
         except KeyboardInterrupt:
