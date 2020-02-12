@@ -103,7 +103,7 @@ class Forchestrator:
                 self._get_varz_config()
                 break
             except Exception as e:
-                LOGGER.error(f'Waiting for varz config: {e}')
+                LOGGER.error(f'Waiting for varz config: %s', e)
 
         self._register_handlers()
 
@@ -235,7 +235,7 @@ class Forchestrator:
         if varz_config_error:
             raise Exception(f'Varz config error: {varz_config_error}')
 
-        return metrics, varz_config_hashes, varz_config_error
+        return metrics, varz_config_hashes
 
     def _restore_states(self):
         # Make sure the event socket is connected so there's no loss of information. Ordering
@@ -244,7 +244,7 @@ class Forchestrator:
         assert self._faucet_events.event_socket_connected, 'restore states without connection'
 
         # Restore config first before restoring all state from varz.
-        metrics, varz_config_hashes, varz_config_error = self._get_varz_config()
+        metrics, varz_config_hashes = self._get_varz_config()
         self._restore_faucet_config(time.time(), varz_config_hashes)
 
         event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
