@@ -832,13 +832,13 @@ class FaucetStateCollector:
             if self.learned_macs:
                 entry = self.learned_macs.pop(mac, None)
                 if not entry:
-                    LOGGER.info('Entry %s doesnt exist in learned macs dict', mac)
+                    LOGGER.debug('Entry %s doesnt exist in learned macs dict', mac)
             if name in self.switch_states:
                 learned_macs = self.switch_states[name][LEARNED_MACS]
                 if mac in learned_macs:
                     learned_macs.remove(mac)
                 else:
-                    LOGGER.info('Entry %s doesnt exist in learned macs set', mac)
+                    LOGGER.debug('Entry %s doesnt exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
