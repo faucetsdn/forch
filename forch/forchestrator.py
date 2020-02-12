@@ -39,7 +39,7 @@ LOGGER = logging.getLogger('forch')
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
-_SEGMENTS_VLAN_DEFAULT = 'segments_to_vlans.yaml'
+_SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
 
@@ -71,7 +71,7 @@ class Forchestrator:
     def initialize(self):
         """Initialize forchestrator instance"""
         self._faucet_collector = FaucetStateCollector()
-        self._faucet_collector.set_placement_callback(self.process_device_placement)
+        self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._local_collector = LocalStateCollector(
             self._config.get('process'), self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
@@ -94,6 +94,8 @@ class Forchestrator:
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
+        if self._faucetizer:
+            faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
 
         self._register_handlers()
 
@@ -125,7 +127,7 @@ class Forchestrator:
             os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
         device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
         for eth_src, device_placement in device_placement_info.items():
-            self.process_device_placement(eth_src, device_placement)
+            self._process_device_placement(eth_src, device_placement)
 
     def _process_static_device_behavior(self):
         static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
@@ -135,7 +137,7 @@ class Forchestrator:
             os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
         devices_state = faucetizer.load_devices_state(static_behaviors_path)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
-            self.process_device_behavior(mac, device_behavior)
+            self._process_device_behavior(mac, device_behavior)
 
     def _calculate_behavioral_config(self):
         behavioral_config_file = self._config.get('orchestration', {}).get('behavioral_config_file')
@@ -181,14 +183,14 @@ class Forchestrator:
         """If forch is initialized or not"""
         return self._initialized
 
-    def process_device_placement(self, eth_src, device_placement):
+    def _process_device_placement(self, eth_src, device_placement):
         """Call device placement API for faucetizer/authenticator"""
         if self._faucetizer:
             self._faucetizer.process_device_placement(eth_src, device_placement)
         if self._authenticator:
             self._authenticator.process_device_placement(eth_src, device_placement)
 
-    def process_device_behavior(self, mac, device_behavior):
+    def _process_device_behavior(self, mac, device_behavior):
         """Function interface of processing device behavior"""
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior)
@@ -196,7 +198,7 @@ class Forchestrator:
     def handle_auth_result(self, mac, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         device_behavior = DeviceBehavior(segment=segment, role=role)
-        self.process_device_behavior(mac, device_behavior)
+        self._process_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
