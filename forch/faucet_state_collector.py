@@ -832,13 +832,13 @@ class FaucetStateCollector:
             if mac in learned_macs:
                 learned_macs.remove(mac)
             else:
-                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
-            is_last_mac_entry = True
-            for switch_state in self.switch_states.values():
-                if LEARNED_MACS in switch_state and mac in switch_state[LEARNED_MACS]:
-                    is_last_mac_entry = False
-            if is_last_mac_entry and not self.learned_macs.pop(mac, None):
                 LOGGER.warning('Entry %s doesnt exist in learned macs dict', mac)
+            if mac not in self.learned_macs:
+                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
+            else:
+                self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
+                if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
+                    self.learned_macs.pop(mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
