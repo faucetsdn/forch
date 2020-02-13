@@ -137,20 +137,19 @@ class MacAuthBypassStateMachine():
         for transition in self.transitions:
             if transition['trigger'] == trigger:
                 if ('condition' in transition and not transition['condition']()):
-                    LOGGER.info('Conditions not met for transition from  %s to %s for %s',
+                    LOGGER.debug('Conditions not met for transition from  %s to %s for %s',
                                    transition['source'], transition['dest'], transition['trigger'])
                     continue
                 if self.current_state.name == transition['source'] or transition['source'] == '*':
-                    #LOGGER.info('Anurag process_trigger current_state:%s transition:%s', self.current_state.name, transition)
                     self.current_state.exit_state()
                     self.current_state = self.states[transition['dest']]
                     if 'after' in transition:
                         transition['after']()
                     LOGGER.info('Transitioned from  (%s) to (%s) because (%s)',
                                 transition['source'], transition['dest'], transition['trigger'])
-                    #LOGGER.info('Anurag process_trigger current_state:%s', self.current_state.name)
                     self.current_state.enter_state()
                     return
+        LOGGER.info('No matching transition for (%s). State machine in (%s)', trigger, self.current_state.name)
 
     @log_method
     def host_learnt(self):

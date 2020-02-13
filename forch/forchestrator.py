@@ -195,7 +195,7 @@ class Forchestrator:
 
     def handle_auth_result(self, mac, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
-        LOGGER.info('Anurag handle auth result mac %s segment %s role %s', mac, segment, role)
+        LOGGER.info('Got auth reult for mac %s with segment %s and role %s', mac, segment, role)
         device_behavior = DeviceBehavior(segment=segment, role=role)
         self.process_device_behavior(mac, device_behavior)
 

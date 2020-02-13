@@ -48,7 +48,6 @@ class MabAuthSession:
             self.state_machine.host_expired()
 
     def radius_result(self, accept, segment, role):
-        LOGGER.info('Anurag radius_result %s %s %s %s', self.mac, accept, segment, role)
         if accept:
             self.segment = segment
             self.role = role
@@ -57,7 +56,6 @@ class MabAuthSession:
             self.state_machine.received_radius_reject()
 
     def session_result(self, accept):
-        LOGGER.info('Anurag session_result %s %s %s %s', self.mac, accept, self.segment, self.role)
         if not accept:
             self.segment = None
             self.role = None
@@ -123,7 +121,6 @@ class Authenticator:
         """Process device placement info and initiate mab query"""
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
-        LOGGER.info('Anurag process_device_placement sessions:%s mac:%s', self.sessions, src_mac)
         if src_mac not in self.sessions:
             self.sessions[src_mac] = MabAuthSession(
                 src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
@@ -136,14 +133,12 @@ class Authenticator:
         if code == "INVALID_RESP":
             LOGGER.warning("Received invalid response for src_mac: %s", src_mac)
             return
-        LOGGER.info("Anurag process_radius_result sessions %s mac:%s egment:%s role: %s", self.sessions, src_mac, segment, role)
         if src_mac not in self.sessions:
             LOGGER.warning("Session doesn't exist for src_mac:%s", src_mac)
             return
         self.sessions[src_mac].radius_result(code == "ACCEPT", segment, role)
 
     def process_session_result(self, src_mac, segment, role):
-        LOGGER.info('Anurag process_session_result %s %s %s', src_mac, segment, role)
         if self.auth_callback:
             self.auth_callback(src_mac, segment, role)
 
