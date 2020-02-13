@@ -8,7 +8,7 @@ import argparse
 import threading
 import yaml
 
-from forch.simple_mab_state_machine import MacAuthBypassStateMachine
+from forch.mab_state_machine import MacAuthBypassStateMachine
 from forch.radius_query import RadiusQuery
 from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto
