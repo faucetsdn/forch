@@ -11,9 +11,6 @@ class TimeoutStateMachine(Machine):
 class MacAuthBypassStateMachine():
     """Class represents the MAB state machine that handles the MAB for a session"""
 
-    RADIUS_RETRIES = 3
-    RADIUS_RESPONSE_TIMEOUT = 300
-    RADIUS_SESSION_TIMEOUT = 3600
 
     UNAUTH = "Unauthorized"
     REQUEST = "Request sent"
@@ -21,12 +18,12 @@ class MacAuthBypassStateMachine():
     ACCEPT = "Session authorized by RADIUS"
 
     states = [
-        {'name': UNAUTH, 'on_enter': '_reset_retries'},
+        {'name': UNAUTH, 'on_enter': '_handle_reject'},
         {'name': REQUEST, 'on_enter': '_send_mab_request'},
-        {'name': IDLE, 'timeout': RADIUS_RESPONSE_TIMEOUT,
+        {'name': IDLE, 'timeout': 60,
          'on_timeout': '_radius_timeout'},
-        {'name': ACCEPT,
-         'timeout': RADIUS_SESSION_TIMEOUT,
+        {'name': ACCEPT, 'on_enter': '_handle_accept',
+         'timeout': 60,
          'on_timeout': '_auth_session_timeout'}
     ]
 
@@ -41,33 +38,32 @@ class MacAuthBypassStateMachine():
         {'trigger': 'host_expired', 'source': '*', 'dest': UNAUTH}
     ]
 
-    def __init__(self, request_callback,
-                 retries=RADIUS_RETRIES,
-                 resp_timeout=RADIUS_RESPONSE_TIMEOUT,
-                 session_timeout=RADIUS_SESSION_TIMEOUT):
-        self._max_radius_retries = retries
-        self._response_timeout = resp_timeout
-        self._session_timeout = session_timeout
-        self._request_callback = request_callback
-
+    def __init__(self, session):
         self._retries = 0
-
+        self.session = session
         self._machine = TimeoutStateMachine(model=self, states=MacAuthBypassStateMachine.states, transitions=MacAuthBypassStateMachine.transitions, initial=MacAuthBypassStateMachine.UNAUTH, queued=True)
-        self._machine.get_state(MacAuthBypassStateMachine.IDLE).timeout = self._response_timeout
-        self._machine.get_state(MacAuthBypassStateMachine.ACCEPT).timeout = self._session_timeout
+        self._machine.get_state(MacAuthBypassStateMachine.IDLE).timeout = self.session.response_timeout
+        self._machine.get_state(MacAuthBypassStateMachine.ACCEPT).timeout = self.session.session_timeout
 
         logging.basicConfig(level=logging.INFO)
         logging.getLogger('transitions').setLevel(logging.INFO)
+
+    def _handle_accept(self):
+        self.session.session_result(accept=True)
+
+    def _handle_reject(self):
+        self.session.session_result(accept=False)
+        self._reset_retries()
 
     def _reset_retries(self):
         self._retries = 0
 
     def _send_mab_request(self):
-        self._request_callback()
+        self.session.send_mab_request()
         self._sent_mab_request()
 
     def _too_many_retries(self):
-        return self._retries >= self._max_radius_retries
+        return self._retries >= self.session.max_radius_retries
 
     def _increment_retries(self):
         self._retries += 1

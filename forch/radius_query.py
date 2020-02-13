@@ -30,7 +30,7 @@ class RadiusQuery:
     def get_mac_from_packet_id(self, packet_id):
         """Returns MAC addr for stored packet ID"""
         if packet_id in self._packet_id_to_mac:
-            return self._packet_id_to_mac[packet_id]
+            return self._packet_id_to_mac[packet_id].get('src_mac')
         LOGGER.warning("Unrecognised packet ID")
         return None
 
@@ -58,7 +58,7 @@ class RadiusQuery:
                 segment = attr.data().decode('utf-8') if attr else None
                 attr = radius.attributes.find('Tunnel-Assignment-ID')
                 role = attr.data().decode('utf-8') if attr else None
-                self.auth_callback(src_mac, segment, role)
+                self.auth_callback(src_mac, code, segment, role)
 
     def send_mab_request(self, src_mac, port_id):
         """Encode and send MAB request for MAC address"""
