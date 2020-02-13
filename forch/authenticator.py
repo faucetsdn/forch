@@ -8,7 +8,7 @@ import argparse
 import threading
 import yaml
 
-from forch.mab_state_machine import MacAuthBypassStateMachine
+from forch.simple_mab_state_machine import MacAuthBypassStateMachine
 from forch.radius_query import RadiusQuery
 from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto
@@ -19,8 +19,8 @@ LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
 
 RADIUS_RETRIES = 3
-RADIUS_RESPONSE_TIMEOUT = 10
-RADIUS_SESSION_TIMEOUT = 30
+RADIUS_RESPONSE_TIMEOUT = 30
+RADIUS_SESSION_TIMEOUT = 3600
 
 
 class MabAuthSession:

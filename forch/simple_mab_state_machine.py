@@ -2,15 +2,12 @@ import logging
 from threading import Timer
 
 LOGGER = logging.getLogger('mabsm')
-FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
-logging.basicConfig(format=FORMAT)
-LOGGER.setLevel(logging.INFO)
 
 def log_method(method):
     """Generate method for logging"""""
     def wrapped(self, *args, **kwargs):
         """Method that gets called for logging"""
-        LOGGER.info('Entering %s' % method.__name__)
+        LOGGER.debug('Entering %s' % method.__name__)
         return method(self, *args, **kwargs)
     return wrapped
 
@@ -63,7 +60,7 @@ class MacAuthBypassStateMachine():
     EXPIRE = "Host expired"
 
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         self._retries = 0
         self.session = session
         self.states = {}
@@ -86,9 +83,10 @@ class MacAuthBypassStateMachine():
     def _initialize_states(self):
         self.states[self.UNAUTH] = State(name=self.UNAUTH, on_enter=self._handle_reject)
         self.states[self.REQUEST] = State(name=self.REQUEST, on_enter=self._send_mab_request)
-        self.states[self.IDLE] = State(name=self.IDLE, timeout=10, on_timeout=self._radius_timeout)
+        self.states[self.IDLE] = State(name=self.IDLE, timeout=self.session.response_timeout,
+                                       on_timeout=self._radius_timeout)
         self.states[self.ACCEPT] = State(name=self.ACCEPT, on_enter=self._handle_accept,
-                                    timeout=20, on_timeout=self._auth_session_timeout)
+                                    timeout=self.session.session_timeout, on_timeout=self._auth_session_timeout)
 
     def _reset_state_machine(self):
         self.retries = 0
@@ -104,12 +102,12 @@ class MacAuthBypassStateMachine():
 
     @log_method
     def _handle_accept(self):
-        #self.session.session_result(accept=True)
+        self.session.session_result(accept=True)
         pass
 
     @log_method
     def _handle_reject(self):
-        #self.session.session_result(accept=False)
+        self.session.session_result(accept=False)
         self._reset_retries()
 
     @log_method
@@ -118,14 +116,14 @@ class MacAuthBypassStateMachine():
 
     @log_method
     def _send_mab_request(self):
-        #self.session.send_mab_request()
+        self.session.send_mab_request()
         self.process_trigger(self.SENT_REQ)
 
     def _too_many_retries(self):
-        return self._retries >= 3 #self.session.max_radius_retries
+        return self._retries >= self.session.max_radius_retries
 
     def _retry_allowed(self):
-        return self._retries < 3 #self.session.max_radius_retries
+        return self._retries < self.session.max_radius_retries
 
     @log_method
     def _increment_retries(self):
