@@ -128,7 +128,6 @@ class Authenticator:
             self.sessions[src_mac] = MabAuthSession(
                 src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
         self.sessions[src_mac].device_change(device_placement.connected)
-        #self.do_mab_request(src_mac, port_id)
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""

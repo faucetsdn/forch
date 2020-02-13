@@ -16,7 +16,6 @@ class State():
         self.on_timeout = [on_timeout] if on_timeout and not isinstance(on_timeout, list) else None
         self.timeout = timeout
 
-
     def enter_state(self):
         """Call state on_enter and timeout callbacks"""
         self.call_callbacks(self.on_enter)
@@ -44,7 +43,6 @@ class State():
 class MacAuthBypassStateMachine():
     """Class represents the MAB state machine that handles the MAB for a session"""
 
-
     UNAUTH = "Unauthorized"
     REQUEST = "Request sent"
     IDLE = "Waiting RADIUS response"
@@ -57,7 +55,6 @@ class MacAuthBypassStateMachine():
     REQ_TIMEOUT = "RADIUS request timeout"
     AUTH_TIMEOUT = "Auth session timed out"
     EXPIRE = "Host expired"
-
 
     def __init__(self, session):
         self._retries = 0
