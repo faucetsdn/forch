@@ -103,7 +103,7 @@ class Forchestrator:
                 self._get_varz_config()
                 break
             except Exception as e:
-                LOGGER.error(f'Waiting for varz config: %s', e)
+                LOGGER.error('Waiting for varz config: %s', e)
 
         self._register_handlers()
 
