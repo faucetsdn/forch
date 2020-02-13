@@ -42,12 +42,14 @@ class MabAuthSession:
         self.query_callback(self.mac, self.port_id)
 
     def device_change(self, connected):
+        """Convey host learn/expire events to state machine"""
         if connected:
             self.state_machine.host_learnt()
         else:
             self.state_machine.host_expired()
 
     def radius_result(self, accept, segment, role):
+        """Convey RADIUS result to state machine"""
         if accept:
             self.segment = segment
             self.role = role
@@ -56,6 +58,7 @@ class MabAuthSession:
             self.state_machine.received_radius_reject()
 
     def session_result(self, accept):
+        """Process state machine result"""
         if not accept:
             self.segment = None
             self.role = None
@@ -129,7 +132,7 @@ class Authenticator:
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
-        LOGGER.info("Received RADIUS result: %s for src_mac:%s",code, src_mac)
+        LOGGER.info("Received RADIUS result: %s for src_mac:%s", code, src_mac)
         if code == "INVALID_RESP":
             LOGGER.warning("Received invalid response for src_mac: %s", src_mac)
             return
@@ -139,6 +142,7 @@ class Authenticator:
         self.sessions[src_mac].radius_result(code == "ACCEPT", segment, role)
 
     def process_session_result(self, src_mac, segment, role):
+        """Process session result"""
         if self.auth_callback:
             self.auth_callback(src_mac, segment, role)
 

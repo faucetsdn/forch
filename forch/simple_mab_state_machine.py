@@ -1,19 +1,14 @@
+"""Module that implements MAB state machine"""
+
 import logging
 from threading import Timer
 
 LOGGER = logging.getLogger('mabsm')
 
-def log_method(method):
-    """Generate method for logging"""""
-    def wrapped(self, *args, **kwargs):
-        """Method that gets called for logging"""
-        LOGGER.debug('Entering %s' % method.__name__)
-        return method(self, *args, **kwargs)
-    return wrapped
-
 
 class State():
     """Represents a state in the state machine"""
+    # pylint: disable=too-many-arguments
     def __init__(self, name, on_enter=None, on_exit=None, timeout=None, on_timeout=None):
         self.name = name
         self.on_enter = [on_enter] if on_enter and not isinstance(on_enter, list) else None
@@ -23,6 +18,7 @@ class State():
 
 
     def enter_state(self):
+        """Call state on_enter and timeout callbacks"""
         self.call_callbacks(self.on_enter)
 
         if self.timeout and self.on_timeout:
@@ -31,14 +27,17 @@ class State():
             timer.start()
 
     def call_callbacks(self, call_list):
+        """Call list of callbacks"""
         if call_list:
             for callback in call_list:
                 callback()
 
     def handle_timeout(self):
+        """Handle timeout"""
         self.call_callbacks(self.on_timeout)
 
     def exit_state(self):
+        """Call on_exit callbacks"""
         self.call_callbacks(self.on_exit)
 
 
@@ -86,35 +85,29 @@ class MacAuthBypassStateMachine():
         self.states[self.IDLE] = State(name=self.IDLE, timeout=self.session.response_timeout,
                                        on_timeout=self._radius_timeout)
         self.states[self.ACCEPT] = State(name=self.ACCEPT, on_enter=self._handle_accept,
-                                    timeout=self.session.session_timeout, on_timeout=self._auth_session_timeout)
+                                         timeout=self.session.session_timeout,
+                                         on_timeout=self._auth_session_timeout)
 
     def _reset_state_machine(self):
-        self.retries = 0
+        self._retries = 0
         self.current_state = self.states[self.UNAUTH]
 
-    @log_method
     def _radius_timeout(self):
         self.process_trigger(self.REQ_TIMEOUT)
 
-    @log_method
     def _auth_session_timeout(self):
         self.process_trigger(self.AUTH_TIMEOUT)
 
-    @log_method
     def _handle_accept(self):
         self.session.session_result(accept=True)
-        pass
 
-    @log_method
     def _handle_reject(self):
         self.session.session_result(accept=False)
         self._reset_retries()
 
-    @log_method
     def _reset_retries(self):
         self._retries = 0
 
-    @log_method
     def _send_mab_request(self):
         self.session.send_mab_request()
         self.process_trigger(self.SENT_REQ)
@@ -125,20 +118,20 @@ class MacAuthBypassStateMachine():
     def _retry_allowed(self):
         return self._retries < self.session.max_radius_retries
 
-    @log_method
     def _increment_retries(self):
         self._retries += 1
 
     def get_state(self):
+        """Return current state"""
         return self.current_state.name
 
-    @log_method
     def process_trigger(self, trigger):
+        """Process trigger"""
         for transition in self.transitions:
             if transition['trigger'] == trigger:
                 if ('condition' in transition and not transition['condition']()):
                     LOGGER.debug('Conditions not met for transition from  %s to %s for %s',
-                                   transition['source'], transition['dest'], transition['trigger'])
+                                 transition['source'], transition['dest'], transition['trigger'])
                     continue
                 if self.current_state.name == transition['source'] or transition['source'] == '*':
                     self.current_state.exit_state()
@@ -149,24 +142,21 @@ class MacAuthBypassStateMachine():
                                 transition['source'], transition['dest'], transition['trigger'])
                     self.current_state.enter_state()
                     return
-        LOGGER.info('No matching transition for (%s). State machine in (%s)', trigger, self.current_state.name)
+        LOGGER.info('No matching transition for (%s). State machine in (%s)',
+                    trigger, self.current_state.name)
 
-    @log_method
     def host_learnt(self):
         """Host learn event"""
         self.process_trigger(self.LEARN)
 
-    @log_method
     def host_expired(self):
         """Host expired"""
         self.process_trigger(self.EXPIRE)
 
-    @log_method
     def received_radius_accept(self):
         """Received RADIUS accept message"""
         self.process_trigger(self.RECV_ACCPT)
 
-    @log_method
     def received_radius_reject(self):
         """Received RADIUS reject message"""
         self.process_trigger(self.RECV_REJ)
