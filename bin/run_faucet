@@ -6,6 +6,7 @@ INSTDIR=$ROOT/inst
 IMAGE=forch/faucet
 PROM_TARGET=9302
 FAUCET_SOCK=faucet_event.sock
+FAUCET_CONFIG=faucet.yaml
 SYSTEM_CONF=system.conf
 LOCAL_CONFIG=local/$SYSTEM_CONF
 
@@ -29,6 +30,11 @@ if [ "$1" == "gauge" ]; then
     IMAGE=forch/gauge
     PROM_TARGET=9303
     FAUCET_SOCK=
+    shift
+fi
+
+if [ "$1" == "dva" ]; then
+    FAUCET_CONFIG=faucet_dynamic.yaml
     shift
 fi
 
@@ -62,6 +68,8 @@ if [ -n "$FAUCET_SOCK" ]; then
     event_sock=/var/log/faucet/$FAUCET_SOCK
 fi
 
+faucet_config=/etc/faucet/$FAUCET_CONFIG
+
 if [ -n "$local" ]; then
     using_faucet=$(cd faucet; git rev-list -n 1 `git describe --dirty`) || using_faucet=dev
     error_label="from local faucet/"
@@ -86,7 +94,8 @@ docker_envs="\
         --env FAUCET_CONFIG_STAT_RELOAD=1 \
         --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
         --env USERID=$(id -u) \
-        --env FAUCET_EVENT_SOCK=$event_sock"
+        --env FAUCET_EVENT_SOCK=$event_sock \
+        --env FAUCET_CONFIG=$faucet_config"
 
 docker_volumes+="\
         -v $INSTDIR:/etc/faucet \
