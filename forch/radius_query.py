@@ -12,6 +12,9 @@ LOGGER = logging.getLogger('rquery')
 
 RADIUS_HEADER_LENGTH = 1 + 1 + 2 + 16
 
+ACCEPT = "ACCEPT"
+REJECT = "REJECT"
+INVALID_RESP = "INVALID_RESPONSE"
 
 class RadiusQuery:
     """Maintains socket information and sends out and receives requests form RADIUS server"""
@@ -45,12 +48,12 @@ class RadiusQuery:
                 LOGGER.warning("exception: %s. message: %s", packed_message, exception)
                 raise
             # TODO: protobuf for received radius message
-            code = "INVALID_RESP"
+            code = INVALID_RESP
             if radius.CODE == 2:
-                code = "ACCEPT"
+                code = ACCEPT
             elif radius.CODE == 3:
-                code = "REJECT"
-            src_mac = self.get_mac_from_packet_id(radius.packet_id)
+                code = REJECT
+            src_mac = self.get_mac_from_packet_id(radius.packet_id)['src_mac']
             LOGGER.info("Received RADIUS msg: Code:%s src:%s attributes:%s",
                         code, src_mac, radius.attributes.to_dict())
             if self.auth_callback:
@@ -58,7 +61,7 @@ class RadiusQuery:
                 segment = attr.data().decode('utf-8') if attr else None
                 attr = radius.attributes.find('Tunnel-Assignment-ID')
                 role = attr.data().decode('utf-8') if attr else None
-                self.auth_callback(src_mac, segment, role)
+                self.auth_callback(src_mac, code, segment, role)
 
     def send_mab_request(self, src_mac, port_id):
         """Encode and send MAB request for MAC address"""
