@@ -5,7 +5,6 @@ cd $ROOT
 local=
 devices=
 skip_conn_check=
-run_dva=
 
 if [ "$1" == "local" ]; then
     local=local
@@ -44,11 +43,8 @@ add_br t2sw1 147058200627 6001 7001
 add_br t2sw2 1296 6001 7001
 add_br t2sw3 1297 6001 7001
 
-upstream1=corp-eth10
-upstream2=corp-eth20
-
-add_oeth t1sw1 28 $upstream1
-add_oeth t1sw2 28 $upstream2
+add_oeth t1sw1 28 corp-eth10
+add_oeth t1sw2 28 corp-eth20
 
 add_link t1sw1 6 t1sw2 6
 
@@ -60,20 +56,17 @@ add_link t1sw2 9 t2sw1 52
 add_link t1sw2 10 t2sw2 52
 add_link t1sw2 11 t2sw3 52
 
-bondif=bond
-sudo ip link del $bondif || true
-echo Setting up $bondif interface for $upstream1 and $upstream2
-sudo ip link add $bondif type bond mode 802.3ad
-sudo ip link set $bondif up
-sudo ip link set $upstream1 master $bondif
-sudo ip link set $upstream2 master $bondif
+sudo ip link del bond || true
+echo Setting up bond interface...
+sudo ip link add bond type bond mode 802.3ad
+sudo ip link set bond up
+sudo ip link set corp-eth10 master bond
+sudo ip link set corp-eth20 master bond
+add_iface corp 10 bond
 
 if [ $mode == dva ]; then
     run_dva=dva
 fi
-
-echo Connecting corp bridge
-add_iface corp 10 bond
 
 function add_faux {
     switch=$1
@@ -110,8 +103,8 @@ for index in 1; do
     mkdir -p inst/$controller/
     cp topo/$mode/*.yaml inst/$controller/
     docker kill $controller || true
-    bin/run_faucet $local $run_dva $index $((6000 + index)) $((8000 + index))
-    bin/run_faucet $local gauge $run_dva $index $((7000 + index)) $((9000 + index))
+    bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+    bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
 echo Letting system settle...
