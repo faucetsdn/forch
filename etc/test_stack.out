@@ -55,6 +55,7 @@ null
 "broken"
 ""
 0
+2
 @list_hosts-solid
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
@@ -99,6 +100,7 @@ null
 "healthy"
 "sleep 50.3231"
 3
+2
 @list_hosts-healthy
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
@@ -182,6 +184,7 @@ null
 "healthy"
 "sleep 50.3231"
 3
+4
 @list_hosts-twod
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
@@ -248,6 +251,7 @@ null
 "broken"
 ""
 0
+5
 @list_hosts-broken
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
@@ -311,6 +315,7 @@ null
 "broken"
 ""
 0
+6
 @list_hosts-restored
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"
@@ -355,6 +360,7 @@ null
 "broken"
 ""
 0
+7
 @list_hosts-reset
 "http://127.0.0.1:9019/?list_hosts?eth_src=9a:02:57:1e:8f:01"
 "http://127.0.0.1:9019/?host_path?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02"

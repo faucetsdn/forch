@@ -72,8 +72,8 @@ else
 
     expected_faucet=$(cat etc/FAUCET_VERSION)
 
-    using_hash=`git rev-parse $using_faucet`
-    expected_hash=`git rev-parse $expected_faucet`
+    using_hash=`cd faucet; git rev-parse $using_faucet`
+    expected_hash=`cd faucet; git rev-parse $expected_faucet`
     if [ "$using_hash" != "$expected_hash" ]; then
 	echo Image faucet version does not match configuration.
 	echo $using_hash $error_label $using_faucet

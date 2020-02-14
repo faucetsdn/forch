@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,10 +19,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/process_state.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xda\x05\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xa3\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x30\n\x0ememory_info_mb\x18\t \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x62\x06proto3')
+  serialized_options=None,
+  serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\x93\n\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x12\x34\n\x0b\x63onnections\x18\x08 \x01(\x0b\x32\x1f.ProcessState.ConnectionSummary\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xa3\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x30\n\x0ememory_info_mb\x18\t \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x1a\x89\x02\n\x11\x43onnectionSummary\x12\r\n\x05state\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x44\n\x0blocal_ports\x18\x06 \x03(\x0b\x32/.ProcessState.ConnectionSummary.LocalPortsEntry\x1aO\n\x0fLocalPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ConnectionInfo:\x02\x38\x01\x1a\xcd\x01\n\x0e\x43onnectionInfo\x12\x15\n\rprocess_entry\x18\x01 \x01(\t\x12M\n\x11\x66oreign_addresses\x18\x02 \x03(\x0b\x32\x32.ProcessState.ConnectionInfo.ForeignAddressesEntry\x1aU\n\x15\x46oreignAddressesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ForeignAddress:\x02\x38\x01\x1a%\n\x0e\x46oreignAddress\x12\x13\n\x0b\x65stablished\x18\x01 \x01(\tb\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -41,28 +40,28 @@ _PROCESSSTATE_PROCESSESENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='ProcessState.ProcessesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=336,
-  serialized_end=411,
+  serialized_start=390,
+  serialized_end=465,
 )
 
 _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
@@ -78,77 +77,77 @@ _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='detail', full_name='ProcessState.ProcessData.detail', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='cmd_line', full_name='ProcessState.ProcessData.cmd_line', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='create_time', full_name='ProcessState.ProcessData.create_time', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='create_time_change_count', full_name='ProcessState.ProcessData.create_time_change_count', index=4,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='create_time_last_update', full_name='ProcessState.ProcessData.create_time_last_update', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='create_time_last_change', full_name='ProcessState.ProcessData.create_time_last_change', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='cpu_times_s', full_name='ProcessState.ProcessData.cpu_times_s', index=7,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='memory_info_mb', full_name='ProcessState.ProcessData.memory_info_mb', index=8,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=414,
-  serialized_end=705,
+  serialized_start=468,
+  serialized_end=759,
 )
 
 _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
@@ -164,35 +163,35 @@ _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='system', full_name='ProcessState.CpuTime.system', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='iowait', full_name='ProcessState.CpuTime.iowait', index=2,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=707,
-  serialized_end=762,
+  serialized_start=761,
+  serialized_end=816,
 )
 
 _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
@@ -208,28 +207,234 @@ _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='vms', full_name='ProcessState.MemoryInfo.vms', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=764,
-  serialized_end=802,
+  serialized_start=818,
+  serialized_end=856,
+)
+
+_PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY = _descriptor.Descriptor(
+  name='LocalPortsEntry',
+  full_name='ProcessState.ConnectionSummary.LocalPortsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ProcessState.ConnectionSummary.LocalPortsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ProcessState.ConnectionSummary.LocalPortsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1045,
+  serialized_end=1124,
+)
+
+_PROCESSSTATE_CONNECTIONSUMMARY = _descriptor.Descriptor(
+  name='ConnectionSummary',
+  full_name='ProcessState.ConnectionSummary',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='state', full_name='ProcessState.ConnectionSummary.state', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='detail', full_name='ProcessState.ConnectionSummary.detail', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='change_count', full_name='ProcessState.ConnectionSummary.change_count', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='last_update', full_name='ProcessState.ConnectionSummary.last_update', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='last_change', full_name='ProcessState.ConnectionSummary.last_change', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='local_ports', full_name='ProcessState.ConnectionSummary.local_ports', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=859,
+  serialized_end=1124,
+)
+
+_PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY = _descriptor.Descriptor(
+  name='ForeignAddressesEntry',
+  full_name='ProcessState.ConnectionInfo.ForeignAddressesEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ProcessState.ConnectionInfo.ForeignAddressesEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ProcessState.ConnectionInfo.ForeignAddressesEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1247,
+  serialized_end=1332,
+)
+
+_PROCESSSTATE_CONNECTIONINFO = _descriptor.Descriptor(
+  name='ConnectionInfo',
+  full_name='ProcessState.ConnectionInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='process_entry', full_name='ProcessState.ConnectionInfo.process_entry', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='foreign_addresses', full_name='ProcessState.ConnectionInfo.foreign_addresses', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1127,
+  serialized_end=1332,
+)
+
+_PROCESSSTATE_FOREIGNADDRESS = _descriptor.Descriptor(
+  name='ForeignAddress',
+  full_name='ProcessState.ForeignAddress',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='established', full_name='ProcessState.ForeignAddress.established', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1334,
+  serialized_end=1371,
 )
 
 _PROCESSSTATE = _descriptor.Descriptor(
@@ -245,63 +450,70 @@ _PROCESSSTATE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='process_state', full_name='ProcessState.process_state', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='process_state_detail', full_name='ProcessState.process_state_detail', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='process_state_change_count', full_name='ProcessState.process_state_change_count', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='process_state_last_update', full_name='ProcessState.process_state_last_update', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='process_state_last_change', full_name='ProcessState.process_state_last_change', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='system_state_url', full_name='ProcessState.system_state_url', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='connections', full_name='ProcessState.connections', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_PROCESSSTATE_PROCESSESENTRY, _PROCESSSTATE_PROCESSDATA, _PROCESSSTATE_CPUTIME, _PROCESSSTATE_MEMORYINFO, ],
+  nested_types=[_PROCESSSTATE_PROCESSESENTRY, _PROCESSSTATE_PROCESSDATA, _PROCESSSTATE_CPUTIME, _PROCESSSTATE_MEMORYINFO, _PROCESSSTATE_CONNECTIONSUMMARY, _PROCESSSTATE_CONNECTIONINFO, _PROCESSSTATE_FOREIGNADDRESS, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
   serialized_start=72,
-  serialized_end=802,
+  serialized_end=1371,
 )
 
 _PROCESSSTATE_PROCESSESENTRY.fields_by_name['value'].message_type = _PROCESSSTATE_PROCESSDATA
@@ -312,9 +524,20 @@ _PROCESSSTATE_PROCESSDATA.fields_by_name['memory_info_mb'].message_type = _PROCE
 _PROCESSSTATE_PROCESSDATA.containing_type = _PROCESSSTATE
 _PROCESSSTATE_CPUTIME.containing_type = _PROCESSSTATE
 _PROCESSSTATE_MEMORYINFO.containing_type = _PROCESSSTATE
+_PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY.fields_by_name['value'].message_type = _PROCESSSTATE_CONNECTIONINFO
+_PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY.containing_type = _PROCESSSTATE_CONNECTIONSUMMARY
+_PROCESSSTATE_CONNECTIONSUMMARY.fields_by_name['local_ports'].message_type = _PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY
+_PROCESSSTATE_CONNECTIONSUMMARY.containing_type = _PROCESSSTATE
+_PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY.fields_by_name['value'].message_type = _PROCESSSTATE_FOREIGNADDRESS
+_PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY.containing_type = _PROCESSSTATE_CONNECTIONINFO
+_PROCESSSTATE_CONNECTIONINFO.fields_by_name['foreign_addresses'].message_type = _PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY
+_PROCESSSTATE_CONNECTIONINFO.containing_type = _PROCESSSTATE
+_PROCESSSTATE_FOREIGNADDRESS.containing_type = _PROCESSSTATE
 _PROCESSSTATE.fields_by_name['processes'].message_type = _PROCESSSTATE_PROCESSESENTRY
 _PROCESSSTATE.fields_by_name['process_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
+_PROCESSSTATE.fields_by_name['connections'].message_type = _PROCESSSTATE_CONNECTIONSUMMARY
 DESCRIPTOR.message_types_by_name['ProcessState'] = _PROCESSSTATE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ProcessState = _reflection.GeneratedProtocolMessageType('ProcessState', (_message.Message,), dict(
 
@@ -345,6 +568,41 @@ ProcessState = _reflection.GeneratedProtocolMessageType('ProcessState', (_messag
     # @@protoc_insertion_point(class_scope:ProcessState.MemoryInfo)
     ))
   ,
+
+  ConnectionSummary = _reflection.GeneratedProtocolMessageType('ConnectionSummary', (_message.Message,), dict(
+
+    LocalPortsEntry = _reflection.GeneratedProtocolMessageType('LocalPortsEntry', (_message.Message,), dict(
+      DESCRIPTOR = _PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY,
+      __module__ = 'forch.proto.process_state_pb2'
+      # @@protoc_insertion_point(class_scope:ProcessState.ConnectionSummary.LocalPortsEntry)
+      ))
+    ,
+    DESCRIPTOR = _PROCESSSTATE_CONNECTIONSUMMARY,
+    __module__ = 'forch.proto.process_state_pb2'
+    # @@protoc_insertion_point(class_scope:ProcessState.ConnectionSummary)
+    ))
+  ,
+
+  ConnectionInfo = _reflection.GeneratedProtocolMessageType('ConnectionInfo', (_message.Message,), dict(
+
+    ForeignAddressesEntry = _reflection.GeneratedProtocolMessageType('ForeignAddressesEntry', (_message.Message,), dict(
+      DESCRIPTOR = _PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY,
+      __module__ = 'forch.proto.process_state_pb2'
+      # @@protoc_insertion_point(class_scope:ProcessState.ConnectionInfo.ForeignAddressesEntry)
+      ))
+    ,
+    DESCRIPTOR = _PROCESSSTATE_CONNECTIONINFO,
+    __module__ = 'forch.proto.process_state_pb2'
+    # @@protoc_insertion_point(class_scope:ProcessState.ConnectionInfo)
+    ))
+  ,
+
+  ForeignAddress = _reflection.GeneratedProtocolMessageType('ForeignAddress', (_message.Message,), dict(
+    DESCRIPTOR = _PROCESSSTATE_FOREIGNADDRESS,
+    __module__ = 'forch.proto.process_state_pb2'
+    # @@protoc_insertion_point(class_scope:ProcessState.ForeignAddress)
+    ))
+  ,
   DESCRIPTOR = _PROCESSSTATE,
   __module__ = 'forch.proto.process_state_pb2'
   # @@protoc_insertion_point(class_scope:ProcessState)
@@ -354,8 +612,14 @@ _sym_db.RegisterMessage(ProcessState.ProcessesEntry)
 _sym_db.RegisterMessage(ProcessState.ProcessData)
 _sym_db.RegisterMessage(ProcessState.CpuTime)
 _sym_db.RegisterMessage(ProcessState.MemoryInfo)
+_sym_db.RegisterMessage(ProcessState.ConnectionSummary)
+_sym_db.RegisterMessage(ProcessState.ConnectionSummary.LocalPortsEntry)
+_sym_db.RegisterMessage(ProcessState.ConnectionInfo)
+_sym_db.RegisterMessage(ProcessState.ConnectionInfo.ForeignAddressesEntry)
+_sym_db.RegisterMessage(ProcessState.ForeignAddress)
 
 
-_PROCESSSTATE_PROCESSESENTRY.has_options = True
-_PROCESSSTATE_PROCESSESENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_PROCESSSTATE_PROCESSESENTRY._options = None
+_PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY._options = None
+_PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY._options = None
 # @@protoc_insertion_point(module_scope)

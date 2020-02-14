@@ -41,7 +41,7 @@ else
     mkdir -p $FORCH_LOG_DIR $FORCH_CONFIG_DIR
 fi
 
-if [ "nolog" = true ]; then
+if [ "$nolog" = true ]; then
     FORCH_LOG_DIR=
 fi
 
