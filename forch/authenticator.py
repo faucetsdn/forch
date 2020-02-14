@@ -30,7 +30,8 @@ class Authenticator:
             Socket = collections.namedtuple(
                 'Socket', 'listen_ip, listen_port, server_ip, server_port')
             socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
-            self.radius_query = r_query.RadiusQuery(socket_info, radius_secret, self.process_radius_result)
+            self.radius_query = r_query.RadiusQuery(
+                socket_info, radius_secret, self.process_radius_result)
             threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
 
@@ -81,7 +82,6 @@ class Authenticator:
             return
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
-        #self.do_mab_request(src_mac, port_id)
         if src_mac not in self.sessions:
             self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
