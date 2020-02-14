@@ -9,7 +9,7 @@ import threading
 import yaml
 
 import forch.radius_query as r_query
-from forch.simple_auth_state_machine import MacAuthBypassStateMachine
+from forch.simple_auth_state_machine import AuthStateMachine
 from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto
 
@@ -76,7 +76,6 @@ class Authenticator:
 
     def process_device_placement(self, src_mac, device_placement):
         """Process device placement info and initiate mab query"""
-        LOGGER.info('Anurag process_device_placement %s', src_mac)
         if not device_placement.connected:
             LOGGER.warning("Device not connected. Ignoring auth request for %s", src_mac)
             return
@@ -84,9 +83,9 @@ class Authenticator:
         port_id = int(portid_hash[:6], 16)
         #self.do_mab_request(src_mac, port_id)
         if src_mac not in self.sessions:
-            self.sessions[src_mac] = MacAuthBypassStateMachine(
+            self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
-        self.sessions[src_mac].host_learnt()
+        self.sessions[src_mac].host_learned()
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
@@ -104,7 +103,6 @@ class Authenticator:
 
     def process_session_result(self, src_mac, segment=None, role=None):
         """Process session result"""
-        LOGGER.info('Anurag process_session_result %s %s %s', src_mac, segment, role)
         if self.auth_callback:
             self.auth_callback(src_mac, segment, role)
 

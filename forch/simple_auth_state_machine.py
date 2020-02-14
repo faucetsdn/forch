@@ -6,7 +6,7 @@ from threading import Timer
 LOGGER = logging.getLogger('mabsm')
 
 
-class MacAuthBypassStateMachine():
+class AuthStateMachine():
     """Class represents the MAB state machine that handles the MAB for a session"""""
 
 
@@ -24,9 +24,8 @@ class MacAuthBypassStateMachine():
         """Process trigger"""
         pass
 
-    def host_learnt(self):
+    def host_learned(self):
         """Host learn event"""
-        LOGGER.info('Anurag host_learnt %s', self.src_mac)
         self.radius_query_callback(self.src_mac, self.port_id)
 
     def host_expired(self):
@@ -35,10 +34,8 @@ class MacAuthBypassStateMachine():
 
     def received_radius_accept(self, segment, role):
         """Received RADIUS accept message"""
-        LOGGER.info('Anurag received_radius_accept %s %s %s', self.src_mac, segment, role)
         self.auth_callback(self.src_mac, segment, role)
 
     def received_radius_reject(self):
         """Received RADIUS reject message"""
-        LOGGER.info('Anurag received_radius_reject %s', self.src_mac)
         self.auth_callback(self.src_mac)
