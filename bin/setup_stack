@@ -5,7 +5,6 @@ cd $ROOT
 local=
 devices=
 skip_conn_check=
-run_dva=
 
 if [ "$1" == "local" ]; then
     local=local
@@ -70,8 +69,6 @@ if [ $mode == bond ]; then
     sudo ip link set $upstream2 master $bondif
     upstream1=$bondif
     upstream2=
-elif [ $mode == dva ]; then
-    run_dva=dva
 fi
 
 echo Connecting corp bridge
@@ -115,8 +112,8 @@ for index in 1; do
     mkdir -p inst/$controller/
     cp topo/$mode/*.yaml inst/$controller/
     docker kill $controller || true
-    bin/run_faucet $local $run_dva $index $((6000 + index)) $((8000 + index))
-    bin/run_faucet $local gauge $run_dva $index $((7000 + index)) $((9000 + index))
+    bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+    bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
 echo Letting system settle...
