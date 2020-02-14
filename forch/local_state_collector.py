@@ -240,4 +240,4 @@ class LocalStateCollector:
 
     def start_process_loop(self):
         """Start a loop to periodically gather the processes info"""
-        threading.Thread(target=self._periodic_get_process_info).start()
+        threading.Thread(target=self._periodic_get_process_info, daemon=True).start()

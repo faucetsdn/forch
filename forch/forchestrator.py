@@ -16,26 +16,32 @@ from forch.proto import faucet_event_pb2 as FaucetEvent
 from faucet import config_parser
 
 import forch.faucet_event_client
+import forch.faucetizer as faucetizer
 import forch.http_server
 
+from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
+
+from forch.utils import configure_logging, yaml_proto, ConfigError
 
 from forch.__version__ import __version__
 
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
+from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
 
 LOGGER = logging.getLogger('forch')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
-_FAUCET_CONFIG_DEFAULT = 'faucet.yaml'
+_STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
+_BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
+_SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
-_LOG_FORMAT = '%(asctime)s %(name)-8s %(levelname)-8s %(message)s'
-_LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -45,7 +51,7 @@ class Forchestrator:
 
     def __init__(self, config):
         self._config = config
-        self._faucet_config_file = None
+        self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
 
@@ -53,6 +59,11 @@ class Forchestrator:
         self._varz_collector = None
         self._local_collector = None
         self._cpn_collector = None
+
+        self._faucetizer = None
+        self._authenticator = None
+        self._faucetize_scheduler = None
+
         self._initialized = False
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
@@ -60,14 +71,10 @@ class Forchestrator:
     def initialize(self):
         """Initialize forchestrator instance"""
         self._faucet_collector = FaucetStateCollector()
+        self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._local_collector = LocalStateCollector(
             self._config.get('process'), self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
-
-        self._faucet_config_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), _FAUCET_CONFIG_DEFAULT)
-        if not self._faucet_config_file or not os.path.exists(self._faucet_config_file):
-            raise Exception(f"Faucet config file does not exist: {self._faucet_config_file}")
 
         prom_port = os.getenv('PROMETHEUS_PORT')
         if not prom_port:
@@ -81,12 +88,126 @@ class Forchestrator:
         self._local_collector.initialize()
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
+
+        if self._calculate_behavioral_config():
+            self._initialize_faucetizer()
+        self._attempt_authenticator_initialise()
+        self._process_static_device_placement()
+        self._process_static_device_behavior()
+        if self._faucetizer:
+            faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
+
+        while True:
+            time.sleep(10)
+            try:
+                self._get_varz_config()
+                break
+            except Exception as e:
+                LOGGER.error('Waiting for varz config: %s', e)
+
         self._register_handlers()
+
+        self.start()
+
         self._initialized = True
+
+    def _attempt_authenticator_initialise(self):
+        radius_info = self._config.get('radius_info')
+        if not radius_info:
+            return
+        radius_ip = radius_info.get('server_ip')
+        radius_port = radius_info.get('server_port')
+        secret = radius_info.get('secret')
+        if not (radius_ip and radius_port and secret):
+            LOGGER.warning('Invalid radius_info in config. \
+                           Radius IP: %s; Radius port: %s Secret present: %s',
+                           radius_ip, radius_port, bool(secret))
+            raise ConfigError
+        self._authenticator = Authenticator(radius_ip, radius_port, secret, self.handle_auth_result)
+        LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+                    radius_ip, radius_port)
+
+    def _process_static_device_placement(self):
+        static_placement_file = self._config.get('orchestration', {}).get('static_device_placement')
+        if not static_placement_file:
+            return
+        placement_file = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
+        device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
+        for eth_src, device_placement in device_placement_info.items():
+            self._process_device_placement(eth_src, device_placement)
+
+    def _process_static_device_behavior(self):
+        static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
+        if not static_behaviors_file:
+            return
+        static_behaviors_path = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
+        devices_state = faucetizer.load_devices_state(static_behaviors_path)
+        for mac, device_behavior in devices_state.device_mac_behaviors.items():
+            self._process_device_behavior(mac, device_behavior)
+
+    def _calculate_behavioral_config(self):
+        behavioral_config_file = self._config.get('orchestration', {}).get('behavioral_config_file')
+        if behavioral_config_file:
+            self._behavioral_config_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
+            return True
+
+        self._behavioral_config_file = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), _BEHAVIORAL_CONFIG_DEFAULT)
+        if not os.path.exists(self._behavioral_config_file):
+            raise Exception(
+                f"Behavioral config file does not exist: {self._behavioral_config_file}")
+
+        return False
+
+    def _initialize_faucetizer(self):
+        structural_config_file = self._config.get('orchestration', {}).get(
+            'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
+        structural_config_path = os.path.join(
+            os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+        LOGGER.info('Loading structural config from %s', structural_config_path)
+        with open(structural_config_path) as file:
+            structural_config = yaml.safe_load(file)
+
+        segments_vlans_file = self._config.get('orchestration', {}).get(
+            'segments_vlans_file', _SEGMENTS_VLAN_DEFAULT)
+        segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
+        LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
+        segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
+
+        self._faucetizer = faucetizer.Faucetizer(
+            structural_config, segments_to_vlans.segments_to_vlans)
+
+        interval = self._config.get('orchestration', {}).get('faucetize_interval_sec', 60)
+        self._faucetize_scheduler = HeartbeatScheduler(interval)
+
+        update_write_faucet_config = (lambda: (
+            faucetizer.update_structural_config(self._faucetizer, structural_config_path),
+            faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)))
+        self._faucetize_scheduler.add_callback(update_write_faucet_config)
 
     def initialized(self):
         """If forch is initialized or not"""
         return self._initialized
+
+    def _process_device_placement(self, eth_src, device_placement):
+        """Call device placement API for faucetizer/authenticator"""
+        if self._faucetizer:
+            self._faucetizer.process_device_placement(eth_src, device_placement)
+        if self._authenticator:
+            self._authenticator.process_device_placement(eth_src, device_placement)
+
+    def _process_device_behavior(self, mac, device_behavior):
+        """Function interface of processing device behavior"""
+        if self._faucetizer:
+            self._faucetizer.process_device_behavior(mac, device_behavior)
+
+    def handle_auth_result(self, mac, segment, role):
+        """Method passed as callback to authenticator to forward auth results"""
+        device_behavior = DeviceBehavior(segment=segment, role=role)
+        self._process_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
@@ -102,19 +223,30 @@ class Forchestrator:
             (FaucetEvent.PortChange, fcoll.process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
+            (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
+                event.timestamp, event.dp_name, event.port_no, event.eth_src)),
         ])
+
+    def _get_varz_config(self):
+        metrics = self._varz_collector.get_metrics()
+        varz_hash_info = metrics['faucet_config_hash_info']
+        assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
+        varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
+        varz_config_error = varz_hash_info.samples[0].labels['error']
+
+        if varz_config_error:
+            raise Exception(f'Varz config error: {varz_config_error}')
+
+        return metrics, varz_config_hashes
 
     def _restore_states(self):
         # Make sure the event socket is connected so there's no loss of information. Ordering
         # is important here, need to connect the socket before scraping current state to avoid
         # loss of events inbetween.
         assert self._faucet_events.event_socket_connected, 'restore states without connection'
-        metrics = self._varz_collector.get_metrics()
 
         # Restore config first before restoring all state from varz.
-        varz_hash_info = metrics['faucet_config_hash_info']
-        assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
-        varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
+        metrics, varz_config_hashes = self._get_varz_config()
         self._restore_faucet_config(time.time(), varz_config_hashes)
 
         event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
@@ -156,6 +288,16 @@ class Forchestrator:
         except Exception as e:
             LOGGER.error("Exception: %s", e)
             raise
+
+    def start(self):
+        """Start forchestrator components"""
+        if self._faucetize_scheduler:
+            self._faucetize_scheduler.start()
+
+    def stop(self):
+        """Stop forchestrator components"""
+        if self._faucetize_scheduler:
+            self._faucetize_scheduler.stop()
 
     def _process_faucet_event(self):
         try:
@@ -335,7 +477,7 @@ class Forchestrator:
     def _get_faucet_config(self):
         try:
             (new_conf_hashes, _, new_dps, top_conf) = config_parser.dp_parser(
-                self._faucet_config_file, 'fconfig')
+                self._behavioral_config_file, 'fconfig')
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
             return config_hash_info, new_dps, top_conf
         except Exception as e:
@@ -398,7 +540,7 @@ class Forchestrator:
         return self._augment_state_reply(reply, path)
 
     def get_sys_config(self, path, params):
-        """Get overall config from facuet config file"""
+        """Get overall config from faucet config file"""
         try:
             _, _, faucet_config = self._get_faucet_config()
             reply = {
@@ -425,22 +567,6 @@ def load_config():
 def show_error(error, path, params):
     """Display errors"""
     return f"Cannot initialize forch: {str(error)}"
-
-
-def get_log_path():
-    """Get path for logging"""
-    forch_log_dir = os.getenv('FORCH_LOG_DIR')
-    if not forch_log_dir:
-        return None
-    return os.path.join(forch_log_dir, 'forch.log')
-
-
-def configure_logging():
-    """Configure logging with some basic parameters"""
-    logging.basicConfig(filename=get_log_path(),
-                        format=_LOG_FORMAT,
-                        datefmt=_LOG_DATE_FORMAT,
-                        level=logging.INFO)
 
 
 def main():
@@ -483,6 +609,7 @@ def main():
 
     LOGGER.warning('Exiting program')
     http_server.stop_server()
+    forchestrator.stop()
 
 
 def parse_args(raw_args):

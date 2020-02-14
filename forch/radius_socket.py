@@ -2,6 +2,7 @@
 """
 import socket
 import logging
+from threading import RLock
 
 LOGGER = logging.getLogger('rsocket')
 
@@ -16,6 +17,7 @@ class RadiusSocket:
         self.listen_port = listen_port
         self.server_ip = server_ip
         self.server_port = server_port
+        self.lock = RLock()
 
     def setup(self):
         """Setup RADIUS Socket"""
@@ -31,7 +33,8 @@ class RadiusSocket:
     def send(self, data):
         """Sends on the radius socket
             data (bytes): what to send"""
-        self.socket.sendto(data, (self.server_ip, self.server_port))
+        with self.lock:
+            self.socket.sendto(data, (self.server_ip, self.server_port))
 
     def receive(self):
         """Receives from the radius socket"""

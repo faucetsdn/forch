@@ -3,7 +3,7 @@ sudo: required
 language: python
 python:
   - "3.7"
-cach:
+cache:
   pip: true
 addons:
   apt:
@@ -20,7 +20,7 @@ script:
   - bin/run_test_set
 env:
   matrix:
-    - TEST_SET=stack
-    - TEST_SET=reconfig
-    - TEST_SET=topology TEST_SKIP=true
     - TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
+    - TEST_SET=topology TEST_SKIP=true
+    - TEST_SET=reconfig
+    - TEST_SET=stack

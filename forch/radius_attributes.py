@@ -345,6 +345,14 @@ class TunnelPrivateGroupID(Attribute):
     DESCRIPTION = "Tunnel-Private-Group-ID"
 
 
+@register_attribute_type
+class TunnelAssignmentID(Attribute):
+    """NAS-Port-Type https://tools.ietf.org/html/rfc2868#section-3.7"""
+    TYPE = 82
+    DATA_TYPE = String
+    DESCRIPTION = "Tunnel-Assignment-ID"
+
+
 # Experimental
 @register_attribute_type
 class NASFilterRule(Attribute):

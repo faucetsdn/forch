@@ -24,6 +24,7 @@ from forch.proto.dataplane_state_pb2 import DataplaneState
 from forch.proto.host_path_pb2 import HostPath
 from forch.proto.list_hosts_pb2 import HostList
 from forch.proto.switch_state_pb2 import SwitchState
+from forch.proto.devices_state_pb2 import DevicePlacement
 
 LOGGER = logging.getLogger('fstate')
 
@@ -110,6 +111,7 @@ class FaucetStateCollector:
         self._active_state = State.initializing
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
+        self._placement_callback = None
 
     def set_active(self, active_state):
         """Set active state"""
@@ -816,6 +818,27 @@ class FaucetStateCollector:
                 .add(mac)
 
             LOGGER.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access' and self._placement_callback:
+                devices_placement = DevicePlacement(switch=name, port=port, connected=True)
+                self._placement_callback(mac, devices_placement)
+
+    @_dump_states
+    def process_port_expire(self, timestamp, name, port, mac):
+        """process port expire event"""
+        with self.lock:
+            LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
+            learned_macs = self.switch_states[name][LEARNED_MACS]
+            if mac in learned_macs:
+                learned_macs.remove(mac)
+            else:
+                LOGGER.warning('Entry %s doesnt exist in learned macs dict', mac)
+            if mac not in self.learned_macs:
+                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
+            else:
+                self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
+                if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
+                    self.learned_macs.pop(mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
@@ -1016,3 +1039,7 @@ class FaucetStateCollector:
             if port_attr.get('type') == 'egress':
                 return port
         return None
+
+    def set_placement_callback(self, callback):
+        """register callback method to call to process placement info"""
+        self._placement_callback = callback

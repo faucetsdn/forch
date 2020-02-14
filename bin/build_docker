@@ -47,6 +47,10 @@ if [ "$1" == pull ]; then
 fi
 
 rm -f $DOCKER_IMAGE_LIST
+docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash other; do
+    echo Purging image $image:$tag
+    docker rmi -f $image:$tag
+done
 
 echo Building faux...
 docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
@@ -76,10 +80,10 @@ docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docke
 
 tail build/docker_*.log
 
+docker images | fgrep forch/ | fgrep latest
 images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
 if [ $images != 3 ]; then
-    echo Did not find expected 3 forch images:
-    docker images | fgrep forch/ | fgrep latest
+    echo Did not find expected 3 forch/ images.
     false
 fi
 

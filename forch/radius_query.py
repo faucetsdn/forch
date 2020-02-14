@@ -1,5 +1,4 @@
 """Talks and listens to RADIUS. Takes a packet object as input"""
-from queue import Queue
 import logging
 import os
 
@@ -13,20 +12,30 @@ LOGGER = logging.getLogger('rquery')
 
 RADIUS_HEADER_LENGTH = 1 + 1 + 2 + 16
 
+ACCEPT = "ACCEPT"
+REJECT = "REJECT"
+INVALID_RESP = "INVALID_RESPONSE"
 
 class RadiusQuery:
     """Maintains socket information and sends out and receives requests form RADIUS server"""
-    def __init__(self, socket_info, radius_secret):
+    def __init__(self, socket_info, radius_secret, auth_callback):
         self.next_radius_id = 0
-        self.packet_id_to_mac = {}
+        self._packet_id_to_mac = {}
+        self.auth_callback = auth_callback
         self.packet_id_to_req_authenticator = {}
         self.running = True
-        self.radius_output_q = Queue()
         # TODO: Find better way to handle secret
         self.radius_secret = radius_secret
         self.radius_socket = RadiusSocket(socket_info.listen_ip, socket_info.listen_port,
                                           socket_info.server_ip, socket_info.server_port)
         self.radius_socket.setup()
+
+    def get_mac_from_packet_id(self, packet_id):
+        """Returns MAC addr for stored packet ID"""
+        if packet_id in self._packet_id_to_mac:
+            return self._packet_id_to_mac[packet_id]
+        LOGGER.warning("Unrecognised packet ID")
+        return None
 
     def receive_radius_messages(self):
         """Listen on socket for incoming messages and decode them"""
@@ -37,19 +46,33 @@ class RadiusQuery:
                 radius = self._decode_radius_response(packed_message)
             except MessageParseError as exception:
                 LOGGER.warning("exception: %s. message: %s", packed_message, exception)
-            LOGGER.info("Received RADIUS msg: Code:%s packet_id:%s attributes:%s",
-                        radius.CODE, radius.packet_id, radius.attributes.to_dict())
+                raise
+            # TODO: protobuf for received radius message
+            code = INVALID_RESP
+            if radius.CODE == 2:
+                code = ACCEPT
+            elif radius.CODE == 3:
+                code = REJECT
+            src_mac = self.get_mac_from_packet_id(radius.packet_id)['src_mac']
+            LOGGER.info("Received RADIUS msg: Code:%s src:%s attributes:%s",
+                        code, src_mac, radius.attributes.to_dict())
+            if self.auth_callback:
+                attr = radius.attributes.find('Tunnel-Private-Group-ID')
+                segment = attr.data().decode('utf-8') if attr else None
+                attr = radius.attributes.find('Tunnel-Assignment-ID')
+                role = attr.data().decode('utf-8') if attr else None
+                self.auth_callback(src_mac, code, segment, role)
 
     def send_mab_request(self, src_mac, port_id):
         """Encode and send MAB request for MAC address"""
         req_packet = self._encode_mab_message(src_mac, port_id)
-        LOGGER.info("Sending MAB request for mac %s", src_mac)
         self.radius_socket.send(req_packet)
+        LOGGER.info("Sent MAB request for mac %s", src_mac)
 
     def _encode_mab_message(self, src_mac, port_id=None):
         radius_id = self._get_next_radius_pkt_id()
         req_authenticator = self._get_req_authenticator()
-        self.packet_id_to_mac[radius_id] = {'src_mac': src_mac, 'port_id': port_id}
+        self._packet_id_to_mac[radius_id] = {'src_mac': src_mac, 'port_id': port_id}
         self.packet_id_to_req_authenticator[radius_id] = req_authenticator
 
         attr_list = []

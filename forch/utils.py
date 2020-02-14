@@ -1,12 +1,37 @@
 """Utility functions for forch"""
 
+import logging
+import os
 import yaml
 
 from google.protobuf import json_format
 
+_LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
+_LOG_DATE_FORMAT = '%b %d %H:%M:%S'
+
 
 class MessageParseError(Exception):
     """Error for when parsing cannot be successfully completed."""
+
+
+class ConfigError(Exception):
+    """Error for when config isn't valid."""
+
+
+def get_log_path():
+    """Get path for logging"""
+    forch_log_dir = os.getenv('FORCH_LOG_DIR')
+    if not forch_log_dir:
+        return None
+    return os.path.join(forch_log_dir, 'forch.log')
+
+
+def configure_logging():
+    """Configure logging with some basic parameters"""
+    logging.basicConfig(filename=get_log_path(),
+                        format=_LOG_FORMAT,
+                        datefmt=_LOG_DATE_FORMAT,
+                        level=logging.INFO)
 
 
 def yaml_proto(file_name, proto_func):
