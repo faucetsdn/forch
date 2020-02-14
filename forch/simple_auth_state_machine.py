@@ -6,7 +6,7 @@ LOGGER = logging.getLogger('mabsm')
 
 
 class AuthStateMachine():
-    """Class represents the MAB state machine that handles the MAB for a session"""""
+    """Class represents the state machine that handles the Auth for a session"""""
 
     def __init__(self, src_mac, port_id, radius_query_callback, auth_callback):
         self.src_mac = src_mac
