@@ -51,6 +51,9 @@ message LacpState {
     // broken: unable to function because of error (default)
     none = 0;
 
+    // unknown: unknown or undefined state
+    unknown = -1;
+
     // active: in function
     active = 3;
 

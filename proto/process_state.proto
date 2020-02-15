@@ -30,6 +30,9 @@ message ProcessState {
   // Link to top-level system state
   string system_state_url = 7;
 
+  // Connection summary info
+  ConnectionSummary connections = 8;
+
   /*
    * Data for each process
    */
@@ -85,5 +88,47 @@ message ProcessState {
 
     // virtual set size
     float vms = 2;
+  }
+
+  /*
+   * Summary of connection info
+   */
+  message ConnectionSummary {
+    // Summary state of connections
+    string state = 1;
+    
+    // Summary detail of connection state
+    string detail = 2;
+
+    // Change cound of state detail
+    int32 change_count = 3;
+
+    // Last time connections were checked
+    string last_update = 4;
+
+    // Last time connections changed
+    string last_change = 5;
+    
+    // Established connections	
+    map<string, ConnectionInfo> local_ports = 6;
+  }
+  
+  /*
+   * Established connection
+   */
+  message ConnectionInfo {
+    // Process entry
+    string process_entry = 1;
+    
+    // Foreign addresses
+    map<string, ForeignAddress>  foreign_addresses = 2;
+  }
+
+  /*
+   * Foreign address record
+   */
+  message ForeignAddress {
+    // Established time
+    string established = 1;
   }
 }

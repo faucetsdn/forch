@@ -341,6 +341,7 @@ function test_forch {
     jq .processes.sleep.state $api_result | tee -a $TEST_RESULTS
     jq .processes.sleep.cmd_line $api_result | tee -a $TEST_RESULTS
     jq '.processes.sleep.cpu_times_s | length' $api_result | tee -a $TEST_RESULTS
+    jq '.connections.local_ports["6001"].foreign_addresses | length' $api_result | tee -a $TEST_RESULTS
 
     echo @list_hosts$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts1.json

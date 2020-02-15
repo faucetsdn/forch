@@ -19,3 +19,6 @@ process:
       regex: ^python.*forch\.forchestrator
     sleep:
       regex: "sleep 50\\.3231"
+  connections:
+    6001:
+      description: Faucet openflow port
