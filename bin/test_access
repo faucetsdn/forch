@@ -4,22 +4,48 @@ source bin/stack_functions
 
 preamble_setup
 
+export CONTROLLER_NAME=127.0.0.1
+
 PROM_PT=8001
 
 function test_access {
-    desc=access-$1
-    echo Starting $desc test... | tee -a $TEST_RESULTS
+    adesc=access-$1
+    echo Starting $adesc test... | tee -a $TEST_RESULTS
     wget localhost:$PROM_PT -O- 2>/dev/null | grep 'nz-kiwi-t2sw1' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
     wget localhost:$PROM_PT -O- 2>/dev/null | grep 'nz-kiwi-t2sw2' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+}
+
+function test_config {
+    fdesc=config-$1
+    fout_dir=$OUT_DIR/$fdesc
+    mkdir -p $fout_dir
+
+    echo Starting $fdesc tests | tee -a $TEST_RESULTS
+    echo $fout_dir
+    fetch_forch sys_config
+    api_result=$fout_dir/sys_config.json
+    jq '.faucet.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
 test_access initial
 
-echo %%% l2-learning | tee -a $TEST_RESULTS
+# device are on default VLAN where only DHCP discover/request can go through
+echo %%% minimal-learning | tee -a $TEST_RESULTS
 docker exec forch-faux-1 arp -s 192.168.1.254 02:00:00:00:00:00
 docker exec forch-faux-2 arp -s 192.168.1.254 02:00:00:00:00:00
 docker exec forch-faux-1 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/67"
 docker exec forch-faux-2 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/68"
 sleep 1
-test_access l2-learning
+test_access minimal-learning
+
+restart_forch
+
+# vlan and roles are assigned now so any traffic should not be dropped
+echo %%% vlan-assigned | tee -a $TEST_RESULTS
+docker exec forch-faux-2 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/68"
+sleep 1
+test_access vlan-assigned
+test_config vlan-assigned

@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,9 +18,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/cpn_config.proto',
   package='',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\x1c\x66orch/proto/cpn_config.proto\"\x90\x01\n\tCpnConfig\x12+\n\tcpn_nodes\x18\x01 \x03(\x0b\x32\x18.CpnConfig.CpnNodesEntry\x12\x15\n\rping_interval\x18\x02 \x01(\x05\x1a?\n\rCpnNodesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1d\n\x05value\x18\x02 \x01(\x0b\x32\x0e.CpnAttributes:\x02\x38\x01\"L\n\rCpnAttributes\x12\x0e\n\x06\x63pn_ip\x18\x01 \x01(\t\x12\x0c\n\x04role\x18\x02 \x01(\t\x12\x0e\n\x06vendor\x18\x03 \x01(\t\x12\r\n\x05model\x18\x04 \x01(\tb\x06proto3')
 )
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -39,21 +38,21 @@ _CPNCONFIG_CPNNODESENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='CpnConfig.CpnNodesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -76,21 +75,21 @@ _CPNCONFIG = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='ping_interval', full_name='CpnConfig.ping_interval', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_CPNCONFIG_CPNNODESENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -114,35 +113,35 @@ _CPNATTRIBUTES = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='role', full_name='CpnAttributes.role', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='vendor', full_name='CpnAttributes.vendor', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='model', full_name='CpnAttributes.model', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -157,6 +156,7 @@ _CPNCONFIG_CPNNODESENTRY.containing_type = _CPNCONFIG
 _CPNCONFIG.fields_by_name['cpn_nodes'].message_type = _CPNCONFIG_CPNNODESENTRY
 DESCRIPTOR.message_types_by_name['CpnConfig'] = _CPNCONFIG
 DESCRIPTOR.message_types_by_name['CpnAttributes'] = _CPNATTRIBUTES
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 CpnConfig = _reflection.GeneratedProtocolMessageType('CpnConfig', (_message.Message,), dict(
 
@@ -181,6 +181,5 @@ CpnAttributes = _reflection.GeneratedProtocolMessageType('CpnAttributes', (_mess
 _sym_db.RegisterMessage(CpnAttributes)
 
 
-_CPNCONFIG_CPNNODESENTRY.has_options = True
-_CPNCONFIG_CPNNODESENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_CPNCONFIG_CPNNODESENTRY._options = None
 # @@protoc_insertion_point(module_scope)

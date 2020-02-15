@@ -1,6 +1,14 @@
 bin/test_access
 %%% initial
 Starting access-initial test...
-%%% l2-learning
-Starting access-l2-learning test...
+%%% minimal-learning
+Starting access-minimal-learning test...
 9a:02:57:1e:8f:01
+%%% vlan-assigned
+Starting access-vlan-assigned test...
+9a:02:57:1e:8f:01
+9a:02:57:1e:8f:02
+Starting config-vlan-assigned tests
+200
+"role_green"
+300

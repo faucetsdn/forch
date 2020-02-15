@@ -6,6 +6,7 @@ import os
 import re
 import signal
 import threading
+import time
 
 import psutil
 import yaml
@@ -25,15 +26,19 @@ class LocalStateCollector:
     def __init__(self, config, cleanup_handler, active_state_handler):
         self._state = {'processes': {}, 'vrrp': {}}
         self._process_state = self._state['processes']
+        self._process_state['connections'] = {}
         self._vrrp_state = self._state['vrrp']
         self._target_procs = config.get('processes', {})
         self._check_vrrp = config.get('check_vrrp', False)
+        self._connections = config.get('connections', {})
         self._current_time = None
         self._process_interval = int(config.get('scan_interval_sec', 60))
         self._lock = threading.Lock()
         self._cleanup_handler = cleanup_handler
         self._active_state_handler = active_state_handler
         self._last_error = {}
+        self._conn_state = None
+        self._conn_state_count = 0
         LOGGER.info('Scanning %s processes every %ds',
                     len(self._target_procs), self._process_interval)
 
@@ -61,8 +66,8 @@ class LocalStateCollector:
         with self._lock:
             return dict_proto(self._process_state, ProcessState)
 
-    def _get_process_info(self):
-        """Get the raw information of processes"""
+    def _check_process_info(self):
+        """Check the raw information of processes"""
 
         process_state = self._process_state
         process_map = {}
@@ -178,12 +183,75 @@ class LocalStateCollector:
 
         return None
 
-    def _get_vrrp_info(self):
+    def _check_connections(self):
+        connections = self._fetch_connections()
+        connection_info = self._process_state['connections']
+        connection_info['local_ports'] = {
+            str(port): self._extract_conn(connections, port) for port in self._connections
+        }
+        conn_list = []
+        for port_info in connection_info['local_ports'].values():
+            for foreign_address in port_info['foreign_addresses']:
+                conn_list.append(foreign_address)
+        conn_list.sort()
+        conn_state = str(conn_list)
+        if conn_state != self._conn_state:
+            self._conn_state = conn_state
+            self._conn_state_count += 1
+            LOGGER.info('conn_state #%d: %s', self._conn_state_count, conn_state)
+            connection_info['detail'] = conn_state
+            connection_info['change_count'] = self._conn_state_count
+            connection_info['last_change'] = self._current_time
+        connection_info['last_update'] = self._current_time
+
+    def _fetch_connections(self):
+        connections = {}
+        with os.popen('netstat -npa 2>/dev/null') as lines:
+            for line in lines:
+                if 'ESTABLISHED' in line:
+                    try:
+                        parts = line.split()
+                        local_address = parts[3]
+                        local_parts = local_address.split(':')
+                        local_port = int(local_parts[-1])
+                        foreign_address = parts[4]
+                        connections[foreign_address] = {
+                            'local_port': local_port,
+                            'process_info': parts[6]
+                        }
+                    except Exception as e:
+                        LOGGER.error('Processing netstat entry: %s', e)
+
+        return connections
+
+    def _extract_conn(self, connections, port):
+        foreign_addresses = {}
+        process_entry = None
+        for foreign_address in connections:
+            entry = connections[foreign_address]
+            if entry['local_port'] == port:
+                new_process_entry = entry['process_info']
+                if process_entry and new_process_entry != process_entry:
+                    LOGGER.error('Insonsistent process entry for %s: %s != %s',
+                                 port, process_entry, new_process_entry)
+                process_entry = new_process_entry
+                foreign_addresses[foreign_address] = {
+                    'established': 'now'
+                }
+        return {
+            'process_entry': process_entry,
+            'foreign_addresses': foreign_addresses
+        }
+
+    def _check_vrrp_info(self):
         """Get vrrp info"""
         try:
+            if not self._check_vrrp:
+                return
             with open('/var/run/keepalived.pid') as pid_file:
                 pid = int(pid_file.readline())
             os.kill(pid, signal.SIGUSR2)
+            time.sleep(1)
             with open('/tmp/keepalived.stats') as stats_file:
                 stats_file.readline()
                 stats = yaml.safe_load(stats_file)
@@ -229,15 +297,15 @@ class LocalStateCollector:
 
         return vrrp_map
 
-    def _periodic_get_process_info(self):
-        """Periodically gather the processes info"""
+    def _periodic_check_local_state(self):
+        """Periodically gather local state"""
         with self._lock:
             self._current_time = datetime.now().isoformat()
-            self._get_process_info()
-            if self._check_vrrp:
-                self._get_vrrp_info()
-        threading.Timer(self._process_interval, self._periodic_get_process_info).start()
+            self._check_process_info()
+            self._check_vrrp_info()
+            self._check_connections()
+        threading.Timer(self._process_interval, self._periodic_check_local_state).start()
 
     def start_process_loop(self):
-        """Start a loop to periodically gather the processes info"""
-        threading.Thread(target=self._periodic_get_process_info, daemon=True).start()
+        """Start a loop to periodically gather local state"""
+        threading.Thread(target=self._periodic_check_local_state, daemon=True).start()

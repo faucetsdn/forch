@@ -525,7 +525,27 @@
                 </li>
               
                 <li>
+                  <a href="#ProcessState.ConnectionInfo"><span class="badge">M</span>ProcessState.ConnectionInfo</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.ConnectionInfo.ForeignAddressesEntry"><span class="badge">M</span>ProcessState.ConnectionInfo.ForeignAddressesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.ConnectionSummary"><span class="badge">M</span>ProcessState.ConnectionSummary</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.ConnectionSummary.LocalPortsEntry"><span class="badge">M</span>ProcessState.ConnectionSummary.LocalPortsEntry</a>
+                </li>
+              
+                <li>
                   <a href="#ProcessState.CpuTime"><span class="badge">M</span>ProcessState.CpuTime</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessState.ForeignAddress"><span class="badge">M</span>ProcessState.ForeignAddress</a>
                 </li>
               
                 <li>
@@ -3132,6 +3152,165 @@ or to host_path API to list path </p></td>
                   <td><p>Link to top-level system state </p></td>
                 </tr>
               
+                <tr>
+                  <td>connections</td>
+                  <td><a href="#ProcessState.ConnectionSummary">ProcessState.ConnectionSummary</a></td>
+                  <td></td>
+                  <td><p>Connection summary info </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ConnectionInfo">ProcessState.ConnectionInfo</h3>
+        <p>Established connection</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>process_entry</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Process entry </p></td>
+                </tr>
+              
+                <tr>
+                  <td>foreign_addresses</td>
+                  <td><a href="#ProcessState.ConnectionInfo.ForeignAddressesEntry">ProcessState.ConnectionInfo.ForeignAddressesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Foreign addresses </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ConnectionInfo.ForeignAddressesEntry">ProcessState.ConnectionInfo.ForeignAddressesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProcessState.ForeignAddress">ProcessState.ForeignAddress</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ConnectionSummary">ProcessState.ConnectionSummary</h3>
+        <p>Summary of connection info</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>state</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Summary state of connections </p></td>
+                </tr>
+              
+                <tr>
+                  <td>detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Summary detail of connection state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Change cound of state detail </p></td>
+                </tr>
+              
+                <tr>
+                  <td>last_update</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time connections were checked </p></td>
+                </tr>
+              
+                <tr>
+                  <td>last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time connections changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>local_ports</td>
+                  <td><a href="#ProcessState.ConnectionSummary.LocalPortsEntry">ProcessState.ConnectionSummary.LocalPortsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Established connections </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ConnectionSummary.LocalPortsEntry">ProcessState.ConnectionSummary.LocalPortsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProcessState.ConnectionInfo">ProcessState.ConnectionInfo</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3168,6 +3347,30 @@ or to host_path API to list path </p></td>
                   <td><a href="#float">float</a></td>
                   <td></td>
                   <td><p>iowait consumption </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessState.ForeignAddress">ProcessState.ForeignAddress</h3>
+        <p>Foreign address record</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>established</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Established time </p></td>
                 </tr>
               
             </tbody>
@@ -3358,27 +3561,33 @@ or to host_path API to list path </p></td>
           <tbody>
             
               <tr>
-                <td>none</td>
+                <td>default</td>
                 <td>0</td>
-                <td><p>broken: unable to function because of error (default)</p></td>
+                <td><p>default: startup state</p></td>
+              </tr>
+            
+              <tr>
+                <td>none</td>
+                <td>-1</td>
+                <td><p>notlacp: the port is not configured as lacp</p></td>
+              </tr>
+            
+              <tr>
+                <td>init</td>
+                <td>1</td>
+                <td><p>init: port is initializing</p></td>
               </tr>
             
               <tr>
                 <td>active</td>
                 <td>3</td>
-                <td><p>active: in function</p></td>
+                <td><p>active: port is active lag port</p></td>
               </tr>
             
               <tr>
-                <td>down</td>
-                <td>1</td>
-                <td><p>down: not in function</p></td>
-              </tr>
-            
-              <tr>
-                <td>up</td>
+                <td>noact</td>
                 <td>5</td>
-                <td><p>up: up but not in function</p></td>
+                <td><p>noact: port is up, but not active</p></td>
               </tr>
             
           </tbody>
