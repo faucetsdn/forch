@@ -751,7 +751,7 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info('lag_state update %s %s %s', name, port, lacp_state)
+            LOGGER.debug('lag_state update %s %s %s', name, port, lacp_state)
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
             if lacp_state in [LacpState.none, LacpState.default]:
