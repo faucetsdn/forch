@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x7f\n\x05State\"v\n\x05State\x12\n\n\x06\x62roken\x10\x00\x12\n\n\x06\x61\x63tive\x10\x01\x12\x0b\n\x07\x64\x61maged\x10\x02\x12\x08\n\x04\x64own\x10\x03\x12\x0b\n\x07healthy\x10\x04\x12\x0c\n\x08inactive\x10\x05\x12\x10\n\x0cinitializing\x10\x06\x12\t\n\x05split\x10\x07\x12\x06\n\x02up\x10\x08\"V\n\tLacpState\"I\n\tLacpState\x12\x08\n\x04none\x10\x00\x12\x14\n\x07unknown\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\x08\n\x04\x64own\x10\x01\x12\x06\n\x02up\x10\x05\x62\x06proto3')
+  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x7f\n\x05State\"v\n\x05State\x12\n\n\x06\x62roken\x10\x00\x12\n\n\x06\x61\x63tive\x10\x01\x12\x0b\n\x07\x64\x61maged\x10\x02\x12\x08\n\x04\x64own\x10\x03\x12\x0b\n\x07healthy\x10\x04\x12\x0c\n\x08inactive\x10\x05\x12\x10\n\x0cinitializing\x10\x06\x12\t\n\x05split\x10\x07\x12\x06\n\x02up\x10\x08\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\x62\x06proto3')
 )
 
 
@@ -81,30 +81,30 @@ _LACPSTATE_LACPSTATE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='none', index=0, number=0,
+      name='default', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='unknown', index=1, number=-1,
+      name='none', index=1, number=-1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='active', index=2, number=3,
+      name='init', index=2, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='down', index=3, number=1,
+      name='active', index=3, number=3,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='up', index=4, number=5,
+      name='noact', index=4, number=5,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=180,
-  serialized_end=253,
+  serialized_end=256,
 )
 _sym_db.RegisterEnumDescriptor(_LACPSTATE_LACPSTATE)
 
@@ -155,7 +155,7 @@ _LACPSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=167,
-  serialized_end=253,
+  serialized_end=256,
 )
 
 _STATE_STATE.containing_type = _STATE

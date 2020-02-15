@@ -109,6 +109,7 @@ class FaucetEventClient():
         if event.get('debounced'):
             return True
         event_id = int(event['event_id'])
+        assert self._last_event_id, '_last_event_id undefined, check for initialization errors'
         if event_id <= self._last_event_id:
             LOGGER.debug('Outdated faucet event #%d', event_id)
             return False
