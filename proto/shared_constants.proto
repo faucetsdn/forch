@@ -48,19 +48,19 @@ message LacpState {
    * Enumeration of LACP states
    */
   enum LacpState {
-    // broken: unable to function because of error (default)
-    none = 0;
+    // default: startup state
+    default = 0;
 
-    // unknown: unknown or undefined state
-    unknown = -1;
+    // notlacp: the port is not configured as lacp
+    none = -1;
 
-    // active: in function
+    // init: port is initializing
+    init = 1;
+
+    // active: port is active lag port
     active = 3;
 
-    // down: not in function
-    down = 1;
-
-    // up: up but not in function
-    up = 5;
+    // noact: port is up, but not active
+    noact = 5;
   }
 }
