@@ -39,6 +39,9 @@ message SystemState {
   // Summary of the system state components
   SummarySources summary_sources = 10;
 
+  // Summary of configuration info
+  ConfigSummary config_summary = 11;
+
   /*
    * Summary collection of system state
    */
@@ -68,6 +71,17 @@ message SystemState {
 
     // forch version
     string forch = 2;
+  }
+
+  /*
+   * Configuration file summary info
+   */
+  message ConfigSummary {
+    // Basic config hashes
+    map<string, string> hashes = 1;
+
+    // Config warnings
+    map<string, string> warnings = 2;
   }
 }
 

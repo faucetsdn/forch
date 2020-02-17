@@ -666,6 +666,18 @@
                 </li>
               
                 <li>
+                  <a href="#SystemState.ConfigSummary"><span class="badge">M</span>SystemState.ConfigSummary</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.ConfigSummary.HashesEntry"><span class="badge">M</span>SystemState.ConfigSummary.HashesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.ConfigSummary.WarningsEntry"><span class="badge">M</span>SystemState.ConfigSummary.WarningsEntry</a>
+                </li>
+              
+                <li>
                   <a href="#SystemState.SummarySources"><span class="badge">M</span>SystemState.SummarySources</a>
                 </li>
               
@@ -4354,6 +4366,106 @@ or to host_path API to list path </p></td>
                   <td><a href="#SystemState.SummarySources">SystemState.SummarySources</a></td>
                   <td></td>
                   <td><p>Summary of the system state components </p></td>
+                </tr>
+              
+                <tr>
+                  <td>config_summary</td>
+                  <td><a href="#SystemState.ConfigSummary">SystemState.ConfigSummary</a></td>
+                  <td></td>
+                  <td><p>Summary of configuration info </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.ConfigSummary">SystemState.ConfigSummary</h3>
+        <p>Configuration file summary info</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>hashes</td>
+                  <td><a href="#SystemState.ConfigSummary.HashesEntry">SystemState.ConfigSummary.HashesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Basic config hashes </p></td>
+                </tr>
+              
+                <tr>
+                  <td>warnings</td>
+                  <td><a href="#SystemState.ConfigSummary.WarningsEntry">SystemState.ConfigSummary.WarningsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Config warnings </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.ConfigSummary.HashesEntry">SystemState.ConfigSummary.HashesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.ConfigSummary.WarningsEntry">SystemState.ConfigSummary.WarningsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
