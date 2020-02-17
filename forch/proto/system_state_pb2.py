@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1e\x66orch/proto/system_state.proto\x1a\"forch/proto/shared_constants.proto\"\xd3\x04\n\x0bSystemState\x12\x11\n\tsite_name\x18\x01 \x01(\t\x12\'\n\x08versions\x18\x02 \x01(\x0b\x32\x15.SystemState.Versions\x12\x17\n\x0f\x63ontroller_name\x18\x03 \x01(\t\x12\x1b\n\x13peer_controller_url\x18\x04 \x01(\t\x12\"\n\x0csystem_state\x18\x05 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13system_state_detail\x18\x06 \x01(\t\x12!\n\x19system_state_change_count\x18\x07 \x01(\x05\x12 \n\x18system_state_last_change\x18\x08 \x01(\t\x12 \n\x18system_state_last_update\x18\t \x01(\t\x12\x34\n\x0fsummary_sources\x18\n \x01(\x0b\x32\x1b.SystemState.SummarySources\x1a\xc8\x01\n\x0eSummarySources\x12 \n\tcpn_state\x18\x01 \x01(\x0b\x32\r.StateSummary\x12$\n\rprocess_state\x18\x02 \x01(\x0b\x32\r.StateSummary\x12&\n\x0f\x64\x61taplane_state\x18\x03 \x01(\x0b\x32\r.StateSummary\x12#\n\x0cswitch_state\x18\x04 \x01(\x0b\x32\r.StateSummary\x12!\n\nlist_hosts\x18\x05 \x01(\x0b\x32\r.StateSummary\x1a)\n\x08Versions\x12\x0e\n\x06\x66\x61ucet\x18\x01 \x01(\t\x12\r\n\x05\x66orch\x18\x02 \x01(\t\"\xa9\x01\n\x0cStateSummary\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x12\n\ndetail_url\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x1e\x66orch/proto/system_state.proto\x1a\"forch/proto/shared_constants.proto\"\xed\x06\n\x0bSystemState\x12\x11\n\tsite_name\x18\x01 \x01(\t\x12\'\n\x08versions\x18\x02 \x01(\x0b\x32\x15.SystemState.Versions\x12\x17\n\x0f\x63ontroller_name\x18\x03 \x01(\t\x12\x1b\n\x13peer_controller_url\x18\x04 \x01(\t\x12\"\n\x0csystem_state\x18\x05 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13system_state_detail\x18\x06 \x01(\t\x12!\n\x19system_state_change_count\x18\x07 \x01(\x05\x12 \n\x18system_state_last_change\x18\x08 \x01(\t\x12 \n\x18system_state_last_update\x18\t \x01(\t\x12\x34\n\x0fsummary_sources\x18\n \x01(\x0b\x32\x1b.SystemState.SummarySources\x12\x32\n\x0e\x63onfig_summary\x18\x0b \x01(\x0b\x32\x1a.SystemState.ConfigSummary\x1a\xc8\x01\n\x0eSummarySources\x12 \n\tcpn_state\x18\x01 \x01(\x0b\x32\r.StateSummary\x12$\n\rprocess_state\x18\x02 \x01(\x0b\x32\r.StateSummary\x12&\n\x0f\x64\x61taplane_state\x18\x03 \x01(\x0b\x32\r.StateSummary\x12#\n\x0cswitch_state\x18\x04 \x01(\x0b\x32\r.StateSummary\x12!\n\nlist_hosts\x18\x05 \x01(\x0b\x32\r.StateSummary\x1a)\n\x08Versions\x12\x0e\n\x06\x66\x61ucet\x18\x01 \x01(\t\x12\r\n\x05\x66orch\x18\x02 \x01(\t\x1a\xe3\x01\n\rConfigSummary\x12\x36\n\x06hashes\x18\x01 \x03(\x0b\x32&.SystemState.ConfigSummary.HashesEntry\x12:\n\x08warnings\x18\x02 \x03(\x0b\x32(.SystemState.ConfigSummary.WarningsEntry\x1a-\n\x0bHashesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a/\n\rWarningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa9\x01\n\x0cStateSummary\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x12\n\ndetail_url\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\tb\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -81,8 +81,8 @@ _SYSTEMSTATE_SUMMARYSOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=423,
-  serialized_end=623,
+  serialized_start=475,
+  serialized_end=675,
 )
 
 _SYSTEMSTATE_VERSIONS = _descriptor.Descriptor(
@@ -118,8 +118,119 @@ _SYSTEMSTATE_VERSIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=625,
-  serialized_end=666,
+  serialized_start=677,
+  serialized_end=718,
+)
+
+_SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY = _descriptor.Descriptor(
+  name='HashesEntry',
+  full_name='SystemState.ConfigSummary.HashesEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='SystemState.ConfigSummary.HashesEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='SystemState.ConfigSummary.HashesEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=854,
+  serialized_end=899,
+)
+
+_SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY = _descriptor.Descriptor(
+  name='WarningsEntry',
+  full_name='SystemState.ConfigSummary.WarningsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='SystemState.ConfigSummary.WarningsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='SystemState.ConfigSummary.WarningsEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=901,
+  serialized_end=948,
+)
+
+_SYSTEMSTATE_CONFIGSUMMARY = _descriptor.Descriptor(
+  name='ConfigSummary',
+  full_name='SystemState.ConfigSummary',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='hashes', full_name='SystemState.ConfigSummary.hashes', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='warnings', full_name='SystemState.ConfigSummary.warnings', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY, _SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=721,
+  serialized_end=948,
 )
 
 _SYSTEMSTATE = _descriptor.Descriptor(
@@ -199,10 +310,17 @@ _SYSTEMSTATE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='config_summary', full_name='SystemState.config_summary', index=10,
+      number=11, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_SYSTEMSTATE_SUMMARYSOURCES, _SYSTEMSTATE_VERSIONS, ],
+  nested_types=[_SYSTEMSTATE_SUMMARYSOURCES, _SYSTEMSTATE_VERSIONS, _SYSTEMSTATE_CONFIGSUMMARY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -212,7 +330,7 @@ _SYSTEMSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=71,
-  serialized_end=666,
+  serialized_end=948,
 )
 
 
@@ -284,8 +402,8 @@ _STATESUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=669,
-  serialized_end=838,
+  serialized_start=951,
+  serialized_end=1120,
 )
 
 _SYSTEMSTATE_SUMMARYSOURCES.fields_by_name['cpn_state'].message_type = _STATESUMMARY
@@ -295,9 +413,15 @@ _SYSTEMSTATE_SUMMARYSOURCES.fields_by_name['switch_state'].message_type = _STATE
 _SYSTEMSTATE_SUMMARYSOURCES.fields_by_name['list_hosts'].message_type = _STATESUMMARY
 _SYSTEMSTATE_SUMMARYSOURCES.containing_type = _SYSTEMSTATE
 _SYSTEMSTATE_VERSIONS.containing_type = _SYSTEMSTATE
+_SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY.containing_type = _SYSTEMSTATE_CONFIGSUMMARY
+_SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY.containing_type = _SYSTEMSTATE_CONFIGSUMMARY
+_SYSTEMSTATE_CONFIGSUMMARY.fields_by_name['hashes'].message_type = _SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY
+_SYSTEMSTATE_CONFIGSUMMARY.fields_by_name['warnings'].message_type = _SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY
+_SYSTEMSTATE_CONFIGSUMMARY.containing_type = _SYSTEMSTATE
 _SYSTEMSTATE.fields_by_name['versions'].message_type = _SYSTEMSTATE_VERSIONS
 _SYSTEMSTATE.fields_by_name['system_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _SYSTEMSTATE.fields_by_name['summary_sources'].message_type = _SYSTEMSTATE_SUMMARYSOURCES
+_SYSTEMSTATE.fields_by_name['config_summary'].message_type = _SYSTEMSTATE_CONFIGSUMMARY
 _STATESUMMARY.fields_by_name['state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 DESCRIPTOR.message_types_by_name['SystemState'] = _SYSTEMSTATE
 DESCRIPTOR.message_types_by_name['StateSummary'] = _STATESUMMARY
@@ -318,6 +442,27 @@ SystemState = _reflection.GeneratedProtocolMessageType('SystemState', (_message.
     # @@protoc_insertion_point(class_scope:SystemState.Versions)
     ))
   ,
+
+  ConfigSummary = _reflection.GeneratedProtocolMessageType('ConfigSummary', (_message.Message,), dict(
+
+    HashesEntry = _reflection.GeneratedProtocolMessageType('HashesEntry', (_message.Message,), dict(
+      DESCRIPTOR = _SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY,
+      __module__ = 'forch.proto.system_state_pb2'
+      # @@protoc_insertion_point(class_scope:SystemState.ConfigSummary.HashesEntry)
+      ))
+    ,
+
+    WarningsEntry = _reflection.GeneratedProtocolMessageType('WarningsEntry', (_message.Message,), dict(
+      DESCRIPTOR = _SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY,
+      __module__ = 'forch.proto.system_state_pb2'
+      # @@protoc_insertion_point(class_scope:SystemState.ConfigSummary.WarningsEntry)
+      ))
+    ,
+    DESCRIPTOR = _SYSTEMSTATE_CONFIGSUMMARY,
+    __module__ = 'forch.proto.system_state_pb2'
+    # @@protoc_insertion_point(class_scope:SystemState.ConfigSummary)
+    ))
+  ,
   DESCRIPTOR = _SYSTEMSTATE,
   __module__ = 'forch.proto.system_state_pb2'
   # @@protoc_insertion_point(class_scope:SystemState)
@@ -325,6 +470,9 @@ SystemState = _reflection.GeneratedProtocolMessageType('SystemState', (_message.
 _sym_db.RegisterMessage(SystemState)
 _sym_db.RegisterMessage(SystemState.SummarySources)
 _sym_db.RegisterMessage(SystemState.Versions)
+_sym_db.RegisterMessage(SystemState.ConfigSummary)
+_sym_db.RegisterMessage(SystemState.ConfigSummary.HashesEntry)
+_sym_db.RegisterMessage(SystemState.ConfigSummary.WarningsEntry)
 
 StateSummary = _reflection.GeneratedProtocolMessageType('StateSummary', (_message.Message,), dict(
   DESCRIPTOR = _STATESUMMARY,
@@ -334,4 +482,6 @@ StateSummary = _reflection.GeneratedProtocolMessageType('StateSummary', (_messag
 _sym_db.RegisterMessage(StateSummary)
 
 
+_SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY._options = None
+_SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

@@ -68,6 +68,8 @@ class Forchestrator:
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
 
+        self._config_summary = None
+
     def initialize(self):
         """Initialize forchestrator instance"""
         self._faucet_collector = FaucetStateCollector()
@@ -356,6 +358,7 @@ class Forchestrator:
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.get('site', {}).get('name', 'unknown')
         system_state.controller_name = self._get_controller_name()
+        system_state.config_summary.CopyFrom(self._config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
         return system_state
 
@@ -479,10 +482,38 @@ class Forchestrator:
             (new_conf_hashes, _, new_dps, top_conf) = config_parser.dp_parser(
                 self._behavioral_config_file, 'fconfig')
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
+            self._config_summary = SystemState.ConfigSummary()
+            for file_name, file_hash in new_conf_hashes.items():
+                LOGGER.info('Loaded conf %s as %s', file_name, file_hash)
+                self._config_summary.hashes[file_name] = file_hash
+            for warning, message in self._config_warnings(top_conf):
+                LOGGER.warning('Config warning %s: %s', warning, message)
+                self._config_summary.warnings[warning] = message
             return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
             raise e
+
+    def _config_warnings(self, config):
+        warnings = []
+        for dp_name, dp_obj in config['dps'].items():
+            if 'faucet_dp_mac' in dp_obj:
+                warnings.append((dp_name, 'faucet_dp_mac defined'))
+            if 'interface_ranges' in dp_obj:
+                warnings.append((dp_name, 'interface_ranges defined'))
+            for if_name, if_obj in dp_obj['interfaces'].items():
+                if_key = '%s:%02d' % (dp_name, int(if_name))
+                is_egress = 1 if 'lacp' in if_obj else 0
+                is_stack = 1 if 'stack' in if_obj else 0
+                is_access = 1 if 'native_vlan' in if_obj else 0
+                if (is_egress + is_stack + is_access) != 1:
+                    warnings.append((if_key, 'misconfigured interface config: %d %d %d' %
+                                     (is_egress, is_stack, is_access)))
+                if 'loop_protect_external' in if_obj:
+                    warnings.append((if_key, 'deprecated loop_protect_external'))
+                if is_access and 'max_hosts' not in if_obj:
+                    warnings.append((if_key, 'missing recommended max_hosts'))
+        return warnings
 
     def _populate_versions(self, versions):
         versions.forch = __version__
