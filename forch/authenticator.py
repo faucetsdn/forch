@@ -18,6 +18,7 @@ from forch.proto.authentication_pb2 import AuthResult
 LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
 
+STATE_MACHINE_TIMER_FREQ = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
@@ -33,7 +34,9 @@ class Authenticator:
             self.radius_query = r_query.RadiusQuery(
                 socket_info, radius_secret, self.process_radius_result)
             threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
-
+        self.timer = threading.Timer(STATE_MACHINE_TIMER_FREQ, self.handle_sm_timeout)
+        self.timer.daemon = True
+        self.timer.start()
 
     def _get_auth_map(self):
         base_dir = os.getenv('FORCH_CONFIG_DIR')
@@ -77,15 +80,16 @@ class Authenticator:
 
     def process_device_placement(self, src_mac, device_placement):
         """Process device placement info and initiate mab query"""
-        if not device_placement.connected:
-            LOGGER.warning("Device not connected. Ignoring auth request for %s", src_mac)
-            return
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
         if src_mac not in self.sessions:
             self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
-        self.sessions[src_mac].host_learned()
+        if device_placement.connected:
+            self.sessions[src_mac].host_learned()
+        else:
+            self.sessions[src_mac].host_expired()
+            self.sessions.pop(src_mac)
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
@@ -106,6 +110,13 @@ class Authenticator:
         if self.auth_callback:
             self.auth_callback(src_mac, segment, role)
 
+    def handle_sm_timeout(self):
+        """Call timeout handlers for all active session state machines"""
+        for session in self.sessions.values():
+            session.handle_sm_timer()
+        self.timer = threading.Timer(STATE_MACHINE_TIMER_FREQ, self.handle_sm_timeout)
+        self.timer.daemon = True
+        self.timer.start()
 
 
 def parse_args(raw_args):
