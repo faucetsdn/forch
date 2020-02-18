@@ -25,6 +25,7 @@ class AuthStateMachine():
         self.radius_query_callback = radius_query_callback
         self.current_state = None
         self.retries = 0
+        self.current_timeout = 0
         self.transition_lock = Lock()
         self._reset_state_machine()
 
@@ -62,7 +63,8 @@ class AuthStateMachine():
 
     def host_expired(self):
         """Host expired"""
-        self.auth_callback(self.src_mac)
+        with self.transition_lock:
+            self.auth_callback(self.src_mac)
 
     def received_radius_accept(self, segment, role):
         """Received RADIUS accept message"""
@@ -81,6 +83,7 @@ class AuthStateMachine():
             self.auth_callback(self.src_mac)
 
     def handle_sm_timer(self):
+        """Handle timer timeout and check.trigger timeout behavior of states"""
         with self.transition_lock:
             if time.time() > self.current_timeout:
                 self.radius_query_callback(self.src_mac, self.port_id)
