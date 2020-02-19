@@ -32,7 +32,7 @@ class Faucetizer:
                 device = self._devices.setdefault(eth_src, Device())
                 device.placement.CopyFrom(placement)
                 LOGGER.info(
-                    'Added placement: %s, %s, %s',eth_src, placement.switch, placement.port)
+                    'Added placement: %s, %s, %s', eth_src, placement.switch, placement.port)
             else:
                 self._devices.pop(eth_src, None)
                 LOGGER.info('Removed placement: %s', eth_src)
