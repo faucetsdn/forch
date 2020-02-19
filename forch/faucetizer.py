@@ -31,8 +31,10 @@ class Faucetizer:
             if placement.connected:
                 device = self._devices.setdefault(eth_src, Device())
                 device.placement.CopyFrom(placement)
+                LOGGER.info('Added placement: %s, %s, %s', eth_src, placement.switch, placement.port)
             else:
                 self._devices.pop(eth_src, None)
+                LOGGER.info('Removed placement: %s', eth_src)
 
     def process_device_behavior(self, eth_src, behavior):
         """Process device placement"""
@@ -40,8 +42,10 @@ class Faucetizer:
             if behavior.segment:
                 device = self._devices.setdefault(eth_src, Device())
                 device.behavior.CopyFrom(behavior)
+                LOGGER.info('Added behavior: %s, %s, %s', eth_src, behavior.segment, behavior.role)
             else:
                 self._devices.pop(eth_src, None)
+                LOGGER.info('Removed behavior: %s', eth_src)
 
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
