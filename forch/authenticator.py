@@ -8,6 +8,7 @@ import argparse
 import threading
 import yaml
 
+from forch.heartbeat_scheduler import HeartbeatScheduler
 import forch.radius_query as r_query
 from forch.simple_auth_state_machine import AuthStateMachine
 from forch.utils import configure_logging
@@ -34,8 +35,9 @@ class Authenticator:
             self.radius_query = r_query.RadiusQuery(
                 socket_info, radius_secret, self.process_radius_result)
             threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
-        self.timer = threading.Timer(STATE_MACHINE_TIMER_FREQ, self.handle_sm_timeout)
-        self.timer.daemon = True
+
+        self.timer = HeartbeatScheduler(STATE_MACHINE_TIMER_FREQ)
+        self.timer.add_callback(self.handle_sm_timeout)
         self.timer.start()
 
     def _get_auth_map(self):
@@ -72,6 +74,11 @@ class Authenticator:
         for auth_obj in auth_list:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
+
+    def stop_timer(self):
+        """Stop state machine timer"""
+        if self.timer:
+            self.timer.stop()
 
     def do_mab_request(self, src_mac, port_id):
         """Initiate MAB request"""
@@ -114,9 +121,6 @@ class Authenticator:
         """Call timeout handlers for all active session state machines"""
         for session in self.sessions.values():
             session.handle_sm_timer()
-        self.timer = threading.Timer(STATE_MACHINE_TIMER_FREQ, self.handle_sm_timeout)
-        self.timer.daemon = True
-        self.timer.start()
 
 
 def parse_args(raw_args):
