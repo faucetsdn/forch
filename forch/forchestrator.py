@@ -299,7 +299,7 @@ class Forchestrator:
         if self._faucetize_scheduler:
             self._faucetize_scheduler.stop()
         if self._authenticator:
-            self._authenticator.stop_timer()
+            self._authenticator.stop()
 
     def _process_faucet_event(self):
         try:

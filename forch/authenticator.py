@@ -75,7 +75,7 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
-    def stop_timer(self):
+    def stop(self):
         """Stop state machine timer"""
         if self.timer:
             self.timer.stop()

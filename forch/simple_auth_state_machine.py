@@ -24,14 +24,14 @@ class AuthStateMachine():
         self.auth_callback = auth_callback
         self.radius_query_callback = radius_query_callback
         self.current_state = None
-        self.retries = 0
+        self._retry_backoff = 0
         self.current_timeout = 0
         self.transition_lock = Lock()
         self._reset_state_machine()
 
-    def _retry_backoff(self):
-        if self.retries < self.MAX_RADIUS_RETRIES:
-            self.retries += 1
+    def _increment_retries(self):
+        if self._retry_backoff < self.MAX_RADIUS_RETRIES:
+            self._retry_backoff += 1
 
     def _state_transition(self, target, expected=None):
         if expected is not None:
@@ -42,7 +42,7 @@ class AuthStateMachine():
 
     def _reset_state_machine(self):
         self._state_transition(self.UNAUTH)
-        self.retries = 0
+        self._retry_backoff = 0
         self.current_timeout = time.time() + self.REJECT_STATE_TIMEOUT
         self.auth_callback(self.src_mac, None, None)
 
@@ -71,7 +71,7 @@ class AuthStateMachine():
         with self.transition_lock:
             self._state_transition(self.ACCEPT, self.REQUEST)
             self.current_timeout = time.time() + self.AUTH_STATE_TIMEOUT
-            self.retries = 0
+            self._retry_backoff = 0
             self.auth_callback(self.src_mac, segment, role)
 
     def received_radius_reject(self):
@@ -79,7 +79,7 @@ class AuthStateMachine():
         with self.transition_lock:
             self._state_transition(self.UNAUTH, self.REQUEST)
             self.current_timeout = time.time() + self.REJECT_STATE_TIMEOUT
-            self.retries = 0
+            self._retry_backoff = 0
             self.auth_callback(self.src_mac, None, None)
 
     def handle_sm_timer(self):
@@ -87,9 +87,9 @@ class AuthStateMachine():
         with self.transition_lock:
             if time.time() > self.current_timeout:
                 self.radius_query_callback(self.src_mac, self.port_id)
-                self.current_timeout = time.time() + self.retries * self.QUERY_STATE_TIMEOUT
+                self.current_timeout = time.time() + self._retry_backoff * self.QUERY_STATE_TIMEOUT
                 if self.current_state == self.REQUEST:
-                    self._retry_backoff()
+                    self._increment_retries()
                 else:
                     self._state_transition(self.REQUEST)
                     self.auth_callback(self.src_mac, None, None)
