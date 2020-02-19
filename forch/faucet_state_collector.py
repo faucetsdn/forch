@@ -843,6 +843,10 @@ class FaucetStateCollector:
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
                 if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
                     self.learned_macs.pop(mac)
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access' and self._placement_callback:
+                devices_placement = DevicePlacement(switch=name, port=port, connected=False)
+                self._placement_callback(mac, devices_placement)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
