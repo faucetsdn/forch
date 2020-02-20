@@ -204,7 +204,7 @@ class Forchestrator:
     def _process_device_behavior(self, mac, device_behavior, static=False):
         """Function interface of processing device behavior"""
         if self._faucetizer:
-            self._faucetizer.process_device_behavior(mac, device_behavior, static)
+            self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
     def handle_auth_result(self, mac, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
