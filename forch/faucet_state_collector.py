@@ -757,14 +757,11 @@ class FaucetStateCollector:
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
 
-            if not self._is_egress_port(self, name, port):
-                return
-
             links = egress_state.setdefault(EGRESS_LINK_MAP, {})
             change_count = egress_state.setdefault(EGRESS_CHANGE_COUNT, 0)
             egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
 
-            if not name:
+            if not name or not self._is_egress_port(self, name, port):
                 return
 
             key = '%s:%s' % (name, port)
