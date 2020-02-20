@@ -26,7 +26,7 @@ class Faucetizer:
         self._behavioral_faucet_config = None
         self._lock = threading.Lock()
 
-    def process_device_placement(self, eth_src, placement, static):
+    def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
         devices = self._static_devices if static else self._dynamic_devices
         device_type = "static" if static else "dynamic"
@@ -38,11 +38,11 @@ class Faucetizer:
                     'Added %s placement: %s, %s, %s',
                     device_type, eth_src, placement.switch, placement.port)
             else:
-                removed = self._devices.pop(eth_src, None)
+                removed = devices.pop(eth_src, None)
                 if removed:
                     LOGGER.info('Removed %s placement: %s', device_type, eth_src)
 
-    def process_device_behavior(self, eth_src, behavior, static):
+    def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
         devices = self._static_devices if static else self._dynamic_devices
         device_type = "static" if static else "dynamic"
