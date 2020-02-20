@@ -20,7 +20,6 @@ script:
   - bin/run_test_set
 env:
   matrix:
-    # Disabling b/c flaky, needs to be fixed and reinstated.
     - TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
     - TEST_SET=topology TEST_SKIP=true
     - TEST_SET=reconfig
