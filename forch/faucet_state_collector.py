@@ -28,6 +28,8 @@ from forch.proto.devices_state_pb2 import DevicePlacement
 LOGGER = logging.getLogger('fstate')
 
 LACP_TO_LINK_STATE = {
+    LacpState.none: STATE_DOWN,
+    LacpState.default: STATE_DOWN,
     LacpState.init: STATE_DOWN,
     LacpState.active: STATE_ACTIVE,
     LacpState.noact: STATE_UP,
@@ -754,7 +756,8 @@ class FaucetStateCollector:
             LOGGER.info('lag_state update %s %s %s', name, port, lacp_state)
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
-            if lacp_state in [LacpState.none, LacpState.default]:
+
+            if not self._is_egress_port(self, name, port):
                 return
 
             links = egress_state.setdefault(EGRESS_LINK_MAP, {})
@@ -764,11 +767,13 @@ class FaucetStateCollector:
             if not name:
                 return
 
-            change_count = change_count + 1
             key = '%s:%s' % (name, port)
-            link_state = LACP_TO_LINK_STATE[lacp_state]
             link = links.setdefault(key, {})
-            link[LINK_STATE] = link_state
+            link_state = LACP_TO_LINK_STATE[lacp_state]
+
+            if link_state != link[LINK_STATE]:
+                change_count = change_count + 1
+                link[LINK_STATE] = link_state
 
             state, egress_detail = self._get_egress_state_detail(links)
 
@@ -1024,7 +1029,7 @@ class FaucetStateCollector:
                 ret_attr['peer_port'] = port_info['stack']['port']
                 return ret_attr
 
-            if 'loop_protect_external' in port_info:
+            if 'lacp' in port_info:
                 ret_attr['type'] = 'egress'
                 return ret_attr
 
@@ -1047,6 +1052,9 @@ class FaucetStateCollector:
             if port_attr.get('type') == 'egress':
                 return port
         return None
+
+    def _is_egress_port(self, switch, port):
+        return _get_egress_port(switch) == port
 
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
