@@ -147,7 +147,7 @@ class Forchestrator:
             os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
         devices_state = faucetizer.load_devices_state(static_behaviors_path)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
-            self._process_device_behavior(mac, device_behavior, True)
+            self._process_device_behavior(mac, device_behavior, static=True)
 
     def _calculate_behavioral_config(self):
         behavioral_config_file = self._config.get('orchestration', {}).get('behavioral_config_file')
