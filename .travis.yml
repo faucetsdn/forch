@@ -22,6 +22,8 @@ env:
   matrix:
     # Disabling b/c flaky, needs to be fixed and reinstated.
     #- TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
-    - TEST_SET=topology TEST_SKIP=true
-    - TEST_SET=reconfig
-    - TEST_SET=stack
+    #- TEST_SET=topology TEST_SKIP=true
+    #- TEST_SET=reconfig
+    - TEST_SET=stack SHARD=1
+    - TEST_SET=stack SHARD=2
+    - TEST_SET=stack SHARD=3
