@@ -7,7 +7,8 @@ Starting access-minimal-learning test...
 %%% vlan-assigned
 Starting access-vlan-assigned test...
 9a:02:57:1e:8f:01
+9a:02:57:1e:8f:02
 Starting config-vlan-assigned tests
-100
-null
-100
+200
+"role_green"
+300
