@@ -137,7 +137,7 @@ class Forchestrator:
             os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
         device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
         for eth_src, device_placement in device_placement_info.items():
-            self._process_device_placement(eth_src, device_placement, True)
+            self._process_device_placement(eth_src, device_placement, static=True)
 
     def _process_static_device_behavior(self):
         static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
@@ -197,7 +197,7 @@ class Forchestrator:
     def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
         if self._faucetizer:
-            self._faucetizer.process_device_placement(eth_src, device_placement, static)
+            self._faucetizer.process_device_placement(eth_src, device_placement, static=static)
         if self._authenticator:
             self._authenticator.process_device_placement(eth_src, device_placement)
 
