@@ -753,7 +753,7 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info('lag_state update %s %s %s', name, port, lacp_state)
+            LOGGER.debug('lag_state update %s %s %s', name, port, lacp_state)
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
 
@@ -761,14 +761,14 @@ class FaucetStateCollector:
             change_count = egress_state.setdefault(EGRESS_CHANGE_COUNT, 0)
             egress_state[EGRESS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
 
-            if not name or not self._is_egress_port(self, name, port):
+            if not name or not self._is_egress_port(name, port):
                 return
 
             key = '%s:%s' % (name, port)
             link = links.setdefault(key, {})
             link_state = LACP_TO_LINK_STATE[lacp_state]
 
-            if link_state != link[LINK_STATE]:
+            if link_state != link.get(LINK_STATE):
                 change_count = change_count + 1
                 link[LINK_STATE] = link_state
 
@@ -1051,7 +1051,7 @@ class FaucetStateCollector:
         return None
 
     def _is_egress_port(self, switch, port):
-        return _get_egress_port(switch) == port
+        return self._get_egress_port(switch) == port
 
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
