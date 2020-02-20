@@ -20,16 +20,16 @@ class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     def __init__(self, structural_faucet_config, segments_to_vlans):
         self._dynamic_devices = {}
-        self._persisted_devices = {}
+        self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = structural_faucet_config
         self._behavioral_faucet_config = None
         self._lock = threading.Lock()
 
-    def process_device_placement(self, eth_src, placement, persisted):
+    def process_device_placement(self, eth_src, placement, static):
         """Process device placement"""
-        devices = self._persisted_devices if persisted else self._dynamic_devices
-        device_type = "persisted" if persisted else "dynamic"
+        devices = self._static_devices if static else self._dynamic_devices
+        device_type = "static" if static else "dynamic"
         with self._lock:
             if placement.connected:
                 device = devices.setdefault(eth_src, Device())
@@ -42,10 +42,10 @@ class Faucetizer:
                 if removed:
                     LOGGER.info('Removed %s placement: %s', device_type, eth_src)
 
-    def process_device_behavior(self, eth_src, behavior, persisted):
+    def process_device_behavior(self, eth_src, behavior, static):
         """Process device behavior"""
-        devices = self._persisted_devices if persisted else self._dynamic_devices
-        device_type = "persisted" if persisted else "dynamic"
+        devices = self._static_devices if static else self._dynamic_devices
+        device_type = "static" if static else "dynamic"
         with self._lock:
             if behavior.segment:
                 device = devices.setdefault(eth_src, Device())
@@ -68,7 +68,7 @@ class Faucetizer:
             raise Exception("Structural faucet configuration not provided")
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
-        devices = {**self._dynamic_devices, **self._persisted_devices}
+        devices = {**self._dynamic_devices, **self._static_devices}
         for mac, device in devices.items():
             if device.placement.switch and device.behavior.segment:
                 switch_cfg = behavioral_faucet_config.get('dps', {}).get(

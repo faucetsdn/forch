@@ -194,17 +194,17 @@ class Forchestrator:
         """If forch is initialized or not"""
         return self._initialized
 
-    def _process_device_placement(self, eth_src, device_placement, persisted=False):
+    def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
         if self._faucetizer:
-            self._faucetizer.process_device_placement(eth_src, device_placement, persisted)
+            self._faucetizer.process_device_placement(eth_src, device_placement, static)
         if self._authenticator:
             self._authenticator.process_device_placement(eth_src, device_placement)
 
-    def _process_device_behavior(self, mac, device_behavior, persisted=False):
+    def _process_device_behavior(self, mac, device_behavior, static=False):
         """Function interface of processing device behavior"""
         if self._faucetizer:
-            self._faucetizer.process_device_behavior(mac, device_behavior, persisted)
+            self._faucetizer.process_device_behavior(mac, device_behavior, static)
 
     def handle_auth_result(self, mac, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
