@@ -19,29 +19,44 @@ LOGGER = logging.getLogger('faucetizer')
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     def __init__(self, structural_faucet_config, segments_to_vlans):
-        self._devices = {}
+        self._dynamic_devices = {}
+        self._persisted_devices = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = structural_faucet_config
         self._behavioral_faucet_config = None
         self._lock = threading.Lock()
 
-    def process_device_placement(self, eth_src, placement):
+    def process_device_placement(self, eth_src, placement, persisted):
         """Process device placement"""
+        devices = self._persisted_devices if persisted else self._dynamic_devices
+        device_type = "persisted" if persisted else "dynamic"
         with self._lock:
             if placement.connected:
-                device = self._devices.setdefault(eth_src, Device())
+                device = devices.setdefault(eth_src, Device())
                 device.placement.CopyFrom(placement)
+                LOGGER.info(
+                    'Added %s placement: %s, %s, %s',
+                    device_type, eth_src, placement.switch, placement.port)
             else:
-                self._devices.pop(eth_src, None)
+                removed = self._devices.pop(eth_src, None)
+                if removed:
+                    LOGGER.info('Removed %s placement: %s', device_type, eth_src)
 
-    def process_device_behavior(self, eth_src, behavior):
-        """Process device placement"""
+    def process_device_behavior(self, eth_src, behavior, persisted):
+        """Process device behavior"""
+        devices = self._persisted_devices if persisted else self._dynamic_devices
+        device_type = "persisted" if persisted else "dynamic"
         with self._lock:
             if behavior.segment:
-                device = self._devices.setdefault(eth_src, Device())
+                device = devices.setdefault(eth_src, Device())
                 device.behavior.CopyFrom(behavior)
+                LOGGER.info(
+                    'Added %s behavior: %s, %s, %s',
+                    device_type, eth_src, behavior.segment, behavior.role)
             else:
-                self._devices.pop(eth_src, None)
+                removed = devices.pop(eth_src, None)
+                if removed:
+                    LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
@@ -53,7 +68,8 @@ class Faucetizer:
             raise Exception("Structural faucet configuration not provided")
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
-        for mac, device in self._devices.items():
+        devices = {**self._dynamic_devices, **self._persisted_devices}
+        for mac, device in devices.items():
             if device.placement.switch and device.behavior.segment:
                 switch_cfg = behavioral_faucet_config.get('dps', {}).get(
                     device.placement.switch, {})
