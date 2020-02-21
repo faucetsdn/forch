@@ -8,6 +8,7 @@ import argparse
 import threading
 import yaml
 
+from forch.heartbeat_scheduler import HeartbeatScheduler
 import forch.radius_query as r_query
 from forch.simple_auth_state_machine import AuthStateMachine
 from forch.utils import configure_logging
@@ -18,6 +19,7 @@ from forch.proto.authentication_pb2 import AuthResult
 LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
 
+STATE_MACHINE_TIMER_FREQ = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
@@ -34,6 +36,9 @@ class Authenticator:
                 socket_info, radius_secret, self.process_radius_result)
             threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
+        self.timer = HeartbeatScheduler(STATE_MACHINE_TIMER_FREQ)
+        self.timer.add_callback(self.handle_sm_timeout)
+        self.timer.start()
 
     def _get_auth_map(self):
         base_dir = os.getenv('FORCH_CONFIG_DIR')
@@ -70,6 +75,11 @@ class Authenticator:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
 
+    def stop(self):
+        """Stop state machine timer"""
+        if self.timer:
+            self.timer.stop()
+
     def do_mab_request(self, src_mac, port_id):
         """Initiate MAB request"""
         LOGGER.info('sending MAB request for %s', src_mac)
@@ -77,15 +87,16 @@ class Authenticator:
 
     def process_device_placement(self, src_mac, device_placement):
         """Process device placement info and initiate mab query"""
-        if not device_placement.connected:
-            LOGGER.warning("Device not connected. Ignoring auth request for %s", src_mac)
-            return
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
         if src_mac not in self.sessions:
             self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
-        self.sessions[src_mac].host_learned()
+        if device_placement.connected:
+            self.sessions[src_mac].host_learned()
+        else:
+            self.sessions[src_mac].host_expired()
+            self.sessions.pop(src_mac)
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
@@ -106,6 +117,10 @@ class Authenticator:
         if self.auth_callback:
             self.auth_callback(src_mac, segment, role)
 
+    def handle_sm_timeout(self):
+        """Call timeout handlers for all active session state machines"""
+        for session in self.sessions.values():
+            session.handle_sm_timer()
 
 
 def parse_args(raw_args):

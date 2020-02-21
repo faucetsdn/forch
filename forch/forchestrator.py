@@ -137,7 +137,7 @@ class Forchestrator:
             os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
         device_placement_info = yaml_proto(placement_file, DevicesState).device_mac_placements
         for eth_src, device_placement in device_placement_info.items():
-            self._process_device_placement(eth_src, device_placement)
+            self._process_device_placement(eth_src, device_placement, static=True)
 
     def _process_static_device_behavior(self):
         static_behaviors_file = self._config.get('orchestration', {}).get('static_device_behavior')
@@ -147,7 +147,7 @@ class Forchestrator:
             os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
         devices_state = faucetizer.load_devices_state(static_behaviors_path)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
-            self._process_device_behavior(mac, device_behavior)
+            self._process_device_behavior(mac, device_behavior, static=True)
 
     def _calculate_behavioral_config(self):
         behavioral_config_file = self._config.get('orchestration', {}).get('behavioral_config_file')
@@ -194,17 +194,17 @@ class Forchestrator:
         """If forch is initialized or not"""
         return self._initialized
 
-    def _process_device_placement(self, eth_src, device_placement):
+    def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
         if self._faucetizer:
-            self._faucetizer.process_device_placement(eth_src, device_placement)
+            self._faucetizer.process_device_placement(eth_src, device_placement, static=static)
         if self._authenticator:
             self._authenticator.process_device_placement(eth_src, device_placement)
 
-    def _process_device_behavior(self, mac, device_behavior):
+    def _process_device_behavior(self, mac, device_behavior, static=False):
         """Function interface of processing device behavior"""
         if self._faucetizer:
-            self._faucetizer.process_device_behavior(mac, device_behavior)
+            self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
     def handle_auth_result(self, mac, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
@@ -300,6 +300,8 @@ class Forchestrator:
         """Stop forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.stop()
+        if self._authenticator:
+            self._authenticator.stop()
 
     def _process_faucet_event(self):
         try:
