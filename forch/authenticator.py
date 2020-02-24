@@ -12,7 +12,7 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 import forch.radius_query as r_query
 from forch.simple_auth_state_machine import AuthStateMachine
 from forch.utils import configure_logging
-from forch.utils import proto_dict, dict_proto
+from forch.utils import proto_dict, dict_proto, ConfigError
 
 from forch.proto.authentication_pb2 import AuthResult
 
@@ -23,22 +23,34 @@ STATE_MACHINE_TIMER_FREQ = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, radius_ip, radius_port, radius_secret, auth_callback=None):
+    def __init__(self, auth_config, auth_callback=None):
         self.auth_map = self._get_auth_map()
         self.radius_query = None
         self.sessions = {}
         self.auth_callback = auth_callback
-        if radius_ip and radius_port and radius_secret:
-            Socket = collections.namedtuple(
-                'Socket', 'listen_ip, listen_port, server_ip, server_port')
-            socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
-            self.radius_query = r_query.RadiusQuery(
-                socket_info, radius_secret, self.process_radius_result)
-            threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
+        radius_info = auth_config.get('radius_info')
+        if not radius_info:
+            return
+        radius_ip = radius_info.get('server_ip')
+        radius_port = radius_info.get('server_port')
+        secret = radius_info.get('secret')
+        if not (radius_ip and radius_port and secret):
+            LOGGER.warning('Invalid radius_info in config. \
+                           Radius IP: %s; Radius port: %s Secret present: %s',
+                           radius_ip, radius_port, bool(secret))
+            raise ConfigError
+        Socket = collections.namedtuple(
+            'Socket', 'listen_ip, listen_port, server_ip, server_port')
+        socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
+        self.radius_query = r_query.RadiusQuery(
+            socket_info, secret, self.process_radius_result)
+        threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
         self.timer = HeartbeatScheduler(STATE_MACHINE_TIMER_FREQ)
         self.timer.add_callback(self.handle_sm_timeout)
         self.timer.start()
+        LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+                    radius_ip, radius_port)
 
     def _get_auth_map(self):
         base_dir = os.getenv('FORCH_CONFIG_DIR')
@@ -143,6 +155,15 @@ def parse_args(raw_args):
 if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
+    auth_config = {
+        'auth_config': {
+            'radius_info': {
+                'server_ip': ARGS.server_ip,
+                'server_port': ARGS.server_port,
+                'secret': ARGS.radius_secret
+            }
+        }
+    }
     AUTHENTICATOR = Authenticator(ARGS.server_ip, ARGS.server_port, ARGS.radius_secret)
     AUTHENTICATOR.process_auth_result()
     if ARGS.mab:

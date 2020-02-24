@@ -26,7 +26,7 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-from forch.utils import configure_logging, yaml_proto, ConfigError
+from forch.utils import configure_logging, yaml_proto
 
 from forch.__version__ import __version__
 
@@ -114,20 +114,8 @@ class Forchestrator:
         self._initialized = True
 
     def _attempt_authenticator_initialise(self):
-        radius_info = self._config.get('radius_info')
-        if not radius_info:
-            return
-        radius_ip = radius_info.get('server_ip')
-        radius_port = radius_info.get('server_port')
-        secret = radius_info.get('secret')
-        if not (radius_ip and radius_port and secret):
-            LOGGER.warning('Invalid radius_info in config. \
-                           Radius IP: %s; Radius port: %s Secret present: %s',
-                           radius_ip, radius_port, bool(secret))
-            raise ConfigError
-        self._authenticator = Authenticator(radius_ip, radius_port, secret, self.handle_auth_result)
-        LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
-                    radius_ip, radius_port)
+        auth_config = self._config.get('orchestration', {}).get('auth_config')
+        self._authenticator = Authenticator(auth_config, self.handle_auth_result)
 
     def _process_static_device_placement(self):
         static_placement_file = self._config.get('orchestration', {}).get('static_device_placement')
