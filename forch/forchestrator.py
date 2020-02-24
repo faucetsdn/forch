@@ -115,7 +115,8 @@ class Forchestrator:
 
     def _attempt_authenticator_initialise(self):
         auth_config = self._config.get('orchestration', {}).get('auth_config')
-        self._authenticator = Authenticator(auth_config, self.handle_auth_result)
+        if auth_config:
+            self._authenticator = Authenticator(auth_config, self.handle_auth_result)
 
     def _process_static_device_placement(self):
         static_placement_file = self._config.get('orchestration', {}).get('static_device_placement')

@@ -19,7 +19,7 @@ from forch.proto.authentication_pb2 import AuthResult
 LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
 
-STATE_MACHINE_TIMER_FREQ = 3
+STATE_MACHINE_TIMER_INTERVAL = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
@@ -29,8 +29,6 @@ class Authenticator:
         self.sessions = {}
         self.auth_callback = auth_callback
         radius_info = auth_config.get('radius_info')
-        if not radius_info:
-            return
         radius_ip = radius_info.get('server_ip')
         radius_port = radius_info.get('server_port')
         secret = radius_info.get('secret')
@@ -46,7 +44,8 @@ class Authenticator:
             socket_info, secret, self.process_radius_result)
         threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
-        self.timer = HeartbeatScheduler(STATE_MACHINE_TIMER_FREQ)
+        interval = auth_config.get('sm_timer_interval', STATE_MACHINE_TIMER_INTERVAL)
+        self.timer = HeartbeatScheduler(interval)
         self.timer.add_callback(self.handle_sm_timeout)
         self.timer.start()
         LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
@@ -155,7 +154,7 @@ def parse_args(raw_args):
 if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
-    auth_config = {
+    AUTH_CONFIG = {
         'auth_config': {
             'radius_info': {
                 'server_ip': ARGS.server_ip,
@@ -164,7 +163,7 @@ if __name__ == '__main__':
             }
         }
     }
-    AUTHENTICATOR = Authenticator(ARGS.server_ip, ARGS.server_port, ARGS.radius_secret)
+    AUTHENTICATOR = Authenticator(AUTH_CONFIG)
     AUTHENTICATOR.process_auth_result()
     if ARGS.mab:
         AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)
