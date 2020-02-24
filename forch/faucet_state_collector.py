@@ -358,6 +358,8 @@ class FaucetStateCollector:
                 broken.append(switch_name)
             self._augment_mac_urls(url_base, switch_data)
 
+        self._fill_dva_states(switches_data)
+
         if not self.switch_states:
             switch_state = State.broken
             state_detail = 'No switches connected'
@@ -533,6 +535,27 @@ class FaucetStateCollector:
     def _fill_path_to_root(self, switch_name, switch_map):
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)
+
+    def _fill_dva_states(self, switches_data):
+        """populate dva states for a switch"""
+        dp_objs = self.faucet_config.get(DPS_CFG, {})
+
+        for dp_obj in dp_objs:
+            switch_data = switches_data.get(dp_obj.name)
+            if not switch_data:
+                LOGGER.warning('Switch not found in switches_data: %s', dp_obj.name)
+                continue
+
+            for port_id, port_obj in dp_obj.interfaces.items():
+                native_vlan = port_obj.get('native_vlan')
+                acls_in = port_obj.get('acls_in')
+
+                port_map = switch_data.setdefault('ports', {}).setdefault(port_id, {})
+                if native_vlan:
+                    port_map['vlan'] = int(native_vlan)
+                if acls_in:
+                    port_map['acls'] = []
+                    port_map['acls'].extend(acls_in)
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
