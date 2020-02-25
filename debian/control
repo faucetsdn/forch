@@ -36,3 +36,9 @@ Package: forch
 Architecture: all
 Depends: python3-forch,
 Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
+
+Package: esdn-faucet
+Architecture: all
+Depends: forch, faucet
+Version: 1.1
+Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
