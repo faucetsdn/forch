@@ -358,8 +358,6 @@ class FaucetStateCollector:
                 broken.append(switch_name)
             self._augment_mac_urls(url_base, switch_data)
 
-        self._fill_dva_states(switches_data)
-
         if not self.switch_states:
             switch_state = State.broken
             state_detail = 'No switches connected'
@@ -433,10 +431,9 @@ class FaucetStateCollector:
             return self._get_switch_raw(switch_name, port)
 
     def _get_switch_config(self, switch_name):
-        dps_configs = {str(x): x for x in self.faucet_config[DPS_CFG]}
-        if switch_name not in dps_configs:
+        if switch_name not in self.faucet_config.get(DPS_CFG, {}):
             raise Exception(f'Missing switch configuration for {switch_name}')
-        return dps_configs[switch_name]
+        return self.faucet_config[DPS_CFG][switch_name]
 
     def _get_switch_raw(self, switch_name, port):
         """get switches state"""
@@ -463,12 +460,14 @@ class FaucetStateCollector:
         # filling port information
         switch_port_map = switch_map.setdefault('ports', {})
         if port:
-            port = int(port)
-            switch_port_map[port] = self._get_port_state(switch_name, port)
-            switch_map['ports_restrict'] = port
+            port_id = int(port)
+            switch_port_map[port] = self._get_port_state(switch_name, port_id)
+            switch_map['ports_restrict'] = port_id
+            self._fill_dva_states(switch_name, port_id, switch_port_map[port_id])
         else:
             for port_id in switch_states.get(PORTS, {}):
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
+                self._fill_dva_states(switch_name, port_id, switch_port_map[port_id])
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
@@ -536,26 +535,24 @@ class FaucetStateCollector:
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)
 
-    def _fill_dva_states(self, switches_data):
-        """populate dva states for a switch"""
-        dp_objs = self.faucet_config.get(DPS_CFG, {})
+    def _fill_dva_states(self, switch_name, port_id, port_map):
+        dp_obj = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
+        if not dp_obj:
+            LOGGER.warning('Switch not defined in dps config: %s', switch_name)
+            return
 
-        for dp_obj in dp_objs:
-            switch_data = switches_data.get(dp_obj.name)
-            if not switch_data:
-                LOGGER.warning('Switch not found in switches_data: %s', dp_obj.name)
-                continue
+        port_obj = dp_obj.interfaces.get(port_id)
+        if not port_obj:
+            LOGGER.warning('Port not defined in dps config: %s, %s', switch_name, port_id)
+            return
 
-            for port_id, port_obj in dp_obj.interfaces.items():
-                native_vlan = port_obj.get('native_vlan')
-                acls_in = port_obj.get('acls_in')
+        native_vlan = port_obj.get('native_vlan')
+        acls_in = port_obj.get('acls_in')
 
-                port_map = switch_data.setdefault('ports', {}).setdefault(port_id, {})
-                if native_vlan:
-                    port_map['vlan'] = int(native_vlan)
-                if acls_in:
-                    port_map['acls'] = []
-                    port_map['acls'].extend(acls_in)
+        if native_vlan:
+            port_map['vlan'] = int(native_vlan)
+        if acls_in:
+            port_map['acls'] = list(acls_in)
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
@@ -565,7 +562,7 @@ class FaucetStateCollector:
 
     def _get_topo_map(self, check_active=True):
         topo_map = {}
-        dps_objs = self.faucet_config.get(DPS_CFG)
+        dps_objs = self.faucet_config.get(DPS_CFG, {}).values()
         if not dps_objs:
             return None
         for local_dp in dps_objs:
@@ -914,7 +911,7 @@ class FaucetStateCollector:
             cfg_state = self.faucet_config
             change_count = cfg_state.get(DPS_CFG_CHANGE_COUNT, 0) + 1
             LOGGER.info('dataplane_config #%d change: %r', change_count, dps_config)
-            cfg_state[DPS_CFG] = dps_config
+            cfg_state[DPS_CFG] = {str(dp): dp for dp in dps_config}
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
 
@@ -1020,6 +1017,7 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
+            self._fill_dva_states(switch, port, mac_deets)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
