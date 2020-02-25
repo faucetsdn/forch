@@ -92,7 +92,8 @@ class AuthStateMachine():
         with self._transition_lock:
             if time.time() > self._current_timeout:
                 self._radius_query_callback(self.src_mac, self.port_id)
-                self._current_timeout = time.time() + self._retry_backoff * self._query_state_timeout
+                backoff_time = self._retry_backoff * self._query_state_timeout
+                self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
                     self._increment_retries()
                 else:
