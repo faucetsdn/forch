@@ -14,9 +14,9 @@ class AuthStateMachine():
     REQUEST = "RADIUS Request"
     ACCEPT = "Authorized"
     MAX_RADIUS_BACKOFF = 5
-    QUERY_STATE_TIMEOUT = 10
-    REJECT_STATE_TIMEOUT = 300
-    AUTH_STATE_TIMEOUT = 3600
+    QUERY_TIMEOUT_SEC = 10
+    REJECT_TIMEOUT_SEC = 300
+    AUTH_TIMEOUT_SEC = 3600
 
     # pylint: disable=too-many-arguments
     def __init__(self, src_mac, port_id, auth_config, radius_query_callback, auth_callback):
@@ -28,9 +28,9 @@ class AuthStateMachine():
         self._retry_backoff = 0
         self._current_timeout = 0
         self._max_radius_backoff = auth_config.get('max_radius_backoff', self.MAX_RADIUS_BACKOFF)
-        self._query_state_timeout = auth_config.get('query_state_timeout', self.QUERY_STATE_TIMEOUT)
-        self._rej_state_timeout = auth_config.get('reject_state_timeout', self.REJECT_STATE_TIMEOUT)
-        self._auth_state_timeout = auth_config.get('auth_state_timeout', self.AUTH_STATE_TIMEOUT)
+        self._query_timeout_sec = auth_config.get('query_timeout_sec', self.QUERY_TIMEOUT_SEC)
+        self._rej_timeout_sec = auth_config.get('reject_timeout_sec', self.REJECT_TIMEOUT_SEC)
+        self._auth_timeout_sec = auth_config.get('auth_timeout_sec', self.AUTH_TIMEOUT_SEC)
         self._transition_lock = Lock()
         self._reset_state_machine()
 
@@ -48,7 +48,7 @@ class AuthStateMachine():
     def _reset_state_machine(self):
         self._state_transition(self.UNAUTH)
         self._retry_backoff = 0
-        self._current_timeout = time.time() + self._rej_state_timeout
+        self._current_timeout = time.time() + self._rej_timeout_sec
         self._auth_callback(self.src_mac, None, None)
 
     def get_state(self):
@@ -75,7 +75,7 @@ class AuthStateMachine():
         """Received RADIUS accept message"""
         with self._transition_lock:
             self._state_transition(self.ACCEPT, self.REQUEST)
-            self._current_timeout = time.time() + self._auth_state_timeout
+            self._current_timeout = time.time() + self._auth_timeout_sec
             self._retry_backoff = 0
             self._auth_callback(self.src_mac, segment, role)
 
@@ -83,7 +83,7 @@ class AuthStateMachine():
         """Received RADIUS reject message"""
         with self._transition_lock:
             self._state_transition(self.UNAUTH, self.REQUEST)
-            self._current_timeout = time.time() + self._rej_state_timeout
+            self._current_timeout = time.time() + self._rej_timeout_sec
             self._retry_backoff = 0
             self._auth_callback(self.src_mac, None, None)
 
@@ -92,7 +92,7 @@ class AuthStateMachine():
         with self._transition_lock:
             if time.time() > self._current_timeout:
                 self._radius_query_callback(self.src_mac, self.port_id)
-                backoff_time = self._retry_backoff * self._query_state_timeout
+                backoff_time = self._retry_backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
                     self._increment_retries()

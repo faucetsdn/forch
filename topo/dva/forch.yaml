@@ -14,11 +14,11 @@ orchestration:
             server_ip: 172.17.0.5
             server_port: 1812
             secret: SECRET
-        sm_timer_interval: 5
+        heartbeat_sec: 5
         max_radius_backoff: 10
-        query_state_timeout: 15
-        reject_state_timeout: 360
-        auth_state_timeout: 3559
+        query_timeout_sec: 15
+        reject_timeout_sec: 360
+        auth_timeout_sec: 3559
 process:
   scan_interval_sec: 10
   processes:

@@ -19,7 +19,7 @@ from forch.proto.authentication_pb2 import AuthResult
 LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
 
-STATE_MACHINE_TIMER_INTERVAL = 3
+HEARTBEAT_INTERVAL_SEC = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
@@ -44,7 +44,7 @@ class Authenticator:
             socket_info, secret, self.process_radius_result)
         threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
-        interval = auth_config.get('sm_timer_interval', STATE_MACHINE_TIMER_INTERVAL)
+        interval = auth_config.get('heartbeat_sec', HEARTBEAT_INTERVAL_SEC)
         self.auth_config = auth_config
         self.timer = HeartbeatScheduler(interval)
         self.timer.add_callback(self.handle_sm_timeout)
