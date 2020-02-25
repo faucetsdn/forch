@@ -44,6 +44,10 @@ function test_dva {
     jq '.switches."nz-kiwi-t2sw1".ports."1".vlan'
     jq '.switches."nz-kiwi-t2sw2".ports."1".acls[0]'
     jq '.switches."nz-kiwi-t2sw3".ports."1".vlan'
+
+    api_result=$fout_dir/list_hosts
+    jq '.eth_srcs."9a:02:57:1e:8f:01".vlan'
+    jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0]'
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
