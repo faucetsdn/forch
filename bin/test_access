@@ -25,18 +25,30 @@ function test_access {
     wget localhost:$PROM_PT -O- 2>/dev/null | grep 'nz-kiwi-t2sw2' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
 }
 
-function test_config {
-    fdesc=config-$1
+function test_dva {
+    fdesc=dva-$1
     fout_dir=$OUT_DIR/$fdesc
     mkdir -p $fout_dir
 
     echo Starting $fdesc tests | tee -a $TEST_RESULTS
     echo $fout_dir
     fetch_forch sys_config
+    fetch_forch switch_state
+    fetch_forch list_hosts
+
     api_result=$fout_dir/sys_config.json
     jq '.faucet.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
+
+    api_result=$fout_dir/switch_state.json
+    jq '.switches."nz-kiwi-t2sw1".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw2".ports."1".acls[0]' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw3".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
+
+    api_result=$fout_dir/list_hosts.json
+    jq '.eth_srcs."9a:02:57:1e:8f:01".vlan' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0]' $api_result | tee -a $TEST_RESULTS
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
@@ -58,4 +70,4 @@ echo %%% vlan-assigned | tee -a $TEST_RESULTS
 send_udp forch-faux-2 "192.168.1.254/68" 5
 sleep 10
 test_access vlan-assigned
-test_config vlan-assigned
+test_dva vlan-assigned
