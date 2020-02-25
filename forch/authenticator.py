@@ -45,6 +45,7 @@ class Authenticator:
         threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
         interval = auth_config.get('sm_timer_interval', STATE_MACHINE_TIMER_INTERVAL)
+        self.auth_config = auth_config
         self.timer = HeartbeatScheduler(interval)
         self.timer.add_callback(self.handle_sm_timeout)
         self.timer.start()
@@ -102,7 +103,8 @@ class Authenticator:
         port_id = int(portid_hash[:6], 16)
         if src_mac not in self.sessions:
             self.sessions[src_mac] = AuthStateMachine(
-                src_mac, port_id, self.radius_query.send_mab_request, self.process_session_result)
+                src_mac, port_id, self.auth_config,
+                self.radius_query.send_mab_request, self.process_session_result)
         if device_placement.connected:
             self.sessions[src_mac].host_learned()
         else:
@@ -155,12 +157,10 @@ if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
     AUTH_CONFIG = {
-        'auth_config': {
-            'radius_info': {
-                'server_ip': ARGS.server_ip,
-                'server_port': ARGS.server_port,
-                'secret': ARGS.radius_secret
-            }
+        'radius_info': {
+            'server_ip': ARGS.server_ip,
+            'server_port': ARGS.server_port,
+            'secret': ARGS.radius_secret
         }
     }
     AUTHENTICATOR = Authenticator(AUTH_CONFIG)
