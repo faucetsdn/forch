@@ -461,7 +461,7 @@ class FaucetStateCollector:
         switch_port_map = switch_map.setdefault('ports', {})
         if port:
             port_id = int(port)
-            switch_port_map[port] = self._get_port_state(switch_name, port_id)
+            switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
             switch_map['ports_restrict'] = port_id
             self._fill_dva_states(switch_name, port_id, switch_port_map[port_id])
         else:
