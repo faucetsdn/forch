@@ -1,4 +1,4 @@
-Source: forch
+Source: esdn-faucet
 Section: python
 Priority: optional
 Maintainer: Faucet Maintainers <maintainers@faucet.nz>
@@ -6,28 +6,18 @@ Build-Depends: debhelper (>=9),
 	       dh-python,
 	       python3-all,
 	       python3-setuptools,
-	       python3-yaml,
-	       python3-prometheus-client,
-	       python3-requests,
-	       python3-psutil,
 	       python3-wheel,
-	       python3-protobuf,
-	       pylint,
 	       python3-pbr (>=1.9),
-Depends: python3-forch
+Depends: esdn-faucet
 Standards-Version: 3.9.6
 X-Python3-Version: >= 3.6
 Homepage: https://github.com/faucetsdn/forch
 Vcs-Git: https://github.com/faucetsdn/forch.git
 Vcs-Browser: https://github.com/faucetsdn/forch
 
-Package: python3-forch
+Package: esdn-faucet
 Architecture: all
 Depends: python3-faucet (= FAUCET_VERSION),
-         python3-netaddr,
-         python3-networkx,
-         python3-protobuf,
-         python3-psutil,
-         python3-requests,
-         python3-yaml,
-Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
+     forch,
+     faucet
+Description: Complete esdn-faucet bundle
