@@ -28,7 +28,7 @@ build-debs -b -L -d rodete
 
 (
     cd esdn-faucet
-    git checkout esdn -- FORCH_VERSION
+    git checkout origin/esdn -- FORCH_VERSION
     FORCH_VERSION=$(< FORCH_VERSION)
     echo Fixing debian forch version to $FORCH_VERSION
     fgrep -v $FORCH_VERSION debian/control > /dev/null
