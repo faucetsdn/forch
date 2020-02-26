@@ -1,0 +1,25 @@
+/*
+ * Encapsulating Forch configuration
+ */
+syntax = "proto3";
+
+// TODO fill up sections one by one
+message ForchConfig {
+  ProcessConfig process = 1;
+}
+
+message ProcessConfig {
+  int32 scan_interval_sec = 1;
+  bool check_vrrp = 2;
+  map<string, Process> processes = 3;
+  map<int32, Connection> connections = 4;
+
+  message Process {
+    string regex = 1;
+    int32 count = 2;
+  }
+
+  message Connection {
+    string description = 1;
+  }
+}

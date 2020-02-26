@@ -28,17 +28,20 @@ class LocalStateCollector:
         self._process_state = self._state['processes']
         self._process_state['connections'] = {}
         self._vrrp_state = self._state['vrrp']
-        self._target_procs = config.get('processes', {})
-        self._check_vrrp = config.get('check_vrrp', False)
-        self._connections = config.get('connections', {})
-        self._current_time = None
-        self._process_interval = int(config.get('scan_interval_sec', 60))
-        self._lock = threading.Lock()
-        self._cleanup_handler = cleanup_handler
-        self._active_state_handler = active_state_handler
         self._last_error = {}
+        self._current_time = None
         self._conn_state = None
         self._conn_state_count = 0
+        self._lock = threading.Lock()
+
+        self._target_procs = config.processes
+        self._check_vrrp = config.check_vrrp
+        self._connections = config.connections
+        self._process_interval = config.scan_interval_sec or 60
+
+        self._cleanup_handler = cleanup_handler
+        self._active_state_handler = active_state_handler
+
         LOGGER.info('Scanning %s processes every %ds',
                     len(self._target_procs), self._process_interval)
 
@@ -78,7 +81,7 @@ class LocalStateCollector:
         for target_name in self._target_procs:
             state_map = process_map.setdefault(target_name, {})
             proc_list = procs.get(target_name, [])
-            target_count = int(self._target_procs[target_name].get('count', 1))
+            target_count = self._target_procs[target_name].count or 1
             state, detail = self._extract_process_state(target_name, target_count, proc_list)
             state_map['detail'] = detail
             if state:
@@ -114,9 +117,10 @@ class LocalStateCollector:
         procs = {}
         for proc in psutil.process_iter(attrs=_PROC_ATTRS):
             cmd_line_str = ' '.join(proc.info['cmdline'])
-            for target_name, target_map in self._target_procs.items():
+            for target_name, process_cfg in self._target_procs.items():
                 proc_list = procs.setdefault(target_name, [])
-                if re.search(target_map['regex'], cmd_line_str):
+                if re.search(process_cfg.regex, cmd_line_str):
+                    print(f'{target_name}: {process_cfg.regex}')
                     proc_list.append(proc)
 
         return procs

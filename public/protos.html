@@ -460,6 +460,41 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fforch_configuration.proto">forch/proto/forch_configuration.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#ForchConfig"><span class="badge">M</span>ForchConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessConfig"><span class="badge">M</span>ProcessConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessConfig.Connection"><span class="badge">M</span>ProcessConfig.Connection</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessConfig.ConnectionsEntry"><span class="badge">M</span>ProcessConfig.ConnectionsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessConfig.Process"><span class="badge">M</span>ProcessConfig.Process</a>
+                </li>
+              
+                <li>
+                  <a href="#ProcessConfig.ProcessesEntry"><span class="badge">M</span>ProcessConfig.ProcessesEntry</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2fhost_path.proto">forch/proto/host_path.proto</a>
             <ul>
               
@@ -2802,6 +2837,206 @@
                 <tr>
                   <td>id</td>
                   <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/forch_configuration.proto">forch/proto/forch_configuration.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>Encapsulating Forch configuration</p>
+
+      
+        <h3 id="ForchConfig">ForchConfig</h3>
+        <p>TODO fill up sections one by one</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>process</td>
+                  <td><a href="#ProcessConfig">ProcessConfig</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessConfig">ProcessConfig</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>scan_interval_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>check_vrrp</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>processes</td>
+                  <td><a href="#ProcessConfig.ProcessesEntry">ProcessConfig.ProcessesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>connections</td>
+                  <td><a href="#ProcessConfig.ConnectionsEntry">ProcessConfig.ConnectionsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessConfig.Connection">ProcessConfig.Connection</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessConfig.ConnectionsEntry">ProcessConfig.ConnectionsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProcessConfig.Connection">ProcessConfig.Connection</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessConfig.Process">ProcessConfig.Process</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>regex</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProcessConfig.ProcessesEntry">ProcessConfig.ProcessesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProcessConfig.Process">ProcessConfig.Process</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
