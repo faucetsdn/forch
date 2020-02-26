@@ -31,7 +31,7 @@ echo Fixing debian faucet version to $FAUCET_VERSION
 fgrep -v $FAUCET_VERSION debian/control > /dev/null
 sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
 fgrep $FAUCET_VERSION debian/control
-VERSION=$(git describe esdn-faucet)
+VERSION=$(git describe remotes/origin/esdn-faucet)
 debchange --newversion $VERSION -b "New upstream release"
 build-debs -b -L -d rodete
 
