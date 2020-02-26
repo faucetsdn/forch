@@ -2863,7 +2863,7 @@
 
       
         <h3 id="ForchConfig">ForchConfig</h3>
-        <p>TODO fill up sections one by one</p>
+        <p>Forch configuration</p>
 
         
           <table class="field-table">
@@ -2876,7 +2876,7 @@
                   <td>process</td>
                   <td><a href="#ProcessConfig">ProcessConfig</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>configurations for processes </p></td>
                 </tr>
               
             </tbody>
@@ -2887,7 +2887,7 @@
         
       
         <h3 id="ProcessConfig">ProcessConfig</h3>
-        <p></p>
+        <p>Processes section in Forch configuration</p>
 
         
           <table class="field-table">
@@ -2900,28 +2900,28 @@
                   <td>scan_interval_sec</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>scan interval in seconds </p></td>
                 </tr>
               
                 <tr>
                   <td>check_vrrp</td>
                   <td><a href="#bool">bool</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>indicate if Forch should check VRRP state </p></td>
                 </tr>
               
                 <tr>
                   <td>processes</td>
                   <td><a href="#ProcessConfig.ProcessesEntry">ProcessConfig.ProcessesEntry</a></td>
                   <td>repeated</td>
-                  <td><p> </p></td>
+                  <td><p>target processes to check </p></td>
                 </tr>
               
                 <tr>
                   <td>connections</td>
                   <td><a href="#ProcessConfig.ConnectionsEntry">ProcessConfig.ConnectionsEntry</a></td>
                   <td>repeated</td>
-                  <td><p> </p></td>
+                  <td><p>connections to check </p></td>
                 </tr>
               
             </tbody>
@@ -2932,7 +2932,7 @@
         
       
         <h3 id="ProcessConfig.Connection">ProcessConfig.Connection</h3>
-        <p></p>
+        <p>Connection</p>
 
         
           <table class="field-table">
@@ -2945,7 +2945,7 @@
                   <td>description</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>description </p></td>
                 </tr>
               
             </tbody>
@@ -2987,7 +2987,7 @@
         
       
         <h3 id="ProcessConfig.Process">ProcessConfig.Process</h3>
-        <p></p>
+        <p>representing a target process</p>
 
         
           <table class="field-table">
@@ -3000,14 +3000,14 @@
                   <td>regex</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>regex to match process name </p></td>
                 </tr>
               
                 <tr>
                   <td>count</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>count of instances of a target process </p></td>
                 </tr>
               
             </tbody>

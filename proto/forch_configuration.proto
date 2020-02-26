@@ -4,22 +4,42 @@
 syntax = "proto3";
 
 // TODO fill up sections one by one
+/*
+ * Forch configuration
+ */
 message ForchConfig {
+  // configurations for processes
   ProcessConfig process = 1;
 }
 
+/*
+ * Processes section in Forch configuration
+ */
 message ProcessConfig {
+  // scan interval in seconds
   int32 scan_interval_sec = 1;
+
+  // indicate if Forch should check VRRP state
   bool check_vrrp = 2;
+
+  // target processes to check
   map<string, Process> processes = 3;
+
+  // connections to check
   map<int32, Connection> connections = 4;
 
+  // representing a target process
   message Process {
+    // regex to match process name
     string regex = 1;
+
+    // count of instances of a target process
     int32 count = 2;
   }
 
+  // Connection
   message Connection {
+    // description
     string description = 1;
   }
 }
