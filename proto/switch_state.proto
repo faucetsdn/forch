@@ -86,11 +86,17 @@ message SwitchState {
     // Port state
     State.State port_state = 2;
 
+    // native VLAN
+    int32 vlan = 3;
+
+    // ACLs
+    repeated string acls = 4;
+
     // Port state last change time
-    string state_last_change = 3;
+    string state_last_change = 5;
 
     // Port state change count
-    int32 state_change_count = 4;
+    int32 state_change_count = 6;
 
     // Static port attributes
     message Attributes {

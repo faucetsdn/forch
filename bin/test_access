@@ -8,6 +8,16 @@ export CONTROLLER_NAME=127.0.0.1
 
 PROM_PT=8001
 
+function send_udp {
+    container=$1
+    addr=$2
+    count=$3
+    for i in $(seq 1 $count); do
+        docker exec $container bash -c "echo -n 'abc' > /dev/udp/$addr"
+        sleep 1
+    done
+}
+
 function test_access {
     adesc=access-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
@@ -15,18 +25,30 @@ function test_access {
     wget localhost:$PROM_PT -O- 2>/dev/null | grep 'nz-kiwi-t2sw2' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
 }
 
-function test_config {
-    fdesc=config-$1
+function test_dva {
+    fdesc=dva-$1
     fout_dir=$OUT_DIR/$fdesc
     mkdir -p $fout_dir
 
     echo Starting $fdesc tests | tee -a $TEST_RESULTS
     echo $fout_dir
     fetch_forch sys_config
+    fetch_forch switch_state
+    fetch_forch list_hosts
+
     api_result=$fout_dir/sys_config.json
     jq '.faucet.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
+
+    api_result=$fout_dir/switch_state.json
+    jq '.switches."nz-kiwi-t2sw1".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw2".ports."1".acls[0]' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw3".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
+
+    api_result=$fout_dir/list_hosts.json
+    jq '.eth_srcs."9a:02:57:1e:8f:01".vlan' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0]' $api_result | tee -a $TEST_RESULTS
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
@@ -36,16 +58,16 @@ test_access initial
 echo %%% minimal-learning | tee -a $TEST_RESULTS
 docker exec forch-faux-1 arp -s 192.168.1.254 02:00:00:00:00:00
 docker exec forch-faux-2 arp -s 192.168.1.254 02:00:00:00:00:00
-docker exec forch-faux-1 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/67"
-docker exec forch-faux-2 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/68"
-sleep 1
+send_udp forch-faux-1 "192.168.1.254/67" 5
+send_udp forch-faux-2 "192.168.1.254/68" 5
+sleep 10
 test_access minimal-learning
 
 restart_forch
 
 # vlan and roles are assigned now so any traffic should not be dropped
 echo %%% vlan-assigned | tee -a $TEST_RESULTS
-docker exec forch-faux-2 bash -c "echo -n 'abc' > /dev/udp/192.168.1.254/68"
-sleep 1
+send_udp forch-faux-2 "192.168.1.254/68" 5
+sleep 10
 test_access vlan-assigned
-test_config vlan-assigned
+test_dva vlan-assigned
