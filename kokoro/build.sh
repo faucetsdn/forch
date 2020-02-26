@@ -7,7 +7,7 @@ cd git/benz-build-source
 sudo kokoro/setup.sh
 sudo apt-get install tree
 
-FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
+FAUCET_VERSION=$(< etc/FAUCET_VERSION)
 echo Fixing debian faucet version to $FAUCET_VERSION
 fgrep -v $FAUCET_VERSION debian/control > /dev/null
 sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
@@ -31,10 +31,12 @@ git log -n 1 remotes/origin/esdn-faucet
 
 (
     cd esdn-faucet
-    echo Fixing debian faucet version to $FAUCET_VERSION
-    fgrep -v $FAUCET_VERSION debian/control > /dev/null
-    sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
-    fgrep $FAUCET_VERSION debian/control
+    git checkout esdn-faucet -- FORCH_VERSION
+    FORCH_VERSION=$(< FORCH_VERSION)
+    echo Fixing debian forch version to $FORCH_VERSION
+    fgrep -v $FORCH_VERSION debian/control > /dev/null
+    sed -i s/FORCH_VERSION/${FORCH_VERSION}/ debian/control
+    fgrep $FORCH_VERSION debian/control
 
     VERSION=$(git describe remotes/origin/esdn-faucet)
     echo esdn-faucet version $VERSION
