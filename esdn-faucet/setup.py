@@ -4,7 +4,7 @@ import sys
 
 
 setuptools.setup(
-    name="forch",
+    name="esdn-faucet",
     description="Faucet orchestrator",
     packages=setuptools.find_packages(),
     classifiers=[
