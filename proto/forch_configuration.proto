@@ -13,7 +13,7 @@ message ForchConfig {
 }
 
 /*
- * Processes section in Forch configuration
+ * Process section in Forch configuration
  */
 message ProcessConfig {
   // scan interval in seconds
