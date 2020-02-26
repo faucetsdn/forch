@@ -26,19 +26,16 @@ VER_FILE
 cat forch/__version__.py
 build-debs -b -L -d rodete
 
-git log -n 1 1.1
-git log -n 1 remotes/origin/esdn-faucet
-
 (
     cd esdn-faucet
-    git checkout esdn-faucet -- FORCH_VERSION
+    git checkout origin/esdn -- FORCH_VERSION
     FORCH_VERSION=$(< FORCH_VERSION)
     echo Fixing debian forch version to $FORCH_VERSION
     fgrep -v $FORCH_VERSION debian/control > /dev/null
     sed -i s/FORCH_VERSION/${FORCH_VERSION}/ debian/control
     fgrep $FORCH_VERSION debian/control
 
-    VERSION=$(git describe remotes/origin/esdn-faucet)
+    VERSION=$(git describe remotes/origin/esdn)
     echo esdn-faucet version $VERSION
     debchange --newversion $VERSION -b "New upstream release"
     build-debs -b -L -d rodete
