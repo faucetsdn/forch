@@ -117,10 +117,9 @@ class LocalStateCollector:
         procs = {}
         for proc in psutil.process_iter(attrs=_PROC_ATTRS):
             cmd_line_str = ' '.join(proc.info['cmdline'])
-            for target_name, process_cfg in self._target_procs.items():
-                proc_list = procs.setdefault(target_name, [])
-                if re.search(process_cfg.regex, cmd_line_str):
-                    print(f'{target_name}: {process_cfg.regex}')
+            for target_process_name, target_process_cfg in self._target_procs.items():
+                proc_list = procs.setdefault(target_process_name, [])
+                if re.search(target_process_cfg.regex, cmd_line_str):
                     proc_list.append(proc)
 
         return procs
