@@ -29,8 +29,8 @@ build-debs -b -L -d rodete
 git log -n 1 1.1
 git log -n 1 remotes/origin/esdn-faucet
 
-cd esdn-faucet
 (
+    cd esdn-faucet
     echo Fixing debian faucet version to $FAUCET_VERSION
     fgrep -v $FAUCET_VERSION debian/control > /dev/null
     sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
