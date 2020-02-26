@@ -24,3 +24,6 @@ env:
     - TEST_SET=topology TEST_SKIP=true
     - TEST_SET=reconfig
     - TEST_SET=stack
+after_failure:
+    - sleep 10
+    - echo == End of test ==

@@ -64,6 +64,7 @@ sleep 10
 test_access minimal-learning
 
 start_radius_server
+docker ps
 restart_forch
 
 # vlan and roles are assigned now so any traffic should not be dropped
