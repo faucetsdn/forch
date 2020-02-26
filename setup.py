@@ -21,8 +21,9 @@ version_content = f'''"""Forch version file"""
 
 __version__ = '{version}'
 '''
-with open('forch/__version__.py', 'w+') as version_file:
-    version_file.write(version_content)
+# Don't save version here, since it's already done in kokoro/build.sh
+#with open('forch/__version__.py', 'w+') as version_file:
+#    version_file.write(version_content)
 
 
 setuptools.setup(
