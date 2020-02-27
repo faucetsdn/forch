@@ -26,13 +26,14 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-from forch.utils import configure_logging, yaml_proto
+from forch.utils import configure_logging, dict_proto, yaml_proto
 
 from forch.__version__ import __version__
 
+from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
+from forch.proto.forch_configuration_pb2 import ProcessConfig
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
-from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
 
 LOGGER = logging.getLogger('forch')
 
@@ -74,8 +75,11 @@ class Forchestrator:
         """Initialize forchestrator instance"""
         self._faucet_collector = FaucetStateCollector()
         self._faucet_collector.set_placement_callback(self._process_device_placement)
+        # TODO: Replace dict_proto with direct access from self._config to get process config
+        #       when forch config is fully converted to protobuf
         self._local_collector = LocalStateCollector(
-            self._config.get('process'), self.cleanup, self.handle_active_state)
+            dict_proto(self._config.get('process'), ProcessConfig),
+            self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
         prom_port = os.getenv('PROMETHEUS_PORT')
