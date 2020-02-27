@@ -18,24 +18,10 @@ filter_rule   Cleartext-Password := "microphone"
 	NAS-Filter-Rule = "deny in tcp from any to any"
 
 # MAB Examples for integration tests
-8e0000000102 Cleartext-Password := '8e0000000102'
+9a02571e8f03 Cleartext-Password := '9a02571e8f03'
     Tunnel-Type = VLAN,
     Tunnel-Medium-Type = IEEE-802,
-    Tunnel-Private-Group-Id = "infra",
-    Tunnel-Assignment-Id = "ap",
-    Reply-Message = "welcome-infra-ap",
-    Session-Timeout = 3600
-9a02571e8f01 Cleartext-Password := '9a02571e8f01'
-    Tunnel-Type = VLAN,
-    Tunnel-Medium-Type = IEEE-802,
-    Tunnel-Private-Group-Id = "infra",
-    Tunnel-Assignment-Id = "ap",
-    Reply-Message = "welcome-infra-ap",
-    Session-Timeout = 3600
-9a02571e8f02 Cleartext-Password := '9a02571e8f02'
-    Tunnel-Type = VLAN,
-    Tunnel-Medium-Type = IEEE-802,
-    Tunnel-Private-Group-Id = "infra",
-    Tunnel-Assignment-Id = "ap",
+    Tunnel-Private-Group-Id = "BOS",
+    Tunnel-Assignment-Id = "yellow",
     Reply-Message = "welcome-infra-ap",
     Session-Timeout = 3600

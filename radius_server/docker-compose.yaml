@@ -5,6 +5,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.freeradius
+        container_name: radius_server_1
         image: 'forch/freeradius:latest'
         network_mode: bridge
         volumes:

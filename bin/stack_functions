@@ -373,6 +373,5 @@ function start_radius_server {
 }
 
 function stop_and_cleanup_radius {
-    docker kill radius_server_freeradius_1
-    docker rm radius_server_freeradius_1
+    docker stop radius_server_1 || true && docker rm radius_server_1 || true
 }
