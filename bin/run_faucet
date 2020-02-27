@@ -33,11 +33,6 @@ if [ "$1" == "gauge" ]; then
     shift
 fi
 
-if [ "$1" == "dva" ]; then
-    FAUCET_CONFIG=faucet_dynamic.yaml
-    shift
-fi
-
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
     INSTDIR=$INSTDIR/forch-faucet-$1
