@@ -31,7 +31,7 @@ from forch.utils import configure_logging, dict_proto, yaml_proto
 from forch.__version__ import __version__
 
 from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
-from forch.proto.forch_configuration_pb2 import ProcessConfig
+from forch.proto.forch_configuration_pb2 import ProcessConfig, SiteConfig
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
 
@@ -75,8 +75,6 @@ class Forchestrator:
         """Initialize forchestrator instance"""
         self._faucet_collector = FaucetStateCollector()
         self._faucet_collector.set_placement_callback(self._process_device_placement)
-        # TODO: Replace dict_proto with direct access from self._config to get process config
-        #       when forch config is fully converted to protobuf
         self._local_collector = LocalStateCollector(
             dict_proto(self._config.get('process'), ProcessConfig),
             self.cleanup, self.handle_active_state)
@@ -304,13 +302,15 @@ class Forchestrator:
             raise e
 
     def _get_controller_info(self, target):
-        controllers = self._config.get('site', {}).get('controllers', {})
+        site_config = dict_proto(self._config.get('site', {}), SiteConfig)
+        if not site_config:
+            return (f'missing_site_configuration_{target}', _DEFAULT_PORT)
+        controllers = site_config.controllers
         if target not in controllers:
             return (f'missing_target_{target}', _DEFAULT_PORT)
         controller = controllers[target]
-        controller = controller if controller else {}
-        port = controller.get('port', _DEFAULT_PORT)
-        host = controller.get('fqdn', target)
+        host = controller.fqdn or target
+        port = controller.port or _DEFAULT_PORT
         return (host, port)
 
     def get_local_port(self):
@@ -327,7 +327,10 @@ class Forchestrator:
 
     def _get_peer_controller_name(self):
         name = self._get_controller_name()
-        controllers = self._config.get('site', {}).get('controllers', {})
+        site_config = dict_proto(self._config.get('site', {}), SiteConfig)
+        if not site_config:
+            return f'missing_site_configuration_{name}'
+        controllers = site_config.controllers
         if name not in controllers:
             return f'missing_controller_name_{name}'
         if len(controllers) != 2:
@@ -351,7 +354,8 @@ class Forchestrator:
         self._populate_versions(system_state.versions)
         system_state.peer_controller_url = self._get_peer_controller_url()
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
-        system_state.site_name = self._config.get('site', {}).get('name', 'unknown')
+        system_state.site_name = (dict_proto(self._config.get('site', {}), SiteConfig).name or
+                                  'unknown')
         system_state.controller_name = self._get_controller_name()
         system_state.config_summary.CopyFrom(self._config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
@@ -579,6 +583,9 @@ class Forchestrator:
 
 def load_config():
     """Load configuration from the configuration file"""
+    # TODO: 1) use protobuf for config after entire forch config is converted to protobuf
+    #       2) clean up places where individual forch config sections are obtained by dict_proto
+    #          instead of direct access from forch config proto obj
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
     config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
