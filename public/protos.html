@@ -487,6 +487,18 @@
                   <a href="#ProcessConfig.ProcessesEntry"><span class="badge">M</span>ProcessConfig.ProcessesEntry</a>
                 </li>
               
+                <li>
+                  <a href="#SiteConfig"><span class="badge">M</span>SiteConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#SiteConfig.Controller"><span class="badge">M</span>SiteConfig.Controller</a>
+                </li>
+              
+                <li>
+                  <a href="#SiteConfig.ControllersEntry"><span class="badge">M</span>SiteConfig.ControllersEntry</a>
+                </li>
+              
               
               
               
@@ -2873,6 +2885,13 @@
             <tbody>
               
                 <tr>
+                  <td>site</td>
+                  <td><a href="#SiteConfig">SiteConfig</a></td>
+                  <td></td>
+                  <td><p>configurations for site </p></td>
+                </tr>
+              
+                <tr>
                   <td>process</td>
                   <td><a href="#ProcessConfig">ProcessConfig</a></td>
                   <td></td>
@@ -3037,6 +3056,99 @@
                 <tr>
                   <td>value</td>
                   <td><a href="#ProcessConfig.Process">ProcessConfig.Process</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SiteConfig">SiteConfig</h3>
+        <p>Site section in Forch configuration</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>site name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>controllers</td>
+                  <td><a href="#SiteConfig.ControllersEntry">SiteConfig.ControllersEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>controllers indexed by controller host name </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SiteConfig.Controller">SiteConfig.Controller</h3>
+        <p>Representing a controller host</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>fqdn</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>fqdn </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port for Forch APIs </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SiteConfig.ControllersEntry">SiteConfig.ControllersEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#SiteConfig.Controller">SiteConfig.Controller</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
