@@ -22,10 +22,10 @@ message ProcessConfig {
   // indicate if Forch should check VRRP state
   bool check_vrrp = 2;
 
-  // target processes to check
+  // target processes to check indexed by process name
   map<string, Process> processes = 3;
 
-  // connections to check
+  // connections to check indexed by listening port number
   map<int32, Connection> connections = 4;
 
   // representing a target process
