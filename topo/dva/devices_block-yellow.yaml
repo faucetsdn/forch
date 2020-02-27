@@ -7,6 +7,10 @@ device_mac_placements:
         switch: "nz-kiwi-t2sw2"
         port: 1
         connected: True
+    "9a:02:57:1e:8f:03":
+        switch: "nz-kiwi-t2sw3"
+        port: 1
+        connected: True
 device_mac_behaviors:
     "9a:02:57:1e:8f:01":
         segment: INFRA
@@ -14,3 +18,6 @@ device_mac_behaviors:
     "9a:02:57:1e:8f:02":
         segment: BOS
         role: "green"
+    "9a:02:57:1e:8f:03":
+        segment: BOS
+        role: "yellow"
