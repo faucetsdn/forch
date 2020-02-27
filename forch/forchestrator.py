@@ -142,14 +142,14 @@ class Forchestrator:
             self._process_device_behavior(mac, device_behavior, static=True)
 
     def _calculate_config_files(self):
-        orch_config = self._config.get('orchestration', {})
+        orchestration_config = self._config.get('orchestration', {})
 
-        behavioral_config_file = orch_config.get(
+        behavioral_config_file = orchestration_config.get(
             'behavioral_config_file', _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
 
-        structural_config_file = orch_config.get('structural_config_file')
+        structural_config_file = orchestration_config.get('structural_config_file')
         if structural_config_file:
             self._structural_config_file = os.path.join(
                 os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
