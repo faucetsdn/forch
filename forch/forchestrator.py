@@ -52,6 +52,7 @@ class Forchestrator:
 
     def __init__(self, config):
         self._config = config
+        self._structural_config_file = None
         self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
@@ -95,13 +96,15 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        if self._calculate_behavioral_config():
+        if self._calculate_config_files():
             self._initialize_faucetizer()
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
         if self._faucetizer:
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
+
+        self._validate_config_files()
 
         while True:
             time.sleep(10)
@@ -142,28 +145,41 @@ class Forchestrator:
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._process_device_behavior(mac, device_behavior, static=True)
 
-    def _calculate_behavioral_config(self):
-        behavioral_config_file = self._config.get('orchestration', {}).get('behavioral_config_file')
-        if behavioral_config_file:
-            self._behavioral_config_file = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
-            return True
+    def _calculate_config_files(self):
+        orchestration_config = self._config.get('orchestration', {})
 
+        behavioral_config_file = (orchestration_config.get('behavioral_config_file') or
+                                  os.getenv('FAUCET_CONFIG') or
+                                  _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), _BEHAVIORAL_CONFIG_DEFAULT)
-        if not os.path.exists(self._behavioral_config_file):
-            raise Exception(
-                f"Behavioral config file does not exist: {self._behavioral_config_file}")
+            os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
+
+        structural_config_file = orchestration_config.get('structural_config_file')
+        if structural_config_file:
+            self._structural_config_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+
+            if not os.path.exists(self._structural_config_file):
+                raise Exception(
+                    f'Structural config file does not exist: {self._structural_config_file}')
+
+            return True
 
         return False
 
+    def _validate_config_files(self):
+        if not os.path.exists(self._behavioral_config_file):
+            raise Exception(
+                f'Behavioral config file does not exist: {self._behavioral_config_file}')
+
+        if self._structural_config_file == self._behavioral_config_file:
+            raise Exception(
+                'Structural and behavioral config file cannot be the same: '
+                f'{self._behavioral_config_file}')
+
     def _initialize_faucetizer(self):
-        structural_config_file = self._config.get('orchestration', {}).get(
-            'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
-        structural_config_path = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
-        LOGGER.info('Loading structural config from %s', structural_config_path)
-        with open(structural_config_path) as file:
+        LOGGER.info('Loading structural config from %s', self._structural_config_file)
+        with open(self._structural_config_file) as file:
             structural_config = yaml.safe_load(file)
 
         segments_vlans_file = self._config.get('orchestration', {}).get(
@@ -179,7 +195,7 @@ class Forchestrator:
         self._faucetize_scheduler = HeartbeatScheduler(interval)
 
         update_write_faucet_config = (lambda: (
-            faucetizer.update_structural_config(self._faucetizer, structural_config_path),
+            faucetizer.update_structural_config(self._faucetizer, self._structural_config_file),
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)))
         self._faucetize_scheduler.add_callback(update_write_faucet_config)
 
