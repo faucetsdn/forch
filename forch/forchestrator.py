@@ -144,8 +144,9 @@ class Forchestrator:
     def _calculate_config_files(self):
         orchestration_config = self._config.get('orchestration', {})
 
-        behavioral_config_file = orchestration_config.get(
-            'behavioral_config_file', _BEHAVIORAL_CONFIG_DEFAULT)
+        behavioral_config_file = (orchestration_config.get('behavioral_config_file') or
+                                  os.getenv('FAUCET_CONFIG') or
+                                  _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
 
