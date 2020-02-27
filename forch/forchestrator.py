@@ -583,8 +583,8 @@ class Forchestrator:
 
 def load_config():
     """Load configuration from the configuration file"""
-    # TODO: 1) use protobuf for config after entire forch config is converted to protobuf
-    #       2) clean up places where individual forch config sections are obtained by dict_proto
+    # TODO: 1) use protobuf after entire forch config is converted
+    #       2) clean up places where individual forch config sections are converted by dict_proto
     #          instead of direct access from forch config proto obj
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
     config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
