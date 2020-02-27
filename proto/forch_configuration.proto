@@ -8,8 +8,31 @@ syntax = "proto3";
  * Forch configuration
  */
 message ForchConfig {
+  // configurations for site
+  SiteConfig site = 1;
+
   // configurations for processes
-  ProcessConfig process = 1;
+  ProcessConfig process = 2;
+}
+
+/*
+ * Site section in Forch configuration
+ */
+message SiteConfig {
+  // site name
+  string name = 1;
+
+  // controllers indexed by controller host name
+  map<string, Controller> controllers = 2;
+
+  // Representing a controller host
+  message Controller {
+    // fqdn
+    string fqdn = 1;
+
+    // port for Forch APIs
+    int32 port = 2;
+  }
 }
 
 /*
