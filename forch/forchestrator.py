@@ -126,6 +126,7 @@ class Forchestrator:
         auth_config = orchestration_config.auth_config
         if not auth_config:
             return
+        logging.info('Initializing authenticator')
         self._authenticator = Authenticator(auth_config, self.handle_auth_result)
 
     def _process_static_device_placement(self):
