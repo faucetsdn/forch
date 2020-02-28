@@ -1,0 +1,68 @@
+/*
+ * Encapsulating Forch configuration
+ */
+syntax = "proto3";
+
+// TODO fill up sections one by one
+/*
+ * Forch configuration
+ */
+message ForchConfig {
+  // configurations for site
+  SiteConfig site = 1;
+
+  // configurations for processes
+  ProcessConfig process = 2;
+}
+
+/*
+ * Site section in Forch configuration
+ */
+message SiteConfig {
+  // site name
+  string name = 1;
+
+  // controllers indexed by controller host name
+  map<string, Controller> controllers = 2;
+
+  // Representing a controller host
+  message Controller {
+    // fqdn
+    string fqdn = 1;
+
+    // port for Forch APIs
+    int32 port = 2;
+  }
+}
+
+/*
+ * Process section in Forch configuration
+ */
+message ProcessConfig {
+  // scan interval in seconds
+  int32 scan_interval_sec = 1;
+
+  // indicate if Forch should check VRRP state
+  bool check_vrrp = 2;
+
+  // target processes to check indexed by process name
+  map<string, Process> processes = 3;
+
+  // connections to check indexed by listening port number
+  map<int32, Connection> connections = 4;
+
+  // representing a target process
+  message Process {
+    // regex to match process name
+    string regex = 1;
+
+    // count of instances of a target process
+    int32 count = 2;
+  }
+
+  // Connection
+  message Connection {
+    // description
+    string description = 1;
+  }
+}

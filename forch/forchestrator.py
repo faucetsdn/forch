@@ -26,13 +26,14 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-from forch.utils import configure_logging, yaml_proto
+from forch.utils import configure_logging, dict_proto, yaml_proto
 
 from forch.__version__ import __version__
 
+from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
+from forch.proto.forch_configuration_pb2 import ProcessConfig, SiteConfig
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
-from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
 
 LOGGER = logging.getLogger('forch')
 
@@ -51,6 +52,7 @@ class Forchestrator:
 
     def __init__(self, config):
         self._config = config
+        self._structural_config_file = None
         self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
@@ -75,7 +77,8 @@ class Forchestrator:
         self._faucet_collector = FaucetStateCollector()
         self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._local_collector = LocalStateCollector(
-            self._config.get('process'), self.cleanup, self.handle_active_state)
+            dict_proto(self._config.get('process'), ProcessConfig),
+            self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
         prom_port = os.getenv('PROMETHEUS_PORT')
@@ -91,13 +94,15 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        if self._calculate_behavioral_config():
+        if self._calculate_config_files():
             self._initialize_faucetizer()
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
         if self._faucetizer:
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
+
+        self._validate_config_files()
 
         while True:
             time.sleep(10)
@@ -138,28 +143,41 @@ class Forchestrator:
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._process_device_behavior(mac, device_behavior, static=True)
 
-    def _calculate_behavioral_config(self):
-        behavioral_config_file = self._config.get('orchestration', {}).get('behavioral_config_file')
-        if behavioral_config_file:
-            self._behavioral_config_file = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
-            return True
+    def _calculate_config_files(self):
+        orchestration_config = self._config.get('orchestration', {})
 
+        behavioral_config_file = (orchestration_config.get('behavioral_config_file') or
+                                  os.getenv('FAUCET_CONFIG') or
+                                  _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), _BEHAVIORAL_CONFIG_DEFAULT)
-        if not os.path.exists(self._behavioral_config_file):
-            raise Exception(
-                f"Behavioral config file does not exist: {self._behavioral_config_file}")
+            os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
+
+        structural_config_file = orchestration_config.get('structural_config_file')
+        if structural_config_file:
+            self._structural_config_file = os.path.join(
+                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+
+            if not os.path.exists(self._structural_config_file):
+                raise Exception(
+                    f'Structural config file does not exist: {self._structural_config_file}')
+
+            return True
 
         return False
 
+    def _validate_config_files(self):
+        if not os.path.exists(self._behavioral_config_file):
+            raise Exception(
+                f'Behavioral config file does not exist: {self._behavioral_config_file}')
+
+        if self._structural_config_file == self._behavioral_config_file:
+            raise Exception(
+                'Structural and behavioral config file cannot be the same: '
+                f'{self._behavioral_config_file}')
+
     def _initialize_faucetizer(self):
-        structural_config_file = self._config.get('orchestration', {}).get(
-            'structural_config_file', _STRUCTURAL_CONFIG_DEFAULT)
-        structural_config_path = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
-        LOGGER.info('Loading structural config from %s', structural_config_path)
-        with open(structural_config_path) as file:
+        LOGGER.info('Loading structural config from %s', self._structural_config_file)
+        with open(self._structural_config_file) as file:
             structural_config = yaml.safe_load(file)
 
         segments_vlans_file = self._config.get('orchestration', {}).get(
@@ -175,7 +193,7 @@ class Forchestrator:
         self._faucetize_scheduler = HeartbeatScheduler(interval)
 
         update_write_faucet_config = (lambda: (
-            faucetizer.update_structural_config(self._faucetizer, structural_config_path),
+            faucetizer.update_structural_config(self._faucetizer, self._structural_config_file),
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)))
         self._faucetize_scheduler.add_callback(update_write_faucet_config)
 
@@ -300,13 +318,15 @@ class Forchestrator:
             raise e
 
     def _get_controller_info(self, target):
-        controllers = self._config.get('site', {}).get('controllers', {})
+        site_config = dict_proto(self._config.get('site', {}), SiteConfig)
+        if not site_config:
+            return (f'missing_site_configuration_{target}', _DEFAULT_PORT)
+        controllers = site_config.controllers
         if target not in controllers:
             return (f'missing_target_{target}', _DEFAULT_PORT)
         controller = controllers[target]
-        controller = controller if controller else {}
-        port = controller.get('port', _DEFAULT_PORT)
-        host = controller.get('fqdn', target)
+        host = controller.fqdn or target
+        port = controller.port or _DEFAULT_PORT
         return (host, port)
 
     def get_local_port(self):
@@ -323,7 +343,10 @@ class Forchestrator:
 
     def _get_peer_controller_name(self):
         name = self._get_controller_name()
-        controllers = self._config.get('site', {}).get('controllers', {})
+        site_config = dict_proto(self._config.get('site', {}), SiteConfig)
+        if not site_config:
+            return f'missing_site_configuration_{name}'
+        controllers = site_config.controllers
         if name not in controllers:
             return f'missing_controller_name_{name}'
         if len(controllers) != 2:
@@ -347,7 +370,8 @@ class Forchestrator:
         self._populate_versions(system_state.versions)
         system_state.peer_controller_url = self._get_peer_controller_url()
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
-        system_state.site_name = self._config.get('site', {}).get('name', 'unknown')
+        system_state.site_name = (dict_proto(self._config.get('site', {}), SiteConfig).name or
+                                  'unknown')
         system_state.controller_name = self._get_controller_name()
         system_state.config_summary.CopyFrom(self._config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
@@ -575,6 +599,9 @@ class Forchestrator:
 
 def load_config():
     """Load configuration from the configuration file"""
+    # TODO: 1) use protobuf after entire forch config is converted
+    #       2) clean up places where individual forch config sections are converted by dict_proto
+    #          instead of direct access from forch config proto obj
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
     config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
