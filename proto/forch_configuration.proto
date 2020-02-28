@@ -57,7 +57,7 @@ message OrchestrationConfig {
   // segment to vlan mappings file name
   string segments_vlans_file = 5;
 
-  // interval (in seconds) of periodic faucetizing task
+  // interval of periodic faucetizing task in seconds
   int32 faucetize_interval_sec = 6;
 
   // authentication configurations
