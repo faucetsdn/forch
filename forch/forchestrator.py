@@ -121,16 +121,15 @@ class Forchestrator:
     def _attempt_authenticator_initialise(self):
         orch_config = dict_proto(
             self._config.get('orchestration', {}), OrchestrationConfig)
-        auth_config = orch_config.auth_config if orch_config else None
-        if not auth_config:
+        if not orch_config.HasField('auth_config'):
             return
         LOGGER.info('Initializing authenticator')
-        self._authenticator = Authenticator(auth_config, self.handle_auth_result)
+        self._authenticator = Authenticator(orch_config.auth_config, self.handle_auth_result)
 
     def _process_static_device_placement(self):
         orch_config = dict_proto(
             self._config.get('orchestration', {}), OrchestrationConfig)
-        static_placement_file = orch_config.static_device_placement if orch_config else None
+        static_placement_file = orch_config.static_device_placement
         if not static_placement_file:
             return
         placement_file = os.path.join(
@@ -142,7 +141,7 @@ class Forchestrator:
     def _process_static_device_behavior(self):
         orch_config = dict_proto(
             self._config.get('orchestration', {}), OrchestrationConfig)
-        static_behaviors_file = orch_config.static_device_behavior if orch_config else None
+        static_behaviors_file = orch_config.static_device_behavior
         if not static_behaviors_file:
             return
         static_behaviors_path = os.path.join(
@@ -154,8 +153,6 @@ class Forchestrator:
     def _calculate_config_files(self):
         orch_config = dict_proto(
             self._config.get('orchestration', {}), OrchestrationConfig)
-        if not orch_config:
-            return False
 
         behavioral_config_file = (orch_config.behavioral_config_file or
                                   os.getenv('FAUCET_CONFIG') or
