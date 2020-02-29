@@ -92,6 +92,7 @@ def parse_args(raw_args):
 
 
 def main():
+    """Main program"""
     args = parse_args(sys.argv[1:])
 
     if args.version:
