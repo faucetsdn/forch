@@ -40,7 +40,7 @@ def show_error(error, path, params):
     return f"Cannot initialize forch: {str(error)}"
 
 
-def main():
+def run_forchestrator():
     """main function to start forch"""
     configure_logging()
 
@@ -91,11 +91,15 @@ def parse_args(raw_args):
     return parsed
 
 
-if __name__ == '__main__':
-    ARGS = parse_args(sys.argv[1:])
+def main():
+    args = parse_args(sys.argv[1:])
 
-    if ARGS.version:
+    if args.version:
         print(f'Forch version {__version__}')
         sys.exit()
 
+    run_forchestrator()
+
+
+if __name__ == '__main__':
     main()
