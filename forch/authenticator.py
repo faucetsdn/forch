@@ -166,23 +166,25 @@ if __name__ == '__main__':
             self._mac_query_updated = False
 
         def send_mab_request(self, src_mac, port_id):
+            """mock RADIUS request"""
             self.last_mac_query = src_mac
             self._mac_query_updated = True
 
         def receive_radius_messages(self):
-            pass
+            """mock receive_radius_messages"""
 
         def query_status_updated(self):
+            """Check if self.last_mac_query was updated since last check"""
             if self._mac_query_updated:
                 self._mac_query_updated = False
                 return True
             return False
 
-    validate_mab_result = {}
+    EXPECTED_MAB_RESULT = {}
 
     def mock_auth_callback(src_mac, segment, role):
         """Mocks auth callback passed to Authenticator"""
-        mab_result = validate_mab_result.get(src_mac, {})
+        mab_result = EXPECTED_MAB_RESULT.get(src_mac, {})
         assert mab_result.get('segment') == segment and mab_result.get('role') == role
 
     configure_logging()
@@ -194,24 +196,24 @@ if __name__ == '__main__':
             'secret': ARGS.radius_secret
         }
     }
-    rquery = RQuery()
-    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, rquery)
+    MOCK_RQUERY = RQuery()
+    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RQUERY)
 
     # test radius query call for device placement
-    test_mac = '00:aa:bb:cc:dd:ee'
-    dev_placement = DevicePlacement(switch='t2s2', port=1, connected=True)
-    AUTHENTICATOR.process_device_placement(test_mac, dev_placement)
-    assert rquery.query_status_updated() and rquery.last_mac_query == test_mac
-    LOGGER.info('RADIUS request sent for %s successfully', test_mac)
+    TEST_MAC = '00:aa:bb:cc:dd:ee'
+    DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
+    AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)
+    assert MOCK_RQUERY.query_status_updated() and MOCK_RQUERY.last_mac_query == TEST_MAC
+    LOGGER.info('RADIUS request sent for %s successfully', TEST_MAC)
 
     # test positive RADIUS response
-    code = r_query.ACCEPT
-    segment = 'test'
-    role = 'test'
-    validate_mab_result[test_mac] = {
-        'segment': segment,
-        'role': role
+    CODE = r_query.ACCEPT
+    SEGMENT = 'test'
+    ROLE = 'test'
+    EXPECTED_MAB_RESULT[TEST_MAC] = {
+        'segment': SEGMENT,
+        'role': ROLE
     }
-    AUTHENTICATOR.process_radius_result(test_mac, code, segment, role)
-    validate_mab_result.pop(test_mac)
-    LOGGER.info('Validated RADIUS response for %s', test_mac)
+    AUTHENTICATOR.process_radius_result(TEST_MAC, CODE, SEGMENT, ROLE)
+    EXPECTED_MAB_RESULT.pop(TEST_MAC)
+    LOGGER.info('Validated RADIUS response for %s', TEST_MAC)
