@@ -96,7 +96,7 @@ def main():
     args = parse_args(sys.argv[1:])
 
     if args.version:
-        print(f'Forch version {__version__}')
+        print(f'Forch {__version__}')
         sys.exit()
 
     run_forchestrator()
