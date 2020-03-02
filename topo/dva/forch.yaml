@@ -10,7 +10,7 @@ site:
 orchestration:
   structural_config_file: faucet_structural.yaml
   static_device_placement: placement.yaml
-  static_device_behavior: behaviors_block-yellow.yaml
+  static_device_behavior: behaviors.yaml
   auth_config:
     radius_info:
       server_ip: 172.17.0.5
