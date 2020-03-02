@@ -23,7 +23,7 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-from forch.utils import configure_logging, dict_proto, yaml_proto
+from forch.utils import dict_proto, yaml_proto
 
 from forch.__version__ import __version__
 
