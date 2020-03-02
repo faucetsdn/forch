@@ -9,13 +9,11 @@ addons:
   apt:
     update: true
 install:
-  - set -e
   - bin/setup_base
   - bin/setup_faucet
   - $TEST_SKIP bin/compile_ovs
   - $TEST_SKIP bin/retry_cmd bin/build_docker ${DOCKER_BUILD:-pull}
 script:
-  - set -e
   - $TEST_SKIP bin/setup_stack local $CONN_CHECK $MODE
   - bin/run_test_set
 env:
