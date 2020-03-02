@@ -178,9 +178,12 @@ if __name__ == '__main__':
                 return True
             return False
 
+    validate_mab_result = {}
+
     def mock_auth_callback(src_mac, segment, role):
         """Mocks auth callback passed to Authenticator"""
-        pass
+        mab_result = validate_mab_result.get(src_mac, {})
+        assert mab_result.get('segment') == segment and mab_result.get('role') == role
 
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
@@ -200,3 +203,15 @@ if __name__ == '__main__':
     AUTHENTICATOR.process_device_placement(test_mac, dev_placement)
     assert rquery.query_status_updated() and rquery.last_mac_query == test_mac
     LOGGER.info('RADIUS request sent for %s successfully', test_mac)
+
+    # test positive RADIUS response
+    code = r_query.ACCEPT
+    segment = 'test'
+    role = 'test'
+    validate_mab_result[test_mac] = {
+        'segment': segment,
+        'role': role
+    }
+    AUTHENTICATOR.process_radius_result(test_mac, code, segment, role)
+    validate_mab_result.pop(test_mac)
+    LOGGER.info('Validated RADIUS response for %s', test_mac)
