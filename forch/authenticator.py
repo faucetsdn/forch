@@ -13,6 +13,7 @@ import forch.radius_query as r_query
 from forch.simple_auth_state_machine import AuthStateMachine
 from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto, ConfigError
+from forch.proto.devices_state_pb2 import DevicePlacement
 
 from forch.proto.authentication_pb2 import AuthResult
 
@@ -23,7 +24,7 @@ HEARTBEAT_INTERVAL_SEC = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, auth_config, auth_callback=None):
+    def __init__(self, auth_config, auth_callback=None, rquery_obj=None):
         self.auth_map = self._get_auth_map()
         self.radius_query = None
         self.sessions = {}
@@ -40,8 +41,11 @@ class Authenticator:
         Socket = collections.namedtuple(
             'Socket', 'listen_ip, listen_port, server_ip, server_port')
         socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
-        self.radius_query = r_query.RadiusQuery(
-            socket_info, secret, self.process_radius_result)
+        if rquery_obj:
+            self.radius_query = rquery_obj
+        else:
+            self.radius_query = r_query.RadiusQuery(
+                socket_info, secret, self.process_radius_result)
         threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
         interval = auth_config.get('heartbeat_sec', HEARTBEAT_INTERVAL_SEC)
@@ -154,6 +158,30 @@ def parse_args(raw_args):
 
 
 if __name__ == '__main__':
+
+    class RQuery():
+        """Class mocking RadiusQuery"""
+        def __init__(self):
+            self.last_mac_query = None
+            self._mac_query_updated = False
+
+        def send_mab_request(self, src_mac, port_id):
+            self.last_mac_query = src_mac
+            self._mac_query_updated = True
+
+        def receive_radius_messages(self):
+            pass
+
+        def query_status_updated(self):
+            if self._mac_query_updated:
+                self._mac_query_updated = False
+                return True
+            return False
+
+    def mock_auth_callback(src_mac, segment, role):
+        """Mocks auth callback passed to Authenticator"""
+        pass
+
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
     AUTH_CONFIG = {
@@ -163,7 +191,12 @@ if __name__ == '__main__':
             'secret': ARGS.radius_secret
         }
     }
-    AUTHENTICATOR = Authenticator(AUTH_CONFIG)
-    AUTHENTICATOR.process_auth_result()
-    if ARGS.mab:
-        AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)
+    rquery = RQuery()
+    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, rquery)
+
+    # test radius query call for device placement
+    test_mac = '00:aa:bb:cc:dd:ee'
+    dev_placement = DevicePlacement(switch='t2s2', port=1, connected=True)
+    AUTHENTICATOR.process_device_placement(test_mac, dev_placement)
+    assert rquery.query_status_updated() and rquery.last_mac_query == test_mac
+    LOGGER.info('RADIUS request sent for %s successfully', test_mac)
