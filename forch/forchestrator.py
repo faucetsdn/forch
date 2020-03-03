@@ -41,9 +41,8 @@ _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
 
 
-# TODO: 1) use protobuf after entire forch config is converted
-#       2) clean up places where individual forch config sections are converted by dict_proto
-#          instead of direct access from forch config proto obj
+# TODO use protobuf after entire forch config is converted
+# TODO clean up places where individual forch config sections are converted by dict_proto
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically

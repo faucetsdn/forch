@@ -21,13 +21,11 @@ _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 
 def load_config():
     """Load configuration from the configuration file"""
-    # TODO: 1) use protobuf after entire forch config is converted
-    #       2) clean up places where individual forch config sections are converted by dict_proto
-    #          instead of direct access from forch config proto obj
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
     config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
     try:
+        # TODO use protobuf after entire forch config is converted
         with open(config_path, 'r') as stream:
             return yaml.safe_load(stream)
     except Exception as e:
