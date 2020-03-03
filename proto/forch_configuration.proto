@@ -94,6 +94,9 @@ message OrchestrationConfig {
 
     // Secret
     string secret = 3;
+
+    // Path to script that prints RADIUS secret
+    string radius_secret_handler = 4;
   }
 }
 

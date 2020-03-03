@@ -5,7 +5,7 @@ a25e80c06dc7630cf1babf5161feb3e43aa90181  proto/cpn_config.proto
 bd9cba68f574dc9278292b4debb6e67ee9e4a09d  proto/dataplane_state.proto
 9054f15dbb626963b10fa6db192d5f9cf252170a  proto/devices_state.proto
 05a1126cdff78b753d38de2b70807cb84886b655  proto/faucet_event.proto
-5bbda7b75d26ef4b3457e3dcc72f90568f5b1033  proto/forch_configuration.proto
+77a1354b11f57dabcf2069940ea121301f7a43c8  proto/forch_configuration.proto
 a789b25478572164f36ab66e011857d9fa0651b3  proto/host_path.proto
 fd1dd79a04530a26322320843b8a9bf6d0f85957  proto/list_hosts.proto
 db4d1bf4d1b4ac1a575853833ecbd9571d784203  proto/path_node.proto
