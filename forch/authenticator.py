@@ -39,7 +39,6 @@ class Authenticator:
         # presence of secret field overrides any secret retreived from handler
         if radius_info.secret:
             secret = radius_info.secret
-        LOGGER.info('Anurag radius secret: %s', secret)
         if not (radius_ip and radius_port and secret):
             LOGGER.warning('Invalid radius_info in config. \
                            Radius IP: %s; Radius port: %s Secret present: %s',
