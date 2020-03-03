@@ -9,7 +9,7 @@ import threading
 import yaml
 
 from forch.heartbeat_scheduler import HeartbeatScheduler
-import forch.radius_query as r_query
+import forch.radius_query as radius_query
 from forch.simple_auth_state_machine import AuthStateMachine
 from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto, ConfigError
@@ -44,7 +44,7 @@ class Authenticator:
         if radius_query_object:
             self.radius_query = radius_query_object
         else:
-            self.radius_query = r_query.RadiusQuery(
+            self.radius_query = radius_query.RadiusQuery(
                 socket_info, secret, self.process_radius_result)
         threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
@@ -118,13 +118,13 @@ class Authenticator:
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
         LOGGER.info("Received RADIUS result: %s for src_mac: %s", code, src_mac)
-        if code == r_query.INVALID_RESP:
+        if code == radius_query.INVALID_RESP:
             LOGGER.warning("Received invalid response for src_mac: %s", src_mac)
             return
         if src_mac not in self.sessions:
             LOGGER.warning("Session doesn't exist for src_mac:%s", src_mac)
             return
-        if code == r_query.ACCEPT:
+        if code == radius_query.ACCEPT:
             self.sessions[src_mac].received_radius_accept(segment, role)
         else:
             self.sessions[src_mac].received_radius_reject()
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     assert MOCK_RADIUS_QUERY.get_last_mac_queried() == TEST_MAC
 
     # test positive RADIUS response
-    CODE = r_query.ACCEPT
+    CODE = radius_query.ACCEPT
     SEGMENT = 'test'
     ROLE = 'test'
     EXPECTED_MAB_RESULT[TEST_MAC] = {
