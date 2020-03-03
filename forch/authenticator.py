@@ -24,7 +24,7 @@ HEARTBEAT_INTERVAL_SEC = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, auth_config, auth_callback=None, rquery_obj=None):
+    def __init__(self, auth_config, auth_callback=None, radius_query_object=None):
         self.auth_map = self._get_auth_map()
         self.radius_query = None
         self.sessions = {}
@@ -41,8 +41,8 @@ class Authenticator:
         Socket = collections.namedtuple(
             'Socket', 'listen_ip, listen_port, server_ip, server_port')
         socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
-        if rquery_obj:
-            self.radius_query = rquery_obj
+        if radius_query_object:
+            self.radius_query = radius_query_object
         else:
             self.radius_query = r_query.RadiusQuery(
                 socket_info, secret, self.process_radius_result)
@@ -159,27 +159,24 @@ def parse_args(raw_args):
 
 if __name__ == '__main__':
 
-    class RQuery():
+    class MockRadiusQuery():
         """Class mocking RadiusQuery"""
         def __init__(self):
-            self.last_mac_query = None
-            self._mac_query_updated = False
+            self._last_mac_query = None
 
         def send_mab_request(self, src_mac, port_id):
             """mock RADIUS request"""
-            self.last_mac_query = src_mac
-            self._mac_query_updated = True
+            self._last_mac_query = src_mac
             sys.stdout.write('RADIUS request for %s\n' % (src_mac))
 
         def receive_radius_messages(self):
             """mock receive_radius_messages"""
 
-        def query_status_updated(self):
-            """Check if self.last_mac_query was updated since last check"""
-            if self._mac_query_updated:
-                self._mac_query_updated = False
-                return True
-            return False
+        def get_last_mac_queried(self):
+            """Get last queried mac address and clear"""
+            mac = self._last_mac_query
+            self._last_mac_query = None
+            return mac
 
     EXPECTED_MAB_RESULT = {}
 
@@ -198,14 +195,14 @@ if __name__ == '__main__':
             'secret': ARGS.radius_secret
         }
     }
-    MOCK_RQUERY = RQuery()
-    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RQUERY)
+    MOCK_RADIUS_QUERY = MockRadiusQuery()
+    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
 
     # test radius query call for device placement
     TEST_MAC = '00:aa:bb:cc:dd:ee'
     DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
     AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)
-    assert MOCK_RQUERY.query_status_updated() and MOCK_RQUERY.last_mac_query == TEST_MAC
+    assert MOCK_RADIUS_QUERY.get_last_mac_queried() == TEST_MAC
 
     # test positive RADIUS response
     CODE = r_query.ACCEPT
