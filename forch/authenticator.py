@@ -15,6 +15,7 @@ from forch.utils import configure_logging
 from forch.utils import proto_dict, dict_proto, ConfigError
 
 from forch.proto.authentication_pb2 import AuthResult
+from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 LOGGER = logging.getLogger('auth')
 AUTH_FILE_NAME = 'auth.yaml'
@@ -28,10 +29,10 @@ class Authenticator:
         self.radius_query = None
         self.sessions = {}
         self.auth_callback = auth_callback
-        radius_info = auth_config.get('radius_info')
-        radius_ip = radius_info.get('server_ip')
-        radius_port = radius_info.get('server_port')
-        secret = radius_info.get('secret')
+        radius_info = auth_config.radius_info
+        radius_ip = radius_info.server_ip
+        radius_port = radius_info.server_port
+        secret = radius_info.secret
         if not (radius_ip and radius_port and secret):
             LOGGER.warning('Invalid radius_info in config. \
                            Radius IP: %s; Radius port: %s Secret present: %s',
@@ -44,7 +45,7 @@ class Authenticator:
             socket_info, secret, self.process_radius_result)
         threading.Thread(target=self.radius_query.receive_radius_messages, daemon=True).start()
 
-        interval = auth_config.get('heartbeat_sec', HEARTBEAT_INTERVAL_SEC)
+        interval = auth_config.heartbeat_sec or HEARTBEAT_INTERVAL_SEC
         self.auth_config = auth_config
         self.timer = HeartbeatScheduler(interval)
         self.timer.add_callback(self.handle_sm_timeout)
@@ -156,13 +157,16 @@ def parse_args(raw_args):
 if __name__ == '__main__':
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
-    AUTH_CONFIG = {
-        'radius_info': {
-            'server_ip': ARGS.server_ip,
-            'server_port': ARGS.server_port,
-            'secret': ARGS.radius_secret
-        }
-    }
+    AUTH_CONFIG = dict_proto(
+        {
+            'radius_info': {
+                'server_ip': ARGS.server_ip,
+                'server_port': ARGS.server_port,
+                'secret': ARGS.radius_secret
+            }
+        },
+        OrchestrationConfig.AuthConfig
+    )
     AUTHENTICATOR = Authenticator(AUTH_CONFIG)
     AUTHENTICATOR.process_auth_result()
     if ARGS.mab:

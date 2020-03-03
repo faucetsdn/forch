@@ -27,10 +27,10 @@ class AuthStateMachine():
         self._current_state = None
         self._retry_backoff = 0
         self._current_timeout = 0
-        self._max_radius_backoff = auth_config.get('max_radius_backoff', self.MAX_RADIUS_BACKOFF)
-        self._query_timeout_sec = auth_config.get('query_timeout_sec', self.QUERY_TIMEOUT_SEC)
-        self._rej_timeout_sec = auth_config.get('reject_timeout_sec', self.REJECT_TIMEOUT_SEC)
-        self._auth_timeout_sec = auth_config.get('auth_timeout_sec', self.AUTH_TIMEOUT_SEC)
+        self._max_radius_backoff = auth_config.max_radius_backoff or self.MAX_RADIUS_BACKOFF
+        self._query_timeout_sec = auth_config.query_timeout_sec or self.QUERY_TIMEOUT_SEC
+        self._rej_timeout_sec = auth_config.reject_timeout_sec or self.REJECT_TIMEOUT_SEC
+        self._auth_timeout_sec = auth_config.auth_timeout_sec or self.AUTH_TIMEOUT_SEC
         self._transition_lock = Lock()
         self._reset_state_machine()
 
@@ -49,7 +49,6 @@ class AuthStateMachine():
         self._state_transition(self.UNAUTH)
         self._retry_backoff = 0
         self._current_timeout = time.time() + self._rej_timeout_sec
-        self._auth_callback(self.src_mac, None, None)
 
     def get_state(self):
         """Return current state"""
@@ -70,6 +69,7 @@ class AuthStateMachine():
         """Host expired"""
         with self._transition_lock:
             self._reset_state_machine()
+            self._auth_callback(self.src_mac, None, None)
 
     def received_radius_accept(self, segment, role):
         """Received RADIUS accept message"""
