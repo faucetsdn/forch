@@ -367,11 +367,3 @@ function reset_system {
         docker exec forch-faux-1 ping -c 3 192.168.1.2 || exit 1
     fi
 }
-
-function start_radius_server {
-    docker-compose -f ./radius_server/docker-compose.yaml up -d --build
-}
-
-function stop_and_cleanup_radius {
-    docker stop radius_server_1 || true && docker rm radius_server_1 || true
-}

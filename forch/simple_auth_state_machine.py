@@ -49,6 +49,7 @@ class AuthStateMachine():
         self._state_transition(self.UNAUTH)
         self._retry_backoff = 0
         self._current_timeout = time.time() + self._rej_timeout_sec
+        self._auth_callback(self.src_mac, None, None)
 
     def get_state(self):
         """Return current state"""
@@ -69,7 +70,6 @@ class AuthStateMachine():
         """Host expired"""
         with self._transition_lock:
             self._reset_state_machine()
-            self._auth_callback(self.src_mac, None, None)
 
     def received_radius_accept(self, segment, role):
         """Received RADIUS accept message"""
