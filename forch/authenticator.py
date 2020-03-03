@@ -169,6 +169,7 @@ if __name__ == '__main__':
             """mock RADIUS request"""
             self.last_mac_query = src_mac
             self._mac_query_updated = True
+            sys.stdout.write('RADIUS request for %s\n' % (src_mac))
 
         def receive_radius_messages(self):
             """mock receive_radius_messages"""
@@ -186,6 +187,7 @@ if __name__ == '__main__':
         """Mocks auth callback passed to Authenticator"""
         mab_result = EXPECTED_MAB_RESULT.get(src_mac, {})
         assert mab_result.get('segment') == segment and mab_result.get('role') == role
+        sys.stdout.write('auth_callback for %s: segment:%s role:%s\n' % (src_mac, segment, role))
 
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
@@ -204,7 +206,6 @@ if __name__ == '__main__':
     DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
     AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)
     assert MOCK_RQUERY.query_status_updated() and MOCK_RQUERY.last_mac_query == TEST_MAC
-    LOGGER.info('RADIUS request sent for %s successfully', TEST_MAC)
 
     # test positive RADIUS response
     CODE = r_query.ACCEPT
@@ -216,4 +217,3 @@ if __name__ == '__main__':
     }
     AUTHENTICATOR.process_radius_result(TEST_MAC, CODE, SEGMENT, ROLE)
     EXPECTED_MAB_RESULT.pop(TEST_MAC)
-    LOGGER.info('Validated RADIUS response for %s', TEST_MAC)
