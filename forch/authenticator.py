@@ -33,12 +33,11 @@ class Authenticator:
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
-        secret = None
         if radius_info.radius_secret_handler:
             secret = os.popen(radius_info.radius_secret_handler).read().strip()
-        # presence of secret field overrides any secret retreived from handler
-        if radius_info.secret:
-            secret = radius_info.secret
+        else:
+            secret = None
+        LOGGER.info('Anurag RADIUS secret: %s', secret)
         if not (radius_ip and radius_port and secret):
             LOGGER.warning('Invalid radius_info in config. \
                            Radius IP: %s; Radius port: %s Secret present: %s',

@@ -92,11 +92,8 @@ message OrchestrationConfig {
     // Radius server port
     int32 server_port = 2;
 
-    // Secret
-    string secret = 3;
-
-    // Path to script that prints RADIUS secret
-    string radius_secret_handler = 4;
+    // Shell command to get RADIUS secret. Can be as simple as 'echo <secret>'
+    string radius_secret_helper = 3;
   }
 }
 
