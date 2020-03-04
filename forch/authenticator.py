@@ -151,7 +151,7 @@ def parse_args(raw_args):
                         help='RADIUS server ip')
     parser.add_argument('-p', '--server-port', type=int, default=1812,
                         help='Server port that freeradius is listening on')
-    parser.add_argument('-r', '--radius-secret-helper', type=str, default='echo SECRET',
+    parser.add_argument('-r', '--radius-secret', type=str, default='echo SECRET',
                         help='Command that prints RADIUS server secret')
     parser.add_argument('-m', '--src_mac', type=str, default='8e:00:00:00:01:02',
                         help='MAC addr to authenticate')
@@ -197,7 +197,7 @@ if __name__ == '__main__':
             'radius_info': {
                 'server_ip': ARGS.server_ip,
                 'server_port': ARGS.server_port,
-                'radius_secret_helper': ARGS.radius_secret_helper
+                'radius_secret_helper':  f'echo {ARGS.radius_secret}'
             }
         },
         OrchestrationConfig.AuthConfig
