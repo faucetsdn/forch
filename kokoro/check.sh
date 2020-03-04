@@ -33,10 +33,21 @@ if [ "$fm" != "$pm" ]; then
     false
 fi
 
+if [ -z "$om" ]; then
+    echo Unknown tag $mtag
+    false
+fi
+
 if [ "$og" != "$pg" ]; then
     echo origin gmaster: $fm
     echo pperry gmaster: $pm
     false
 fi
+
+if [ -z "$og" ]; then
+    echo Unknown tag $gtag
+    false
+fi
+
 
 echo All remote tags check out.
