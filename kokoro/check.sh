@@ -5,12 +5,14 @@ echo origin `git remote get-url origin`
 echo pperry `git remote get-url perry`
 
 echo Fetching remotes...
-#git fetch faucet
-#git fetch origin
-#git fetch perry
+git fetch --tags faucet master
+git fetch --tags origin master
+git fetch --tags origin gmaster
+git fetch --tags perry master
+git fetch --tags perry gmaster
 
-mtag=`git describe master`
-gtag=`git describe gmaster`
+mtag=`git describe perry/master`
+gtag=`git describe perry/gmaster`
 
 echo Checking remote master tag $mtag
 fm=`git ls-remote faucet $mtag`
