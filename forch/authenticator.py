@@ -33,7 +33,10 @@ class Authenticator:
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
-        secret = radius_info.secret
+        if radius_info.radius_secret_helper:
+            secret = os.popen(radius_info.radius_secret_helper).read().strip()
+        else:
+            secret = None
         if not (radius_ip and radius_port and secret):
             LOGGER.warning('Invalid radius_info in config. \
                            Radius IP: %s; Radius port: %s Secret present: %s',
@@ -148,8 +151,8 @@ def parse_args(raw_args):
                         help='RADIUS server ip')
     parser.add_argument('-p', '--server-port', type=int, default=1812,
                         help='Server port that freeradius is listening on')
-    parser.add_argument('-r', '--radius-secret', type=str, default='SECRET',
-                        help='RADIUS server secret')
+    parser.add_argument('-r', '--radius-secret', type=str, default='echo SECRET',
+                        help='Command that prints RADIUS server secret')
     parser.add_argument('-m', '--src_mac', type=str, default='8e:00:00:00:01:02',
                         help='MAC addr to authenticate')
     parser.add_argument('-i', '--port-id', type=int, default=12345,
@@ -194,7 +197,7 @@ if __name__ == '__main__':
             'radius_info': {
                 'server_ip': ARGS.server_ip,
                 'server_port': ARGS.server_port,
-                'secret': ARGS.radius_secret
+                'radius_secret_helper':  f'echo {ARGS.radius_secret}'
             }
         },
         OrchestrationConfig.AuthConfig
