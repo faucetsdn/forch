@@ -197,7 +197,7 @@ if __name__ == '__main__':
             'radius_info': {
                 'server_ip': ARGS.server_ip,
                 'server_port': ARGS.server_port,
-                'radius_secret_helper': ARGS.radius_secret
+                'radius_secret_helper': ARGS.radius_secret_helper
             }
         },
         OrchestrationConfig.AuthConfig
