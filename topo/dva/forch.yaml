@@ -15,7 +15,7 @@ orchestration:
     radius_info:
       server_ip: 172.17.0.5
       server_port: 1812
-      secret: SECRET
+      radius_secret_helper: 'echo SECRET'
     heartbeat_sec: 5
     max_radius_backoff: 10
     query_timeout_sec: 15

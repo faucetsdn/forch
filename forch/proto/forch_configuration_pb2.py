@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"\xbb\x01\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\x98\x04\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RaidusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_backoff\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1a\x44\n\nRaidusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x0e\n\x06secret\x18\x03 \x01(\t\"\x8b\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\'\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\".\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x62\x06proto3')
+  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"\xbb\x01\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xa6\x04\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RadiusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_backoff\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1aR\n\nRadiusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x1c\n\x14radius_secret_helper\x18\x03 \x01(\t\"\x8b\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\'\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\".\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x62\x06proto3')
 )
 
 
@@ -261,29 +261,29 @@ _ORCHESTRATIONCONFIG_AUTHCONFIG = _descriptor.Descriptor(
   serialized_end=896,
 )
 
-_ORCHESTRATIONCONFIG_RAIDUSINFO = _descriptor.Descriptor(
-  name='RaidusInfo',
-  full_name='OrchestrationConfig.RaidusInfo',
+_ORCHESTRATIONCONFIG_RADIUSINFO = _descriptor.Descriptor(
+  name='RadiusInfo',
+  full_name='OrchestrationConfig.RadiusInfo',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='server_ip', full_name='OrchestrationConfig.RaidusInfo.server_ip', index=0,
+      name='server_ip', full_name='OrchestrationConfig.RadiusInfo.server_ip', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='server_port', full_name='OrchestrationConfig.RaidusInfo.server_port', index=1,
+      name='server_port', full_name='OrchestrationConfig.RadiusInfo.server_port', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='secret', full_name='OrchestrationConfig.RaidusInfo.secret', index=2,
+      name='radius_secret_helper', full_name='OrchestrationConfig.RadiusInfo.radius_secret_helper', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -302,7 +302,7 @@ _ORCHESTRATIONCONFIG_RAIDUSINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=898,
-  serialized_end=966,
+  serialized_end=980,
 )
 
 _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
@@ -364,7 +364,7 @@ _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_ORCHESTRATIONCONFIG_AUTHCONFIG, _ORCHESTRATIONCONFIG_RAIDUSINFO, ],
+  nested_types=[_ORCHESTRATIONCONFIG_AUTHCONFIG, _ORCHESTRATIONCONFIG_RADIUSINFO, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -374,7 +374,7 @@ _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=430,
-  serialized_end=966,
+  serialized_end=980,
 )
 
 
@@ -411,8 +411,8 @@ _PROCESSCONFIG_PROCESSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1137,
-  serialized_end=1209,
+  serialized_start=1151,
+  serialized_end=1223,
 )
 
 _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
@@ -448,8 +448,8 @@ _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1211,
-  serialized_end=1288,
+  serialized_start=1225,
+  serialized_end=1302,
 )
 
 _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
@@ -485,8 +485,8 @@ _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1290,
-  serialized_end=1329,
+  serialized_start=1304,
+  serialized_end=1343,
 )
 
 _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
@@ -515,8 +515,8 @@ _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1331,
-  serialized_end=1364,
+  serialized_start=1345,
+  serialized_end=1378,
 )
 
 _PROCESSCONFIG = _descriptor.Descriptor(
@@ -566,8 +566,8 @@ _PROCESSCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=969,
-  serialized_end=1364,
+  serialized_start=983,
+  serialized_end=1378,
 )
 
 
@@ -597,8 +597,8 @@ _HTTPCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1366,
-  serialized_end=1397,
+  serialized_start=1380,
+  serialized_end=1411,
 )
 
 
@@ -628,8 +628,8 @@ _EVENTCLIENTCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1399,
-  serialized_end=1445,
+  serialized_start=1413,
+  serialized_end=1459,
 )
 
 _FORCHCONFIG.fields_by_name['site'].message_type = _SITECONFIG
@@ -641,9 +641,9 @@ _SITECONFIG_CONTROLLERSENTRY.fields_by_name['value'].message_type = _SITECONFIG_
 _SITECONFIG_CONTROLLERSENTRY.containing_type = _SITECONFIG
 _SITECONFIG_CONTROLLER.containing_type = _SITECONFIG
 _SITECONFIG.fields_by_name['controllers'].message_type = _SITECONFIG_CONTROLLERSENTRY
-_ORCHESTRATIONCONFIG_AUTHCONFIG.fields_by_name['radius_info'].message_type = _ORCHESTRATIONCONFIG_RAIDUSINFO
+_ORCHESTRATIONCONFIG_AUTHCONFIG.fields_by_name['radius_info'].message_type = _ORCHESTRATIONCONFIG_RADIUSINFO
 _ORCHESTRATIONCONFIG_AUTHCONFIG.containing_type = _ORCHESTRATIONCONFIG
-_ORCHESTRATIONCONFIG_RAIDUSINFO.containing_type = _ORCHESTRATIONCONFIG
+_ORCHESTRATIONCONFIG_RADIUSINFO.containing_type = _ORCHESTRATIONCONFIG
 _ORCHESTRATIONCONFIG.fields_by_name['auth_config'].message_type = _ORCHESTRATIONCONFIG_AUTHCONFIG
 _PROCESSCONFIG_PROCESSESENTRY.fields_by_name['value'].message_type = _PROCESSCONFIG_PROCESS
 _PROCESSCONFIG_PROCESSESENTRY.containing_type = _PROCESSCONFIG
@@ -700,10 +700,10 @@ OrchestrationConfig = _reflection.GeneratedProtocolMessageType('OrchestrationCon
     ))
   ,
 
-  RaidusInfo = _reflection.GeneratedProtocolMessageType('RaidusInfo', (_message.Message,), dict(
-    DESCRIPTOR = _ORCHESTRATIONCONFIG_RAIDUSINFO,
+  RadiusInfo = _reflection.GeneratedProtocolMessageType('RadiusInfo', (_message.Message,), dict(
+    DESCRIPTOR = _ORCHESTRATIONCONFIG_RADIUSINFO,
     __module__ = 'forch.proto.forch_configuration_pb2'
-    # @@protoc_insertion_point(class_scope:OrchestrationConfig.RaidusInfo)
+    # @@protoc_insertion_point(class_scope:OrchestrationConfig.RadiusInfo)
     ))
   ,
   DESCRIPTOR = _ORCHESTRATIONCONFIG,
@@ -712,7 +712,7 @@ OrchestrationConfig = _reflection.GeneratedProtocolMessageType('OrchestrationCon
   ))
 _sym_db.RegisterMessage(OrchestrationConfig)
 _sym_db.RegisterMessage(OrchestrationConfig.AuthConfig)
-_sym_db.RegisterMessage(OrchestrationConfig.RaidusInfo)
+_sym_db.RegisterMessage(OrchestrationConfig.RadiusInfo)
 
 ProcessConfig = _reflection.GeneratedProtocolMessageType('ProcessConfig', (_message.Message,), dict(
 
