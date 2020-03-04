@@ -19,10 +19,6 @@ fm=`git ls-remote faucet $mtag`
 om=`git ls-remote origin $mtag`
 pm=`git ls-remote perry $mtag`
 
-echo Checking remote gmaster tag $gtag
-og=`git ls-remote origin $gtag`
-pg=`git ls-remote perry $gtag`
-
 if [ "$fm" != "$om" ]; then
     echo faucet master: $fm
     echo origin master: $om
@@ -40,9 +36,13 @@ if [ -z "$om" ]; then
     false
 fi
 
+echo Checking remote gmaster tag $gtag
+og=`git ls-remote origin $gtag`
+pg=`git ls-remote perry $gtag`
+
 if [ "$og" != "$pg" ]; then
-    echo origin gmaster: $fm
-    echo pperry gmaster: $pm
+    echo origin gmaster: $og
+    echo pperry gmaster: $pg
     false
 fi
 
