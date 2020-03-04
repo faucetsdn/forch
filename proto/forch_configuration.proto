@@ -16,6 +16,12 @@ message ForchConfig {
 
   // configurations for processes
   ProcessConfig process = 3;
+
+  // configurations for http server
+  HttpConfig http = 4;
+
+  // configurations for faucet event
+  EventClientConfig event_client = 5;
 }
 
 /*
@@ -127,4 +133,20 @@ message ProcessConfig {
     // description
     string description = 1;
   }
+}
+
+/*
+ * Http section in Forch configuration
+ */
+message HttpConfig {
+  // http root directory
+  string http_root = 1;
+}
+
+/*
+ * Event client section in Forch configuration
+ */
+message EventClientConfig {
+  // port debounce time in seconds
+  int32 port_debounce_sec = 1;
 }
