@@ -9,6 +9,7 @@ if [ "$1" == testing ]; then
     testing=$1
     shift
     echo Forcing tag 0.0.0 for testing.
+    git commit --allow-empty -m "Empty versioning commit"
     git tag -d 0.0.0 || true
     git tag -a 0.0.0 -m "Testing"
     FAUCET_VERSION=0.0.0
