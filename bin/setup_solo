@@ -7,7 +7,7 @@ prom_port=9302
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -s|--setup_base)
-            skip_docker_build=y
+            setup_base=y
             shift
             ;;
         -f|--faucet-port)
