@@ -1,0 +1,36 @@
+site:
+  name: nz-kiwi
+  controllers:
+    127.0.0.1:
+      fqdn: 127.0.0.1
+      port: 9019
+    nz-kiwi-ctl1:
+      fqdn: localhost.n
+      port: 9020
+orchestration:
+  structural_config_file: faucet_structural.yaml
+  static_device_placement: example_placement.yaml
+  static_device_behavior: example_behavior.yaml
+  segments_vlans_file: example_segments-to-vlans.yaml
+  auth_config:
+    radius_info:
+      server_ip: 172.17.0.5
+      server_port: 1812
+      radius_secret_helper: 'echo SECRET'
+    heartbeat_sec: 5
+    max_radius_backoff: 10
+    query_timeout_sec: 15
+    reject_timeout_sec: 360
+    auth_timeout_sec: 3559
+process:
+  scan_interval_sec: 10
+  processes:
+    faucet:
+      regex: python.*ryu-manager.*faucet\.faucet
+      count: 2
+    gauge:
+      regex: python.*ryu-manager.*faucet\.gauge
+    forch:
+      regex: ^python.*forch\.forchestrator
+    sleep:
+      regex: "sleep 50\\.3231"
