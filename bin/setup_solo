@@ -29,14 +29,14 @@ if [ -n "$setup_base" ]; then
     bin/build_docker ${DOCKER_BUILD:-pull}
 fi
 
-inst_dir=inst/forch-faucet-controller
+inst_dir=inst/forch-faucet-solo
 mkdir -p $inst_dir
 rm -rf $inst_dir/* || true
-cp topo/controller/*.yaml $inst_dir
+cp topo/solo/*.yaml $inst_dir
 
-bin/run_faucet local controller $faucet_port $prom_port
+bin/run_faucet local solo $faucet_port $prom_port
 
 echo Killing any old instances of forch...
 kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'` || true
-bin/forch --base inst/forch-faucet-controller 2>&1 &
+bin/forch --base inst/forch-faucet-solo 2>&1 &
 sleep 20

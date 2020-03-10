@@ -91,6 +91,16 @@ function add_oeth {
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
 }
 
+function add_faux {
+    switch=$1
+    port=$2
+    fnum=$3
+    bin/run_faux $fnum
+    docker exec -ti forch-faux-$fnum ip addr flush faux-eth0
+    docker exec -ti forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
+    add_iface $switch $port faux-$fnum
+}
+
 function diagnose_stack {
     echo Stack health
     for bridge in $(sudo ovs-vsctl list-br); do

@@ -3,30 +3,23 @@ dps:
     dp_id: 0x12345
     interfaces:
       1:
+        description: "egress-1"
+        tagged_vlans: [100,200,300,400]
+      2:
         description: "IoT-1"
         native_vlan: 100
         max_hosts: 1
-      2:
-        description: "IoT-2"
-        native_vlan: 100
-        max_hosts: 1
       3:
-        description: "egress-1"
-        tagged_vlans: [100,200,300,400]
-        max_hosts: 1
-      4:
         description: "egress-2"
         tagged_vlans: [100,200,300,400]
+      4:
+        description: "IoT-2"
+        native_vlan: 100
         max_hosts: 1
       5:
         description: "egress-3"
         tagged_vlans: [100,200,300,400]
-        max_hosts: 1
       6:
-        description: "host"
-        native_vlan: 100
-        max_hosts: 1
-      7:
         description: "host"
         native_vlan: 100
         max_hosts: 1
