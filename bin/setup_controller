@@ -1,0 +1,39 @@
+#!/bin/bash -e
+
+setup_base=
+faucet_port=6653
+prom_port=9302
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s|--setup_base)
+            skip_docker_build=y
+            shift
+            ;;
+        -f|--faucet-port)
+            faucet_port=$2
+            shift
+            shift
+            ;;
+        -p|--prometheus-port)
+            prom_port=$2
+            shift
+            shift
+            ;;
+    esac
+done
+
+if [ -n "$setup_base" ]; then
+    bin/setup_base
+    bin/setup_faucet
+    bin/build_docker ${DOCKER_BUILD:-pull}
+fi
+
+
+cp topo/controller/*.yaml inst/forch-faucet-controller/
+bin/run_faucet local controller $faucet_port $prom_port
+
+echo Killing any old instances of forch...
+kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+bin/forch --base inst/forch-faucet-controller 2>&1 &
+sleep 20
