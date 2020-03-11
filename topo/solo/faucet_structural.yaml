@@ -20,7 +20,7 @@ dps:
         description: "egress-3"
         tagged_vlans: [100,200,300,400]
       6:
-        description: "host"
+        description: "IoT-3"
         native_vlan: 100
         max_hosts: 1
 include:
