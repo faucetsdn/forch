@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 diffs=$(git status -s)
 
@@ -24,9 +24,9 @@ yes | benz build --git -pool="rodete-huge" -sign -branch="$FORCH_VERSION" -targe
 echo
 echo Build results:
 
-rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "esdn $ESDN_VERSION "
-rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "faucet $FAUCET_VERSION "
-rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "forch $FORCH_VERSION "
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "esdn $ESDN_VERSION " || (echo Missing ESDN match && false)
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "faucet $FAUCET_VERSION " || (echo Missing FAUCET match && false)
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "forch $FORCH_VERSION " || (echo Missing FORCH match && false)
 
 echo
 echo Done with successful build.
