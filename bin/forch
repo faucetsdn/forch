@@ -79,4 +79,4 @@ export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR
 export FORCH_LOG_DIR
 export PYTHONPATH
-$PYTHON -m forch.forchestrator "${pyargs[@]}" || tail $FORCH_LOG_DIR/forch.log && false
+$PYTHON -m forch "${pyargs[@]}" || tail $FORCH_LOG_DIR/forch.log && false

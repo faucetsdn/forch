@@ -18,7 +18,7 @@ process:
     gauge:
       regex: python.*ryu-manager.*faucet\.gauge
     forch:
-      regex: ^python.*forch\.forchestrator
+      regex: ^python.*forch$
     sleep:
       regex: "sleep 50\\.3231"
   connections:
