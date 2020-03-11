@@ -16,6 +16,12 @@ message ForchConfig {
 
   // configurations for processes
   ProcessConfig process = 3;
+
+  // configurations for http server
+  HttpConfig http = 4;
+
+  // configurations for faucet event
+  EventClientConfig event_client = 5;
 }
 
 /*
@@ -66,7 +72,7 @@ message OrchestrationConfig {
   // encapsulating authentication configurations
   message AuthConfig {
     // Radius configurations
-    RaidusInfo radius_info = 1;
+    RadiusInfo radius_info = 1;
 
     // Heartbeat in seconds
     int32 heartbeat_sec = 2;
@@ -85,15 +91,15 @@ message OrchestrationConfig {
   }
 
   // encapsulating Radius configurations
-  message RaidusInfo {
+  message RadiusInfo {
     // Radius server IP
     string server_ip = 1;
 
     // Radius server port
     int32 server_port = 2;
 
-    // Secret
-    string secret = 3;
+    // Shell command to get RADIUS secret. Can be as simple as 'echo <secret>'
+    string radius_secret_helper = 3;
   }
 }
 
@@ -127,4 +133,20 @@ message ProcessConfig {
     // description
     string description = 1;
   }
+}
+
+/*
+ * Http section in Forch configuration
+ */
+message HttpConfig {
+  // http root directory
+  string http_root = 1;
+}
+
+/*
+ * Event client section in Forch configuration
+ */
+message EventClientConfig {
+  // port debounce time in seconds
+  int32 port_debounce_sec = 1;
 }

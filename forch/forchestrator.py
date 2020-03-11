@@ -1,11 +1,8 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
 from datetime import datetime
-import argparse
-import functools
 import logging
 import os
-import sys
 import threading
 import time
 import yaml
@@ -26,23 +23,22 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
 
-from forch.utils import configure_logging, dict_proto, yaml_proto
+from forch.utils import yaml_proto
 
 from forch.__version__ import __version__
 
 from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
-from forch.proto.forch_configuration_pb2 import ProcessConfig, SiteConfig, OrchestrationConfig
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
 
 LOGGER = logging.getLogger('forch')
 
-_FORCH_CONFIG_DEFAULT = 'forch.yaml'
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
 _SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
 _PROMETHEUS_HOST = '127.0.0.1'
+
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -77,8 +73,7 @@ class Forchestrator:
         self._faucet_collector = FaucetStateCollector()
         self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._local_collector = LocalStateCollector(
-            dict_proto(self._config.get('process'), ProcessConfig),
-            self.cleanup, self.handle_active_state)
+            self._config.process, self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
         prom_port = os.getenv('PROMETHEUS_PORT')
@@ -89,7 +84,7 @@ class Forchestrator:
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
-            self._config.get('event_client', {}))
+            self._config.event_client)
         self._local_collector.initialize()
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
@@ -119,17 +114,14 @@ class Forchestrator:
         self._initialized = True
 
     def _attempt_authenticator_initialise(self):
-        orch_config = dict_proto(
-            self._config.get('orchestration', {}), OrchestrationConfig)
+        orch_config = self._config.orchestration
         if not orch_config.HasField('auth_config'):
             return
         LOGGER.info('Initializing authenticator')
         self._authenticator = Authenticator(orch_config.auth_config, self.handle_auth_result)
 
     def _process_static_device_placement(self):
-        orch_config = dict_proto(
-            self._config.get('orchestration', {}), OrchestrationConfig)
-        static_placement_file = orch_config.static_device_placement
+        static_placement_file = self._config.orchestration.static_device_placement
         if not static_placement_file:
             return
         placement_file = os.path.join(
@@ -139,9 +131,7 @@ class Forchestrator:
             self._process_device_placement(eth_src, device_placement, static=True)
 
     def _process_static_device_behavior(self):
-        orch_config = dict_proto(
-            self._config.get('orchestration', {}), OrchestrationConfig)
-        static_behaviors_file = orch_config.static_device_behavior
+        static_behaviors_file = self._config.orchestration.static_device_behavior
         if not static_behaviors_file:
             return
         static_behaviors_path = os.path.join(
@@ -151,8 +141,7 @@ class Forchestrator:
             self._process_device_behavior(mac, device_behavior, static=True)
 
     def _calculate_config_files(self):
-        orch_config = dict_proto(
-            self._config.get('orchestration', {}), OrchestrationConfig)
+        orch_config = self._config.orchestration
 
         behavioral_config_file = (orch_config.behavioral_config_file or
                                   os.getenv('FAUCET_CONFIG') or
@@ -188,8 +177,7 @@ class Forchestrator:
         with open(self._structural_config_file) as file:
             structural_config = yaml.safe_load(file)
 
-        orch_config = dict_proto(
-            self._config.get('orchestration', {}), OrchestrationConfig)
+        orch_config = self._config.orchestration
 
         segments_vlans_file = orch_config.segments_vlans_file or _SEGMENTS_VLAN_DEFAULT
         segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
@@ -328,10 +316,7 @@ class Forchestrator:
             raise e
 
     def _get_controller_info(self, target):
-        site_config = dict_proto(self._config.get('site', {}), SiteConfig)
-        if not site_config:
-            return (f'missing_site_configuration_{target}', _DEFAULT_PORT)
-        controllers = site_config.controllers
+        controllers = self._config.site.controllers
         if target not in controllers:
             return (f'missing_target_{target}', _DEFAULT_PORT)
         controller = controllers[target]
@@ -353,10 +338,7 @@ class Forchestrator:
 
     def _get_peer_controller_name(self):
         name = self._get_controller_name()
-        site_config = dict_proto(self._config.get('site', {}), SiteConfig)
-        if not site_config:
-            return f'missing_site_configuration_{name}'
-        controllers = site_config.controllers
+        controllers = self._config.site.controllers
         if name not in controllers:
             return f'missing_controller_name_{name}'
         if len(controllers) != 2:
@@ -380,8 +362,7 @@ class Forchestrator:
         self._populate_versions(system_state.versions)
         system_state.peer_controller_url = self._get_peer_controller_url()
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
-        system_state.site_name = (dict_proto(self._config.get('site', {}), SiteConfig).name or
-                                  'unknown')
+        system_state.site_name = self._config.site.name or 'unknown'
         system_state.controller_name = self._get_controller_name()
         system_state.config_summary.CopyFrom(self._config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
@@ -605,85 +586,3 @@ class Forchestrator:
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
-
-
-def load_config():
-    """Load configuration from the configuration file"""
-    # TODO: 1) use protobuf after entire forch config is converted
-    #       2) clean up places where individual forch config sections are converted by dict_proto
-    #          instead of direct access from forch config proto obj
-    config_root = os.getenv('FORCH_CONFIG_DIR', '.')
-    config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
-    LOGGER.info('Reading config file %s', os.path.abspath(config_path))
-    try:
-        with open(config_path, 'r') as stream:
-            return yaml.safe_load(stream)
-    except Exception as e:
-        LOGGER.error('Cannot load config: %s', e)
-        return None
-
-
-def show_error(error, path, params):
-    """Display errors"""
-    return f"Cannot initialize forch: {str(error)}"
-
-
-def main():
-    """main function to start forch"""
-    configure_logging()
-
-    config = load_config()
-    if not config:
-        LOGGER.error('Invalid config, exiting.')
-        sys.exit(1)
-
-    forchestrator = Forchestrator(config)
-    http_server = forch.http_server.HttpServer(
-        config.get('http', {}), forchestrator.get_local_port())
-
-    try:
-        forchestrator.initialize()
-        http_server.map_request('system_state', forchestrator.get_system_state)
-        http_server.map_request('dataplane_state', forchestrator.get_dataplane_state)
-        http_server.map_request('switch_state', forchestrator.get_switch_state)
-        http_server.map_request('cpn_state', forchestrator.get_cpn_state)
-        http_server.map_request('process_state', forchestrator.get_process_state)
-        http_server.map_request('host_path', forchestrator.get_host_path)
-        http_server.map_request('list_hosts', forchestrator.get_list_hosts)
-        http_server.map_request('sys_config', forchestrator.get_sys_config)
-        http_server.map_request('', http_server.static_file(''))
-    except Exception as e:
-        LOGGER.error("Cannot initialize forch: %s", e, exc_info=True)
-        http_server.map_request('', functools.partial(show_error, e))
-    finally:
-        http_server.start_server()
-
-    if forchestrator.initialized():
-        forchestrator.main_loop()
-    else:
-        try:
-            http_server.join_thread()
-        except KeyboardInterrupt:
-            LOGGER.info('Keyboard interrupt. Exiting.')
-
-    LOGGER.warning('Exiting program')
-    http_server.stop_server()
-    forchestrator.stop()
-
-
-def parse_args(raw_args):
-    """Parse command line arguments"""
-    parser = argparse.ArgumentParser(prog='forch', description='Process some integers.')
-    parser.add_argument('-V', '--version', action='store_true', help='print version and exit')
-    parsed = parser.parse_args(raw_args)
-    return parsed
-
-
-if __name__ == '__main__':
-    ARGS = parse_args(sys.argv[1:])
-
-    if ARGS.version:
-        print(f'Forch version {__version__}')
-        sys.exit()
-
-    main()
