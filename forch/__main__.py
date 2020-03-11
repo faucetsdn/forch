@@ -5,12 +5,12 @@ import functools
 import logging
 import os
 import sys
-import yaml
 
 import forch.faucet_event_client
 from forch.forchestrator import Forchestrator
 import forch.http_server
-from forch.utils import configure_logging
+from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.utils import configure_logging, yaml_proto
 
 from forch.__version__ import __version__
 
@@ -25,9 +25,7 @@ def load_config():
     config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
     try:
-        # TODO use protobuf after entire forch config is converted
-        with open(config_path, 'r') as stream:
-            return yaml.safe_load(stream)
+        return yaml_proto(config_path, ForchConfig)
     except Exception as e:
         LOGGER.error('Cannot load config: %s', e)
         return None
@@ -48,8 +46,7 @@ def run_forchestrator():
         sys.exit(1)
 
     forchestrator = Forchestrator(config)
-    http_server = forch.http_server.HttpServer(
-        config.get('http', {}), forchestrator.get_local_port())
+    http_server = forch.http_server.HttpServer(config.http, forchestrator.get_local_port())
 
     try:
         forchestrator.initialize()

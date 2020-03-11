@@ -7,7 +7,7 @@ site:
     nz-kiwi-ctl1:
       fqdn: localhost.n
       port: 9020
-static_device_info:
+orchestration:
   static_device_placement: placement.yaml
 process:
   scan_interval_sec: 10

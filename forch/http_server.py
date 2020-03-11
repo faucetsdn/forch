@@ -78,7 +78,7 @@ class HttpServer():
         self._config = config
         self._paths = {}
         self._server = None
-        self._root_path = config.get('http_root', 'public')
+        self._root_path = config.http_root or 'public'
         self._port = port
         self._host = '0.0.0.0'
         self._thread = None

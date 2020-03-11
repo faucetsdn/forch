@@ -464,7 +464,27 @@
             <ul>
               
                 <li>
+                  <a href="#EventClientConfig"><span class="badge">M</span>EventClientConfig</a>
+                </li>
+              
+                <li>
                   <a href="#ForchConfig"><span class="badge">M</span>ForchConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#HttpConfig"><span class="badge">M</span>HttpConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#OrchestrationConfig"><span class="badge">M</span>OrchestrationConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#OrchestrationConfig.AuthConfig"><span class="badge">M</span>OrchestrationConfig.AuthConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#OrchestrationConfig.RadiusInfo"><span class="badge">M</span>OrchestrationConfig.RadiusInfo</a>
                 </li>
               
                 <li>
@@ -2874,6 +2894,30 @@
       <p>Encapsulating Forch configuration</p>
 
       
+        <h3 id="EventClientConfig">EventClientConfig</h3>
+        <p>Event client section in Forch configuration</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>port_debounce_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port debounce time in seconds </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="ForchConfig">ForchConfig</h3>
         <p>Forch configuration</p>
 
@@ -2892,10 +2936,218 @@
                 </tr>
               
                 <tr>
+                  <td>orchestration</td>
+                  <td><a href="#OrchestrationConfig">OrchestrationConfig</a></td>
+                  <td></td>
+                  <td><p>configurations for orchestration </p></td>
+                </tr>
+              
+                <tr>
                   <td>process</td>
                   <td><a href="#ProcessConfig">ProcessConfig</a></td>
                   <td></td>
                   <td><p>configurations for processes </p></td>
+                </tr>
+              
+                <tr>
+                  <td>http</td>
+                  <td><a href="#HttpConfig">HttpConfig</a></td>
+                  <td></td>
+                  <td><p>configurations for http server </p></td>
+                </tr>
+              
+                <tr>
+                  <td>event_client</td>
+                  <td><a href="#EventClientConfig">EventClientConfig</a></td>
+                  <td></td>
+                  <td><p>configurations for faucet event </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HttpConfig">HttpConfig</h3>
+        <p>Http section in Forch configuration</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>http_root</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>http root directory </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig">OrchestrationConfig</h3>
+        <p>Orchestration section in Forch configuration</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>structural_config_file</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>structural config file name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>behavioral_config_file</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>behavioral config file name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>static_device_placement</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>static placement file name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>static_device_behavior</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>static behavior file name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>segments_vlans_file</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>segment to vlan mappings file name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>faucetize_interval_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>interval of periodic faucetizing task in seconds </p></td>
+                </tr>
+              
+                <tr>
+                  <td>auth_config</td>
+                  <td><a href="#OrchestrationConfig.AuthConfig">OrchestrationConfig.AuthConfig</a></td>
+                  <td></td>
+                  <td><p>authentication configurations </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.AuthConfig">OrchestrationConfig.AuthConfig</h3>
+        <p>encapsulating authentication configurations</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>radius_info</td>
+                  <td><a href="#OrchestrationConfig.RadiusInfo">OrchestrationConfig.RadiusInfo</a></td>
+                  <td></td>
+                  <td><p>Radius configurations </p></td>
+                </tr>
+              
+                <tr>
+                  <td>heartbeat_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Heartbeat in seconds </p></td>
+                </tr>
+              
+                <tr>
+                  <td>max_radius_backoff</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Max Radius backoff count </p></td>
+                </tr>
+              
+                <tr>
+                  <td>query_timeout_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Query timeout in seconds </p></td>
+                </tr>
+              
+                <tr>
+                  <td>reject_timeout_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Reject timeout in seconds </p></td>
+                </tr>
+              
+                <tr>
+                  <td>auth_timeout_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Authentication timeout in seconds </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.RadiusInfo">OrchestrationConfig.RadiusInfo</h3>
+        <p>encapsulating Radius configurations</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>server_ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Radius server IP </p></td>
+                </tr>
+              
+                <tr>
+                  <td>server_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Radius server port </p></td>
+                </tr>
+              
+                <tr>
+                  <td>radius_secret_helper</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Shell command to get RADIUS secret. Can be as simple as &#39;echo <secret>&#39; </p></td>
                 </tr>
               
             </tbody>

@@ -29,7 +29,7 @@ class FaucetEventClient():
         self._buffer_lock = threading.Lock()
         self._handlers = {}
         self.previous_state = None
-        self._port_debounce_sec = int(config.get('port_debounce_sec', self._PORT_DEBOUNCE_SEC))
+        self._port_debounce_sec = config.port_debounce_sec or self._PORT_DEBOUNCE_SEC
         self._port_timers = {}
         self.event_socket_connected = False
         self._last_event_id = None

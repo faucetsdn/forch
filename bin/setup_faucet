@@ -9,8 +9,14 @@ else
     GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 fi
 
-GIT_REMOTE=`git config branch.$GIT_BRANCH.remote`
-GIT_URL=`git remote get-url $GIT_REMOTE`
+GIT_REMOTE=`git config branch.$GIT_BRANCH.remote` || true
+if [ -z "$GIT_REMOTE" ]; then
+    GIT_URL=`git config remote.origin.url`
+    GIT_REMOTE=tag
+else
+    GIT_URL=`git remote get-url $GIT_REMOTE`
+fi
+
 echo Build branch $GIT_BRANCH from $GIT_REMOTE at $GIT_URL
 GIT_PEER=`echo $GIT_URL | sed s/forch/faucet/`
 echo Auto-generated faucet git repo $GIT_PEER

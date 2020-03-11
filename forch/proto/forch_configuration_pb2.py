@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"I\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12\x1f\n\x07process\x18\x02 \x01(\x0b\x32\x0e.ProcessConfig\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\x8b\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\'\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"\xbb\x01\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xa6\x04\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RadiusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_backoff\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1aR\n\nRadiusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x1c\n\x14radius_secret_helper\x18\x03 \x01(\t\"\x8b\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\'\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\".\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x62\x06proto3')
 )
 
 
@@ -40,8 +40,29 @@ _FORCHCONFIG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='process', full_name='ForchConfig.process', index=1,
+      name='orchestration', full_name='ForchConfig.orchestration', index=1,
       number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='process', full_name='ForchConfig.process', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='http', full_name='ForchConfig.http', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='event_client', full_name='ForchConfig.event_client', index=4,
+      number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -58,8 +79,8 @@ _FORCHCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=41,
-  serialized_end=114,
+  serialized_start=42,
+  serialized_end=229,
 )
 
 
@@ -96,8 +117,8 @@ _SITECONFIG_CONTROLLERSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=196,
-  serialized_end=270,
+  serialized_start=311,
+  serialized_end=385,
 )
 
 _SITECONFIG_CONTROLLER = _descriptor.Descriptor(
@@ -133,8 +154,8 @@ _SITECONFIG_CONTROLLER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=272,
-  serialized_end=312,
+  serialized_start=387,
+  serialized_end=427,
 )
 
 _SITECONFIG = _descriptor.Descriptor(
@@ -170,8 +191,190 @@ _SITECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=117,
-  serialized_end=312,
+  serialized_start=232,
+  serialized_end=427,
+)
+
+
+_ORCHESTRATIONCONFIG_AUTHCONFIG = _descriptor.Descriptor(
+  name='AuthConfig',
+  full_name='OrchestrationConfig.AuthConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='radius_info', full_name='OrchestrationConfig.AuthConfig.radius_info', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='heartbeat_sec', full_name='OrchestrationConfig.AuthConfig.heartbeat_sec', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='max_radius_backoff', full_name='OrchestrationConfig.AuthConfig.max_radius_backoff', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='query_timeout_sec', full_name='OrchestrationConfig.AuthConfig.query_timeout_sec', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='reject_timeout_sec', full_name='OrchestrationConfig.AuthConfig.reject_timeout_sec', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='auth_timeout_sec', full_name='OrchestrationConfig.AuthConfig.auth_timeout_sec', index=5,
+      number=6, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=698,
+  serialized_end=896,
+)
+
+_ORCHESTRATIONCONFIG_RADIUSINFO = _descriptor.Descriptor(
+  name='RadiusInfo',
+  full_name='OrchestrationConfig.RadiusInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='server_ip', full_name='OrchestrationConfig.RadiusInfo.server_ip', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='server_port', full_name='OrchestrationConfig.RadiusInfo.server_port', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='radius_secret_helper', full_name='OrchestrationConfig.RadiusInfo.radius_secret_helper', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=898,
+  serialized_end=980,
+)
+
+_ORCHESTRATIONCONFIG = _descriptor.Descriptor(
+  name='OrchestrationConfig',
+  full_name='OrchestrationConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='structural_config_file', full_name='OrchestrationConfig.structural_config_file', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='behavioral_config_file', full_name='OrchestrationConfig.behavioral_config_file', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='static_device_placement', full_name='OrchestrationConfig.static_device_placement', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='static_device_behavior', full_name='OrchestrationConfig.static_device_behavior', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='segments_vlans_file', full_name='OrchestrationConfig.segments_vlans_file', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='faucetize_interval_sec', full_name='OrchestrationConfig.faucetize_interval_sec', index=5,
+      number=6, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='auth_config', full_name='OrchestrationConfig.auth_config', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_ORCHESTRATIONCONFIG_AUTHCONFIG, _ORCHESTRATIONCONFIG_RADIUSINFO, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=430,
+  serialized_end=980,
 )
 
 
@@ -208,8 +411,8 @@ _PROCESSCONFIG_PROCESSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=483,
-  serialized_end=555,
+  serialized_start=1151,
+  serialized_end=1223,
 )
 
 _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
@@ -245,8 +448,8 @@ _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=557,
-  serialized_end=634,
+  serialized_start=1225,
+  serialized_end=1302,
 )
 
 _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
@@ -282,8 +485,8 @@ _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=636,
-  serialized_end=675,
+  serialized_start=1304,
+  serialized_end=1343,
 )
 
 _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
@@ -312,8 +515,8 @@ _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=677,
-  serialized_end=710,
+  serialized_start=1345,
+  serialized_end=1378,
 )
 
 _PROCESSCONFIG = _descriptor.Descriptor(
@@ -363,16 +566,85 @@ _PROCESSCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=315,
-  serialized_end=710,
+  serialized_start=983,
+  serialized_end=1378,
+)
+
+
+_HTTPCONFIG = _descriptor.Descriptor(
+  name='HttpConfig',
+  full_name='HttpConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='http_root', full_name='HttpConfig.http_root', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1380,
+  serialized_end=1411,
+)
+
+
+_EVENTCLIENTCONFIG = _descriptor.Descriptor(
+  name='EventClientConfig',
+  full_name='EventClientConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='port_debounce_sec', full_name='EventClientConfig.port_debounce_sec', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1413,
+  serialized_end=1459,
 )
 
 _FORCHCONFIG.fields_by_name['site'].message_type = _SITECONFIG
+_FORCHCONFIG.fields_by_name['orchestration'].message_type = _ORCHESTRATIONCONFIG
 _FORCHCONFIG.fields_by_name['process'].message_type = _PROCESSCONFIG
+_FORCHCONFIG.fields_by_name['http'].message_type = _HTTPCONFIG
+_FORCHCONFIG.fields_by_name['event_client'].message_type = _EVENTCLIENTCONFIG
 _SITECONFIG_CONTROLLERSENTRY.fields_by_name['value'].message_type = _SITECONFIG_CONTROLLER
 _SITECONFIG_CONTROLLERSENTRY.containing_type = _SITECONFIG
 _SITECONFIG_CONTROLLER.containing_type = _SITECONFIG
 _SITECONFIG.fields_by_name['controllers'].message_type = _SITECONFIG_CONTROLLERSENTRY
+_ORCHESTRATIONCONFIG_AUTHCONFIG.fields_by_name['radius_info'].message_type = _ORCHESTRATIONCONFIG_RADIUSINFO
+_ORCHESTRATIONCONFIG_AUTHCONFIG.containing_type = _ORCHESTRATIONCONFIG
+_ORCHESTRATIONCONFIG_RADIUSINFO.containing_type = _ORCHESTRATIONCONFIG
+_ORCHESTRATIONCONFIG.fields_by_name['auth_config'].message_type = _ORCHESTRATIONCONFIG_AUTHCONFIG
 _PROCESSCONFIG_PROCESSESENTRY.fields_by_name['value'].message_type = _PROCESSCONFIG_PROCESS
 _PROCESSCONFIG_PROCESSESENTRY.containing_type = _PROCESSCONFIG
 _PROCESSCONFIG_CONNECTIONSENTRY.fields_by_name['value'].message_type = _PROCESSCONFIG_CONNECTION
@@ -383,7 +655,10 @@ _PROCESSCONFIG.fields_by_name['processes'].message_type = _PROCESSCONFIG_PROCESS
 _PROCESSCONFIG.fields_by_name['connections'].message_type = _PROCESSCONFIG_CONNECTIONSENTRY
 DESCRIPTOR.message_types_by_name['ForchConfig'] = _FORCHCONFIG
 DESCRIPTOR.message_types_by_name['SiteConfig'] = _SITECONFIG
+DESCRIPTOR.message_types_by_name['OrchestrationConfig'] = _ORCHESTRATIONCONFIG
 DESCRIPTOR.message_types_by_name['ProcessConfig'] = _PROCESSCONFIG
+DESCRIPTOR.message_types_by_name['HttpConfig'] = _HTTPCONFIG
+DESCRIPTOR.message_types_by_name['EventClientConfig'] = _EVENTCLIENTCONFIG
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ForchConfig = _reflection.GeneratedProtocolMessageType('ForchConfig', (_message.Message,), dict(
@@ -415,6 +690,29 @@ SiteConfig = _reflection.GeneratedProtocolMessageType('SiteConfig', (_message.Me
 _sym_db.RegisterMessage(SiteConfig)
 _sym_db.RegisterMessage(SiteConfig.ControllersEntry)
 _sym_db.RegisterMessage(SiteConfig.Controller)
+
+OrchestrationConfig = _reflection.GeneratedProtocolMessageType('OrchestrationConfig', (_message.Message,), dict(
+
+  AuthConfig = _reflection.GeneratedProtocolMessageType('AuthConfig', (_message.Message,), dict(
+    DESCRIPTOR = _ORCHESTRATIONCONFIG_AUTHCONFIG,
+    __module__ = 'forch.proto.forch_configuration_pb2'
+    # @@protoc_insertion_point(class_scope:OrchestrationConfig.AuthConfig)
+    ))
+  ,
+
+  RadiusInfo = _reflection.GeneratedProtocolMessageType('RadiusInfo', (_message.Message,), dict(
+    DESCRIPTOR = _ORCHESTRATIONCONFIG_RADIUSINFO,
+    __module__ = 'forch.proto.forch_configuration_pb2'
+    # @@protoc_insertion_point(class_scope:OrchestrationConfig.RadiusInfo)
+    ))
+  ,
+  DESCRIPTOR = _ORCHESTRATIONCONFIG,
+  __module__ = 'forch.proto.forch_configuration_pb2'
+  # @@protoc_insertion_point(class_scope:OrchestrationConfig)
+  ))
+_sym_db.RegisterMessage(OrchestrationConfig)
+_sym_db.RegisterMessage(OrchestrationConfig.AuthConfig)
+_sym_db.RegisterMessage(OrchestrationConfig.RadiusInfo)
 
 ProcessConfig = _reflection.GeneratedProtocolMessageType('ProcessConfig', (_message.Message,), dict(
 
@@ -454,6 +752,20 @@ _sym_db.RegisterMessage(ProcessConfig.ProcessesEntry)
 _sym_db.RegisterMessage(ProcessConfig.ConnectionsEntry)
 _sym_db.RegisterMessage(ProcessConfig.Process)
 _sym_db.RegisterMessage(ProcessConfig.Connection)
+
+HttpConfig = _reflection.GeneratedProtocolMessageType('HttpConfig', (_message.Message,), dict(
+  DESCRIPTOR = _HTTPCONFIG,
+  __module__ = 'forch.proto.forch_configuration_pb2'
+  # @@protoc_insertion_point(class_scope:HttpConfig)
+  ))
+_sym_db.RegisterMessage(HttpConfig)
+
+EventClientConfig = _reflection.GeneratedProtocolMessageType('EventClientConfig', (_message.Message,), dict(
+  DESCRIPTOR = _EVENTCLIENTCONFIG,
+  __module__ = 'forch.proto.forch_configuration_pb2'
+  # @@protoc_insertion_point(class_scope:EventClientConfig)
+  ))
+_sym_db.RegisterMessage(EventClientConfig)
 
 
 _SITECONFIG_CONTROLLERSENTRY._options = None

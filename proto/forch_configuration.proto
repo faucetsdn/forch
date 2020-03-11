@@ -11,8 +11,17 @@ message ForchConfig {
   // configurations for site
   SiteConfig site = 1;
 
+  // configurations for orchestration
+  OrchestrationConfig orchestration = 2;
+
   // configurations for processes
-  ProcessConfig process = 2;
+  ProcessConfig process = 3;
+
+  // configurations for http server
+  HttpConfig http = 4;
+
+  // configurations for faucet event
+  EventClientConfig event_client = 5;
 }
 
 /*
@@ -32,6 +41,65 @@ message SiteConfig {
 
     // port for Forch APIs
     int32 port = 2;
+  }
+}
+
+/*
+ * Orchestration section in Forch configuration
+ */
+message OrchestrationConfig {
+  // structural config file name
+  string structural_config_file = 1;
+
+  // behavioral config file name
+  string behavioral_config_file = 2;
+
+  // static placement file name
+  string static_device_placement = 3;
+
+  // static behavior file name
+  string static_device_behavior = 4;
+
+  // segment to vlan mappings file name
+  string segments_vlans_file = 5;
+
+  // interval of periodic faucetizing task in seconds
+  int32 faucetize_interval_sec = 6;
+
+  // authentication configurations
+  AuthConfig auth_config = 7;
+
+  // encapsulating authentication configurations
+  message AuthConfig {
+    // Radius configurations
+    RadiusInfo radius_info = 1;
+
+    // Heartbeat in seconds
+    int32 heartbeat_sec = 2;
+
+    // Max Radius backoff count
+    int32 max_radius_backoff = 3;
+
+    // Query timeout in seconds
+    int32 query_timeout_sec = 4;
+
+    // Reject timeout in seconds
+    int32 reject_timeout_sec = 5;
+
+    // Authentication timeout in seconds
+    int32 auth_timeout_sec = 6;
+  }
+
+  // encapsulating Radius configurations
+  message RadiusInfo {
+    // Radius server IP
+    string server_ip = 1;
+
+    // Radius server port
+    int32 server_port = 2;
+
+    // Shell command to get RADIUS secret. Can be as simple as 'echo <secret>'
+    string radius_secret_helper = 3;
   }
 }
 
@@ -65,4 +133,20 @@ message ProcessConfig {
     // description
     string description = 1;
   }
+}
+
+/*
+ * Http section in Forch configuration
+ */
+message HttpConfig {
+  // http root directory
+  string http_root = 1;
+}
+
+/*
+ * Event client section in Forch configuration
+ */
+message EventClientConfig {
+  // port debounce time in seconds
+  int32 port_debounce_sec = 1;
 }
