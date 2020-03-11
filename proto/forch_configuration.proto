@@ -1,0 +1,130 @@
+/*
+ * Encapsulating Forch configuration
+ */
+syntax = "proto3";
+
+// TODO fill up sections one by one
+/*
+ * Forch configuration
+ */
+message ForchConfig {
+  // configurations for site
+  SiteConfig site = 1;
+
+  // configurations for orchestration
+  OrchestrationConfig orchestration = 2;
+
+  // configurations for processes
+  ProcessConfig process = 3;
+}
+
+/*
+ * Site section in Forch configuration
+ */
+message SiteConfig {
+  // site name
+  string name = 1;
+
+  // controllers indexed by controller host name
+  map<string, Controller> controllers = 2;
+
+  // Representing a controller host
+  message Controller {
+    // fqdn
+    string fqdn = 1;
+
+    // port for Forch APIs
+    int32 port = 2;
+  }
+}
+
+/*
+ * Orchestration section in Forch configuration
+ */
+message OrchestrationConfig {
+  // structural config file name
+  string structural_config_file = 1;
+
+  // behavioral config file name
+  string behavioral_config_file = 2;
+
+  // static placement file name
+  string static_device_placement = 3;
+
+  // static behavior file name
+  string static_device_behavior = 4;
+
+  // segment to vlan mappings file name
+  string segments_vlans_file = 5;
+
+  // interval of periodic faucetizing task in seconds
+  int32 faucetize_interval_sec = 6;
+
+  // authentication configurations
+  AuthConfig auth_config = 7;
+
+  // encapsulating authentication configurations
+  message AuthConfig {
+    // Radius configurations
+    RaidusInfo radius_info = 1;
+
+    // Heartbeat in seconds
+    int32 heartbeat_sec = 2;
+
+    // Max Radius backoff count
+    int32 max_radius_backoff = 3;
+
+    // Query timeout in seconds
+    int32 query_timeout_sec = 4;
+
+    // Reject timeout in seconds
+    int32 reject_timeout_sec = 5;
+
+    // Authentication timeout in seconds
+    int32 auth_timeout_sec = 6;
+  }
+
+  // encapsulating Radius configurations
+  message RaidusInfo {
+    // Radius server IP
+    string server_ip = 1;
+
+    // Radius server port
+    int32 server_port = 2;
+
+    // Secret
+    string secret = 3;
+  }
+}
+
+/*
+ * Process section in Forch configuration
+ */
+message ProcessConfig {
+  // scan interval in seconds
+  int32 scan_interval_sec = 1;
+
+  // indicate if Forch should check VRRP state
+  bool check_vrrp = 2;
+
+  // target processes to check indexed by process name
+  map<string, Process> processes = 3;
+
+  // connections to check indexed by listening port number
+  map<int32, Connection> connections = 4;
+
+  // representing a target process
+  message Process {
+    // regex to match process name
+    string regex = 1;
+
+    // count of instances of a target process
+    int32 count = 2;
+  }
+
+  // Connection
+  message Connection {
+    // description
+    string description = 1;
+  }
+}

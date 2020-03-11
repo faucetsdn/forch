@@ -5,6 +5,3 @@ device_mac_behaviors:
   "9a:02:57:1e:8f:02":
     segment: BOS
     role: green
-  "9a:02:57:1e:8f:03":
-    segment: BOS
-    role: yellow

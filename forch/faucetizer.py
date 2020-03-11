@@ -40,7 +40,7 @@ class Faucetizer:
             else:
                 removed = devices.pop(eth_src, None)
                 if removed:
-                    LOGGER.info('Removed %s placement: %s', device_type, eth_src)
+                    LOGGER.info('Removed %s device: %s', device_type, eth_src)
 
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
@@ -54,8 +54,9 @@ class Faucetizer:
                     'Added %s behavior: %s, %s, %s',
                     device_type, eth_src, behavior.segment, behavior.role)
             else:
-                removed = devices.pop(eth_src, None)
-                if removed:
+                device = devices.get(eth_src)
+                if device:
+                    device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
     def process_faucet_config(self, faucet_config):

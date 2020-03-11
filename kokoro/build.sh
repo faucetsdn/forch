@@ -7,7 +7,7 @@ cd git/benz-build-source
 sudo kokoro/setup.sh
 sudo apt-get install tree
 
-FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
+FAUCET_VERSION=$(< etc/FAUCET_VERSION)
 echo Fixing debian faucet version to $FAUCET_VERSION
 fgrep -v $FAUCET_VERSION debian/control > /dev/null
 sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
@@ -26,16 +26,20 @@ VER_FILE
 cat forch/__version__.py
 build-debs -b -L -d rodete
 
-cd esdn-faucet
-echo Fixing debian faucet version to $FAUCET_VERSION
-fgrep -v $FAUCET_VERSION debian/control > /dev/null
-sed -i s/FAUCET_VERSION/${FAUCET_VERSION}/ debian/control
-fgrep $FAUCET_VERSION debian/control
-VERSION=$(git describe remotes/origin/esdn-faucet)
-debchange --newversion $VERSION -b "New upstream release"
-build-debs -b -L -d rodete
+(
+    cd esdn-faucet
+    git checkout origin/esdn -- FORCH_VERSION
+    FORCH_VERSION=$(< FORCH_VERSION)
+    echo Fixing debian forch version to $FORCH_VERSION
+    fgrep -v $FORCH_VERSION debian/control > /dev/null
+    sed -i s/FORCH_VERSION/${FORCH_VERSION}/ debian/control
+    fgrep $FORCH_VERSION debian/control
 
-cd ..
+    VERSION=$(git describe remotes/origin/esdn)
+    echo esdn-faucet version $VERSION
+    debchange --newversion $VERSION -b "New upstream release"
+    build-debs -b -L -d rodete
+)
 
 cp esdn-faucet/binary/* binary/
 ls -l binary/
