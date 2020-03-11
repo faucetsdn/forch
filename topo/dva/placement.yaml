@@ -9,11 +9,6 @@
             switch: "nz-kiwi-t2sw2",
             port: 1,
             connected: True
-        },
-        "9a:02:57:1e:8f:03": {
-            switch: "nz-kiwi-t2sw3",
-            port: 1,
-            connected: True
         }
     }
 }
