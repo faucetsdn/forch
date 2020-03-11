@@ -12,14 +12,21 @@ FORCH_VERSION=$(< esdn-faucet/FORCH_VERSION)
 FAUCET_VERSION=$(git show $FORCH_VERSION:etc/FAUCET_VERSION)
 ESDN_VERSION=$(git describe)
 
+echo ESDN_VERSION $ESDN_VERSION
 echo FAUCET_VERSION $FAUCET_VERSION
 echo FORCH_VERSION $FORCH_VERSION
-echo ESDN_VERSION $ESDN_VERSION
 
 prodaccess
 
-benz build --git -pool="rodete-huge" -sign -branch="$FAUCET_VERSION" -target-prefix=enterprise-sdn-faucet-core rpc://perry-internal/faucet
-benz build --git -pool="rodete-huge" -sign -branch="$FORCH_VERSION" -target-prefix=enterprise-sdn-faucet-forch rpc://perry-internal/forch
+yes | benz build --git -pool="rodete-huge" -sign -branch="$FAUCET_VERSION" -target-prefix=enterprise-sdn-faucet-core rpc://perry-internal/faucet
+yes | benz build --git -pool="rodete-huge" -sign -branch="$FORCH_VERSION" -target-prefix=enterprise-sdn-faucet-forch rpc://perry-internal/forch
 
-rapture listrepo enterprise-sdn.faucet.all-unstable | egrep '(faucet|forch)'
+echo
+echo Build results:
 
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "esdn $ESDN_VERSION "
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "faucet $FAUCET_VERSION "
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "forch $FORCH_VERSION "
+
+echo
+echo Done with successful build.
