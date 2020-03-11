@@ -13,6 +13,7 @@ git fetch --tags perry gmaster
 
 mtag=`git describe perry/master`
 gtag=`git describe perry/gmaster`
+etag=`git describe perry/esdn`
 
 echo Checking remote master tag $mtag
 fm=`git ls-remote faucet $mtag`
@@ -51,5 +52,18 @@ if [ -z "$og" ]; then
     false
 fi
 
+echo Checking remote esdn tag $etag
+oe=`git ls-remote origin $etag`
+pe=`git ls-remote perry $etag`
+if [ "$oe" != "$pe" ]; then
+    echo origin gmaster: $oe
+    echo pperry gmaster: $pe
+    false
+fi
 
-echo All remote tags check out.
+if [ -z "$oe" ]; then
+    echo Unknown tag $etag
+    false
+fi
+
+echo All remote tags are consistent.
