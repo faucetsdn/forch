@@ -1,9 +1,9 @@
 device_mac_placements: 
   "9a:02:57:1e:8f:01": 
     switch: "sw1"
-    port: 1
+    port: 2
     connected: True
   "9a:02:57:1e:8f:02": 
     switch: "sw1"
-    port: 2
+    port: 4
     connected: True
