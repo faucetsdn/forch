@@ -10,6 +10,7 @@ sudo apt-get install tree
 echo TAPTAP
 df -h /usr/local/google
 ls -l /usr/local/google
+ls -l￼/usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 FAUCET_VERSION=$(< etc/FAUCET_VERSION)
 echo Fixing debian faucet version to $FAUCET_VERSION
@@ -30,6 +31,7 @@ VER_FILE
 echo TAPTAP
 df -h /usr/local/google
 ls -l /usr/local/google
+ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 cat forch/__version__.py
 build-debs -b -L -d rodete
@@ -37,6 +39,7 @@ build-debs -b -L -d rodete
 echo TAPTAP
 df -h /usr/local/google
 ls -l /usr/local/google
+ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 (
     cd esdn-faucet
@@ -54,13 +57,15 @@ ls -l /usr/local/google
     echo TAPTAP
     df -h /usr/local/google
     ls -l /usr/local/google
+    ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
-    build-debs -b -L -d rodete
+    build-debs -b -L -d rodete || true
 )
 
 echo TAPTAP
 df -h /usr/local/google
 ls -l /usr/local/google
+ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 cp esdn-faucet/binary/* binary/
 ls -l binary/
