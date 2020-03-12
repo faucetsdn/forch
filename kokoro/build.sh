@@ -10,7 +10,7 @@ sudo apt-get install tree
 echo TAPTAP
 df -h /usr/local/google
 ls -l /usr/local/google
-ls -l￼/usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
+ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 FAUCET_VERSION=$(< etc/FAUCET_VERSION)
 echo Fixing debian faucet version to $FAUCET_VERSION
