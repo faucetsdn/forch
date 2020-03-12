@@ -8,7 +8,7 @@ sudo kokoro/setup.sh
 sudo apt-get install tree
 
 echo TAPTAP
-df -h .
+df -h
 
 FAUCET_VERSION=$(< etc/FAUCET_VERSION)
 echo Fixing debian faucet version to $FAUCET_VERSION
@@ -27,13 +27,13 @@ __version__ = '$VERSION'
 VER_FILE
 
 echo TAPTAP
-df -h .
+df -h
 
 cat forch/__version__.py
 build-debs -b -L -d rodete
 
 echo TAPTAP
-df -h .
+df -h
 
 (
     cd esdn-faucet
@@ -49,13 +49,13 @@ df -h .
     debchange --newversion $VERSION -b "New upstream release"
 
     echo TAPTAP
-    df -h .
+    df -h
 
     build-debs -b -L -d rodete
 )
 
 echo TAPTAP
-df -h .
+df -h
 
 cp esdn-faucet/binary/* binary/
 ls -l binary/
