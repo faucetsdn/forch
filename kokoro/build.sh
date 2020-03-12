@@ -7,14 +7,9 @@ cd git/benz-build-source
 sudo kokoro/setup.sh
 sudo apt-get install tree
 
-echo TAPTAP
 echo "${TMPDIR}"
 mkdir -p "${TMPDIR}/binary/"
 mkdir -p "${TMPDIR}/glinux-build"
-
-df -h /usr/local/google
-ls -l /usr/local/google
-ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 FAUCET_VERSION=$(< etc/FAUCET_VERSION)
 echo Fixing debian faucet version to $FAUCET_VERSION
@@ -32,22 +27,10 @@ cat >forch/__version__.py <<VER_FILE
 __version__ = '$VERSION'
 VER_FILE
 
-echo TAPTAP
-df -h /usr/local/google
-ls -l /usr/local/google
-ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
-
 cat forch/__version__.py
 
 glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
 mkdir -p binary
-
-#build-debs -b -L -d rodete
-
-echo TAPTAP
-df -h /usr/local/google
-ls -l /usr/local/google
-ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 (
     cd esdn-faucet
@@ -62,22 +45,9 @@ ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
     echo esdn-faucet version $VERSION
     debchange --newversion $VERSION -b "New upstream release"
 
-    echo TAPTAP
-    df -h /usr/local/google
-    ls -l /usr/local/google
-    ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
-
     glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
     mkdir -p binary
-
-#    build-debs -b -L -d rodete || true
 )
 
-echo TAPTAP
-df -h /usr/local/google || true
-ls -l /usr/local/google || true
-ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
-
-#cp esdn-faucet/binary/* binary/
 cp ${TMPDIR}/binary/* binary/
 ls -l binary/
