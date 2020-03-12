@@ -74,9 +74,10 @@ ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 )
 
 echo TAPTAP
-df -h /usr/local/google
-ls -l /usr/local/google
+df -h /usr/local/google || true
+ls -l /usr/local/google || true
 ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
-cp esdn-faucet/binary/* binary/
+#cp esdn-faucet/binary/* binary/
+cp ${TMPDIR}/binary/* binary/
 ls -l binary/
