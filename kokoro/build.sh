@@ -8,6 +8,10 @@ sudo kokoro/setup.sh
 sudo apt-get install tree
 
 echo TAPTAP
+echo "${TMPDIR}"
+mkdir -p "${TMPDIR}/binary/"
+mkdir -p "${TMPDIR}/glinux-build"
+
 df -h /usr/local/google
 ls -l /usr/local/google
 ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
@@ -34,7 +38,11 @@ ls -l /usr/local/google
 ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
 cat forch/__version__.py
-build-debs -b -L -d rodete
+
+glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
+mkdir -p binary
+
+#build-debs -b -L -d rodete
 
 echo TAPTAP
 df -h /usr/local/google
@@ -59,7 +67,10 @@ ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
     ls -l /usr/local/google
     ls -l /usr/local/google/build-debs/base-rodete-amd64.tgz.tmp || true
 
-    build-debs -b -L -d rodete || true
+    glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
+    mkdir -p binary
+
+#    build-debs -b -L -d rodete || true
 )
 
 echo TAPTAP
