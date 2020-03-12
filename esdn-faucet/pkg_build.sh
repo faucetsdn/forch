@@ -19,7 +19,7 @@ echo FORCH_VERSION $FORCH_VERSION
 prodaccess
 
 yes | benz build --git -pool="rodete-huge" -sign -branch="$FAUCET_VERSION" -target-prefix=enterprise-sdn-faucet-core rpc://perry-internal/faucet &
-yes | benz build --git -pool="rodete-huge" -sign -branch="9.9.9" -target-prefix=enterprise-sdn-faucet-forch rpc://perry-internal/forch &
+yes | benz build --git -pool="rodete-huge" -sign -branch="gmaster" -target-prefix=enterprise-sdn-faucet-forch rpc://perry-internal/forch &
 
 wait
 
