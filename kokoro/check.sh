@@ -5,15 +5,41 @@ echo origin `git remote get-url origin`
 echo pperry `git remote get-url perry`
 
 echo Fetching remotes...
-git fetch --tags faucet master
-git fetch --tags origin master
-git fetch --tags origin gmaster
-git fetch --tags perry master
-git fetch --tags perry gmaster
+for remote in faucet origin perry; do
+    git fetch $remote
+    for branch in master gmaster; do
+	if [ $remote != faucet -o $branch != gmaster ]; then
+	    git fetch --tags $remote $branch
+	fi
+    done
+done
 
 mtag=`git describe perry/master`
 gtag=`git describe perry/gmaster`
 etag=`git describe perry/esdn`
+
+mhash=`git rev-list -n 1 $mtag`
+ghash=`git rev-list -n 1 $gtag`
+ehash=`git rev-list -n 1 $etag`
+
+mbase=`git merge-base $mtag perry/master`
+gbase=`git merge-base $gtag perry/gmaster`
+ebase=`git merge-base $etag perry/esdn`
+
+if [ $mbase != $mhash ]; then
+    echo Merge base for master/$mtag does not match expected hash.
+    false
+fi
+
+if [ $gbase != $ghash ]; then
+    echo Merge base for gmaster/$gtag does not match expected hash.
+    false
+fi
+
+if [ $ebase != $ehash ]; then
+    echo Merge base for esdn/$etag does not match expected hash.
+    false
+fi
 
 echo Checking remote master tag $mtag
 fm=`git ls-remote faucet $mtag`
