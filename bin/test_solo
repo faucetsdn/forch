@@ -9,8 +9,8 @@ export CONTROLLER_NAME=127.0.0.1
 
 echo Setting up OVS...
 add_br sw1 0x12345 6653
-add_faux sw1 1 1
-add_faux sw1 2 2
+add_faux sw1 2 1
+add_faux sw1 4 2
 
 sleep 5
 
