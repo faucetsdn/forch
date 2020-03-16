@@ -16,8 +16,8 @@ _TARGET_METRICS = (
     'faucet_event_id',
     'dp_root_hop_port',
     'faucet_stack_root_dpid',
-    'faucet_config_reload_cold_total',
-    'faucet_config_reload_warm_total'
+    'faucet_config_reload_cold',
+    'faucet_config_reload_warm'
 )
 
 

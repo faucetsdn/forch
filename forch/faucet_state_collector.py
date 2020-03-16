@@ -227,11 +227,8 @@ class FaucetStateCollector:
 
     def _restore_dp_config_change(self, metrics):
         with self.lock:
-            cold_reload_samples = metrics['faucet_config_reload_cold_total']
-            warm_reload_samples = metrics['faucet_config_reload_warm_total']
-
-            # TODO
-            print(f'** cold_reload_samples:\n{cold_reload_samples}')
+            cold_reload_samples = metrics['faucet_config_reload_cold'].samples
+            warm_reload_samples = metrics['faucet_config_reload_warm'].samples
 
             for sample in cold_reload_samples + warm_reload_samples:
                 dp_id = sample.labels['dp_name']
@@ -467,9 +464,7 @@ class FaucetStateCollector:
         attributes_map["dp_id"] = switch_config.dp_id
 
         # filling switch dynamics
-        switch_map["restart_type_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
-        switch_map["restart_type"] = switch_states.get(CONFIG_CHANGE_TYPE)
-        switch_map["restart_type_last_change"] = switch_states.get(CONFIG_CHANGE_TS)
+        switch_map["restart_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
 
         if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
             switch_map[SW_STATE] = STATE_ACTIVE

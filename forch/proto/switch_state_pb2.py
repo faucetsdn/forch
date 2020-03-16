@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1e\x66orch/proto/switch_state.proto\x1a\"forch/proto/shared_constants.proto\x1a\x1b\x66orch/proto/path_node.proto\"\xae\r\n\x0bSwitchState\x12\"\n\x0cswitch_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13switch_state_detail\x18\x02 \x01(\t\x12!\n\x19switch_state_change_count\x18\x03 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x04 \x01(\t\x12\x18\n\x10system_state_url\x18\x05 \x01(\t\x12,\n\x08switches\x18\x06 \x03(\x0b\x32\x1a.SwitchState.SwitchesEntry\x12\x19\n\x11switches_restrict\x18\x07 \x01(\t\x1aH\n\rSwitchesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12&\n\x05value\x18\x02 \x01(\x0b\x32\x17.SwitchState.SwitchNode:\x02\x38\x01\x1a\xa0\x07\n\nSwitchNode\x12\x36\n\nattributes\x18\x01 \x01(\x0b\x32\".SwitchState.SwitchNode.Attributes\x12\"\n\x0cswitch_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12 \n\x18restart_type_event_count\x18\x03 \x01(\x05\x12\x14\n\x0crestart_type\x18\x04 \x01(\t\x12 \n\x18restart_type_last_change\x18\x05 \x01(\t\x12!\n\x19switch_state_change_count\x18\x06 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x07 \x01(\t\x12\x31\n\x05ports\x18\x08 \x03(\x0b\x32\".SwitchState.SwitchNode.PortsEntry\x12\x16\n\x0eports_restrict\x18\t \x01(\x05\x12)\n\troot_path\x18\n \x01(\x0b\x32\x16.SwitchState.PathState\x12\x45\n\x10\x61\x63\x63\x65ss_port_macs\x18\x0b \x03(\x0b\x32+.SwitchState.SwitchNode.AccessPortMacsEntry\x12I\n\x12stacking_port_macs\x18\x0c \x03(\x0b\x32-.SwitchState.SwitchNode.StackingPortMacsEntry\x12\x45\n\x10\x65gress_port_macs\x18\r \x03(\x0b\x32+.SwitchState.SwitchNode.EgressPortMacsEntry\x1a?\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.SwitchState.Port:\x02\x38\x01\x1aL\n\x13\x41\x63\x63\x65ssPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aN\n\x15StackingPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aL\n\x13\x45gressPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1a\x1b\n\nAttributes\x12\r\n\x05\x64p_id\x18\x01 \x01(\x03\x1a\x97\x02\n\x04Port\x12\x30\n\nattributes\x18\x01 \x01(\x0b\x32\x1c.SwitchState.Port.Attributes\x12 \n\nport_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x0c\n\x04vlan\x18\x03 \x01(\x05\x12\x0c\n\x04\x61\x63ls\x18\x04 \x03(\t\x12\x19\n\x11state_last_change\x18\x05 \x01(\t\x12\x1a\n\x12state_change_count\x18\x06 \x01(\x05\x1ah\n\nAttributes\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x11\n\tport_type\x18\x02 \x01(\t\x12\x19\n\x11stack_peer_switch\x18\x03 \x01(\t\x12\x17\n\x0fstack_peer_port\x18\x04 \x01(\x05\x1aL\n\x08PortInfo\x12\x0c\n\x04port\x18\x01 \x01(\x05\x12\x12\n\nip_address\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\t\x12\x0b\n\x03url\x18\x04 \x01(\t\x1a\x61\n\tPathState\x12 \n\npath_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x19\n\x11path_state_detail\x18\x02 \x01(\t\x12\x17\n\x04path\x18\x03 \x03(\x0b\x32\t.PathNodeb\x06proto3')
+  serialized_pb=_b('\n\x1e\x66orch/proto/switch_state.proto\x1a\"forch/proto/shared_constants.proto\x1a\x1b\x66orch/proto/path_node.proto\"\xf1\x0c\n\x0bSwitchState\x12\"\n\x0cswitch_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13switch_state_detail\x18\x02 \x01(\t\x12!\n\x19switch_state_change_count\x18\x03 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x04 \x01(\t\x12\x18\n\x10system_state_url\x18\x05 \x01(\t\x12,\n\x08switches\x18\x06 \x03(\x0b\x32\x1a.SwitchState.SwitchesEntry\x12\x19\n\x11switches_restrict\x18\x07 \x01(\t\x1aH\n\rSwitchesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12&\n\x05value\x18\x02 \x01(\x0b\x32\x17.SwitchState.SwitchNode:\x02\x38\x01\x1a\xe3\x06\n\nSwitchNode\x12\x36\n\nattributes\x18\x01 \x01(\x0b\x32\".SwitchState.SwitchNode.Attributes\x12\"\n\x0cswitch_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13restart_event_count\x18\x03 \x01(\x05\x12!\n\x19switch_state_change_count\x18\x04 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x05 \x01(\t\x12\x31\n\x05ports\x18\x06 \x03(\x0b\x32\".SwitchState.SwitchNode.PortsEntry\x12\x16\n\x0eports_restrict\x18\x07 \x01(\x05\x12)\n\troot_path\x18\x08 \x01(\x0b\x32\x16.SwitchState.PathState\x12\x45\n\x10\x61\x63\x63\x65ss_port_macs\x18\t \x03(\x0b\x32+.SwitchState.SwitchNode.AccessPortMacsEntry\x12I\n\x12stacking_port_macs\x18\n \x03(\x0b\x32-.SwitchState.SwitchNode.StackingPortMacsEntry\x12\x45\n\x10\x65gress_port_macs\x18\x0b \x03(\x0b\x32+.SwitchState.SwitchNode.EgressPortMacsEntry\x1a?\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.SwitchState.Port:\x02\x38\x01\x1aL\n\x13\x41\x63\x63\x65ssPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aN\n\x15StackingPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aL\n\x13\x45gressPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1a\x1b\n\nAttributes\x12\r\n\x05\x64p_id\x18\x01 \x01(\x03\x1a\x97\x02\n\x04Port\x12\x30\n\nattributes\x18\x01 \x01(\x0b\x32\x1c.SwitchState.Port.Attributes\x12 \n\nport_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x0c\n\x04vlan\x18\x03 \x01(\x05\x12\x0c\n\x04\x61\x63ls\x18\x04 \x03(\t\x12\x19\n\x11state_last_change\x18\x05 \x01(\t\x12\x1a\n\x12state_change_count\x18\x06 \x01(\x05\x1ah\n\nAttributes\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x11\n\tport_type\x18\x02 \x01(\t\x12\x19\n\x11stack_peer_switch\x18\x03 \x01(\t\x12\x17\n\x0fstack_peer_port\x18\x04 \x01(\x05\x1aL\n\x08PortInfo\x12\x0c\n\x04port\x18\x01 \x01(\x05\x12\x12\n\nip_address\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\t\x12\x0b\n\x03url\x18\x04 \x01(\t\x1a\x61\n\tPathState\x12 \n\npath_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x19\n\x11path_state_detail\x18\x02 \x01(\t\x12\x17\n\x04path\x18\x03 \x03(\x0b\x32\t.PathNodeb\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,forch_dot_proto_dot_path__node__pb2.DESCRIPTOR,])
 
@@ -98,8 +98,8 @@ _SWITCHSTATE_SWITCHNODE_PORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1023,
-  serialized_end=1086,
+  serialized_start=962,
+  serialized_end=1025,
 )
 
 _SWITCHSTATE_SWITCHNODE_ACCESSPORTMACSENTRY = _descriptor.Descriptor(
@@ -135,8 +135,8 @@ _SWITCHSTATE_SWITCHNODE_ACCESSPORTMACSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1088,
-  serialized_end=1164,
+  serialized_start=1027,
+  serialized_end=1103,
 )
 
 _SWITCHSTATE_SWITCHNODE_STACKINGPORTMACSENTRY = _descriptor.Descriptor(
@@ -172,8 +172,8 @@ _SWITCHSTATE_SWITCHNODE_STACKINGPORTMACSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1166,
-  serialized_end=1244,
+  serialized_start=1105,
+  serialized_end=1183,
 )
 
 _SWITCHSTATE_SWITCHNODE_EGRESSPORTMACSENTRY = _descriptor.Descriptor(
@@ -209,8 +209,8 @@ _SWITCHSTATE_SWITCHNODE_EGRESSPORTMACSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1246,
-  serialized_end=1322,
+  serialized_start=1185,
+  serialized_end=1261,
 )
 
 _SWITCHSTATE_SWITCHNODE_ATTRIBUTES = _descriptor.Descriptor(
@@ -239,8 +239,8 @@ _SWITCHSTATE_SWITCHNODE_ATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1324,
-  serialized_end=1351,
+  serialized_start=1263,
+  serialized_end=1290,
 )
 
 _SWITCHSTATE_SWITCHNODE = _descriptor.Descriptor(
@@ -265,78 +265,64 @@ _SWITCHSTATE_SWITCHNODE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='restart_type_event_count', full_name='SwitchState.SwitchNode.restart_type_event_count', index=2,
+      name='restart_event_count', full_name='SwitchState.SwitchNode.restart_event_count', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='restart_type', full_name='SwitchState.SwitchNode.restart_type', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='switch_state_change_count', full_name='SwitchState.SwitchNode.switch_state_change_count', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='restart_type_last_change', full_name='SwitchState.SwitchNode.restart_type_last_change', index=4,
+      name='switch_state_last_change', full_name='SwitchState.SwitchNode.switch_state_last_change', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='switch_state_change_count', full_name='SwitchState.SwitchNode.switch_state_change_count', index=5,
-      number=6, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='switch_state_last_change', full_name='SwitchState.SwitchNode.switch_state_last_change', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='ports', full_name='SwitchState.SwitchNode.ports', index=7,
-      number=8, type=11, cpp_type=10, label=3,
+      name='ports', full_name='SwitchState.SwitchNode.ports', index=5,
+      number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='ports_restrict', full_name='SwitchState.SwitchNode.ports_restrict', index=8,
-      number=9, type=5, cpp_type=1, label=1,
+      name='ports_restrict', full_name='SwitchState.SwitchNode.ports_restrict', index=6,
+      number=7, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='root_path', full_name='SwitchState.SwitchNode.root_path', index=9,
-      number=10, type=11, cpp_type=10, label=1,
+      name='root_path', full_name='SwitchState.SwitchNode.root_path', index=7,
+      number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='access_port_macs', full_name='SwitchState.SwitchNode.access_port_macs', index=10,
+      name='access_port_macs', full_name='SwitchState.SwitchNode.access_port_macs', index=8,
+      number=9, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='stacking_port_macs', full_name='SwitchState.SwitchNode.stacking_port_macs', index=9,
+      number=10, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='egress_port_macs', full_name='SwitchState.SwitchNode.egress_port_macs', index=10,
       number=11, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='stacking_port_macs', full_name='SwitchState.SwitchNode.stacking_port_macs', index=11,
-      number=12, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='egress_port_macs', full_name='SwitchState.SwitchNode.egress_port_macs', index=12,
-      number=13, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -354,7 +340,7 @@ _SWITCHSTATE_SWITCHNODE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=423,
-  serialized_end=1351,
+  serialized_end=1290,
 )
 
 _SWITCHSTATE_PORT_ATTRIBUTES = _descriptor.Descriptor(
@@ -404,8 +390,8 @@ _SWITCHSTATE_PORT_ATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1529,
-  serialized_end=1633,
+  serialized_start=1468,
+  serialized_end=1572,
 )
 
 _SWITCHSTATE_PORT = _descriptor.Descriptor(
@@ -469,8 +455,8 @@ _SWITCHSTATE_PORT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1354,
-  serialized_end=1633,
+  serialized_start=1293,
+  serialized_end=1572,
 )
 
 _SWITCHSTATE_PORTINFO = _descriptor.Descriptor(
@@ -520,8 +506,8 @@ _SWITCHSTATE_PORTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1635,
-  serialized_end=1711,
+  serialized_start=1574,
+  serialized_end=1650,
 )
 
 _SWITCHSTATE_PATHSTATE = _descriptor.Descriptor(
@@ -564,8 +550,8 @@ _SWITCHSTATE_PATHSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1713,
-  serialized_end=1810,
+  serialized_start=1652,
+  serialized_end=1749,
 )
 
 _SWITCHSTATE = _descriptor.Descriptor(
@@ -637,7 +623,7 @@ _SWITCHSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=100,
-  serialized_end=1810,
+  serialized_end=1749,
 )
 
 _SWITCHSTATE_SWITCHESENTRY.fields_by_name['value'].message_type = _SWITCHSTATE_SWITCHNODE
