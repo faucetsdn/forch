@@ -4,6 +4,7 @@ import functools
 
 import forch.http_server
 
+
 class ForchMetrics():
     """Class that implements the module that exposes varz for metrics"""
     def __init__(self, local_port, config):
@@ -27,7 +28,7 @@ class ForchMetrics():
         self._http_server.stop_server()
 
     def _get_metrics(self, path, params):
-        #return self._metrics
+        # return self._metrics
         return "Version 1"
 
     def _show_error(self, error, path, params):
