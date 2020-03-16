@@ -241,7 +241,6 @@ class FaucetStateCollector:
                     'Restored dp_config_change of switch %s with change count %d',
                     dp_id, change_count)
 
-
     def _topo_map_to_link_graph(self, item):
         """Conver topo map item to a link map item"""
         # TODO: Use regex to validate key format
