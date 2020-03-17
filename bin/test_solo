@@ -16,6 +16,10 @@ sleep 5
 
 docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
 
+echo "Setting and testing Faucet version"
+sed -i 's/UNDEFINED/test/g' forch/__version__.py
+bin/faucet --version | grep "Forch" | tee -a $TEST_RESULTS
+
 echo "Setting up Faucet and Forch..."
 bin/setup_solo
 
