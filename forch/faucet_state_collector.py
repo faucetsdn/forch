@@ -76,8 +76,6 @@ CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
 SW_STATE_LAST_CHANGE = "switch_state_last_change"
 SW_STATE_CHANGE_COUNT = "switch_state_change_count"
-CONFIG_CHANGE_TYPE = "config_change_type"
-CONFIG_CHANGE_TS = "config_change_timestamp"
 LINK_STATE = "link_state"
 TOPOLOGY_ENTRY = "topology"
 TOPOLOGY_DPS = "dps"
@@ -894,9 +892,9 @@ class FaucetStateCollector:
                 return
 
             dp_state = self.switch_states.setdefault(dp_name, {})
-
             change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + 1
             LOGGER.info('dp_config #%d %s change type %s', change_count, dp_id, restart_type)
+
             dp_state[DP_ID] = dp_id
             dp_state[CONFIG_CHANGE_COUNT] = change_count
 
