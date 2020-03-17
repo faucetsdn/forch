@@ -530,6 +530,7 @@ class Forchestrator:
 
     def _populate_versions(self, versions):
         versions.forch = __version__
+        self._forch_metrics.update_var('forch_version', versions.forch)
         try:
             versions.faucet = os.popen('faucet --version').read().strip().split()[1]
         except Exception as e:
