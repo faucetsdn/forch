@@ -2,31 +2,32 @@
 
 import functools
 import logging
+import threading
+from prometheus_client import Info, generate_latest, REGISTRY
 
-from prometheus_client import Info, generate_latest
 import forch.http_server
 
-LOGGER = logging.getLogger('auth')
+LOGGER = logging.getLogger('metrics')
 
 class ForchMetrics():
     """Class that implements the module that exposes varz for metrics"""
+    _reg = REGISTRY
     def __init__(self, local_port, config):
         self._local_port = local_port
         self._config = config
         self._http_server = None
         self._metrics = {}
-        self._reg = None
 
     def start(self):
         """Start serving varz"""
         self._add_vars()
         self._http_server = forch.http_server.HttpServer(self._config, self._local_port)
         try:
-            self._http_server.map_request('', self._get_metrics)
+            self._http_server.map_request('', self.get_metrics)
         except Exception as e:
             self._http_server.map_request('', functools.partial(self._show_error, e))
         finally:
-            self._http_server.start_server()
+            threading.Thread(target=self._http_server.start_server(), daemon=True).start()
 
     def stop(self):
         """Kill varz server"""
@@ -53,8 +54,9 @@ class ForchMetrics():
         """Initializing list of vars to be tracked"""
         self._add_var('forch_version', 'Current version of forch', Info)
 
-    def _get_metrics(self, path, params):
-        generate_latest(self._reg)
+    def get_metrics(self, path, params):
+        """Return metric list in printable form"""
+        return generate_latest(self._reg).decode('utf-8')
 
     def _show_error(self, error, path, params):
         """Display errors"""

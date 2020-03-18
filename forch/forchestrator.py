@@ -305,6 +305,7 @@ class Forchestrator:
             self._faucetize_scheduler.start()
         if self._forch_metrics:
             self._forch_metrics.start()
+            self._forch_metrics.update_var('forch_version', {'version': __version__})
 
     def stop(self):
         """Stop forchestrator components"""
@@ -530,7 +531,6 @@ class Forchestrator:
 
     def _populate_versions(self, versions):
         versions.forch = __version__
-        self._forch_metrics.update_var('forch_version', versions.forch)
         try:
             versions.faucet = os.popen('faucet --version').read().strip().split()[1]
         except Exception as e:
