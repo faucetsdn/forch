@@ -23,7 +23,7 @@ docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" 
 echo "Setting up Faucet and Forch..."
 bin/setup_solo
 
-VERSION=$(bin/forch --version | grep Forch | awk '{print $2}')
+VERSION=$(bin/forch --version --base inst/forch-faucet-solo | grep Forch | awk '{print $2}')
 VARZ_VERSION=$(wget 0.0.0.0:8302 -O- | grep forch_version_info | grep 1.0 | cut -d "\"" -f2 | cut -d "\"" -f1 )
 echo $VERSION
 echo $VARZ_VERSION
