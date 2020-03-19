@@ -14,9 +14,8 @@ class ForchMetrics():
     """Class that implements the module that exposes varz for metrics"""
     _reg = REGISTRY
 
-    def __init__(self, local_port, config):
+    def __init__(self, local_port):
         self._local_port = local_port
-        self._config = config
         self._http_server = None
         self._metrics = {}
 
