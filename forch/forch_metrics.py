@@ -9,9 +9,11 @@ import forch.http_server
 
 LOGGER = logging.getLogger('metrics')
 
+
 class ForchMetrics():
     """Class that implements the module that exposes varz for metrics"""
     _reg = REGISTRY
+
     def __init__(self, local_port, config):
         self._local_port = local_port
         self._config = config
@@ -38,13 +40,13 @@ class ForchMetrics():
         varz = self._metrics.get(var)
         if not varz:
             LOGGER.error('Error updating to varz %s since it is not known.', var)
-            return
+            raise RuntimeError('Unknown varz')
         if isinstance(varz, Info):
             varz.info(value)
         else:
             LOGGER.error('Error updating to varz %s since it\'s type %s is not known.',
                          var, type(varz))
-            return
+            raise RuntimeError('Unknown varz type')
 
     def _add_var(self, var, var_help, metric_type):
         """Add varz to be tracked"""
