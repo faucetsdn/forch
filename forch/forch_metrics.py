@@ -23,7 +23,7 @@ class ForchMetrics():
     def start(self):
         """Start serving varz"""
         self._add_vars()
-        self._http_server = forch.http_server.HttpServer(self._config, self._local_port)
+        self._http_server = forch.http_server.HttpServer(self._local_port)
         try:
             self._http_server.map_request('', self.get_metrics)
         except Exception as e:

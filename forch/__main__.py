@@ -46,7 +46,7 @@ def run_forchestrator():
         sys.exit(1)
 
     forchestrator = Forchestrator(config)
-    http_server = forch.http_server.HttpServer(config.http, forchestrator.get_local_port())
+    http_server = forch.http_server.HttpServer(forchestrator.get_local_port(), config.http)
 
     try:
         forchestrator.initialize()
