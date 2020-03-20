@@ -67,9 +67,7 @@ message OrchestrationConfig {
   string segments_vlans_file = 5;
 
   // interval of periodic faucetizing task in seconds.
-  // NB: no value or setting to 0 indicates behavioral config
-  // file will be updated immediately after an placement,
-  // behavior and structural config file changes
+  // NB: no value or setting to 0 indicates instant faucetizing
   int32 faucetize_interval_sec = 6;
 
   // authentication configurations
