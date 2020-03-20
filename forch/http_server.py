@@ -78,7 +78,10 @@ class HttpServer():
         self._config = config
         self._paths = {}
         self._server = None
-        self._root_path = config.http_root if config else 'public'
+        if config and config.http_root:
+            self._root_path = config.http_root
+        else:
+            self._root_path = 'public'
         self._port = port
         self._host = '0.0.0.0'
         self._thread = None
