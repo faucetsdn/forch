@@ -18,6 +18,7 @@ import forch.http_server
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
+from forch.faucet_config_file_watcher import FaucetConfigFileHandler
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
@@ -61,6 +62,7 @@ class Forchestrator:
         self._faucetizer = None
         self._authenticator = None
         self._faucetize_scheduler = None
+        self._faucet_config_file_watcher = None
 
         self._initialized = False
         self._active_state = State.initializing
@@ -185,15 +187,21 @@ class Forchestrator:
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
         self._faucetizer = faucetizer.Faucetizer(
-            structural_config, segments_to_vlans.segments_to_vlans)
+            orch_config, structural_config, segments_to_vlans.segments_to_vlans,
+            self._behavioral_config_file)
 
-        interval = orch_config.faucetize_interval_sec or 60
-        self._faucetize_scheduler = HeartbeatScheduler(interval)
+        if orch_config.HasField('faucetize_interval_sec'):
+            self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
 
-        update_write_faucet_config = (lambda: (
-            faucetizer.update_structural_config(self._faucetizer, self._structural_config_file),
-            faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)))
-        self._faucetize_scheduler.add_callback(update_write_faucet_config)
+            update_write_faucet_config = (lambda: (
+                faucetizer.update_structural_config(
+                    self._faucetizer,self._structural_config_file),
+                faucetizer.write_behavioral_config(
+                    self._faucetizer, self._behavioral_config_file)))
+            self._faucetize_scheduler.add_callback(update_write_faucet_config)
+        else:
+            self._faucet_config_file_watcher = FaucetConfigFileHandler(
+                self._faucetizer, self._structural_config_file)
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -300,6 +308,8 @@ class Forchestrator:
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()
+        if self._faucet_config_file_watcher:
+            self._faucet_config_file_watcher.start()
 
     def stop(self):
         """Stop forchestrator components"""
@@ -307,6 +317,8 @@ class Forchestrator:
             self._faucetize_scheduler.stop()
         if self._authenticator:
             self._authenticator.stop()
+        if self._faucet_config_file_watcher:
+            self._faucet_config_file_watcher.stop()
 
     def _process_faucet_event(self):
         try:

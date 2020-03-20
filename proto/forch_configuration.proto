@@ -64,6 +64,8 @@ message OrchestrationConfig {
   string segments_vlans_file = 5;
 
   // interval of periodic faucetizing task in seconds
+  // NB: not setting the interval indicates faucetizer will
+  //     write behavioral config immediately after an inode change
   int32 faucetize_interval_sec = 6;
 
   // authentication configurations

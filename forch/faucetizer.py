@@ -18,14 +18,32 @@ LOGGER = logging.getLogger('faucetizer')
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
-    def __init__(self, structural_faucet_config, segments_to_vlans):
+    def __init__(self, orch_config, structural_faucet_config, segments_to_vlans,
+                 behavioral_config_file):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = structural_faucet_config
         self._behavioral_faucet_config = None
-        self._lock = threading.Lock()
+        self._config = orch_config
+        self._behavioral_config_file = behavioral_config_file
+        self._lock = threading.RLock()
 
+    # pylint: disable=no-self-argument, protected-access, no-method-argument
+    def _write_behavioral_config():
+        def write_behavioral_config(func):
+            def wrapped(self, *args, **kwargs):
+                with self._lock:
+                    func(self, *args, **kwargs)
+                    if self._config.HasFiled('faucetize_interval_sec'):
+                        return
+                    self._faucetize()
+                    with open(self._behavioral_config_file, 'w') as file:
+                        yaml.dump(self._behavioral_faucet_config, file)
+            return wrapped
+        return write_behavioral_config
+
+    @_write_behavioral_config
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
         devices = self._static_devices if static else self._dynamic_devices
@@ -42,6 +60,7 @@ class Faucetizer:
                 if removed:
                     LOGGER.info('Removed %s device: %s', device_type, eth_src)
 
+    @_write_behavioral_config
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
         devices = self._static_devices if static else self._dynamic_devices
@@ -59,6 +78,7 @@ class Faucetizer:
                     device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
+    @_write_behavioral_config
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
