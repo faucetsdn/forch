@@ -27,23 +27,8 @@ class Faucetizer:
         self._behavioral_faucet_config = None
         self._config = orch_config
         self._behavioral_config_file = behavioral_config_file
-        self._lock = threading.RLock()
+        self._lock = threading.Lock()
 
-    # pylint: disable=no-self-argument, protected-access, no-method-argument
-    def _write_behavioral_config():
-        def write_behavioral_config(func):
-            def wrapped(self, *args, **kwargs):
-                with self._lock:
-                    func(self, *args, **kwargs)
-                    if self._config.faucetize_interval_sec:
-                        return
-                    self._faucetize()
-                    with open(self._behavioral_config_file, 'w') as file:
-                        yaml.dump(self._behavioral_faucet_config, file)
-            return wrapped
-        return write_behavioral_config
-
-    @_write_behavioral_config()
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
         devices = self._static_devices if static else self._dynamic_devices
@@ -60,7 +45,9 @@ class Faucetizer:
                 if removed:
                     LOGGER.info('Removed %s device: %s', device_type, eth_src)
 
-    @_write_behavioral_config()
+            if not self._config.faucetize_interval_sec:
+                self._write_behavioral_config()
+
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
         devices = self._static_devices if static else self._dynamic_devices
@@ -78,11 +65,16 @@ class Faucetizer:
                     device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
-    @_write_behavioral_config()
+            if not self._config.faucetize_interval_sec:
+                self._write_behavioral_config()
+
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
+
+            if not self._config.faucetize_interval_sec:
+                self._write_behavioral_config()
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -112,6 +104,11 @@ class Faucetizer:
                     port_cfg['acls_in'] = [f'role_{device.behavior.role}']
 
         self._behavioral_faucet_config = behavioral_faucet_config
+
+    def _write_behavioral_config(self):
+        self._faucetize()
+        with open(self._behavioral_config_file, 'w') as file:
+            yaml.dump(self._behavioral_faucet_config, file)
 
     def get_behavioral_faucet_config(self):
         """Return behavioral faucet config"""

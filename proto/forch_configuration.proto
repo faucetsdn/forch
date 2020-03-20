@@ -63,10 +63,10 @@ message OrchestrationConfig {
   // segment to vlan mappings file name
   string segments_vlans_file = 5;
 
-  // interval of periodic faucetizing task in seconds
-  // NB: not setting the interval or explicitly setting it to 0
-  //     indicates faucetizer will write behavioral config
-  //     immediately after an inode change
+  // interval of periodic faucetizing task in seconds.
+  // NB: no value or setting to 0 indicates behavioral config
+  // file will be updated immediately after an placement,
+  // behavior and structural config file changes
   int32 faucetize_interval_sec = 6;
 
   // authentication configurations
