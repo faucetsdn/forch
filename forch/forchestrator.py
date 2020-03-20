@@ -201,7 +201,7 @@ class Forchestrator:
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
             self._faucet_config_file_watcher = FaucetConfigFileWatcher(
-                self._faucetizer, self._structural_config_file)
+                self._structural_config_file, self._faucetizer)
 
     def initialized(self):
         """If forch is initialized or not"""
