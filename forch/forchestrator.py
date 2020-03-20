@@ -382,6 +382,7 @@ class Forchestrator:
             summary, detail = self._get_combined_summary(summaries)
             system_state.system_state = summary
             system_state.system_state_detail = detail
+            LOGGER.info('system_state_change_count sources: %s', change_counts)
             system_state.system_state_change_count = sum(change_counts)
             system_state.system_state_last_change = max(last_changes)
             system_state.system_state_last_update = max(last_updates)
