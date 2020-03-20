@@ -45,8 +45,7 @@ class Faucetizer:
                 if removed:
                     LOGGER.info('Removed %s device: %s', device_type, eth_src)
 
-            if not self._config.faucetize_interval_sec:
-                self._write_behavioral_config()
+            self._flush_behavioral_config()
 
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
@@ -65,16 +64,14 @@ class Faucetizer:
                     device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
-            if not self._config.faucetize_interval_sec:
-                self._write_behavioral_config()
+            self._flush_behavioral_config()
 
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
 
-            if not self._config.faucetize_interval_sec:
-                self._write_behavioral_config()
+            self._flush_behavioral_config()
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -105,7 +102,9 @@ class Faucetizer:
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
-    def _write_behavioral_config(self):
+    def _flush_behavioral_config(self, force=False):
+        if not force and self._config.faucetize_interval_sec:
+            return
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
