@@ -35,7 +35,7 @@ class Faucetizer:
             def wrapped(self, *args, **kwargs):
                 with self._lock:
                     func(self, *args, **kwargs)
-                    if self._config.HasFiled('faucetize_interval_sec'):
+                    if self._config.faucetize_interval_sec:
                         return
                     self._faucetize()
                     with open(self._behavioral_config_file, 'w') as file:
