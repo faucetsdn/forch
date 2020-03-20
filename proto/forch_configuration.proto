@@ -22,6 +22,9 @@ message ForchConfig {
 
   // configurations for faucet event
   EventClientConfig event_client = 5;
+
+  // configuration for varz interface
+  VarzInterfaceConfig varz_interface = 6;
 }
 
 /*
@@ -152,4 +155,12 @@ message HttpConfig {
 message EventClientConfig {
   // port debounce time in seconds
   int32 port_debounce_sec = 1;
+}
+
+/*
+ * Varz interface section in Forch configuration
+ */
+message VarzInterfaceConfig {
+  // port number to curl for varz list
+  int32 varz_port = 1;
 }

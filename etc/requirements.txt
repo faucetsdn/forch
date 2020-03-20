@@ -3,7 +3,7 @@ wheel
 netaddr
 networkx
 pbr>=1.9
-prometheus_client
+prometheus_client==0.7.1
 protobuf
 psutil
 pylint==2.4.4
