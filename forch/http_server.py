@@ -74,11 +74,11 @@ class HttpServer():
 
     _DEFAULT_FILE = 'index.html'
 
-    def __init__(self, config, port):
+    def __init__(self, port, config=None):
         self._config = config
         self._paths = {}
         self._server = None
-        self._root_path = config.http_root or 'public'
+        self._root_path = config.http_root if config and config.http_root else 'public'
         self._port = port
         self._host = '0.0.0.0'
         self._thread = None

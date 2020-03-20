@@ -14,11 +14,11 @@ from faucet import config_parser
 
 import forch.faucet_event_client
 import forch.faucetizer as faucetizer
-import forch.http_server
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.varz_state_collector import VarzStateCollector
@@ -67,6 +67,7 @@ class Forchestrator:
         self._active_state_lock = threading.Lock()
 
         self._config_summary = None
+        self._forch_metrics = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -98,6 +99,8 @@ class Forchestrator:
             faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
 
         self._validate_config_files()
+
+        self._forch_metrics = ForchMetrics(self._config.varz_interface)
 
         while True:
             time.sleep(10)
@@ -300,6 +303,9 @@ class Forchestrator:
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()
+        if self._forch_metrics:
+            self._forch_metrics.start()
+            self._forch_metrics.update_var('forch_version', {'version': __version__})
 
     def stop(self):
         """Stop forchestrator components"""
@@ -307,6 +313,8 @@ class Forchestrator:
             self._faucetize_scheduler.stop()
         if self._authenticator:
             self._authenticator.stop()
+        if self._forch_metrics:
+            self._forch_metrics.stop()
 
     def _process_faucet_event(self):
         try:
