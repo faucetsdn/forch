@@ -100,7 +100,7 @@ class Forchestrator:
 
         self._validate_config_files()
 
-        self._forch_metrics = ForchMetrics(8302)
+        self._forch_metrics = ForchMetrics(self._config.varz_interface)
 
         while True:
             time.sleep(10)

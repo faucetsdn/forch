@@ -8,14 +8,16 @@ from prometheus_client import Info, generate_latest, REGISTRY
 import forch.http_server
 
 LOGGER = logging.getLogger('metrics')
+DEFAULT_VARZ_PORT = 8302
 
 
 class ForchMetrics():
     """Class that implements the module that exposes varz for metrics"""
     _reg = REGISTRY
 
-    def __init__(self, local_port):
-        self._local_port = local_port
+    def __init__(self, varz_config):
+        self._local_port = varz_config.varz_port or DEFAULT_VARZ_PORT
+        LOGGER.info('Anurag forch_metrics port is %s', self._local_port)
         self._http_server = None
         self._metrics = {}
 
