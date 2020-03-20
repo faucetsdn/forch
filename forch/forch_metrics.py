@@ -17,7 +17,7 @@ class ForchMetrics():
 
     def __init__(self, varz_config):
         self._local_port = varz_config.varz_port or DEFAULT_VARZ_PORT
-        LOGGER.info('Anurag forch_metrics port is %s', self._local_port)
+        LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
         self._metrics = {}
 

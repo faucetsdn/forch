@@ -158,6 +158,6 @@ message EventClientConfig {
  * Varz interface section in Forch configuration
  */
 message VarzInterfaceConfig {
-  // port debounce time in seconds
+  // port number to curl for varz list
   int32 varz_port = 1;
 }
