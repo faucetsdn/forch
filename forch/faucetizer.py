@@ -43,7 +43,7 @@ class Faucetizer:
             return wrapped
         return write_behavioral_config
 
-    @_write_behavioral_config
+    @_write_behavioral_config()
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
         devices = self._static_devices if static else self._dynamic_devices
@@ -60,7 +60,7 @@ class Faucetizer:
                 if removed:
                     LOGGER.info('Removed %s device: %s', device_type, eth_src)
 
-    @_write_behavioral_config
+    @_write_behavioral_config()
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
         devices = self._static_devices if static else self._dynamic_devices
@@ -78,7 +78,7 @@ class Faucetizer:
                     device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
-    @_write_behavioral_config
+    @_write_behavioral_config()
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
