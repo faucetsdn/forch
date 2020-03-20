@@ -18,7 +18,7 @@ import forch.http_server
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.faucet_config_file_watcher import FaucetConfigFileHandler
+from forch.faucet_config_file_watcher import FaucetConfigFileWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
@@ -200,7 +200,7 @@ class Forchestrator:
                     self._faucetizer, self._behavioral_config_file)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
-            self._faucet_config_file_watcher = FaucetConfigFileHandler(
+            self._faucet_config_file_watcher = FaucetConfigFileWatcher(
                 self._faucetizer, self._structural_config_file)
 
     def initialized(self):
