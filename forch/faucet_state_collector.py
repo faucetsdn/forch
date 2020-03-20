@@ -76,8 +76,6 @@ CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
 SW_STATE_LAST_CHANGE = "switch_state_last_change"
 SW_STATE_CHANGE_COUNT = "switch_state_change_count"
-CONFIG_CHANGE_TYPE = "config_change_type"
-CONFIG_CHANGE_TS = "config_change_timestamp"
 LINK_STATE = "link_state"
 TOPOLOGY_ENTRY = "topology"
 TOPOLOGY_DPS = "dps"
@@ -180,6 +178,7 @@ class FaucetStateCollector:
                     restore_method(self, current_time, switch, label, int(sample.value))
         self._restore_dataplane_state_from_metrics(metrics)
         self._restore_l2_learn_state_from_samples(metrics['learned_l2_port'].samples)
+        self._restore_dp_config_change(metrics)
         return int(metrics['faucet_event_id'].samples[0].value)
 
     def _restore_l2_learn_state_from_samples(self, samples):
@@ -223,6 +222,22 @@ class FaucetStateCollector:
 
         timestamp = time.time()
         self._update_stack_topo_state(timestamp, link_graph, stack_root, dps)
+
+    def _restore_dp_config_change(self, metrics):
+        with self.lock:
+            cold_reload_samples = metrics['faucet_config_reload_cold'].samples
+            warm_reload_samples = metrics['faucet_config_reload_warm'].samples
+
+            for sample in cold_reload_samples + warm_reload_samples:
+                dp_id = sample.labels['dp_name']
+                dp_state = self.switch_states.setdefault(dp_id, {})
+                change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + sample.value
+                dp_state[DP_ID] = dp_id
+                dp_state[CONFIG_CHANGE_COUNT] = change_count
+
+                LOGGER.info(
+                    'Restored dp_config_change of switch %s with change count %d',
+                    dp_id, change_count)
 
     def _topo_map_to_link_graph(self, item):
         """Conver topo map item to a link map item"""
@@ -446,9 +461,7 @@ class FaucetStateCollector:
         attributes_map["dp_id"] = switch_config.dp_id
 
         # filling switch dynamics
-        switch_map["restart_type_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
-        switch_map["restart_type"] = switch_states.get(CONFIG_CHANGE_TYPE)
-        switch_map["restart_type_last_change"] = switch_states.get(CONFIG_CHANGE_TS)
+        switch_map["restart_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
 
         if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
             switch_map[SW_STATE] = STATE_ACTIVE
@@ -879,12 +892,10 @@ class FaucetStateCollector:
                 return
 
             dp_state = self.switch_states.setdefault(dp_name, {})
-
             change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + 1
             LOGGER.info('dp_config #%d %s change type %s', change_count, dp_id, restart_type)
+
             dp_state[DP_ID] = dp_id
-            dp_state[CONFIG_CHANGE_TYPE] = restart_type
-            dp_state[CONFIG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             dp_state[CONFIG_CHANGE_COUNT] = change_count
 
     @_dump_states
