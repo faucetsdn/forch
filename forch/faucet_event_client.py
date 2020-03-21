@@ -220,6 +220,8 @@ class FaucetEventClient():
             except Exception as e:
                 LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
                 continue
+            if event and os.getenv('FAUCET_EVENT_DEBUG'):
+                LOGGER.info('faucet_event %s', event)
             targets = list(t for t in self._handlers if t in event)
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
