@@ -19,14 +19,15 @@ LOGGER = logging.getLogger('faucetizer')
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
-    def __init__(self, orch_config, structural_faucet_config, segments_to_vlans,
+    def __init__(self, orch_config, structural_config_file, segments_to_vlans,
                  behavioral_config_file):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
-        self._structural_faucet_config = structural_faucet_config
+        self._structural_faucet_config = None
         self._behavioral_faucet_config = None
         self._config = orch_config
+        self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
         self._lock = threading.Lock()
 
@@ -103,6 +104,12 @@ class Faucetizer:
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
+    def reload_structural_config(self):
+        """Reload structural config from file"""
+        with open(self._structural_config_file) as structural_config_file:
+            structural_config = yaml.safe_load(structural_config_file)
+            self.process_faucet_config(structural_config)
+
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
         if not force and self._config.faucetize_interval_sec:
@@ -142,9 +149,7 @@ def load_faucet_config(file):
 
 def update_structural_config(faucetizer: Faucetizer, file):
     """Read structural config from file and update in faucetizer"""
-    with open(file) as structural_config_file:
-        structural_config = yaml.safe_load(structural_config_file)
-        faucetizer.process_faucet_config(structural_config)
+    pass
 
 
 def parse_args(raw_args):

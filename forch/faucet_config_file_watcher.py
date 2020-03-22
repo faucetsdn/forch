@@ -5,8 +5,6 @@ import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-import forch.faucetizer
-
 
 class FaucetConfigFileWatcher:
     """Watch file changes"""
@@ -37,4 +35,4 @@ class FaucetConfigFileHandler(FileSystemEventHandler):
         if event.is_directory or self._structural_config_file != event.src_path:
             return
 
-        forch.faucetizer.update_structural_config(self._faucetizer, self._structural_config_file)
+        self._faucetizer.reload_structural_config()

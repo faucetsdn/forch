@@ -178,10 +178,6 @@ class Forchestrator:
                 f'{self._behavioral_config_file}')
 
     def _initialize_faucetizer(self):
-        LOGGER.info('Loading structural config from %s', self._structural_config_file)
-        with open(self._structural_config_file) as file:
-            structural_config = yaml.safe_load(file)
-
         orch_config = self._config.orchestration
 
         segments_vlans_file = orch_config.segments_vlans_file or _SEGMENTS_VLAN_DEFAULT
@@ -190,15 +186,14 @@ class Forchestrator:
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
         self._faucetizer = faucetizer.Faucetizer(
-            orch_config, structural_config, segments_to_vlans.segments_to_vlans,
+            orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
             self._behavioral_config_file)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
 
             update_write_faucet_config = (lambda: (
-                faucetizer.update_structural_config(
-                    self._faucetizer, self._structural_config_file),
+                self._faucetizer.reload_structural_config(),
                 self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
