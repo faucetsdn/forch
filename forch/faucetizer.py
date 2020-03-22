@@ -148,11 +148,6 @@ def load_faucet_config(file):
         return yaml.safe_load(config_file)
 
 
-def update_structural_config(faucetizer: Faucetizer, file):
-    """Read structural config from file and update in faucetizer"""
-    pass
-
-
 def parse_args(raw_args):
     """Parse sys args"""
     parser = argparse.ArgumentParser(prog='faucetizer', description='faucetizer')
