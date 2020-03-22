@@ -30,6 +30,7 @@ class Faucetizer:
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
         self._lock = threading.Lock()
+        self.reload_structural_config()
 
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
