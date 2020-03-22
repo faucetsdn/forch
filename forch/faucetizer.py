@@ -46,7 +46,7 @@ class Faucetizer:
                 if removed:
                     LOGGER.info('Removed %s device: %s', device_type, eth_src)
 
-            self._flush_behavioral_config()
+            self.flush_behavioral_config()
 
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
@@ -65,14 +65,14 @@ class Faucetizer:
                     device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
-            self._flush_behavioral_config()
+            self.flush_behavioral_config()
 
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
 
-            self._flush_behavioral_config()
+            self.flush_behavioral_config()
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -103,18 +103,13 @@ class Faucetizer:
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
-    def _flush_behavioral_config(self, force=False):
+    def flush_behavioral_config(self, force=False):
+        """Generate and write behavioral config to file"""
         if not force and self._config.faucetize_interval_sec:
             return
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
-
-    def get_behavioral_faucet_config(self):
-        """Return behavioral faucet config"""
-        with self._lock:
-            self._faucetize()
-            return self._behavioral_faucet_config
 
 
 def load_devices_state(file):
@@ -150,13 +145,6 @@ def update_structural_config(faucetizer: Faucetizer, file):
     with open(file) as structural_config_file:
         structural_config = yaml.safe_load(structural_config_file)
         faucetizer.process_faucet_config(structural_config)
-
-
-def write_behavioral_config(faucetizer: Faucetizer, file):
-    """Get behavioral config from faucetizer and write to file"""
-    behavioral_config = faucetizer.get_behavioral_faucet_config()
-    with open(file, 'w') as behavioral_config_file:
-        yaml.dump(behavioral_config, behavioral_config_file)
 
 
 def parse_args(raw_args):

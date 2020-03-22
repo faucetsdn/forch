@@ -98,7 +98,7 @@ class Forchestrator:
         self._process_static_device_placement()
         self._process_static_device_behavior()
         if self._faucetizer:
-            faucetizer.write_behavioral_config(self._faucetizer, self._behavioral_config_file)
+            self._faucetizer.flush_behavioral_config(force=True)
 
         self._validate_config_files()
 
@@ -199,8 +199,7 @@ class Forchestrator:
             update_write_faucet_config = (lambda: (
                 faucetizer.update_structural_config(
                     self._faucetizer, self._structural_config_file),
-                faucetizer.write_behavioral_config(
-                    self._faucetizer, self._behavioral_config_file)))
+                self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
             self._faucet_config_file_watcher = FaucetConfigFileWatcher(
