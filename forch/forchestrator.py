@@ -61,6 +61,7 @@ class Forchestrator:
         self._faucetizer = None
         self._authenticator = None
         self._faucetize_scheduler = None
+        self._faucet_state_scheduler = None
 
         self._initialized = False
         self._active_state = State.initializing
@@ -71,8 +72,11 @@ class Forchestrator:
 
     def initialize(self):
         """Initialize forchestrator instance"""
-        self._faucet_collector = FaucetStateCollector()
+        self._faucet_collector = FaucetStateCollector(self._config.event_client)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
+        self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
+        self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update)
+
         self._local_collector = LocalStateCollector(
             self._config.process, self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
@@ -303,6 +307,8 @@ class Forchestrator:
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()
+        if self._faucet_state_scheduler:
+            self._faucet_state_scheduler.start()
         if self._forch_metrics:
             self._forch_metrics.start()
             self._forch_metrics.update_var('forch_version', {'version': __version__})
@@ -311,6 +317,8 @@ class Forchestrator:
         """Stop forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.stop()
+        if self._faucet_state_scheduler:
+            self._faucet_state_scheduler.stop()
         if self._authenticator:
             self._authenticator.stop()
         if self._forch_metrics:

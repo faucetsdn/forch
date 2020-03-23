@@ -209,6 +209,9 @@ class FaucetEventClient():
             return True
         return False
 
+    def _should_log_event(self, event):
+        return event and os.getenv('FAUCET_EVENT_DEBUG')
+
     def next_event(self, blocking=False):
         """Return the next event from the queue"""
         while self.event_socket_connected and self.has_event(blocking=blocking):
@@ -220,7 +223,7 @@ class FaucetEventClient():
             except Exception as e:
                 LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
                 continue
-            if event and os.getenv('FAUCET_EVENT_DEBUG'):
+            if self._should_log_event(event):
                 LOGGER.info('faucet_event %s', event)
             targets = list(t for t in self._handlers if t in event)
             event_target = targets[0] if targets else None
