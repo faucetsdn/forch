@@ -8,19 +8,19 @@ syntax = "proto3";
  * Forch configuration
  */
 message ForchConfig {
-  // configurations for site
+  // configuration for site
   SiteConfig site = 1;
 
-  // configurations for orchestration
+  // configuration for orchestration
   OrchestrationConfig orchestration = 2;
 
-  // configurations for processes
+  // configuration for process monitoring
   ProcessConfig process = 3;
 
-  // configurations for http server
+  // configuration for api http server
   HttpConfig http = 4;
 
-  // configurations for faucet event
+  // configuration for faucet events
   EventClientConfig event_client = 5;
 
   // configuration for varz interface
@@ -152,6 +152,9 @@ message HttpConfig {
 message EventClientConfig {
   // port debounce time in seconds
   int32 port_debounce_sec = 1;
+
+  // coalesce stack topo events to reduce churn
+  int32 stack_topo_change_coalesce_sec = 2;
 }
 
 /*
