@@ -11,8 +11,8 @@ SYSTEM_CONF=system.conf
 LOCAL_CONFIG=local/$SYSTEM_CONF
 
 ext_ofpt=6653
-prom_pt=
-prom_target=
+prom_pt=9302
+
 docker_volumes=
 port_opts=
 local=

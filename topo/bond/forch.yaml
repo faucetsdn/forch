@@ -24,3 +24,5 @@ process:
   connections:
     6001:
       description: Faucet openflow port
+event_client:
+  stack_topo_change_coalesce_sec: 15

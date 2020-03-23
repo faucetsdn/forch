@@ -13,7 +13,7 @@ install:
   - bin/setup_base
   - bin/setup_faucet
   - $SKIP_INSTALL bin/compile_ovs
-  - $SKIP_INSTALL bin/retry_cmd bin/build_docker ${DOCKER_BUILD:-pull}
+  - $SKIP_INSTALL bin/retry_cmd bin/build_docker
 script:
   - set -e
   - $SKIP_STACK bin/setup_stack local $CONN_CHECK $MODE

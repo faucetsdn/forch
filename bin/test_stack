@@ -45,10 +45,17 @@ reset_system
 
 reset_stack
 
+# Set link down to force LAG to be on t1sw1
+sudo ip link set t1sw2-eth28 down
+sleep 10
+
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
 docker exec forch-faucet-1 python -m faucet.python_test 2>&1 | tee -a $TEST_RESULTS
 rm faucet/faucet/python_test.py
+
+curl -s http://localhost:8001 > $OUT_DIR/faucet_varz.txt
+fgrep 'port_lacp_state{' $OUT_DIR/faucet_varz.txt | sort | tee -a $TEST_RESULTS
 
 restart_forch
 
@@ -68,6 +75,7 @@ echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip addr add 240.0.0.2/24 dev lo
 sudo ip addr add 240.0.0.253/24 dev lo
+sudo ip link set t1sw2-eth28 up
 sleep 50.3231 &
 sleep 32
 test_forch -healthy

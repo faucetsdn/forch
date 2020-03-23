@@ -103,7 +103,7 @@ EGRESS_LINK_MAP = "links"
 # pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
-    def __init__(self):
+    def __init__(self, config):
         self.switch_states = {}
         self.topo_state = {}
         self.learned_macs = {}
@@ -115,6 +115,10 @@ class FaucetStateCollector:
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
+        self._stack_state_event = 0
+        self._stack_state_update = 0
+        self._stack_state_data = None
+        self._change_coalesce_sec = config.stack_topo_change_coalesce_sec
 
     def set_active(self, active_state):
         """Set active state"""
@@ -126,6 +130,21 @@ class FaucetStateCollector:
         with self._lock:
             self._is_state_restored = is_restored
             self._state_restore_error = restore_error
+
+    def heartbeat_update(self):
+        """Check for any necessary periodic updates"""
+        if not self._stack_state_data:
+            return
+        time_now = time.time()
+        event_delta = time_now - self._stack_state_event
+        update_delta = time_now - self._stack_state_update
+        if event_delta > self._change_coalesce_sec or update_delta > self._change_coalesce_sec * 2:
+            LOGGER.warning('stack_state_links update apply %ds', update_delta)
+            self._stack_state_update = 0
+            state_data, self._stack_state_data = (self._stack_state_data, None)
+            self._update_stack_topo_state_raw(*state_data)
+        else:
+            LOGGER.warning('stack_state_links update ignore %ds', event_delta)
 
     def _make_summary(self, state, detail):
         summary = StateSummary()
@@ -296,27 +315,29 @@ class FaucetStateCollector:
     def _get_dataplane_state(self):
         """get the topology state impl"""
         dplane_state = {}
-        change_count = 0
+        change_counts = []
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
 
         switch_map = self._get_switch_map()
         dplane_state['switch'] = switch_map
-        change_count += switch_map.get(SW_STATE_CHANGE_COUNT, 0)
+        change_counts.append(switch_map.get(SW_STATE_CHANGE_COUNT, 0))
         last_change = max(last_change, switch_map.get(SW_STATE_LAST_CHANGE, ''))
 
         stack_topo = self._get_stack_topo()
         dplane_state['stack'] = stack_topo
-        change_count += stack_topo.get(LINKS_CHANGE_COUNT, 0)
+        change_counts.append(stack_topo.get(LINKS_CHANGE_COUNT, 0))
         last_change = max(last_change, stack_topo.get(LINKS_LAST_CHANGE, ''))
 
         egress_state = dplane_state.setdefault('egress', {})
         self._fill_egress_state(egress_state)
-        change_count += egress_state.get(EGRESS_CHANGE_COUNT, 0)
+        change_counts.append(egress_state.get(EGRESS_CHANGE_COUNT, 0))
         last_change = max(last_change, egress_state.get(EGRESS_LAST_CHANGE, ''))
 
         self._update_dataplane_detail(dplane_state)
-        dplane_state['dataplane_state_change_count'] = change_count
+        dplane_state['dataplane_state_change_count'] = sum(change_counts)
         dplane_state['dataplane_state_last_change'] = last_change
+
+        LOGGER.info('dataplane_state_change_count sources: %s', change_counts)
 
         return dict_proto(dplane_state, DataplaneState)
 
@@ -786,7 +807,7 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.debug('lag_state update %s %s %s', name, port, lacp_state)
+            LOGGER.info('lag_state update %s %s %s', name, port, lacp_state)
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
 
@@ -950,6 +971,18 @@ class FaucetStateCollector:
 
     def _update_stack_topo_state(self, timestamp, link_graph, stack_root, dps):
         """Update topo_state with stack topology information"""
+
+        if self._change_coalesce_sec:
+            self._stack_state_event = time.time()
+            if not self._stack_state_update:
+                self._stack_state_update = self._stack_state_event
+            self._stack_state_data = (timestamp, link_graph, stack_root, dps)
+            LOGGER.warning('stack_state_links update save')
+            return
+
+        self._update_stack_topo_state_raw(timestamp, link_graph, stack_root, dps)
+
+    def _update_stack_topo_state_raw(self, timestamp, link_graph, stack_root, dps):
         topo_state = self.topo_state
         with self.lock:
             links_hash = str(link_graph)
