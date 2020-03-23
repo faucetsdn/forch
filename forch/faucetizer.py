@@ -168,22 +168,20 @@ if __name__ == '__main__':
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
     ARGS = parse_args(sys.argv[1:])
 
-    STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
-    STRUCTURAL_CONFIG = load_faucet_config(STRUCTURAL_CONFIG_FILE)
-    LOGGER.info('Loaded structural faucet config from %s', STRUCTURAL_CONFIG_FILE)
-
     SEGMENTS_VLANS_FILE = os.path.join(FORCH_BASE_DIR, ARGS.segments_vlans)
     SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
     LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
 
     ORCH_CONFIG = OrchestrationConfig()
-    OUTPUT_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
+    STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
+    BEHAVIORAL_CONFIG_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
 
     FAUCETIZER = Faucetizer(
-        ORCH_CONFIG, STRUCTURAL_CONFIG, SEGMENTS_TO_VLANS.segments_to_vlans, OUTPUT_FILE)
+        ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
+        BEHAVIORAL_CONFIG_FILE)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)
     process_devices_state(FAUCETIZER, DEVICES_STATE)
 
-    LOGGER.info('Processed device state and config wrote to %s', OUTPUT_FILE)
+    LOGGER.info('Processed device state and config wrote to %s', BEHAVIORAL_CONFIG_FILE)
