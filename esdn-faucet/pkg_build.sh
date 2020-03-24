@@ -27,7 +27,7 @@ echo
 echo Build results:
 
 echo Checkout output of: rapture listrepo enterprise-sdn.faucet.all-unstable
-rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "esdn $ESDN_VERSION " || (echo Missing ESDN version $ESDN_VERSION && false)
+rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "esdn-faucet $ESDN_VERSION " || (echo Missing ESDN version $ESDN_VERSION && false)
 rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "faucet $FAUCET_VERSION " || (echo Missing FAUCET verion $FAUCET_VERSION && false)
 rapture listrepo enterprise-sdn.faucet.all-unstable | fgrep "forch $FORCH_VERSION " || (echo Missing FORCH version $FORCH_VERSION && false)
 
