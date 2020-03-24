@@ -38,9 +38,12 @@ fi
 
 (
     echo Starting build of esdn-faucet meta-package...
+
+    git add debian
+    git stash
     git checkout esdn
     cd esdn-faucet
-    #git checkout origin/esdn -- FORCH_VERSION
+
     FORCH_VERSION=$(< FORCH_VERSION)
     echo Fixing debian forch version to $FORCH_VERSION
     fgrep -v $FORCH_VERSION debian/control > /dev/null
