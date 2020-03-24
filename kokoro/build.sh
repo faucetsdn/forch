@@ -57,5 +57,6 @@ fi
     glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
 )
 
+mkdir binary
 cp ${TMPDIR}/binary/* binary/
 ls -l binary/
