@@ -7,6 +7,8 @@ cd git/benz-build-source
 sudo kokoro/setup.sh
 sudo apt-get install tree
 
+echo Python version `python --version`
+
 echo "${TMPDIR}"
 mkdir -p "${TMPDIR}/binary/"
 mkdir -p "${TMPDIR}/glinux-build"
