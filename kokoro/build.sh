@@ -7,7 +7,7 @@ cd git/benz-build-source
 sudo kokoro/setup.sh
 sudo apt-get install tree
 
-echo Python version `python --version`
+echo python3 version `python3 --version`
 
 echo "${TMPDIR}"
 mkdir -p "${TMPDIR}/binary/"
