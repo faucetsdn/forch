@@ -7,9 +7,6 @@ cd git/benz-build-source
 sudo kokoro/setup.sh
 sudo apt-get install tree
 
-echo python3 version `python3 --version`
-apt-cache rdepends --installed python3.8 || true
-
 echo "${TMPDIR}"
 mkdir -p "${TMPDIR}/binary/"
 mkdir -p "${TMPDIR}/glinux-build"
@@ -33,23 +30,28 @@ VER_FILE
 cat forch/__version__.py
 
 glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
-mkdir -p binary
+
+if [ -f esdn-faucet/FORCH_VERSION ]; then
+    echo Pollution from esdn-faucet should not be here.
+    false
+fi
 
 (
+    echo Starting build of esdn-faucet meta-package...
+    git checkout esdn
     cd esdn-faucet
-    git checkout origin/esdn -- FORCH_VERSION
+    #git checkout origin/esdn -- FORCH_VERSION
     FORCH_VERSION=$(< FORCH_VERSION)
     echo Fixing debian forch version to $FORCH_VERSION
     fgrep -v $FORCH_VERSION debian/control > /dev/null
     sed -i s/FORCH_VERSION/${FORCH_VERSION}/ debian/control
     fgrep $FORCH_VERSION debian/control
 
-    VERSION=$(git describe remotes/origin/esdn)
+    VERSION=$(git describe)
     echo esdn-faucet version $VERSION
     debchange --newversion $VERSION -b "New upstream release"
 
     glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
-    mkdir -p binary
 )
 
 cp ${TMPDIR}/binary/* binary/
