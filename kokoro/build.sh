@@ -8,6 +8,7 @@ sudo kokoro/setup.sh
 sudo apt-get install tree
 
 echo python3 version `python3 --version`
+apt-cache rdepends --installed python3.8 || true
 
 echo "${TMPDIR}"
 mkdir -p "${TMPDIR}/binary/"
