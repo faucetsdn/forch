@@ -92,4 +92,19 @@ if [ -z "$oe" ]; then
     false
 fi
 
+mbase=`git merge-base $gtag perry/master`
+mref=`git rev-list -n 1 $mtag`
+if [ "$mbase" != "$mref" ]; then
+    echo
+    echo Error:
+    echo "  git merge-base $gtag perry/master"
+    echo does not match expected master tag $mtag
+    echo Likely gmaster has been merged against perry/master, not $mtag
+    echo
+    false
+else
+    echo Merge-base of $gtag and perry/master is $mtag
+fi
+
+echo
 echo All remote tags are consistent.
