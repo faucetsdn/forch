@@ -375,11 +375,11 @@ class FaucetStateCollector:
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
     @_pre_check()
-    def get_switch_state(self, switch, port, url_base=None):
+    def get_switch_state(self, switch, port, gauge_metrics, url_base=None):
         """get a set of all switches"""
-        return self._get_switch_state(switch, port, url_base)
+        return self._get_switch_state(switch, port, gauge_metrics, url_base)
 
-    def _get_switch_state(self, switch, port, url_base=None):
+    def _get_switch_state(self, switch, port, gauge_metrics=None, url_base=None):
         """Get switch state impl"""
         switches_data = {}
         broken = []
@@ -416,7 +416,71 @@ class FaucetStateCollector:
             result['switches'] = {switch: switches_data[switch]}
             result['switches_restrict'] = switch
 
-        return dict_proto(result, SwitchState)
+        if gauge_metrics:
+            self._augment_acl_state(result['switches'], gauge_metrics)
+
+        # TODO
+        r = dict_proto(result, SwitchState)
+        return r
+
+    def _augment_acl_state(self, switch_states, metrics):
+        for switch_name, switch_state in switch_states.items():
+            dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
+            if not dp_config:
+                LOGGER.warning('DP config for switch %s is not present', switch_name)
+                continue
+
+            if 'flow_packet_count_vlan_acl' in metrics:
+                self._augment_vlans_acl_state(
+                    switch_name, switch_state, dp_config,
+                    metrics['flow_packet_count_vlan_acl'].samples)
+
+            if 'flow_packet_count_port_acl' in metrics:
+                self._augment_ports_acl_state(
+                    switch_name, switch_state, dp_config,
+                    metrics['flow_packet_count_port_acl'].samples)
+
+    def _augment_vlans_acl_state(self, switch_name, switch_state, dp_config, metric_samples):
+        vlans_state = switch_state.setdefault('vlans', {})
+        for vid, vlan_config in dp_config.vlans.items():
+            if not vlan_config.tagged and not vlan_config.untagged:
+                continue
+            acls_state = vlans_state.setdefault(vid, {}).setdefault('acls', {})
+            self._fill_acls_state(acls_state, vlan_config.acls_in, metric_samples, switch_name)
+
+    def _augment_ports_acl_state(self, switch_name, switch_state, dp_config, metric_samples):
+      for port_id, port_state in switch_state.get('ports', {}).items():
+            port_config = dp_config.ports.get(port_id)
+            if not port_config:
+                LOGGER.warning(
+                    'Port config is not present for switch %s and port %s', switch_name, port_id)
+                continue
+            acls_state = port_state.setdefault('acls', {})
+            self._fill_acls_state(
+                acls_state, port_config.acls_in, metric_samples, switch_name, port_id)
+
+    def _fill_acls_state(self, acls_state, acls_config, metric_samples, switch_name, port_id=None):
+        for acl in acls_config:
+            rules_state = acls_state.setdefault(str(acl._id), {}).setdefault('rules', {})
+            for rule in acl.rules:
+                cookie = str(rule.get('cookie'))
+                if not cookie:
+                    LOGGER.warning('Rule in ACL %s does not have a cookie: %s', acl._id, rule)
+                    continue
+                rule_state = rules_state.setdefault(cookie, {})
+                rule_state['rule_config_str'] = str(json.dumps(rule)).replace('\\"', '"')
+
+            for sample in metric_samples:
+                if sample.labels.get('dp_name') != switch_name:
+                    continue
+                if port_id and sample.labels.get('in_port') != port_id:
+                    continue
+                cookie = str(sample.labels.get('cookie'))
+                rule_state = rules_state.get(cookie)
+                if not rule_state:
+                    continue
+                packet_count = rule_state.get('packet_count', 0) + int(sample.value)
+                rule_state['packet_count'] = packet_count
 
     def cleanup(self):
         """Clean up internal data"""
@@ -569,7 +633,7 @@ class FaucetStateCollector:
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)
 
-    def _fill_dva_states(self, switch_name, port_id, port_map):
+    def _fill_dva_states(self, switch_name, port_id, port_map, list_acl=False):
         dp_obj = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
         if not dp_obj:
             LOGGER.warning('Switch not defined in dps config: %s', switch_name)
@@ -586,7 +650,7 @@ class FaucetStateCollector:
         if native_vlan:
             port_map['vlan'] = int(native_vlan)
         if acls_in:
-            port_map['acls'] = list(acls_in)
+            port_map['acls'] = acls_in if list_acl else { acl: {} for acl in acls_in }
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
@@ -1061,7 +1125,7 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
-            self._fill_dva_states(switch, port, mac_deets)
+            self._fill_dva_states(switch, port, mac_deets, list_acl=True)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"

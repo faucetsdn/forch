@@ -674,11 +674,27 @@
                 </li>
               
                 <li>
+                  <a href="#SwitchState.ACLState"><span class="badge">M</span>SwitchState.ACLState</a>
+                </li>
+              
+                <li>
+                  <a href="#SwitchState.ACLState.RuleState"><span class="badge">M</span>SwitchState.ACLState.RuleState</a>
+                </li>
+              
+                <li>
+                  <a href="#SwitchState.ACLState.RulesEntry"><span class="badge">M</span>SwitchState.ACLState.RulesEntry</a>
+                </li>
+              
+                <li>
                   <a href="#SwitchState.PathState"><span class="badge">M</span>SwitchState.PathState</a>
                 </li>
               
                 <li>
                   <a href="#SwitchState.Port"><span class="badge">M</span>SwitchState.Port</a>
+                </li>
+              
+                <li>
+                  <a href="#SwitchState.Port.AclsEntry"><span class="badge">M</span>SwitchState.Port.AclsEntry</a>
                 </li>
               
                 <li>
@@ -714,7 +730,19 @@
                 </li>
               
                 <li>
+                  <a href="#SwitchState.SwitchNode.VlansEntry"><span class="badge">M</span>SwitchState.SwitchNode.VlansEntry</a>
+                </li>
+              
+                <li>
                   <a href="#SwitchState.SwitchesEntry"><span class="badge">M</span>SwitchState.SwitchesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#SwitchState.VLANState"><span class="badge">M</span>SwitchState.VLANState</a>
+                </li>
+              
+                <li>
+                  <a href="#SwitchState.VLANState.AclsEntry"><span class="badge">M</span>SwitchState.VLANState.AclsEntry</a>
                 </li>
               
               
@@ -4404,6 +4432,92 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="SwitchState.ACLState">SwitchState.ACLState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>rules</td>
+                  <td><a href="#SwitchState.ACLState.RulesEntry">SwitchState.ACLState.RulesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>rule states indexed by rule cookies </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SwitchState.ACLState.RuleState">SwitchState.ACLState.RuleState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>rule_config_str</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>rule configuration in string format </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>count of packets hit the rule </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SwitchState.ACLState.RulesEntry">SwitchState.ACLState.RulesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#SwitchState.ACLState.RuleState">SwitchState.ACLState.RuleState</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="SwitchState.PathState">SwitchState.PathState</h3>
         <p></p>
 
@@ -4475,9 +4589,9 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#string">string</a></td>
+                  <td><a href="#SwitchState.Port.AclsEntry">SwitchState.Port.AclsEntry</a></td>
                   <td>repeated</td>
-                  <td><p>ACLs </p></td>
+                  <td><p>ACLs indexed by acl name </p></td>
                 </tr>
               
                 <tr>
@@ -4492,6 +4606,37 @@ or to host_path API to list path </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>Port state change count </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SwitchState.Port.AclsEntry">SwitchState.Port.AclsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#SwitchState.ACLState">SwitchState.ACLState</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -4678,6 +4823,13 @@ or to host_path API to list path </p></td>
                   <td><p>All the egress port macs on this switch </p></td>
                 </tr>
               
+                <tr>
+                  <td>vlans</td>
+                  <td><a href="#SwitchState.SwitchNode.VlansEntry">SwitchState.SwitchNode.VlansEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>States of all VLANs used by this switch, indexed by VLAN id </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -4833,6 +4985,37 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="SwitchState.SwitchNode.VlansEntry">SwitchState.SwitchNode.VlansEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#SwitchState.VLANState">SwitchState.VLANState</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="SwitchState.SwitchesEntry">SwitchState.SwitchesEntry</h3>
         <p></p>
 
@@ -4853,6 +5036,61 @@ or to host_path API to list path </p></td>
                 <tr>
                   <td>value</td>
                   <td><a href="#SwitchState.SwitchNode">SwitchState.SwitchNode</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SwitchState.VLANState">SwitchState.VLANState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>acls</td>
+                  <td><a href="#SwitchState.VLANState.AclsEntry">SwitchState.VLANState.AclsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>vlan acls states </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SwitchState.VLANState.AclsEntry">SwitchState.VLANState.AclsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#SwitchState.ACLState">SwitchState.ACLState</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>

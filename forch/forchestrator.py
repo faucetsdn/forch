@@ -21,7 +21,7 @@ from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
-from forch.varz_state_collector import VarzStateCollector
+import forch.varz_state_collector as varz_state_collector
 
 from forch.utils import yaml_proto
 
@@ -37,7 +37,10 @@ _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
 _SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
-_PROMETHEUS_HOST = '127.0.0.1'
+_FAUCET_VARZ_HOST = '127.0.0.1'
+_FAUCET_VARZ_PORT = 9302
+_GAUGE_VARZ_HOST = '127.0.0.1'
+_GAUGE_VARZ_PORT = 9303
 
 
 class Forchestrator:
@@ -52,9 +55,10 @@ class Forchestrator:
         self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
+        self._faucet_varz_endpoint = None
+        self._gauge_varz_endpoint = None
 
         self._faucet_collector = None
-        self._varz_collector = None
         self._local_collector = None
         self._cpn_collector = None
 
@@ -82,11 +86,11 @@ class Forchestrator:
             self._config.process, self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
-        prom_port = os.getenv('PROMETHEUS_PORT')
-        if not prom_port:
-            raise Exception("PROMETHEUS_PORT is not set")
-        prom_url = f"http://{_PROMETHEUS_HOST}:{prom_port}"
-        self._varz_collector = VarzStateCollector(prom_url)
+        faucet_varz_port = os.getenv('PROMETHEUS_PORT', _FAUCET_VARZ_PORT)
+        self._faucet_varz_endpoint = f"http://{_FAUCET_VARZ_HOST}:{faucet_varz_port}"
+
+        gauge_varz_port = os.getenv('GAUGE_VARZ_PORT', _GAUGE_VARZ_PORT)
+        self._gauge_varz_endpoint = f"http://{_GAUGE_VARZ_HOST}:{gauge_varz_port}"
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -108,12 +112,12 @@ class Forchestrator:
         self._forch_metrics = ForchMetrics(self._config.varz_interface)
 
         while True:
-            time.sleep(10)
             try:
                 self._get_varz_config()
                 break
             except Exception as e:
                 LOGGER.error('Waiting for varz config: %s', e)
+            time.sleep(10)
 
         self._register_handlers()
 
@@ -243,7 +247,8 @@ class Forchestrator:
         ])
 
     def _get_varz_config(self):
-        metrics = self._varz_collector.get_metrics()
+        metrics = varz_state_collector.retry_get_metrics(
+            self._faucet_varz_endpoint, varz_state_collector.TARGET_FAUCET_METRICS)
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -565,7 +570,9 @@ class Forchestrator:
         switch = params.get('switch')
         port = params.get('port')
         host = self._extract_url_base(path)
-        reply = self._faucet_collector.get_switch_state(switch, port, host)
+        gauge_metrics = varz_state_collector.retry_get_metrics(
+            self._gauge_varz_endpoint, varz_state_collector.TARGET_GAUGE_METRICS)
+        reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
         return self._augment_state_reply(reply, path)
 
     def get_dataplane_state(self, path, params):
