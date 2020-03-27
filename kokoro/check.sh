@@ -41,6 +41,7 @@ if [ $ebase != $ehash ]; then
     false
 fi
 
+echo
 echo Checking remote master tag $mtag
 fm=`git ls-remote faucet $mtag`
 om=`git ls-remote origin $mtag`
@@ -82,8 +83,8 @@ echo Checking remote esdn tag $etag
 oe=`git ls-remote origin $etag`
 pe=`git ls-remote perry $etag`
 if [ "$oe" != "$pe" ]; then
-    echo origin gmaster: $oe
-    echo pperry gmaster: $pe
+    echo origin esdn: $oe
+    echo pperry esdn: $pe
     false
 fi
 
