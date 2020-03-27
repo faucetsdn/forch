@@ -19,5 +19,6 @@ Package: esdn-faucet
 Architecture: all
 Depends: python3-faucet,
      forch (= FORCH_VERSION),
-     faucet
+     faucet,
+     gauge
 Description: Complete esdn-faucet bundle
