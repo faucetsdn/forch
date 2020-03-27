@@ -447,7 +447,7 @@ class FaucetStateCollector:
             self._fill_acls_state(acls_state, vlan_config.acls_in, metric_samples, switch_name)
 
     def _augment_ports_acl_state(self, switch_name, switch_state, dp_config, metric_samples):
-      for port_id, port_state in switch_state.get('ports', {}).items():
+        for port_id, port_state in switch_state.get('ports', {}).items():
             port_config = dp_config.ports.get(port_id)
             if not port_config:
                 LOGGER.warning(
