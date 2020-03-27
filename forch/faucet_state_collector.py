@@ -460,14 +460,6 @@ class FaucetStateCollector:
     def _fill_acls_state(self, acls_state, acls_config, metric_samples, switch_name, port_id=None):
         for acl in acls_config:
             rules_state = acls_state.setdefault(str(acl._id), {}).setdefault('rules', {})
-            for rule in acl.rules:
-                cookie = str(rule.get('cookie'))
-                if not cookie:
-                    LOGGER.warning('Rule in ACL %s does not have a cookie: %s', acl._id, rule)
-                    continue
-                rule_state = rules_state.setdefault(cookie, {})
-                rule_state['rule_config_str'] = str(json.dumps(rule)).replace('\\"', '"')
-
             for sample in metric_samples:
                 if sample.labels.get('dp_name') != switch_name:
                     continue
@@ -631,24 +623,30 @@ class FaucetStateCollector:
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)
 
-    def _fill_dva_states(self, switch_name, port_id, port_map, list_acl=False):
-        dp_obj = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
-        if not dp_obj:
+    def _fill_dva_states(self, switch_name, port_id, port_map):
+        dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
+        if not dp_config:
             LOGGER.warning('Switch not defined in dps config: %s', switch_name)
             return
 
-        port_obj = dp_obj.interfaces.get(port_id)
-        if not port_obj:
+        port_config = dp_config.ports.get(port_id)
+        if not port_config:
             LOGGER.warning('Port not defined in dps config: %s, %s', switch_name, port_id)
             return
 
-        native_vlan = port_obj.get('native_vlan')
-        acls_in = port_obj.get('acls_in')
-
-        if native_vlan:
-            port_map['vlan'] = int(native_vlan)
-        if acls_in:
-            port_map['acls'] = list(acls_in) if list_acl else { acl: {} for acl in acls_in }
+        if port_config.native_vlan:
+            port_map['vlan'] = int(port_config.native_vlan.vid)
+        if port_config.acls_in:
+            acls_state = port_map.setdefault('acls')
+            for acl in port_config.acls_in:
+                rules_state = acls_state.setdefault(str(acl._id), {}).setdefault('rules', {})
+                for rule in acl.rules:
+                    cookie = str(rule.get('cookie'))
+                    if not cookie:
+                        LOGGER.warning('Rule in ACL %s does not have a cookie: %s', acl._id, rule)
+                        continue
+                    rule_state = rules_state.setdefault(cookie, {})
+                    rule_state['rule_config_str'] = str(json.dumps(rule)).replace('\\"', '"')
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
