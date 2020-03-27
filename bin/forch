@@ -56,7 +56,7 @@ fi
 if [ -n "$FAUCET_VARZ_PORT" ]; then
     echo Using existing faucet varz port $FAUCET_VARZ_PORT
 elif [ -f "$FAUCET_VARZ_PORT_FILE" ]; then
-    $FAUCET_VARZ_PORT=$(< $FAUCET_VARZ_PORT_FILE)
+    FAUCET_VARZ_PORT=$(< $FAUCET_VARZ_PORT_FILE)
     echo Using faucet varz port $FAUCET_VARZ_PORT from $FAUCET_VARZ_PORT_FILE
 else
     FAUCET_VARZ_PORT=9302

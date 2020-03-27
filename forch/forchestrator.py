@@ -112,12 +112,12 @@ class Forchestrator:
         self._forch_metrics = ForchMetrics(self._config.varz_interface)
 
         while True:
+            time.sleep(10)
             try:
                 self._get_varz_config()
                 break
             except Exception as e:
                 LOGGER.error('Waiting for varz config: %s', e)
-            time.sleep(10)
 
         self._register_handlers()
 
