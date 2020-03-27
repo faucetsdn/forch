@@ -1,22 +1,27 @@
 acls:
   role_red:
     - rule:
+        cookie: 5000
         actions:
           allow: True
   role_green:
     - rule:
+        cookie: 6000
         actions:
           allow: True
   role_blue:
     - rule:
+        cookie: 7000
         actions:
           allow: True
   role_yellow:
     - rule:
+        cookie: 8000
         dl_type: 0x800      # IPv4
         ip_proto: 1         # ICMP
         actions:
           allow: False
     - rule:
+        cookie: 8001
         actions:
           allow: True

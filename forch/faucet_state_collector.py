@@ -419,9 +419,7 @@ class FaucetStateCollector:
         if gauge_metrics:
             self._augment_acl_state(result['switches'], gauge_metrics)
 
-        # TODO
-        r = dict_proto(result, SwitchState)
-        return r
+        return dict_proto(result, SwitchState)
 
     def _augment_acl_state(self, switch_states, metrics):
         for switch_name, switch_state in switch_states.items():
@@ -650,7 +648,7 @@ class FaucetStateCollector:
         if native_vlan:
             port_map['vlan'] = int(native_vlan)
         if acls_in:
-            port_map['acls'] = acls_in if list_acl else { acl: {} for acl in acls_in }
+            port_map['acls'] = list(acls_in) if list_acl else { acl: {} for acl in acls_in }
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
