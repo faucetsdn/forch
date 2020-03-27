@@ -39,13 +39,13 @@ function test_dva {
 
     api_result=$fout_dir/sys_config.json
     jq '.faucet.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
-    jq '.faucet.dps."nz-kiwi-t2sw2".interfaces."1".acls_in.role_green.rules."5000".packet_count' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
-    jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".acls_in.role_yellow.rules."7000".packet_count' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/switch_state.json
     jq '.switches."nz-kiwi-t2sw1".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw1".ports."1".vlans.100.acls.uniform_100.rules."1001".packet_count' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".vlans.100.acls.uniform_100.rules."1001".packet_count' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw2".ports."1".acls.role_green.rules."6000".packet_count' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls.role_green.rules."8000".packet_count' $api_result | tee -a $TEST_RESULTS

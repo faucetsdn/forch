@@ -640,7 +640,7 @@ class FaucetStateCollector:
             if list_acls:
                 port_map['acls'] = [acl._id for acl in port_config.acls_in]
             else:
-                acls_state = port_map.setdefault('acls')
+                acls_state = port_map.setdefault('acls', {})
                 for acl in port_config.acls_in:
                     acl_state = acls_state.setdefault(str(acl._id), {})
                     rules_state = acl_state.setdefault('rules', {})
@@ -1126,7 +1126,7 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
-            self._fill_dva_states(switch, port, mac_deets, list_acl=True)
+            self._fill_dva_states(switch, port, mac_deets, list_acls=True)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
