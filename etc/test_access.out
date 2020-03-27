@@ -15,9 +15,10 @@ Starting dva-vlan-assigned tests
 300
 "role_yellow"
 200
-"role_green"
+12
+0
 300
-"role_yellow"
+0
 200
 "role_red"
 300
