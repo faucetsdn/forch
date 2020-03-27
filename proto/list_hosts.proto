@@ -40,17 +40,4 @@ message HostList {
         // or to host_path API to list path
         string url = 6;
     }
-
-  message ACLState {
-    // rule states indexed by rule cookies
-    map<string, RuleState> rules = 1;
-
-    message RuleState {
-      // rule configuration in string format
-      string rule_config_str = 1;
-
-      // count of packets hit the rule
-      int32 packet_count = 2;
-    }
-  }
 }
