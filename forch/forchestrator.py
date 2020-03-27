@@ -38,9 +38,9 @@ _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
 _SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
 _FAUCET_VARZ_HOST = '127.0.0.1'
-_FAUCET_VARZ_PORT = 9302
+_FAUCET_PROM_PORT = 9302
 _GAUGE_VARZ_HOST = '127.0.0.1'
-_GAUGE_VARZ_PORT = 9303
+_GAUGE_PROM_PORT = 9303
 
 
 class Forchestrator:
@@ -55,8 +55,8 @@ class Forchestrator:
         self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
-        self._faucet_varz_endpoint = None
-        self._gauge_varz_endpoint = None
+        self._faucet_prom_endpoint = None
+        self._gauge_prom_endpoint = None
 
         self._faucet_collector = None
         self._local_collector = None
@@ -86,11 +86,11 @@ class Forchestrator:
             self._config.process, self.cleanup, self.handle_active_state)
         self._cpn_collector = CPNStateCollector()
 
-        faucet_varz_port = os.getenv('PROMETHEUS_PORT', _FAUCET_VARZ_PORT)
-        self._faucet_varz_endpoint = f"http://{_FAUCET_VARZ_HOST}:{faucet_varz_port}"
+        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', _FAUCET_PROM_PORT)
+        self._faucet_prom_endpoint = f"http://{_FAUCET_VARZ_HOST}:{faucet_prom_port}"
 
-        gauge_varz_port = os.getenv('GAUGE_VARZ_PORT', _GAUGE_VARZ_PORT)
-        self._gauge_varz_endpoint = f"http://{_GAUGE_VARZ_HOST}:{gauge_varz_port}"
+        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', _GAUGE_PROM_PORT)
+        self._gauge_prom_endpoint = f"http://{_GAUGE_VARZ_HOST}:{gauge_prom_port}"
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -248,7 +248,7 @@ class Forchestrator:
 
     def _get_varz_config(self):
         metrics = varz_state_collector.retry_get_metrics(
-            self._faucet_varz_endpoint, varz_state_collector.TARGET_FAUCET_METRICS)
+            self._faucet_prom_endpoint, varz_state_collector.TARGET_FAUCET_METRICS)
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -571,7 +571,7 @@ class Forchestrator:
         port = params.get('port')
         host = self._extract_url_base(path)
         gauge_metrics = varz_state_collector.retry_get_metrics(
-            self._gauge_varz_endpoint, varz_state_collector.TARGET_GAUGE_METRICS)
+            self._gauge_prom_endpoint, varz_state_collector.TARGET_GAUGE_METRICS)
         reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
         return self._augment_state_reply(reply, path)
 
