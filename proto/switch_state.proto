@@ -143,14 +143,17 @@ message SwitchState {
 
   message ACLState {
     // rule states indexed by rule cookies
-    map<string, RuleState> rules = 1;
+    repeated RuleState rules = 1;
 
     message RuleState {
-      // rule configuration in string format
-      string rule_config_str = 1;
+      // rule description
+      string description = 1;
+
+      // rule cookie
+      string cookie = 2;
 
       // count of packets hit the rule
-      int32 packet_count = 2;
+      int32 packet_count = 3;
     }
   }
 }

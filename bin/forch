@@ -54,23 +54,23 @@ else
 fi
 
 if [ -n "$FAUCET_PROM_PORT" ]; then
-    echo Using existing faucet varz port $FAUCET_PROM_PORT
+    echo Using existing faucet prometheus port $FAUCET_PROM_PORT
 elif [ -f "$FAUCET_PROM_PORT_FILE" ]; then
     FAUCET_PROM_PORT=$(< $FAUCET_PROM_PORT_FILE)
-    echo Using faucet varz port $FAUCET_PROM_PORT from $FAUCET_PROM_PORT_FILE
+    echo Using faucet prometheus port $FAUCET_PROM_PORT from $FAUCET_PROM_PORT_FILE
 else
     FAUCET_PROM_PORT=9302
-    echo Using default faucet varz port $FAUCET_PROM_PORT
+    echo Using default faucet prometheus port $FAUCET_PROM_PORT
 fi
 
 if [ -n "$GAUGE_PROM_PORT" ]; then
-    echo Using existing gauge varz port $GAUGE_PROM_PORT
+    echo Using existing gauge prometheus port $GAUGE_PROM_PORT
 elif [ -f "$GAUGE_PROM_PORT_FILE" ]; then
     GAUGE_PROM_PORT=$(< $GAUGE_PROM_PORT_FILE)
-    echo Using gauge varz port $GAUGE_PROM_PORT from $GAUGE_PROM_PORT_FILE
+    echo Using gauge prometheus port $GAUGE_PROM_PORT from $GAUGE_PROM_PORT_FILE
 else
     GAUGE_PROM_PORT=9303
-    echo Using default gauge varz port $GAUGE_PROM_PORT
+    echo Using default gauge prometheus port $GAUGE_PROM_PORT
 fi
 
 if [ -n "$FORCH_LOG_DIR" ]; then

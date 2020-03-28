@@ -252,7 +252,7 @@ function test_stack {
 
 function restart_forch {
     echo Killing any old instances of forch...
-    kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep forch | fgrep -v fgrep | awk '{print $1}'`
     kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
 
     rm -f $forch_log

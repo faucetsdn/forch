@@ -554,6 +554,14 @@
                 </li>
               
                 <li>
+                  <a href="#HostList.ACLData"><span class="badge">M</span>HostList.ACLData</a>
+                </li>
+              
+                <li>
+                  <a href="#HostList.ACLData.RuleData"><span class="badge">M</span>HostList.ACLData.RuleData</a>
+                </li>
+              
+                <li>
                   <a href="#HostList.EthDstsEntry"><span class="badge">M</span>HostList.EthDstsEntry</a>
                 </li>
               
@@ -563,6 +571,10 @@
               
                 <li>
                   <a href="#HostList.HostData"><span class="badge">M</span>HostList.HostData</a>
+                </li>
+              
+                <li>
+                  <a href="#HostList.HostData.AclsEntry"><span class="badge">M</span>HostList.HostData.AclsEntry</a>
                 </li>
               
               
@@ -679,10 +691,6 @@
               
                 <li>
                   <a href="#SwitchState.ACLState.RuleState"><span class="badge">M</span>SwitchState.ACLState.RuleState</a>
-                </li>
-              
-                <li>
-                  <a href="#SwitchState.ACLState.RulesEntry"><span class="badge">M</span>SwitchState.ACLState.RulesEntry</a>
                 </li>
               
                 <li>
@@ -3601,6 +3609,61 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
 
         
       
+        <h3 id="HostList.ACLData">HostList.ACLData</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>rules</td>
+                  <td><a href="#HostList.ACLData.RuleData">HostList.ACLData.RuleData</a></td>
+                  <td>repeated</td>
+                  <td><p>rule states indexed by rule cookies </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.ACLData.RuleData">HostList.ACLData.RuleData</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>rule description </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cookie</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>rule cookie </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="HostList.EthDstsEntry">HostList.EthDstsEntry</h3>
         <p></p>
 
@@ -3703,7 +3766,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#string">string</a></td>
+                  <td><a href="#HostList.HostData.AclsEntry">HostList.HostData.AclsEntry</a></td>
                   <td>repeated</td>
                   <td><p>ACLs </p></td>
                 </tr>
@@ -3714,6 +3777,37 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td></td>
                   <td><p>link to list_hosts API to list possible destinations
 or to host_path API to list path </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.HostData.AclsEntry">HostList.HostData.AclsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#HostList.ACLData">HostList.ACLData</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -4444,7 +4538,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>rules</td>
-                  <td><a href="#SwitchState.ACLState.RulesEntry">SwitchState.ACLState.RulesEntry</a></td>
+                  <td><a href="#SwitchState.ACLState.RuleState">SwitchState.ACLState.RuleState</a></td>
                   <td>repeated</td>
                   <td><p>rule states indexed by rule cookies </p></td>
                 </tr>
@@ -4467,10 +4561,17 @@ or to host_path API to list path </p></td>
             <tbody>
               
                 <tr>
-                  <td>rule_config_str</td>
+                  <td>description</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>rule configuration in string format </p></td>
+                  <td><p>rule description </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cookie</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>rule cookie </p></td>
                 </tr>
               
                 <tr>
@@ -4478,37 +4579,6 @@ or to host_path API to list path </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>count of packets hit the rule </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="SwitchState.ACLState.RulesEntry">SwitchState.ACLState.RulesEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#SwitchState.ACLState.RuleState">SwitchState.ACLState.RuleState</a></td>
-                  <td></td>
-                  <td><p> </p></td>
                 </tr>
               
             </tbody>

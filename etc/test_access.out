@@ -10,16 +10,18 @@ Starting access-vlan-assigned test...
 9a:02:57:1e:8f:02
 9a:02:57:1e:8f:03
 Starting dva-vlan-assigned tests
+@sys_config dva-vlan-assigned
 200
 "role_green"
 300
 "role_yellow"
+@switch_state dva-vlan-assigned
 200
-12
+"1000"
 0
 300
-0
+"deny ICMP"
 200
-"role_red"
+"5000"
 300
-"role_yellow"
+"8000"

@@ -34,10 +34,23 @@ message HostList {
         int32 vlan = 4;
 
         // ACLs
-        repeated string acls = 5;
+        map<string, ACLData> acls = 5;
 
         // link to list_hosts API to list possible destinations
         // or to host_path API to list path
         string url = 6;
     }
+
+    message ACLData {
+        // rule states indexed by rule cookies
+        repeated RuleData rules = 1;
+
+        message RuleData {
+            // rule description
+            string description = 1;
+
+            // rule cookie
+            string cookie = 2;
+    }
+  }
 }

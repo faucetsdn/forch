@@ -1,6 +1,7 @@
 acls:
   uniform_100:
     - rule:
+        description: allow dhcp
         cookie: 1000
         dl_type: 0x0800
         ip_proto: 17
@@ -9,21 +10,25 @@ acls:
         actions:
            allow: True
     - rule:
+        description: deny all
         cookie: 1001
         actions:
           allow: False
   uniform_200:
     - rule:
+        description: allow all
         cookie: 2000
         actions:
           allow: True
   uniform_300:
     - rule:
+        description: allow all
         cookie: 3000
         actions:
           allow: True
   uniform_400:
     - rule:
+        description: allow all
         cookie: 4000
         actions:
           allow: False
