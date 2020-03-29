@@ -379,7 +379,6 @@ class FaucetStateCollector:
         """get a set of all switches"""
         return self._get_switch_state(switch, port, gauge_metrics, url_base)
 
-
     def _get_switch_state(self, switch, port, gauge_metrics=None, url_base=None):
         """Get switch state impl"""
         switches_data = {}
@@ -502,7 +501,8 @@ class FaucetStateCollector:
         else:
             for port_id in switch_states.get(PORTS, {}):
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
-                self._fill_port_behavior(switch_name, port_id, switch_port_map[port_id], gauge_metrics)
+                self._fill_port_behavior(
+                    switch_name, port_id, switch_port_map[port_id], gauge_metrics)
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
