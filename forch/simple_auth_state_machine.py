@@ -19,7 +19,7 @@ class AuthStateMachine():
     AUTH_TIMEOUT_SEC = 3600
 
     # pylint: disable=too-many-arguments
-    def __init__(self, src_mac, port_id, auth_config, radius_query_callback, auth_callback):
+    def __init__(self, src_mac, port_id, auth_config, radius_query_callback, auth_callback, forch_metrics=None):
         self.src_mac = src_mac
         self.port_id = port_id
         self._auth_callback = auth_callback
@@ -31,6 +31,7 @@ class AuthStateMachine():
         self._query_timeout_sec = auth_config.query_timeout_sec or self.QUERY_TIMEOUT_SEC
         self._rej_timeout_sec = auth_config.reject_timeout_sec or self.REJECT_TIMEOUT_SEC
         self._auth_timeout_sec = auth_config.auth_timeout_sec or self.AUTH_TIMEOUT_SEC
+        self._forch_metrics = forch_metrics
         self._transition_lock = Lock()
         self._reset_state_machine()
 
@@ -97,6 +98,8 @@ class AuthStateMachine():
                 backoff_time = self._retry_backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
+                    if self._forch_metrics:
+                        self._forch_metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
                 else:
                     self._state_transition(self.REQUEST)
