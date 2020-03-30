@@ -71,8 +71,10 @@ class ForchMetrics():
     def _add_vars(self):
         """Initializing list of vars to be tracked"""
         self._add_var('forch_version', 'Current version of forch', Info)
-        self._add_var('radius_query_timeouts', 'No. of RADIUS query timeouts in state machine', Counter)
-        self._add_var('radius_query_responses', 'No. of RADIUS query responses received from server', Counter)
+        self._add_var('radius_query_timeouts',
+                      'No. of RADIUS query timeouts in state machine', Counter)
+        self._add_var('radius_query_responses',
+                      'No. of RADIUS query responses received from server', Counter)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""

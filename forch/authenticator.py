@@ -24,7 +24,8 @@ HEARTBEAT_INTERVAL_SEC = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, auth_config, auth_callback=None, radius_query_object=None, forch_metrics=None):
+    def __init__(self, auth_config, auth_callback=None,
+                 radius_query_object=None, forch_metrics=None):
         self.radius_query = None
         self.sessions = {}
         self.auth_callback = auth_callback
@@ -90,7 +91,8 @@ class Authenticator:
         if src_mac not in self.sessions:
             self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.auth_config,
-                self.radius_query.send_mab_request, self.process_session_result, self._forch_metrics)
+                self.radius_query.send_mab_request,
+                self.process_session_result, self._forch_metrics)
         if device_placement.connected:
             self.sessions[src_mac].host_learned()
         else:

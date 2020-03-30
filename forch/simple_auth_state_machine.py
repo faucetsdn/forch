@@ -19,7 +19,8 @@ class AuthStateMachine():
     AUTH_TIMEOUT_SEC = 3600
 
     # pylint: disable=too-many-arguments
-    def __init__(self, src_mac, port_id, auth_config, radius_query_callback, auth_callback, forch_metrics=None):
+    def __init__(self, src_mac, port_id, auth_config,
+                 radius_query_callback, auth_callback, forch_metrics=None):
         self.src_mac = src_mac
         self.port_id = port_id
         self._auth_callback = auth_callback

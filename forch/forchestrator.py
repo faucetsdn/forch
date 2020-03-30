@@ -125,7 +125,9 @@ class Forchestrator:
         if not orch_config.HasField('auth_config'):
             return
         LOGGER.info('Initializing authenticator')
-        self._authenticator = Authenticator(orch_config.auth_config, self.handle_auth_result, forch_metrics=self._forch_metrics)
+        self._authenticator = Authenticator(orch_config.auth_config,
+                                            self.handle_auth_result,
+                                            forch_metrics=self._forch_metrics)
 
     def _process_static_device_placement(self):
         static_placement_file = self._config.orchestration.static_device_placement
