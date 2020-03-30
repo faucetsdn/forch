@@ -142,8 +142,11 @@ message SwitchState {
   }
 
   message ACLState {
+    // acl name
+    string name = 1;
+
     // rule states indexed by rule cookies
-    repeated RuleState rules = 1;
+    repeated RuleState rules = 2;
 
     message RuleState {
       // rule description

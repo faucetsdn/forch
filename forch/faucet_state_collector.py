@@ -579,12 +579,12 @@ class FaucetStateCollector:
 
         vlans_map = switch_map.setdefault('vlans', {})
         for vid, vlan_config in dp_config.vlans.items():
-            acls_map = vlans_map.setdefault(int(vid), {}).setdefault('acls', {})
+            acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
             if metrics and 'flow_packet_count_vlan_acl' in metrics:
                 samples = metrics['flow_packet_count_vlan_acl'].samples
             else:
                 samples = None
-            self._fill_rules_behavior(switch_name, acls_map, vlan_config.acls_in, samples)
+            self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
 
     def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
@@ -600,18 +600,20 @@ class FaucetStateCollector:
         if port_config.native_vlan:
             port_map['vlan'] = int(port_config.native_vlan.vid)
         if port_config.acls_in:
-            acls_map = port_map.setdefault('acls', {})
+            acl_maps_list = port_map.setdefault('acls', [])
             if metrics and 'flow_packet_count_port_acl' in metrics:
                 samples = metrics['flow_packet_count_port_acl'].samples
             else:
                 samples = None
-            self._fill_rules_behavior(
-                switch_name, acls_map, port_config.acls_in, samples, port_id)
+            self._fill_acls_behavior(
+                switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
 
-    def _fill_rules_behavior(self, switch_name, acls_map, acls_config,
+    def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
                              metric_samples=None, port_id=None):
         for acl_config in acls_config:
-            rules_map_list = acls_map.setdefault(str(acl_config._id), {}).setdefault('rules', [])
+            acl_map = {'name': acl_config._id}
+            rules_map_list = acl_map.setdefault('rules', [])
+
             for rule_config in acl_config.rules:
                 cookie = str(rule_config.get('cookie'))
                 rule_map = {
@@ -626,7 +628,6 @@ class FaucetStateCollector:
                 if not cookie:
                     LOGGER.warning('ACL %s does not have a cookie', acl_config._id)
 
-                packet_count = 0
                 for sample in metric_samples:
                     if str(sample.labels.get('cookie')) != cookie:
                         continue
@@ -634,9 +635,10 @@ class FaucetStateCollector:
                         continue
                     if port_id and sample.labels.get('in_port') != port_id:
                         continue
-                    packet_count += int(sample.value)
+                    rule_map['packet_count'] = int(sample.value)
+                    break
 
-                rule_map['packet_count'] = packet_count
+            acls_map_list.append(acl_map)
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
