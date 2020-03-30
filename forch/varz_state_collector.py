@@ -7,25 +7,6 @@ import requests
 
 LOGGER = logging.getLogger('vstate')
 
-TARGET_FAUCET_METRICS = (
-    'port_status',
-    'port_lacp_state',
-    'dp_status',
-    'learned_l2_port',
-    'port_stack_state',
-    'faucet_config_hash_info',
-    'faucet_event_id',
-    'dp_root_hop_port',
-    'faucet_stack_root_dpid',
-    'faucet_config_reload_cold',
-    'faucet_config_reload_warm'
-)
-
-TARGET_GAUGE_METRICS = (
-    'flow_packet_count_vlan_acl',
-    'flow_packet_count_port_acl'
-)
-
 
 def get_metrics(endpoint, target_metrics):
     """Get a list of target metrics"""
