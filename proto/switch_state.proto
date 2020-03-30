@@ -87,7 +87,7 @@ message SwitchState {
     int32 vlan = 3;
 
     // ACLs indexed by acl name
-    map<string, ACLState> acls = 4;
+    repeated ACLState acls = 4;
 
     // Port state last change time
     string state_last_change = 5;
@@ -138,7 +138,7 @@ message SwitchState {
 
   message VLANState {
     // vlan acls states
-    map<string, ACLState> acls = 1;
+    repeated ACLState acls = 1;
   }
 
   message ACLState {

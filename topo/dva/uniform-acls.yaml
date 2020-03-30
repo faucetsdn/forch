@@ -32,4 +32,9 @@ acls:
         cookie: 4000
         actions:
           allow: False
-
+  allow_all:
+    - rule:
+        description: allow all
+        cookie: 1
+        actions:
+          allow: True

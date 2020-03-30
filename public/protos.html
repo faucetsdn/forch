@@ -573,10 +573,6 @@
                   <a href="#HostList.HostData"><span class="badge">M</span>HostList.HostData</a>
                 </li>
               
-                <li>
-                  <a href="#HostList.HostData.AclsEntry"><span class="badge">M</span>HostList.HostData.AclsEntry</a>
-                </li>
-              
               
               
               
@@ -702,10 +698,6 @@
                 </li>
               
                 <li>
-                  <a href="#SwitchState.Port.AclsEntry"><span class="badge">M</span>SwitchState.Port.AclsEntry</a>
-                </li>
-              
-                <li>
                   <a href="#SwitchState.Port.Attributes"><span class="badge">M</span>SwitchState.Port.Attributes</a>
                 </li>
               
@@ -747,10 +739,6 @@
               
                 <li>
                   <a href="#SwitchState.VLANState"><span class="badge">M</span>SwitchState.VLANState</a>
-                </li>
-              
-                <li>
-                  <a href="#SwitchState.VLANState.AclsEntry"><span class="badge">M</span>SwitchState.VLANState.AclsEntry</a>
                 </li>
               
               
@@ -3620,6 +3608,13 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
             <tbody>
               
                 <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>acl name </p></td>
+                </tr>
+              
+                <tr>
                   <td>rules</td>
                   <td><a href="#HostList.ACLData.RuleData">HostList.ACLData.RuleData</a></td>
                   <td>repeated</td>
@@ -3766,7 +3761,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#HostList.HostData.AclsEntry">HostList.HostData.AclsEntry</a></td>
+                  <td><a href="#HostList.ACLData">HostList.ACLData</a></td>
                   <td>repeated</td>
                   <td><p>ACLs </p></td>
                 </tr>
@@ -3777,37 +3772,6 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td></td>
                   <td><p>link to list_hosts API to list possible destinations
 or to host_path API to list path </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="HostList.HostData.AclsEntry">HostList.HostData.AclsEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#HostList.ACLData">HostList.ACLData</a></td>
-                  <td></td>
-                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -4537,6 +4501,13 @@ or to host_path API to list path </p></td>
             <tbody>
               
                 <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>acl name </p></td>
+                </tr>
+              
+                <tr>
                   <td>rules</td>
                   <td><a href="#SwitchState.ACLState.RuleState">SwitchState.ACLState.RuleState</a></td>
                   <td>repeated</td>
@@ -4659,7 +4630,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#SwitchState.Port.AclsEntry">SwitchState.Port.AclsEntry</a></td>
+                  <td><a href="#SwitchState.ACLState">SwitchState.ACLState</a></td>
                   <td>repeated</td>
                   <td><p>ACLs indexed by acl name </p></td>
                 </tr>
@@ -4676,37 +4647,6 @@ or to host_path API to list path </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>Port state change count </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="SwitchState.Port.AclsEntry">SwitchState.Port.AclsEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#SwitchState.ACLState">SwitchState.ACLState</a></td>
-                  <td></td>
-                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -5129,40 +5069,9 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#SwitchState.VLANState.AclsEntry">SwitchState.VLANState.AclsEntry</a></td>
+                  <td><a href="#SwitchState.ACLState">SwitchState.ACLState</a></td>
                   <td>repeated</td>
                   <td><p>vlan acls states </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="SwitchState.VLANState.AclsEntry">SwitchState.VLANState.AclsEntry</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>key</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>value</td>
-                  <td><a href="#SwitchState.ACLState">SwitchState.ACLState</a></td>
-                  <td></td>
-                  <td><p> </p></td>
                 </tr>
               
             </tbody>

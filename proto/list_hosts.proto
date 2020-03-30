@@ -34,7 +34,7 @@ message HostList {
         int32 vlan = 4;
 
         // ACLs
-        map<string, ACLData> acls = 5;
+        repeated ACLData acls = 5;
 
         // link to list_hosts API to list possible destinations
         // or to host_path API to list path
