@@ -81,7 +81,7 @@ class Forchestrator:
         self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update)
 
         self._local_collector = LocalStateCollector(
-            self._config.process, self.cleanup, self.handle_active_state)
+            self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
         self._cpn_collector = CPNStateCollector()
 
         prom_port = os.getenv('PROMETHEUS_PORT')

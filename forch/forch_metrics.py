@@ -3,7 +3,7 @@
 import functools
 import logging
 import threading
-from prometheus_client import Counter, Info, generate_latest, REGISTRY
+from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 
 import forch.http_server
 
@@ -48,6 +48,8 @@ class ForchMetrics():
         varz = self._get_varz(var)
         if isinstance(varz, Info):
             varz.info(value)
+        elif isinstance(varz, Gauge):
+            varz.set(value)
         else:
             error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
                 % (var, type(varz))
@@ -56,8 +58,7 @@ class ForchMetrics():
     def inc_var(self, var, value=1):
         """Increment Counter or Gauge variables"""
         varz = self._get_varz(var)
-        # TODO: If a Gauge var is ever added, update to check for Gauge type
-        if isinstance(varz, Counter):
+        if isinstance(varz, Counter) or isinstance(varz, Gauge):
             varz.inc(value)
         else:
             error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
@@ -75,6 +76,11 @@ class ForchMetrics():
                       'No. of RADIUS query timeouts in state machine', Counter)
         self._add_var('radius_query_responses',
                       'No. of RADIUS query responses received from server', Counter)
+        self._add_var('faucet_process_state', 'Current process state of Faucet', Gauge)
+        self._add_var('forch_process_state', 'Current process state of Forch', Gauge)
+        self._add_var('gauge_process_state', 'Current process state of Gauge', Gauge)
+        self._add_var('sleep_process_state', 'Current process state of Sleep', Gauge)
+
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
