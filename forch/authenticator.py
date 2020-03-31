@@ -25,11 +25,11 @@ HEARTBEAT_INTERVAL_SEC = 3
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
     def __init__(self, auth_config, auth_callback=None,
-                 radius_query_object=None, forch_metrics=None):
+                 radius_query_object=None, metrics=None):
         self.radius_query = None
         self.sessions = {}
         self.auth_callback = auth_callback
-        self._forch_metrics = forch_metrics
+        self._metrics = metrics
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
@@ -92,7 +92,7 @@ class Authenticator:
             self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.auth_config,
                 self.radius_query.send_mab_request,
-                self.process_session_result, self._forch_metrics)
+                self.process_session_result, metrics=self._metrics)
         if device_placement.connected:
             self.sessions[src_mac].host_learned()
         else:
@@ -102,8 +102,8 @@ class Authenticator:
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
         LOGGER.info("Received RADIUS result: %s for src_mac: %s", code, src_mac)
-        if self._forch_metrics:
-            self._forch_metrics.inc_var('radius_query_responses')
+        if self._metrics:
+            self._metrics.inc_var('radius_query_responses')
         if code == radius_query.INVALID_RESP:
             LOGGER.warning("Received invalid response for src_mac: %s", src_mac)
             return
