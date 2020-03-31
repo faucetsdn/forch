@@ -626,7 +626,7 @@ class FaucetStateCollector:
                     continue
 
                 if not cookie:
-                    LOGGER.warning('ACL %s does not have a cookie', acl_config._id)
+                    continue
 
                 for sample in metric_samples:
                     if str(sample.labels.get('cookie')) != cookie:
