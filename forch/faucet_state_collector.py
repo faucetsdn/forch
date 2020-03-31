@@ -609,7 +609,7 @@ class FaucetStateCollector:
                 switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
 
     def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
-                             metric_samples=None, port_id=None):
+                            metric_samples=None, port_id=None):
         for acl_config in acls_config:
             acl_map = {'name': acl_config._id}
             rules_map_list = acl_map.setdefault('rules', [])
