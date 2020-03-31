@@ -82,4 +82,13 @@ tail inst/forch-faucet-1/forch.log
 sleep 65
 test_access vlan-assigned
 test_dva vlan-assigned
+
+RESPONSES=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep radius_query_timeouts_total | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+
+if [ "$RESPONSES" -gt 0 ]; then
+    echo "RADIUS responses > 0" | tee -a $TEST_RESULTS
+else
+    echo "RADIUS responses = 0" | tee -a $TEST_RESULTS
+fi;
+
 stop_and_cleanup_radius
