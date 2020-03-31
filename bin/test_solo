@@ -30,3 +30,12 @@ fi;
 sleep 20
 
 docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
+
+TIMEOUTS=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep radius_query_timeouts_total | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+
+if [ "$TIMEOUTS" -gt 0 ]; then
+    echo "RADIUS timeouts > 0" | tee -a $TEST_RESULTS
+else
+    echo "RADIUS timeouts = 0" | tee -a $TEST_RESULTS
+fi;
+
