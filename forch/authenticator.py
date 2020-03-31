@@ -44,7 +44,7 @@ class Authenticator:
             raise ConfigError
         Socket = collections.namedtuple(
             'Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
+        socket_info = Socket('0.0.0.0', radius_port, radius_ip, radius_port)
         if radius_query_object:
             self.radius_query = radius_query_object
         else:
