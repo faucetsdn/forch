@@ -14,9 +14,9 @@ for remote in faucet origin perry; do
     done
 done
 
-mtag=`git describe perry/master`
-gtag=`git describe perry/gmaster`
-etag=`git describe perry/esdn`
+mtag=`git describe perry/master --abbrev=0`
+gtag=`git describe perry/gmaster --abbrev=0`
+etag=`git describe perry/esdn --abbrev=0`
 
 mhash=`git rev-list -n 1 $mtag`
 ghash=`git rev-list -n 1 $gtag`
