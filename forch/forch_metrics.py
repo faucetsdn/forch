@@ -49,9 +49,9 @@ class ForchMetrics():
         if isinstance(varz, Info):
             varz.info(value)
         else:
-            LOGGER.error('Error updating to varz %s since it\'s type %s is not known.',
-                         var, type(varz))
-            raise RuntimeError('Unknown varz type')
+            error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
+                % (var, type(varz))
+            raise RuntimeError(error_str)
 
     def inc_var(self, var, value=1):
         """Increment Counter or Gauge variables"""
@@ -60,8 +60,9 @@ class ForchMetrics():
         if isinstance(varz, Counter):
             varz.inc(value)
         else:
-            raise RuntimeError('Error incrementing varz %s since it\'s type %s is not known.',
-                               var, type(varz))
+            error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
+                % (var, type(varz))
+            raise RuntimeError(error_str)
 
     def _add_var(self, var, var_help, metric_type):
         """Add varz to be tracked"""
