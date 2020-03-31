@@ -92,14 +92,13 @@ if [ -z "$oe" ]; then
     false
 fi
 
-mbase=`git merge-base $gtag perry/master`
-mref=`git rev-list -n 1 $mtag`
+mbase=`git merge-base $gtag $etag`
+mref=`git rev-list -n 1 $gtag`
 if [ "$mbase" != "$mref" ]; then
     echo
     echo Error:
-    echo "  git merge-base $gtag perry/master"
-    echo does not match expected master tag $mtag
-    echo Likely gmaster has been merged against perry/master, not $mtag
+    echo "  git merge-base $gtag $etag"
+    echo does not match expected gmaster tag $gtag
     echo
     false
 else
