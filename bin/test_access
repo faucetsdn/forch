@@ -79,7 +79,11 @@ echo %%% vlan-assigned | tee -a $TEST_RESULTS
 send_udp forch-faux-2 "192.168.1.254/68" 5
 send_udp forch-faux-3 "192.168.1.254/67" 5
 tail inst/forch-faucet-1/forch.log
+
+validate_non_zero_varz radius_query_responses_total $TEST_RESULTS
+
 sleep 65
 test_access vlan-assigned
 test_dva vlan-assigned
+
 stop_and_cleanup_radius

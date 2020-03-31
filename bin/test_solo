@@ -30,3 +30,5 @@ fi;
 sleep 20
 
 docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
+
+validate_non_zero_varz radius_query_timeouts_total $TEST_RESULTS

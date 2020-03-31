@@ -3,7 +3,7 @@
 import functools
 import logging
 import threading
-from prometheus_client import Info, generate_latest, REGISTRY
+from prometheus_client import Counter, Info, generate_latest, REGISTRY
 
 import forch.http_server
 
@@ -36,18 +36,33 @@ class ForchMetrics():
         """Kill varz server"""
         self._http_server.stop_server()
 
-    def update_var(self, var, value):
-        """Update given varz with new value"""
+    def _get_varz(self, var):
         varz = self._metrics.get(var)
         if not varz:
             LOGGER.error('Error updating to varz %s since it is not known.', var)
             raise RuntimeError('Unknown varz')
+        return varz
+
+    def update_var(self, var, value):
+        """Update given varz with new value"""
+        varz = self._get_varz(var)
         if isinstance(varz, Info):
             varz.info(value)
         else:
-            LOGGER.error('Error updating to varz %s since it\'s type %s is not known.',
-                         var, type(varz))
-            raise RuntimeError('Unknown varz type')
+            error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
+                % (var, type(varz))
+            raise RuntimeError(error_str)
+
+    def inc_var(self, var, value=1):
+        """Increment Counter or Gauge variables"""
+        varz = self._get_varz(var)
+        # TODO: If a Gauge var is ever added, update to check for Gauge type
+        if isinstance(varz, Counter):
+            varz.inc(value)
+        else:
+            error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
+                % (var, type(varz))
+            raise RuntimeError(error_str)
 
     def _add_var(self, var, var_help, metric_type):
         """Add varz to be tracked"""
@@ -56,6 +71,10 @@ class ForchMetrics():
     def _add_vars(self):
         """Initializing list of vars to be tracked"""
         self._add_var('forch_version', 'Current version of forch', Info)
+        self._add_var('radius_query_timeouts',
+                      'No. of RADIUS query timeouts in state machine', Counter)
+        self._add_var('radius_query_responses',
+                      'No. of RADIUS query responses received from server', Counter)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""

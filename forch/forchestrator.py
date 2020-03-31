@@ -69,10 +69,12 @@ class Forchestrator:
         self._active_state_lock = threading.Lock()
 
         self._config_summary = None
-        self._forch_metrics = None
+        self._metrics = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
+        self._metrics = ForchMetrics(self._config.varz_interface)
+        self._metrics.start()
         self._faucet_collector = FaucetStateCollector(self._config.event_client)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
@@ -105,8 +107,6 @@ class Forchestrator:
 
         self._validate_config_files()
 
-        self._forch_metrics = ForchMetrics(self._config.varz_interface)
-
         while True:
             time.sleep(10)
             try:
@@ -116,9 +116,7 @@ class Forchestrator:
                 LOGGER.error('Waiting for varz config: %s', e)
 
         self._register_handlers()
-
         self.start()
-
         self._initialized = True
 
     def _attempt_authenticator_initialise(self):
@@ -126,7 +124,9 @@ class Forchestrator:
         if not orch_config.HasField('auth_config'):
             return
         LOGGER.info('Initializing authenticator')
-        self._authenticator = Authenticator(orch_config.auth_config, self.handle_auth_result)
+        self._authenticator = Authenticator(orch_config.auth_config,
+                                            self.handle_auth_result,
+                                            metrics=self._metrics)
 
     def _process_static_device_placement(self):
         static_placement_file = self._config.orchestration.static_device_placement
@@ -312,9 +312,8 @@ class Forchestrator:
             self._faucet_config_file_watcher.start()
         if self._faucet_state_scheduler:
             self._faucet_state_scheduler.start()
-        if self._forch_metrics:
-            self._forch_metrics.start()
-            self._forch_metrics.update_var('forch_version', {'version': __version__})
+        if self._metrics:
+            self._metrics.update_var('forch_version', {'version': __version__})
 
     def stop(self):
         """Stop forchestrator components"""
@@ -326,8 +325,8 @@ class Forchestrator:
             self._authenticator.stop()
         if self._faucet_config_file_watcher:
             self._faucet_config_file_watcher.stop()
-        if self._forch_metrics:
-            self._forch_metrics.stop()
+        if self._metrics:
+            self._metrics.stop()
 
     def _process_faucet_event(self):
         try:
