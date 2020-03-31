@@ -2,4 +2,4 @@ bin/test_solo
 0 received
 Version from varz matches forch version.
 5 received
-RADIUS timeouts > 0
+radius_query_timeouts_total > 0
