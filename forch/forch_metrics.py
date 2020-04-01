@@ -67,12 +67,9 @@ class ForchMetrics():
                 % (var, type(varz))
             raise RuntimeError(error_str)
 
-    def _add_var(self, var, var_help, metric_type, labels=None):
+    def _add_var(self, var, var_help, metric_type, labels=()):
         """Add varz to be tracked"""
-        if labels:
-            self._metrics[var] = metric_type(var, var_help, labels, registry=self._reg)
-        else:
-            self._metrics[var] = metric_type(var, var_help, registry=self._reg)
+        self._metrics[var] = metric_type(var, var_help, labels, registry=self._reg)
 
     def _add_vars(self):
         """Initializing list of vars to be tracked"""
