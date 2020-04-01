@@ -79,6 +79,10 @@ sudo ip link set t1sw2-eth28 up
 sleep 50.3231 &
 sleep 32
 test_forch -healthy
+varz_value faucet_process_state $TEST_RESULTS
+varz_value forch_process_state $TEST_RESULTS
+varz_value gauge_process_state $TEST_RESULTS
+varz_value sleep_process_state $TEST_RESULTS
 
 reset_stack
 sleep 32
