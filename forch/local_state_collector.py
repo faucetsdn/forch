@@ -80,7 +80,6 @@ class LocalStateCollector:
 
         # fill up process info
         for target_name in self._target_procs:
-            varz_name = target_name + '_process_state'
             state_map = process_map.setdefault(target_name, {})
             proc_list = procs.get(target_name, [])
             target_count = self._target_procs[target_name].count or 1
@@ -88,12 +87,12 @@ class LocalStateCollector:
             state_map['detail'] = detail
             if state:
                 state_map['state'] = State.healthy
-                self._metrics.update_var(varz_name, 1)
+                self._metrics.update_var('process_state', 1, labels=[target_name])
                 state_map.update(state)
                 self._last_error.pop(target_name, None)
                 continue
             state_map['state'] = State.broken
-            self._metrics.update_var(varz_name, 0)
+            self._metrics.update_var('process_state', 0, labels=[target_name])
             if detail != self._last_error.get(target_name):
                 LOGGER.error(detail)
                 self._last_error[target_name] = detail
