@@ -58,7 +58,7 @@ class ForchMetrics():
     def inc_var(self, var, value=1):
         """Increment Counter or Gauge variables"""
         varz = self._get_varz(var)
-        if isinstance(varz, Counter) or isinstance(varz, Gauge):
+        if isinstance(varz, (Counter, Gauge)):
             varz.inc(value)
         else:
             error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
