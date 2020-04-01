@@ -397,7 +397,7 @@ function validate_non_zero_varz {
     fi;
 }
 
-function varz_value {
+function test_varz_value {
     varz=$1
     results=$2
     value=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
