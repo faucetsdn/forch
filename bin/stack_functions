@@ -397,3 +397,9 @@ function validate_radius_varz {
     responses=${responses%.0}
     echo Radius results $((timeouts > 0)) $((responses > 0)) | tee -a $TEST_RESULTS
 }
+
+function test_varz_value {
+    varz=$1
+    value=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+    echo $varz $value | tee -a $TEST_RESULTS
+}

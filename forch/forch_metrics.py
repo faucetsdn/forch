@@ -3,7 +3,7 @@
 import functools
 import logging
 import threading
-from prometheus_client import Counter, Info, generate_latest, REGISTRY
+from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 
 import forch.http_server
 
@@ -36,37 +36,40 @@ class ForchMetrics():
         """Kill varz server"""
         self._http_server.stop_server()
 
-    def _get_varz(self, var):
+    def _get_varz(self, var, labels=None):
         varz = self._metrics.get(var)
+        if labels:
+            varz = varz.labels(*labels)
         if not varz:
             LOGGER.error('Error updating to varz %s since it is not known.', var)
             raise RuntimeError('Unknown varz')
         return varz
 
-    def update_var(self, var, value):
+    def update_var(self, var, value, labels=None):
         """Update given varz with new value"""
-        varz = self._get_varz(var)
+        varz = self._get_varz(var, labels)
         if isinstance(varz, Info):
             varz.info(value)
+        elif isinstance(varz, Gauge):
+            varz.set(value)
         else:
             error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
                 % (var, type(varz))
             raise RuntimeError(error_str)
 
-    def inc_var(self, var, value=1):
+    def inc_var(self, var, value=1, labels=None):
         """Increment Counter or Gauge variables"""
-        varz = self._get_varz(var)
-        # TODO: If a Gauge var is ever added, update to check for Gauge type
-        if isinstance(varz, Counter):
+        varz = self._get_varz(var, labels)
+        if isinstance(varz, (Counter, Gauge)):
             varz.inc(value)
         else:
             error_str = 'Error incrementing varz %s since it\'s type %s is not known.' \
                 % (var, type(varz))
             raise RuntimeError(error_str)
 
-    def _add_var(self, var, var_help, metric_type):
+    def _add_var(self, var, var_help, metric_type, labels=()):
         """Add varz to be tracked"""
-        self._metrics[var] = metric_type(var, var_help, registry=self._reg)
+        self._metrics[var] = metric_type(var, var_help, labels, registry=self._reg)
 
     def _add_vars(self):
         """Initializing list of vars to be tracked"""
@@ -75,6 +78,8 @@ class ForchMetrics():
                       'No. of RADIUS query timeouts in state machine', Counter)
         self._add_var('radius_query_responses',
                       'No. of RADIUS query responses received from server', Counter)
+        self._add_var('process_state', 'Current process state', Gauge, labels=['process'])
+
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
