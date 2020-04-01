@@ -1,0 +1,10 @@
+auth_map:
+    9a:02:57:1e:8f:01:
+        role: "Allow"
+        segment: "1"
+    9a:02:57:1e:8f:02:
+        role: "Allow"
+        segment: "2"
+    default:
+        role: "Deny"
+        segment: "404"

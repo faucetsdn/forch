@@ -64,16 +64,6 @@ sudo ip link set corp-eth10 master bond
 sudo ip link set corp-eth20 master bond
 add_iface corp 10 bond
 
-function add_faux {
-    switch=$1
-    port=$2
-    fnum=$3
-    bin/run_faux $fnum
-    docker exec -ti forch-faux-$fnum ip addr flush faux-eth0
-    docker exec -ti forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
-    add_iface $switch $port faux-$fnum
-}
-
 echo Connecting faux interfaces
 add_faux corp 1 0
 add_faux t2sw1 1 1

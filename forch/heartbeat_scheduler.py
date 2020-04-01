@@ -8,8 +8,8 @@ LOGGER = logging.getLogger('heartbeat')
 
 class HeartbeatScheduler:
     """Heart beat scheduler"""
-    def __init__(self, interval):
-        self._interval = interval
+    def __init__(self, interval_sec):
+        self._interval_sec = interval_sec
         self._callbacks = []
         self._run = False
 
@@ -27,7 +27,7 @@ class HeartbeatScheduler:
             except Exception as error:
                 LOGGER.error("Error in running %s: %s", callback, error)
 
-        threading.Timer(self._interval, self._periodic_task).start()
+        threading.Timer(self._interval_sec, self._periodic_task).start()
 
     def start(self):
         """Start periodic task"""

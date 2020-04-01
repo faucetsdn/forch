@@ -12,19 +12,25 @@ from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, Device, SegmentsToVlans
+from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 LOGGER = logging.getLogger('faucetizer')
 
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
-    def __init__(self, structural_faucet_config, segments_to_vlans):
+    def __init__(self, orch_config, structural_config_file, segments_to_vlans,
+                 behavioral_config_file):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
-        self._structural_faucet_config = structural_faucet_config
+        self._structural_faucet_config = None
         self._behavioral_faucet_config = None
+        self._config = orch_config
+        self._structural_config_file = structural_config_file
+        self._behavioral_config_file = behavioral_config_file
         self._lock = threading.Lock()
+        self.reload_structural_config()
 
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
@@ -41,6 +47,8 @@ class Faucetizer:
                 removed = devices.pop(eth_src, None)
                 if removed:
                     LOGGER.info('Removed %s device: %s', device_type, eth_src)
+
+            self.flush_behavioral_config()
 
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
@@ -59,10 +67,14 @@ class Faucetizer:
                     device.behavior.Clear()
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
+            self.flush_behavioral_config()
+
     def process_faucet_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
+
+            self.flush_behavioral_config()
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -93,11 +105,19 @@ class Faucetizer:
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
-    def get_behavioral_faucet_config(self):
-        """Return behavioral faucet config"""
-        with self._lock:
-            self._faucetize()
-            return self._behavioral_faucet_config
+    def reload_structural_config(self):
+        """Reload structural config from file"""
+        with open(self._structural_config_file) as structural_config_file:
+            structural_config = yaml.safe_load(structural_config_file)
+            self.process_faucet_config(structural_config)
+
+    def flush_behavioral_config(self, force=False):
+        """Generate and write behavioral config to file"""
+        if not force and self._config.faucetize_interval_sec:
+            return
+        self._faucetize()
+        with open(self._behavioral_config_file, 'w') as file:
+            yaml.dump(self._behavioral_faucet_config, file)
 
 
 def load_devices_state(file):
@@ -128,20 +148,6 @@ def load_faucet_config(file):
         return yaml.safe_load(config_file)
 
 
-def update_structural_config(faucetizer: Faucetizer, file):
-    """Read structural config from file and update in faucetizer"""
-    with open(file) as structural_config_file:
-        structural_config = yaml.safe_load(structural_config_file)
-        faucetizer.process_faucet_config(structural_config)
-
-
-def write_behavioral_config(faucetizer: Faucetizer, file):
-    """Get behavioral config from faucetizer and write to file"""
-    behavioral_config = faucetizer.get_behavioral_faucet_config()
-    with open(file, 'w') as behavioral_config_file:
-        yaml.dump(behavioral_config, behavioral_config_file)
-
-
 def parse_args(raw_args):
     """Parse sys args"""
     parser = argparse.ArgumentParser(prog='faucetizer', description='faucetizer')
@@ -162,20 +168,20 @@ if __name__ == '__main__':
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
     ARGS = parse_args(sys.argv[1:])
 
-    STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
-    STRUCTURAL_CONFIG = load_faucet_config(STRUCTURAL_CONFIG_FILE)
-    LOGGER.info('Loaded structural faucet config from %s', STRUCTURAL_CONFIG_FILE)
-
     SEGMENTS_VLANS_FILE = os.path.join(FORCH_BASE_DIR, ARGS.segments_vlans)
     SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
     LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
 
-    FAUCETIZER = Faucetizer(STRUCTURAL_CONFIG, SEGMENTS_TO_VLANS.segments_to_vlans)
+    ORCH_CONFIG = OrchestrationConfig()
+    STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
+    BEHAVIORAL_CONFIG_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
+
+    FAUCETIZER = Faucetizer(
+        ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
+        BEHAVIORAL_CONFIG_FILE)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)
     process_devices_state(FAUCETIZER, DEVICES_STATE)
 
-    OUTPUT_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
-    write_behavioral_config(FAUCETIZER, OUTPUT_FILE)
-    LOGGER.info('Config wrote to %s', OUTPUT_FILE)
+    LOGGER.info('Processed device state and config wrote to %s', BEHAVIORAL_CONFIG_FILE)

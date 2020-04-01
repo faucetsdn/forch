@@ -91,6 +91,16 @@ function add_oeth {
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
 }
 
+function add_faux {
+    switch=$1
+    port=$2
+    fnum=$3
+    bin/run_faux $fnum
+    docker exec -ti forch-faux-$fnum ip addr flush faux-eth0
+    docker exec -ti forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
+    add_iface $switch $port faux-$fnum
+}
+
 function diagnose_stack {
     echo Stack health
     for bridge in $(sudo ovs-vsctl list-br); do
@@ -374,4 +384,15 @@ function start_radius_server {
 
 function stop_and_cleanup_radius {
     docker stop radius_server_1 || true && docker rm radius_server_1 || true
+}
+
+function validate_non_zero_varz {
+    varz=$1
+    results=$2
+    value=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+    if [ "$value" -gt 0 ]; then
+        echo "$varz > 0" | tee -a $results
+    else
+        echo "$varz = 0" | tee -a $results
+    fi;
 }
