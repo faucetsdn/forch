@@ -76,8 +76,6 @@ CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
 SW_STATE_LAST_CHANGE = "switch_state_last_change"
 SW_STATE_CHANGE_COUNT = "switch_state_change_count"
-CONFIG_CHANGE_TYPE = "config_change_type"
-CONFIG_CHANGE_TS = "config_change_timestamp"
 LINK_STATE = "link_state"
 TOPOLOGY_ENTRY = "topology"
 TOPOLOGY_DPS = "dps"
@@ -105,7 +103,7 @@ EGRESS_LINK_MAP = "links"
 # pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
-    def __init__(self):
+    def __init__(self, config):
         self.switch_states = {}
         self.topo_state = {}
         self.learned_macs = {}
@@ -117,6 +115,10 @@ class FaucetStateCollector:
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
+        self._stack_state_event = 0
+        self._stack_state_update = 0
+        self._stack_state_data = None
+        self._change_coalesce_sec = config.stack_topo_change_coalesce_sec
 
     def set_active(self, active_state):
         """Set active state"""
@@ -128,6 +130,21 @@ class FaucetStateCollector:
         with self._lock:
             self._is_state_restored = is_restored
             self._state_restore_error = restore_error
+
+    def heartbeat_update(self):
+        """Check for any necessary periodic updates"""
+        if not self._stack_state_data:
+            return
+        time_now = time.time()
+        event_delta = time_now - self._stack_state_event
+        update_delta = time_now - self._stack_state_update
+        if event_delta > self._change_coalesce_sec or update_delta > self._change_coalesce_sec * 2:
+            LOGGER.warning('stack_state_links update apply %ds', update_delta)
+            self._stack_state_update = 0
+            state_data, self._stack_state_data = (self._stack_state_data, None)
+            self._update_stack_topo_state_raw(*state_data)
+        else:
+            LOGGER.warning('stack_state_links update ignore %ds', event_delta)
 
     def _make_summary(self, state, detail):
         summary = StateSummary()
@@ -180,6 +197,7 @@ class FaucetStateCollector:
                     restore_method(self, current_time, switch, label, int(sample.value))
         self._restore_dataplane_state_from_metrics(metrics)
         self._restore_l2_learn_state_from_samples(metrics['learned_l2_port'].samples)
+        self._restore_dp_config_change(metrics)
         return int(metrics['faucet_event_id'].samples[0].value)
 
     def _restore_l2_learn_state_from_samples(self, samples):
@@ -223,6 +241,22 @@ class FaucetStateCollector:
 
         timestamp = time.time()
         self._update_stack_topo_state(timestamp, link_graph, stack_root, dps)
+
+    def _restore_dp_config_change(self, metrics):
+        with self.lock:
+            cold_reload_samples = metrics['faucet_config_reload_cold'].samples
+            warm_reload_samples = metrics['faucet_config_reload_warm'].samples
+
+            for sample in cold_reload_samples + warm_reload_samples:
+                dp_id = sample.labels['dp_name']
+                dp_state = self.switch_states.setdefault(dp_id, {})
+                change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + sample.value
+                dp_state[DP_ID] = dp_id
+                dp_state[CONFIG_CHANGE_COUNT] = change_count
+
+                LOGGER.info(
+                    'Restored dp_config_change of switch %s with change count %d',
+                    dp_id, change_count)
 
     def _topo_map_to_link_graph(self, item):
         """Conver topo map item to a link map item"""
@@ -281,27 +315,29 @@ class FaucetStateCollector:
     def _get_dataplane_state(self):
         """get the topology state impl"""
         dplane_state = {}
-        change_count = 0
+        change_counts = []
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
 
         switch_map = self._get_switch_map()
         dplane_state['switch'] = switch_map
-        change_count += switch_map.get(SW_STATE_CHANGE_COUNT, 0)
+        change_counts.append(switch_map.get(SW_STATE_CHANGE_COUNT, 0))
         last_change = max(last_change, switch_map.get(SW_STATE_LAST_CHANGE, ''))
 
         stack_topo = self._get_stack_topo()
         dplane_state['stack'] = stack_topo
-        change_count += stack_topo.get(LINKS_CHANGE_COUNT, 0)
+        change_counts.append(stack_topo.get(LINKS_CHANGE_COUNT, 0))
         last_change = max(last_change, stack_topo.get(LINKS_LAST_CHANGE, ''))
 
         egress_state = dplane_state.setdefault('egress', {})
         self._fill_egress_state(egress_state)
-        change_count += egress_state.get(EGRESS_CHANGE_COUNT, 0)
+        change_counts.append(egress_state.get(EGRESS_CHANGE_COUNT, 0))
         last_change = max(last_change, egress_state.get(EGRESS_LAST_CHANGE, ''))
 
         self._update_dataplane_detail(dplane_state)
-        dplane_state['dataplane_state_change_count'] = change_count
+        dplane_state['dataplane_state_change_count'] = sum(change_counts)
         dplane_state['dataplane_state_last_change'] = last_change
+
+        LOGGER.info('dataplane_state_change_count sources: %s', change_counts)
 
         return dict_proto(dplane_state, DataplaneState)
 
@@ -446,9 +482,7 @@ class FaucetStateCollector:
         attributes_map["dp_id"] = switch_config.dp_id
 
         # filling switch dynamics
-        switch_map["restart_type_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
-        switch_map["restart_type"] = switch_states.get(CONFIG_CHANGE_TYPE)
-        switch_map["restart_type_last_change"] = switch_states.get(CONFIG_CHANGE_TS)
+        switch_map["restart_event_count"] = switch_states.get(CONFIG_CHANGE_COUNT)
 
         if switch_states.get(SW_STATE) == SWITCH_CONNECTED:
             switch_map[SW_STATE] = STATE_ACTIVE
@@ -773,7 +807,7 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.debug('lag_state update %s %s %s', name, port, lacp_state)
+            LOGGER.info('lag_state update %s %s %s', name, port, lacp_state)
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
 
@@ -879,12 +913,10 @@ class FaucetStateCollector:
                 return
 
             dp_state = self.switch_states.setdefault(dp_name, {})
-
             change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + 1
             LOGGER.info('dp_config #%d %s change type %s', change_count, dp_id, restart_type)
+
             dp_state[DP_ID] = dp_id
-            dp_state[CONFIG_CHANGE_TYPE] = restart_type
-            dp_state[CONFIG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             dp_state[CONFIG_CHANGE_COUNT] = change_count
 
     @_dump_states
@@ -939,6 +971,18 @@ class FaucetStateCollector:
 
     def _update_stack_topo_state(self, timestamp, link_graph, stack_root, dps):
         """Update topo_state with stack topology information"""
+
+        if self._change_coalesce_sec:
+            self._stack_state_event = time.time()
+            if not self._stack_state_update:
+                self._stack_state_update = self._stack_state_event
+            self._stack_state_data = (timestamp, link_graph, stack_root, dps)
+            LOGGER.warning('stack_state_links update save')
+            return
+
+        self._update_stack_topo_state_raw(timestamp, link_graph, stack_root, dps)
+
+    def _update_stack_topo_state_raw(self, timestamp, link_graph, stack_root, dps):
         topo_state = self.topo_state
         with self.lock:
             links_hash = str(link_graph)

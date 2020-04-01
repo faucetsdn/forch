@@ -1,5 +1,4 @@
 # Faucet Orchestrator
 
-The Faucet Orchestrator for controlling and monitoring a faucet network.
-
-(FaucetSDN)[https://github.com/faucetsdn/faucet]
+The _Faucet Orchestrator_ for controlling and monitoring a
+[faucet](https://github.com/faucetsdn/faucet)-based network.

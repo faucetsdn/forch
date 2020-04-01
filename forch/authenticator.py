@@ -19,17 +19,17 @@ from forch.proto.authentication_pb2 import AuthResult
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 LOGGER = logging.getLogger('auth')
-AUTH_FILE_NAME = 'auth.yaml'
 
 HEARTBEAT_INTERVAL_SEC = 3
 
 class Authenticator:
     """Authenticate devices using MAB/dot1x"""
-    def __init__(self, auth_config, auth_callback=None, radius_query_object=None):
-        self.auth_map = self._get_auth_map()
+    def __init__(self, auth_config, auth_callback=None,
+                 radius_query_object=None, metrics=None):
         self.radius_query = None
         self.sessions = {}
         self.auth_callback = auth_callback
+        self._metrics = metrics
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
@@ -44,7 +44,7 @@ class Authenticator:
             raise ConfigError
         Socket = collections.namedtuple(
             'Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', 0, radius_ip, radius_port)
+        socket_info = Socket('0.0.0.0', radius_port, radius_ip, radius_port)
         if radius_query_object:
             self.radius_query = radius_query_object
         else:
@@ -59,27 +59,6 @@ class Authenticator:
         self.timer.start()
         LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
                     radius_ip, radius_port)
-
-    def _get_auth_map(self):
-        base_dir = os.getenv('FORCH_CONFIG_DIR')
-        auth_file = os.path.join(base_dir, AUTH_FILE_NAME)
-        auth_map = None
-        with open(auth_file, 'r') as stream:
-            try:
-                auth_map = yaml.safe_load(stream).get('auth_map')
-            except yaml.YAMLError as exc:
-                LOGGER.error("Error loading yaml file: %s", exc, exc_info=True)
-        return auth_map
-
-    def authenticate(self, device_id):
-        """Returns role and segment for given device_id"""
-        auth_result = {}
-        if device_id in self.auth_map:
-            auth_result = self.auth_map.get(device_id)
-        else:
-            auth_result = self.auth_map.get('default')
-        auth_result['device_id'] = device_id
-        return dict_proto(auth_result, AuthResult)
 
     def process_auth_result(self):
         """Prints Auth example object to out"""
@@ -112,7 +91,8 @@ class Authenticator:
         if src_mac not in self.sessions:
             self.sessions[src_mac] = AuthStateMachine(
                 src_mac, port_id, self.auth_config,
-                self.radius_query.send_mab_request, self.process_session_result)
+                self.radius_query.send_mab_request,
+                self.process_session_result, metrics=self._metrics)
         if device_placement.connected:
             self.sessions[src_mac].host_learned()
         else:
@@ -122,6 +102,8 @@ class Authenticator:
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
         LOGGER.info("Received RADIUS result: %s for src_mac: %s", code, src_mac)
+        if self._metrics:
+            self._metrics.inc_var('radius_query_responses')
         if code == radius_query.INVALID_RESP:
             LOGGER.warning("Received invalid response for src_mac: %s", src_mac)
             return

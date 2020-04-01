@@ -42,6 +42,7 @@ fi
     git add debian
     git stash
     git checkout esdn
+    git log -n 1
     cd esdn-faucet
 
     FORCH_VERSION=$(< FORCH_VERSION)

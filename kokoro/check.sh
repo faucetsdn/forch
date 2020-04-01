@@ -13,11 +13,10 @@ for remote in faucet origin perry; do
 	fi
     done
 done
-echo
 
-mtag=`git describe perry/master`
-gtag=`git describe perry/gmaster`
-etag=`git describe perry/esdn`
+mtag=`git describe perry/master --abbrev=0`
+gtag=`git describe perry/gmaster --abbrev=0`
+etag=`git describe perry/esdn --abbrev=0`
 
 mhash=`git rev-list -n 1 $mtag`
 ghash=`git rev-list -n 1 $gtag`
@@ -40,15 +39,6 @@ fi
 if [ $ebase != $ehash ]; then
     echo Merge base for esdn/$etag does not match expected hash.
     false
-fi
-
-egbase=`git merge-base $etag $gtag`
-if [ $egbase != $ghash ]; then
-    echo Merge base for $etag and $gtag incorrect.
-    echo Was esdn merged into gmaster by mistake?
-    false
-else
-    echo gmaster has been properly merged into esdn.
 fi
 
 echo Checking remote master tag $mtag
@@ -102,14 +92,13 @@ if [ -z "$oe" ]; then
     false
 fi
 
-gupdate=`git merge-base $gtag perry/master`
-mref=`git rev-list -n 1 $mtag`
-if [ "$gupdate" != "$mref" ]; then
+mbase=`git merge-base $gtag $etag`
+mref=`git rev-list -n 1 $gtag`
+if [ "$mbase" != "$mref" ]; then
     echo
     echo Error:
-    echo "  git merge-base $gtag perry/master"
-    echo does not match expected master tag $mtag
-    echo Likely gmaster has been merged against perry/master, not $mtag
+    echo "  git merge-base $gtag $etag"
+    echo does not match expected gmaster tag $gtag
     echo
     false
 else
