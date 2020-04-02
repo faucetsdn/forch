@@ -45,7 +45,7 @@ message HostList {
         // acl name
         string name = 1;
 
-        // rule states indexed by rule cookies
+        // rule states
         repeated RuleData rules = 2;
 
         message RuleData {

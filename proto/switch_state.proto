@@ -86,7 +86,7 @@ message SwitchState {
     // native VLAN
     int32 vlan = 3;
 
-    // ACLs indexed by acl name
+    // ACLs
     repeated ACLState acls = 4;
 
     // Port state last change time
@@ -145,7 +145,7 @@ message SwitchState {
     // acl name
     string name = 1;
 
-    // rule states indexed by rule cookies
+    // rule states
     repeated RuleState rules = 2;
 
     message RuleState {
@@ -155,7 +155,7 @@ message SwitchState {
       // rule cookie
       string cookie = 2;
 
-      // count of packets hit the rule
+      // count of packets hitting the rule
       int32 packet_count = 3;
     }
   }

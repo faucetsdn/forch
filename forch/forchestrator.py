@@ -37,12 +37,12 @@ _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
 _SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
-_FAUCET_HOST_DEFAULT = '127.0.0.1'
+_FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
-_GAUGE_HOST_DEFAULT = '127.0.0.1'
+_GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
 
-_TARGET_FAUCET_METRICS_DEFAULT = (
+_TARGET_FAUCET_METRICS = (
     'port_status',
     'port_lacp_state',
     'dp_status',
@@ -56,7 +56,7 @@ _TARGET_FAUCET_METRICS_DEFAULT = (
     'faucet_config_reload_warm'
 )
 
-_TARGET_GAUGE_METRICS_DEFAULT = (
+_TARGET_GAUGE_METRICS = (
     'flow_packet_count_vlan_acl',
     'flow_packet_count_port_acl'
 )
@@ -106,10 +106,10 @@ class Forchestrator:
         self._cpn_collector = CPNStateCollector()
 
         faucet_prom_port = os.getenv('FAUCET_PROM_PORT', _FAUCET_PROM_PORT_DEFAULT)
-        self._faucet_prom_endpoint = f"http://{_FAUCET_HOST_DEFAULT}:{faucet_prom_port}"
+        self._faucet_prom_endpoint = f"http://{_FAUCET_PROM_HOST}:{faucet_prom_port}"
 
         gauge_prom_port = os.getenv('GAUGE_PROM_PORT', _GAUGE_PROM_PORT_DEFAULT)
-        self._gauge_prom_endpoint = f"http://{_GAUGE_HOST_DEFAULT}:{gauge_prom_port}"
+        self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -267,7 +267,7 @@ class Forchestrator:
 
     def _get_varz_config(self):
         metrics = varz_state_collector.retry_get_metrics(
-            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS_DEFAULT)
+            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -590,7 +590,7 @@ class Forchestrator:
         port = params.get('port')
         host = self._extract_url_base(path)
         gauge_metrics = varz_state_collector.retry_get_metrics(
-            self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS_DEFAULT)
+            self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
         reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
         return self._augment_state_reply(reply, path)
 
