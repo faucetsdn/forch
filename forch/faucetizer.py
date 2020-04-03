@@ -16,6 +16,8 @@ from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 LOGGER = logging.getLogger('faucetizer')
 
+ACL_FILE_SUFFIX = '_augmented'
+
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
@@ -26,10 +28,12 @@ class Faucetizer:
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
+        self._acl_configs = {}
+        self._next_cookie = 1
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self.reload_structural_config()
 
     def process_device_placement(self, eth_src, placement, static=False):
@@ -69,12 +73,32 @@ class Faucetizer:
 
             self.flush_behavioral_config()
 
-    def process_faucet_config(self, faucet_config):
+    def _process_structural_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
 
+            self._next_cookie = 1
+            new_include = []
+            for acl_file_name in self._structural_faucet_config.get('include', []):
+                self.reload_acl_file(acl_file_name)
+                new_include.append(acl_file_name + ACL_FILE_SUFFIX)
+            if new_include:
+                self._structural_faucet_config['include'] = new_include
+
             self.flush_behavioral_config()
+
+    def _process_acl_config(self, file_name, acls_config):
+        new_acls_config = copy.copy(acls_config)
+
+        with self._lock:
+            for acl_map in acls_config.get('acls', {}).values():
+                for rule_map in acl_map.get('rules', []):
+                    rule_map['cookie'] = self._next_cookie
+                    self._next_cookie += 1
+
+        acl_file_name = file_name + ACL_FILE_SUFFIX
+        self.flush_acl_config(acl_file_name, new_acls_config)
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -109,7 +133,13 @@ class Faucetizer:
         """Reload structural config from file"""
         with open(self._structural_config_file) as structural_config_file:
             structural_config = yaml.safe_load(structural_config_file)
-            self.process_faucet_config(structural_config)
+            self._process_structural_config(structural_config)
+
+    def reload_acl_file(self, file_name):
+        """Reload acl file"""
+        with open(file_name) as acl_file:
+            acls_config = yaml.safe_load(acl_file)
+            self._process_acl_config(file_name, acls_config)
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
@@ -118,6 +148,14 @@ class Faucetizer:
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
+
+    def flush_acl_config(self, file_name, acls_config, force=False):
+        """Generate and write acl configs to files"""
+        if not force and self._config.faucetize_interval_sec:
+            return
+        with open(file_name, 'w') as acl_file:
+            yaml.dump(acls_config, acl_file)
+
 
 
 def load_devices_state(file):

@@ -16,7 +16,7 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.faucet_config_file_watcher import FaucetConfigFileWatcher
+from forch.config_file_watcher import ConfigFileWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
@@ -61,7 +61,7 @@ class Forchestrator:
         self._faucetizer = None
         self._authenticator = None
         self._faucetize_scheduler = None
-        self._faucet_config_file_watcher = None
+        self._config_file_watcher = None
         self._faucet_state_scheduler = None
 
         self._initialized = False
@@ -200,7 +200,7 @@ class Forchestrator:
                 self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
-            self._faucet_config_file_watcher = FaucetConfigFileWatcher(
+            self._config_file_watcher = ConfigFileWatcher(
                 self._structural_config_file, self._faucetizer)
 
     def initialized(self):
@@ -308,8 +308,8 @@ class Forchestrator:
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()
-        if self._faucet_config_file_watcher:
-            self._faucet_config_file_watcher.start()
+        if self._config_file_watcher:
+            self._config_file_watcher.start()
         if self._faucet_state_scheduler:
             self._faucet_state_scheduler.start()
         if self._metrics:
@@ -323,8 +323,8 @@ class Forchestrator:
             self._faucet_state_scheduler.stop()
         if self._authenticator:
             self._authenticator.stop()
-        if self._faucet_config_file_watcher:
-            self._faucet_config_file_watcher.stop()
+        if self._config_file_watcher:
+            self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
 
