@@ -100,6 +100,7 @@ class Forchestrator:
 
         if self._calculate_config_files():
             self._initialize_faucetizer()
+            self._faucetizer.reload_structural_config()
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()

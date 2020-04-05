@@ -34,7 +34,6 @@ class Faucetizer:
         self._behavioral_config_file = behavioral_config_file
         self._reschedule_acl_file_handlers = reschedule_acl_file_handlers
         self._lock = threading.RLock()
-        self.reload_structural_config()
 
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
@@ -145,7 +144,8 @@ class Faucetizer:
 
     def reload_acl_file(self, file_name):
         """Reload acl file"""
-        with open(file_name) as acl_file:
+        file_path = os.path.join(os.path.dirname(self._structural_config_file), file_name)
+        with open(file_path) as acl_file:
             acls_config = yaml.safe_load(acl_file)
             self._process_acl_config(file_name, acls_config)
 
