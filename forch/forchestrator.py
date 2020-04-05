@@ -5,6 +5,7 @@ import logging
 import os
 import threading
 import time
+import yaml
 
 from google.protobuf.message import Message
 from forch.proto import faucet_event_pb2 as FaucetEvent
@@ -201,7 +202,7 @@ class Forchestrator:
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
             self._config_file_watcher = ConfigFileWatcher(
-                self._structural_config_file, self._faucetizer)
+                self._structural_config_file, self._faucetizer.reload_structural_config)
 
     def initialized(self):
         """If forch is initialized or not"""

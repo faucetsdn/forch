@@ -22,17 +22,17 @@ ACL_FILE_SUFFIX = '_augmented'
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file):
+                 behavioral_config_file, config_file_watcher):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
-        self._acl_configs = {}
-        self._next_cookie = 1
+        self._next_cookie = None
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
+        self._config_file_watcher = config_file_watcher
         self._lock = threading.RLock()
         self.reload_structural_config()
 
@@ -83,13 +83,23 @@ class Faucetizer:
             for acl_file_name in self._structural_faucet_config.get('include', []):
                 self.reload_acl_file(acl_file_name)
                 new_include.append(acl_file_name + ACL_FILE_SUFFIX)
-            if new_include:
-                self._structural_faucet_config['include'] = new_include
+
+            self._structural_faucet_config['include'] = new_include
+
+            if not self._config.faucetize_interval_sec:
+                self._config_file_watcher.unschedule_acl_watches()
+                for acl_file_name in self._structural_faucet_config.get('include', []):
+                    self._config_file_watcher.schedule_acl_file_handler(
+                        acl_file_name, self.reload_acl_file)
 
             self.flush_behavioral_config()
 
     def _process_acl_config(self, file_name, acls_config):
         new_acls_config = copy.copy(acls_config)
+        if not self._next_cookie:
+            self._next_cookie = 1000
+            LOGGER.error(
+                'Cookie is not initialized. Assiged to %d to avoid collision', self._next_cookie)
 
         with self._lock:
             for acl_map in acls_config.get('acls', {}).values():
@@ -155,7 +165,6 @@ class Faucetizer:
             return
         with open(file_name, 'w') as acl_file:
             yaml.dump(acls_config, acl_file)
-
 
 
 def load_devices_state(file):
