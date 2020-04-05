@@ -146,9 +146,9 @@ class Faucetizer:
 
     def reload_structural_config(self, structural_config_file=None):
         """Reload structural config from file"""
-        file = structural_config_file or self._structural_config_file
-        with open(file) as structural_config_file:
-            structural_config = yaml.safe_load(structural_config_file)
+        structural_config_file = structural_config_file or self._structural_config_file
+        with open(structural_config_file) as file:
+            structural_config = yaml.safe_load(file)
             self._process_structural_config(structural_config)
 
     def reload_acl_file(self, file_path):
@@ -230,6 +230,7 @@ if __name__ == '__main__':
     FAUCETIZER = Faucetizer(
         ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
         BEHAVIORAL_CONFIG_FILE, None)
+    FAUCETIZER.reload_structural_config()
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)
