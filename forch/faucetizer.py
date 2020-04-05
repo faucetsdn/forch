@@ -81,8 +81,10 @@ class Faucetizer:
             structural_config_include = self._structural_faucet_config.get('include', [])
             new_include = []
             for acl_file_name in structural_config_include:
-                self.reload_acl_file(acl_file_name)
-                new_include.append(acl_file_name + ACL_FILE_SUFFIX)
+                acl_file_path = os.path.join(
+                    os.path.dirname(self._structural_config_file), acl_file_name)
+                self.reload_acl_file(acl_file_path)
+                new_include.append(self._augment_acl_file_path(acl_file_name))
 
             self._structural_faucet_config['include'] = new_include
 
@@ -91,7 +93,7 @@ class Faucetizer:
 
             self.flush_behavioral_config()
 
-    def _process_acl_config(self, file_name, acls_config):
+    def _process_acl_config(self, file_path, acls_config):
         new_acls_config = copy.copy(acls_config)
         if not self._next_cookie:
             self._next_cookie = 1000
@@ -105,8 +107,12 @@ class Faucetizer:
                         rule_map['rule']['cookie'] = self._next_cookie
                         self._next_cookie += 1
 
-        acl_file_name = file_name + ACL_FILE_SUFFIX
-        self.flush_acl_config(acl_file_name, new_acls_config)
+        new_file_path = self._augment_acl_file_path(file_path)
+        self.flush_acl_config(new_file_path, new_acls_config)
+
+    def _augment_acl_file_path(self, file_path):
+        base_file_path, ext = os.path.splitext(file_path)
+        return base_file_path + ACL_FILE_SUFFIX + ext
 
     def _faucetize(self):
         if not self._structural_faucet_config:
@@ -144,12 +150,11 @@ class Faucetizer:
             structural_config = yaml.safe_load(structural_config_file)
             self._process_structural_config(structural_config)
 
-    def reload_acl_file(self, file_name):
+    def reload_acl_file(self, file_path):
         """Reload acl file"""
-        file_path = os.path.join(os.path.dirname(self._structural_config_file), file_name)
         with open(file_path) as acl_file:
             acls_config = yaml.safe_load(acl_file)
-            self._process_acl_config(file_name, acls_config)
+            self._process_acl_config(file_path, acls_config)
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
