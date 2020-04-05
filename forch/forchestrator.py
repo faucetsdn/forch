@@ -5,7 +5,6 @@ import logging
 import os
 import threading
 import time
-import yaml
 
 from google.protobuf.message import Message
 from forch.proto import faucet_event_pb2 as FaucetEvent

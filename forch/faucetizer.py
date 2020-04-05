@@ -164,9 +164,8 @@ class Faucetizer:
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
 
-    def flush_acl_config(self, file_name, acls_config):
+    def flush_acl_config(self, file_path, acls_config):
         """Write acl configs to file"""
-        file_path = os.path.join(os.path.dirname(self._structural_config_file), file_name)
         with open(file_path, 'w') as acl_file:
             yaml.dump(acls_config, acl_file)
 
