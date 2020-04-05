@@ -99,10 +99,11 @@ class Faucetizer:
                 'Cookie is not initialized. Assiged to %d to avoid collision', self._next_cookie)
 
         with self._lock:
-            for acl_map in acls_config.get('acls', {}).values():
-                for rule_map in acl_map.get('rules', []):
-                    rule_map['cookie'] = self._next_cookie
-                    self._next_cookie += 1
+            for rule_list in acls_config.get('acls', {}).values():
+                for rule_map in rule_list:
+                    if 'rule' in rule_map:
+                        rule_map['rule']['cookie'] = self._next_cookie
+                        self._next_cookie += 1
 
         acl_file_name = file_name + ACL_FILE_SUFFIX
         self.flush_acl_config(acl_file_name, new_acls_config)

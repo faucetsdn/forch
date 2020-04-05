@@ -35,9 +35,9 @@ class ConfigFileWatcher:
         file_handler = ConfigFileHandler(acl_file_path, on_modified_callback)
         self._acl_watches[acl_file_name] = self._observer.schedule(file_handler, acl_file_path)
 
-    def unschedule_acl_watches(self, watches):
+    def unschedule_acl_watches(self):
         """Unschedule watches"""
-        for watch in watches:
+        for watch in self._acl_watches:
             self._observer.unschedule(watch)
 
 
