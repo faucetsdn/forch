@@ -89,7 +89,7 @@ class Faucetizer:
 
             self._structural_faucet_config['include'] = new_include
 
-            if not self._config.faucetize_interval_sec:
+            if not self._config.faucetize_interval_sec and self._reschedule_acl_file_handlers:
                 self._reschedule_acl_file_handlers(structural_config_include)
 
             self.flush_behavioral_config()
