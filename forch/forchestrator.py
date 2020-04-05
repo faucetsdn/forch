@@ -191,7 +191,7 @@ class Forchestrator:
 
         self._faucetizer = faucetizer.Faucetizer(
             orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
-            self._behavioral_config_file)
+            self._reschedule_acl_file_handlers)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -203,6 +203,12 @@ class Forchestrator:
         else:
             self._config_file_watcher = ConfigFileWatcher(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
+
+    def _reschedule_acl_file_handlers(self, acl_file_names):
+        self._config_file_watcher.unschedule_acl_watches()
+        for acl_file_name in acl_file_names:
+            self._config_file_watcher.schedule_acl_file_handler(
+                acl_file_name, self._faucetizer.reload_acl_file)
 
     def initialized(self):
         """If forch is initialized or not"""

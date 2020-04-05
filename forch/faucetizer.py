@@ -22,7 +22,7 @@ ACL_FILE_SUFFIX = '_augmented'
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file, config_file_watcher):
+                 behavioral_config_file, reschedule_acl_file_handlers):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
@@ -32,7 +32,7 @@ class Faucetizer:
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
-        self._config_file_watcher = config_file_watcher
+        self._reschedule_acl_file_handlers = reschedule_acl_file_handlers
         self._lock = threading.RLock()
         self.reload_structural_config()
 
@@ -79,18 +79,16 @@ class Faucetizer:
             self._structural_faucet_config = copy.copy(faucet_config)
 
             self._next_cookie = 1
+            structural_config_include = self._structural_faucet_config.get('include', [])
             new_include = []
-            for acl_file_name in self._structural_faucet_config.get('include', []):
+            for acl_file_name in structural_config_include:
                 self.reload_acl_file(acl_file_name)
                 new_include.append(acl_file_name + ACL_FILE_SUFFIX)
 
             self._structural_faucet_config['include'] = new_include
 
             if not self._config.faucetize_interval_sec:
-                self._config_file_watcher.unschedule_acl_watches()
-                for acl_file_name in self._structural_faucet_config.get('include', []):
-                    self._config_file_watcher.schedule_acl_file_handler(
-                        acl_file_name, self.reload_acl_file)
+                self._reschedule_acl_file_handlers(structural_config_include)
 
             self.flush_behavioral_config()
 
@@ -225,7 +223,7 @@ if __name__ == '__main__':
 
     FAUCETIZER = Faucetizer(
         ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
-        BEHAVIORAL_CONFIG_FILE)
+        BEHAVIORAL_CONFIG_FILE, None)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)
