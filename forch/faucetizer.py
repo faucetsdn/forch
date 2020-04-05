@@ -23,7 +23,7 @@ class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file, reschedule_acl_file_handlers):
+                 behavioral_config_file, reschedule_acl_file_handlers=None):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
@@ -229,7 +229,7 @@ if __name__ == '__main__':
 
     FAUCETIZER = Faucetizer(
         ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
-        BEHAVIORAL_CONFIG_FILE, None)
+        BEHAVIORAL_CONFIG_FILE)
     FAUCETIZER.reload_structural_config()
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
