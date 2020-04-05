@@ -33,7 +33,7 @@ class ConfigFileWatcher:
         """Schedule a handler for file"""
         acl_file_path = os.path.join(self._path, acl_file_name)
         file_handler = ConfigFileHandler(acl_file_path, on_modified_callback)
-        self._acl_watches[acl_file_name] = self._observer.schedule(file_handler, acl_file_path)
+        self._acl_watches[acl_file_name] = self._observer.schedule(file_handler, self._path)
 
     def unschedule_acl_watches(self):
         """Unschedule watches"""
@@ -50,7 +50,7 @@ class ConfigFileHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         """when file is modified, check if file content has changed"""
-        super(FileSystemEventHandler, self).on_modified(event)
+        super(ConfigFileHandler, self).on_modified(event)
 
         if event.is_directory or self._config_file != event.src_path:
             return
@@ -62,7 +62,7 @@ class ConfigFileHandler(FileSystemEventHandler):
 
         LOGGER.info('File "%s" is modified', event.src_path)
 
-        self._on_modified_callback()
+        self._on_modified_callback(event.src_path)
 
     def _get_file_hash(self):
         with open(self._config_file) as file:

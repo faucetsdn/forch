@@ -137,9 +137,10 @@ class Faucetizer:
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
-    def reload_structural_config(self):
+    def reload_structural_config(self, structural_config_file=None):
         """Reload structural config from file"""
-        with open(self._structural_config_file) as structural_config_file:
+        structural_config_file = structural_config_file or self._structural_config_file
+        with open(structural_config_file) as structural_config_file:
             structural_config = yaml.safe_load(structural_config_file)
             self._process_structural_config(structural_config)
 
