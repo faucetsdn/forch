@@ -21,6 +21,7 @@ ACL_FILE_SUFFIX = '_augmented'
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
+    # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
                  behavioral_config_file, reschedule_acl_file_handlers):
         self._dynamic_devices = {}
@@ -145,8 +146,8 @@ class Faucetizer:
 
     def reload_structural_config(self, structural_config_file=None):
         """Reload structural config from file"""
-        structural_config_file = structural_config_file or self._structural_config_file
-        with open(structural_config_file) as structural_config_file:
+        file = structural_config_file or self._structural_config_file
+        with open(file) as structural_config_file:
             structural_config = yaml.safe_load(structural_config_file)
             self._process_structural_config(structural_config)
 
