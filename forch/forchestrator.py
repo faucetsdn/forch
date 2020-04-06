@@ -16,7 +16,7 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.config_file_watcher import ConfigFileWatcher
+from forch.file_watcher import FileWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
@@ -201,7 +201,7 @@ class Forchestrator:
                 self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
-            self._config_file_watcher = ConfigFileWatcher(
+            self._config_file_watcher = FileWatcher(
                 os.path.dirname(self._structural_config_file))
             self._config_file_watcher.register_file_handler(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
