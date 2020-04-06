@@ -202,7 +202,7 @@ class Forchestrator:
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
             self._config_file_watcher = ConfigFileWatcher(
-                self._structural_config_file, self._faucetizer.reload_structural_config)
+                os.path.dirname(self._structural_config_file))
 
     def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
         self._config_file_watcher.unregister_file_handlers(old_acl_files)

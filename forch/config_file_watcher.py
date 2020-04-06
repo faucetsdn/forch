@@ -11,9 +11,10 @@ LOGGER = logging.getLogger('watcher')
 
 class ConfigFileWatcher:
     """Watch file changes"""
-    def __init__(self):
+    def __init__(self, path):
         self._observer = Observer()
         self._watches = {}
+        self._path = path
 
     def start(self):
         """Start watcher"""
@@ -25,7 +26,7 @@ class ConfigFileWatcher:
 
     def register_file_handler(self, file_path, on_modified_callback):
         """Register a file handler"""
-        file_handler = ConfigFileWatcher(file_path, on_modified_callback)
+        file_handler = ConfigFileHandler(file_path, on_modified_callback)
         self._watches[file_path] = self._observer.schedule(file_handler, self._path)
 
     def unregister_file_handler(self, file_path):
