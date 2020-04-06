@@ -23,7 +23,7 @@ class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file, reschedule_acl_file_handlers=None):
+                 behavioral_config_file, reregister_acl_file_handlers=None):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
@@ -33,7 +33,8 @@ class Faucetizer:
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
-        self._reschedule_acl_file_handlers = reschedule_acl_file_handlers
+        self._watched_acl_files = []
+        self._reregister_acl_file_handlers = reregister_acl_file_handlers
         self._lock = threading.RLock()
 
     def process_device_placement(self, eth_src, placement, static=False):
@@ -79,18 +80,20 @@ class Faucetizer:
             self._structural_faucet_config = copy.copy(faucet_config)
 
             self._next_cookie = 1
-            structural_config_include = self._structural_faucet_config.get('include', [])
             new_include = []
-            for acl_file_name in structural_config_include:
-                acl_file_path = os.path.join(
-                    os.path.dirname(self._structural_config_file), acl_file_name)
+            new_watched_acl_files = []
+            config_dir = os.path.dirname(self._structural_config_file)
+            for acl_file_name in self._structural_faucet_config.get('include', []):
+                acl_file_path = os.path.join(config_dir, acl_file_name)
                 self.reload_acl_file(acl_file_path)
                 new_include.append(self._augment_acl_file_path(acl_file_name))
+                new_watched_acl_files.append(acl_file_path)
 
             self._structural_faucet_config['include'] = new_include
 
-            if not self._config.faucetize_interval_sec and self._reschedule_acl_file_handlers:
-                self._reschedule_acl_file_handlers(structural_config_include)
+            if not self._config.faucetize_interval_sec and self._reregister_acl_file_handlers:
+                self._reregister_acl_file_handlers(self._watched_acl_files, new_watched_acl_files)
+            self._watched_acl_files = new_watched_acl_files
 
             self.flush_behavioral_config()
 

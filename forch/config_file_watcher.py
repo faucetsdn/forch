@@ -2,7 +2,6 @@
 
 import hashlib
 import logging
-import os
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -12,14 +11,9 @@ LOGGER = logging.getLogger('watcher')
 
 class ConfigFileWatcher:
     """Watch file changes"""
-    def __init__(self, structural_config_file, structural_config_modified_callback):
+    def __init__(self):
         self._observer = Observer()
-        self._structural_config_file = structural_config_file
-        self._path = os.path.dirname(structural_config_file)
-        self._acl_watches = {}
-        structural_config_handler = ConfigFileHandler(
-            self._structural_config_file, structural_config_modified_callback)
-        self._observer.schedule(structural_config_handler, self._path)
+        self._watches = {}
 
     def start(self):
         """Start watcher"""
@@ -29,16 +23,20 @@ class ConfigFileWatcher:
         """Stop watcher"""
         self._observer.stop()
 
-    def schedule_acl_file_handler(self, acl_file_name, on_modified_callback):
-        """Schedule a handler for file"""
-        acl_file_path = os.path.join(self._path, acl_file_name)
-        file_handler = ConfigFileHandler(acl_file_path, on_modified_callback)
-        self._acl_watches[acl_file_name] = self._observer.schedule(file_handler, self._path)
+    def register_file_handler(self, file_path, on_modified_callback):
+        """Register a file handler"""
+        file_handler = ConfigFileWatcher(file_path, on_modified_callback)
+        self._watches[file_path] = self._observer.schedule(file_handler, self._path)
 
-    def unschedule_acl_watches(self):
-        """Unschedule watches"""
-        for watch in self._acl_watches:
-            self._observer.unschedule(watch)
+    def unregister_file_handler(self, file_path):
+        """Unregister the handler for a file"""
+        if file_path in self._watches:
+            self._observer.unschedule(self._watches[file_path])
+
+    def unregister_file_handlers(self, file_paths):
+        """Unregister handlers for files"""
+        for file_path in file_paths:
+            self.unregister_file_handler(file_path)
 
 
 class ConfigFileHandler(FileSystemEventHandler):

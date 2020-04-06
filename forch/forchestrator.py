@@ -204,11 +204,11 @@ class Forchestrator:
             self._config_file_watcher = ConfigFileWatcher(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
 
-    def _reschedule_acl_file_handlers(self, acl_file_names):
-        self._config_file_watcher.unschedule_acl_watches()
-        for acl_file_name in acl_file_names:
-            self._config_file_watcher.schedule_acl_file_handler(
-                acl_file_name, self._faucetizer.reload_acl_file)
+    def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
+        self._config_file_watcher.unregister_file_handlers(old_acl_files)
+        for new_acl_file in new_acl_files:
+            self._config_file_watcher.register_file_handler(
+                new_acl_file, self._faucetizer.reload_acl_file)
 
     def initialized(self):
         """If forch is initialized or not"""
