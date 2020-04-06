@@ -191,7 +191,7 @@ class Forchestrator:
 
         self._faucetizer = faucetizer.Faucetizer(
             orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
-            self._behavioral_config_file, self._reschedule_acl_file_handlers)
+            self._behavioral_config_file, self._reregister_acl_file_handlers)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
