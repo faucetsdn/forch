@@ -9,7 +9,7 @@ from watchdog.events import FileSystemEventHandler
 LOGGER = logging.getLogger('watcher')
 
 
-class FileWatcher:
+class FileChangeWatcher:
     """Watch file changes"""
     def __init__(self, path):
         self._observer = Observer()
@@ -26,7 +26,7 @@ class FileWatcher:
 
     def register_file_handler(self, file_path, on_modified_callback):
         """Register a file handler"""
-        file_handler = FileHandler(file_path, on_modified_callback)
+        file_handler = FileChangeHandler(file_path, on_modified_callback)
         self._watches[file_path] = self._observer.schedule(file_handler, self._path)
 
     def unregister_file_handler(self, file_path):
@@ -40,7 +40,7 @@ class FileWatcher:
             self.unregister_file_handler(file_path)
 
 
-class FileHandler(FileSystemEventHandler):
+class FileChangeHandler(FileSystemEventHandler):
     """Handles file change event"""
     def __init__(self, file, on_modified_callback):
         self._file = file
@@ -49,7 +49,7 @@ class FileHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         """when file is modified, check if file content has changed"""
-        super(FileHandler, self).on_modified(event)
+        super(FileChangeHandler, self).on_modified(event)
 
         if event.is_directory or self._file != event.src_path:
             return
