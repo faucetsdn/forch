@@ -99,6 +99,7 @@ class Faucetizer:
 
     def _process_acl_config(self, file_path, acls_config):
         new_acls_config = copy.copy(acls_config)
+
         if not self._next_cookie:
             raise Exception('Cookie is not initialized')
 
