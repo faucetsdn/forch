@@ -11,15 +11,15 @@ LOGGER = logging.getLogger('watcher')
 
 class FileChangeWatcher:
     """Watch file changes in a directory"""
-    def __init__(self, dir):
+    def __init__(self, dir_path):
         self._observer = Observer()
-        self._dir = dir
+        self._dir_path = dir_path
         self._watched_files = {}
 
     def start(self):
         """Start watcher"""
         file_modify_handler = FileModifyHandler(self._handle_file_modify)
-        self._observer.schedule(file_modify_handler, self._dir)
+        self._observer.schedule(file_modify_handler, self._dir_path)
         self._observer.start()
 
     def stop(self):
