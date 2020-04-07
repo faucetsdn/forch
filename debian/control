@@ -16,7 +16,7 @@ Build-Depends: debhelper (>= 9),
 	       python3-pbr (>= 1.9),
 Depends: python3-forch
 Standards-Version: 3.9.6
-X-Python3-Version: >= 3.6
+X-Python3-Version: >= 3.7, << 3.8
 Homepage: https://github.com/faucetsdn/forch
 Vcs-Git: https://github.com/faucetsdn/forch.git
 Vcs-Browser: https://github.com/faucetsdn/forch
@@ -31,6 +31,7 @@ Depends: python3-faucet (= FAUCET_VERSION),
          python3-psutil,
          python3-requests,
          python3-yaml,
+         python3:any (>= 3.7), python3:any (<< 3.8),
 Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
 
 Package: forch
