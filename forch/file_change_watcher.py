@@ -51,9 +51,9 @@ class FileChangeWatcher:
             return
         file_data['hash'] = new_hash
 
-        LOGGER.info('File "%s" is modified. Executing callback %s', file_path)
+        LOGGER.info('File "%s" is modified. Executing callback', file_path)
 
-        file_data['callback']()
+        file_data['callback'](file_path)
 
     def _get_file_hash(self, file_path):
         with open(file_path) as file:
