@@ -10,11 +10,11 @@ LOGGER = logging.getLogger('watcher')
 
 
 class FileChangeWatcher:
-    """Watch file changes"""
-    def __init__(self, path):
+    """Watch file changes in a directory"""
+    def __init__(self, dir):
         self._observer = Observer()
-        self._watches = {}
-        self._path = path
+        self._dir = dir
+        self._watched_files = {}
 
     def start(self):
         """Start watcher"""
@@ -24,23 +24,42 @@ class FileChangeWatcher:
         """Stop watcher"""
         self._observer.stop()
 
-    def register_file_handler(self, file_path, on_modified_callback):
+    def register_file_callback(self, file_path, file_change_callback):
         """Register a file handler"""
-        file_handler = FileChangeHandler(file_path, on_modified_callback)
-        self._watches[file_path] = self._observer.schedule(file_handler, self._path)
+        file_data = self._watched_files.setdefault(file_path, {})
+        file_data['hash'] = self._get_file_hash(file_path)
+        file_data['callback'] = file_change_callback
 
     def unregister_file_handler(self, file_path):
         """Unregister the handler for a file"""
-        if file_path in self._watches:
-            self._observer.unschedule(self._watches[file_path])
+        self._watched_files.pop(file_path)
 
     def unregister_file_handlers(self, file_paths):
         """Unregister handlers for files"""
         for file_path in file_paths:
             self.unregister_file_handler(file_path)
 
+    def on_file_modified(self, file_path):
+        file_data = self._watched_files.get(file_path)
+        if not file_data:
+            return
 
-class FileChangeHandler(FileSystemEventHandler):
+        new_hash = self._get_file_hash(file_path)
+        if new_hash == file_data['hash']:
+            return
+        file_data['hash'] = new_hash
+
+        LOGGER.info('File "%s" is modified. Executing callback', file_path)
+
+        file_data['callback']()
+
+    def _get_file_hash(self, file_path):
+        with open(file_path) as file:
+            content = file.read()
+            return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+
+class FileModifyHandler(FileSystemEventHandler):
     """Handles file change event"""
     def __init__(self, file, on_modified_callback):
         self._file = file
@@ -49,21 +68,9 @@ class FileChangeHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         """when file is modified, check if file content has changed"""
-        super(FileChangeHandler, self).on_modified(event)
+        super(FileModifyHandler, self).on_modified(event)
 
         if event.is_directory or self._file != event.src_path:
             return
 
-        new_hash = self._get_file_hash()
-        if new_hash == self._last_hash:
-            return
-        self._last_hash = new_hash
-
-        LOGGER.info('File "%s" is modified', event.src_path)
-
         self._on_modified_callback(event.src_path)
-
-    def _get_file_hash(self):
-        with open(self._file) as file:
-            content = file.read()
-            return hashlib.sha256(content.encode('utf-8')).hexdigest()
