@@ -99,10 +99,6 @@ class Faucetizer:
 
     def _process_acl_config(self, file_path, acls_config):
         new_acls_config = copy.copy(acls_config)
-        if not self._next_cookie:
-            self._next_cookie = 1000
-            LOGGER.error(
-                'Cookie is not initialized. Assiged to %d to avoid collision', self._next_cookie)
 
         with self._lock:
             for rule_list in acls_config.get('acls', {}).values():
