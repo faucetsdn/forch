@@ -20,8 +20,8 @@ script:
   - bin/run_test_set
 env:
   matrix:
-    - TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
+    #- TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
     - TEST_SET=topology SKIP_INSTALL=true SKIP_STACK=true
-    - TEST_SET=reconfig
-    - TEST_SET=solo SKIP_STACK=true
-    - TEST_SET=stack
+    #- TEST_SET=reconfig
+    #- TEST_SET=solo SKIP_STACK=true
+    #- TEST_SET=stack
