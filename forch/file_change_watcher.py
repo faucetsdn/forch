@@ -39,7 +39,7 @@ class FileChangeWatcher:
     def unregister_file_callbacks(self, file_paths):
         """Unregister handlers for files"""
         for file_path in file_paths:
-            self.unregister_file_handler(file_path)
+            self.unregister_file_callback(file_path)
 
     def _handle_file_modify(self, file_path):
         file_data = self._watched_files.get(file_path)
@@ -51,7 +51,7 @@ class FileChangeWatcher:
             return
         file_data['hash'] = new_hash
 
-        LOGGER.info('File "%s" is modified. Executing callback', file_path)
+        LOGGER.info('File "%s" is modified. Executing callback %s', file_path)
 
         file_data['callback']()
 
@@ -70,7 +70,7 @@ class FileModifyHandler(FileSystemEventHandler):
         """when file is modified, check if file content has changed"""
         super(FileModifyHandler, self).on_modified(event)
 
-        if event.is_directory or self._file != event.src_path:
+        if event.is_directory:
             return
 
         self._on_modified_callback(event.src_path)
