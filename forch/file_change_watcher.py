@@ -18,6 +18,7 @@ class FileChangeWatcher:
 
     def start(self):
         """Start watcher"""
+        self._observer.schedule(self._handle_file_modify, self._dir)
         self._observer.start()
 
     def stop(self):
@@ -30,16 +31,16 @@ class FileChangeWatcher:
         file_data['hash'] = self._get_file_hash(file_path)
         file_data['callback'] = file_change_callback
 
-    def unregister_file_handler(self, file_path):
+    def unregister_file_callback(self, file_path):
         """Unregister the handler for a file"""
         self._watched_files.pop(file_path)
 
-    def unregister_file_handlers(self, file_paths):
+    def unregister_file_callbacks(self, file_paths):
         """Unregister handlers for files"""
         for file_path in file_paths:
             self.unregister_file_handler(file_path)
 
-    def on_file_modified(self, file_path):
+    def _handle_file_modify(self, file_path):
         file_data = self._watched_files.get(file_path)
         if not file_data:
             return

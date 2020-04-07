@@ -203,13 +203,13 @@ class Forchestrator:
         else:
             self._config_file_watcher = FileChangeWatcher(
                 os.path.dirname(self._structural_config_file))
-            self._config_file_watcher.register_file_handler(
+            self._config_file_watcher.register_file_callback(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
 
     def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
-        self._config_file_watcher.unregister_file_handlers(old_acl_files)
+        self._config_file_watcher.unregister_file_callbacks(old_acl_files)
         for new_acl_file in new_acl_files:
-            self._config_file_watcher.register_file_handler(
+            self._config_file_watcher.register_file_callback(
                 new_acl_file, self._faucetizer.reload_acl_file)
 
     def initialized(self):
