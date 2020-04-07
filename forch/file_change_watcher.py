@@ -18,7 +18,8 @@ class FileChangeWatcher:
 
     def start(self):
         """Start watcher"""
-        self._observer.schedule(self._handle_file_modify, self._dir)
+        file_modify_handler = FileModifyHandler(self._handle_file_modify)
+        self._observer.schedule(file_modify_handler, self._dir)
         self._observer.start()
 
     def stop(self):
@@ -62,9 +63,7 @@ class FileChangeWatcher:
 
 class FileModifyHandler(FileSystemEventHandler):
     """Handles file change event"""
-    def __init__(self, file, on_modified_callback):
-        self._file = file
-        self._last_hash = self._get_file_hash()
+    def __init__(self, on_modified_callback):
         self._on_modified_callback = on_modified_callback
 
     def on_modified(self, event):
