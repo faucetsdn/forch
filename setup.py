@@ -39,14 +39,15 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'wheel',
         'pbr>=1.9',
         'prometheus_client',
         'protobuf',
         'psutil',
         'pyyaml',
         'requests',
-        'setuptools>=17.1'
+        'setuptools>=17.1',
+        'watchdog',
+        'wheel',
     ],
     setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
     data_files=data_files,
