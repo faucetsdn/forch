@@ -16,7 +16,7 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.faucet_config_file_watcher import FaucetConfigFileWatcher
+from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
@@ -61,7 +61,7 @@ class Forchestrator:
         self._faucetizer = None
         self._authenticator = None
         self._faucetize_scheduler = None
-        self._faucet_config_file_watcher = None
+        self._config_file_watcher = None
         self._faucet_state_scheduler = None
 
         self._initialized = False
@@ -99,6 +99,7 @@ class Forchestrator:
 
         if self._calculate_config_files():
             self._initialize_faucetizer()
+            self._faucetizer.reload_structural_config()
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
@@ -190,7 +191,7 @@ class Forchestrator:
 
         self._faucetizer = faucetizer.Faucetizer(
             orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
-            self._behavioral_config_file)
+            self._behavioral_config_file, self._reregister_acl_file_handlers)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -200,8 +201,16 @@ class Forchestrator:
                 self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
-            self._faucet_config_file_watcher = FaucetConfigFileWatcher(
-                self._structural_config_file, self._faucetizer)
+            self._config_file_watcher = FileChangeWatcher(
+                os.path.dirname(self._structural_config_file))
+            self._config_file_watcher.register_file_callback(
+                self._structural_config_file, self._faucetizer.reload_structural_config)
+
+    def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
+        self._config_file_watcher.unregister_file_callbacks(old_acl_files)
+        for new_acl_file in new_acl_files:
+            self._config_file_watcher.register_file_callback(
+                new_acl_file, self._faucetizer.reload_acl_file)
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -308,8 +317,8 @@ class Forchestrator:
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()
-        if self._faucet_config_file_watcher:
-            self._faucet_config_file_watcher.start()
+        if self._config_file_watcher:
+            self._config_file_watcher.start()
         if self._faucet_state_scheduler:
             self._faucet_state_scheduler.start()
         if self._metrics:
@@ -323,8 +332,8 @@ class Forchestrator:
             self._faucet_state_scheduler.stop()
         if self._authenticator:
             self._authenticator.stop()
-        if self._faucet_config_file_watcher:
-            self._faucet_config_file_watcher.stop()
+        if self._config_file_watcher:
+            self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
 
