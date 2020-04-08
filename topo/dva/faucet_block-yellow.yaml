@@ -692,8 +692,8 @@ dps:
       max_per_interval: 5
       send_interval: 5
 include:
-- uniform-acls.yaml
-- role-based-acls.yaml
+- uniform-acls_augmented.yaml
+- role-based-acls_augmented.yaml
 version: 2
 vlans:
   100:
