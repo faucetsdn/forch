@@ -619,7 +619,9 @@ class Forchestrator:
         """List learned access devices"""
         eth_src = params.get('eth_src')
         host = self._extract_url_base(path)
-        reply = self._faucet_collector.get_list_hosts(host, eth_src)
+        gauge_metrics = varz_state_collector.retry_get_metrics(
+            self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+        reply = self._faucet_collector.get_list_hosts(host, eth_src, gauge_metrics)
         return self._augment_state_reply(reply, path)
 
     def get_cpn_state(self, path, params):

@@ -5,6 +5,7 @@ syntax = "proto3";
 
 import "forch/proto/shared_constants.proto";
 import "forch/proto/path_node.proto";
+import "forch/proto/acl_state.proto";
 
 /*
  * State of switches
@@ -139,24 +140,5 @@ message SwitchState {
   message VLANState {
     // vlan acls states
     repeated ACLState acls = 1;
-  }
-
-  message ACLState {
-    // acl name
-    string name = 1;
-
-    // rule states
-    repeated RuleState rules = 2;
-
-    message RuleState {
-      // rule description
-      string description = 1;
-
-      // rule cookie
-      string cookie = 2;
-
-      // count of packets hitting the rule
-      int32 packet_count = 3;
-    }
   }
 }

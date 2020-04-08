@@ -616,17 +616,14 @@ class FaucetStateCollector:
 
             for rule_config in acl_config.rules:
                 cookie = str(rule_config.get('cookie'))
-                rule_map = {
-                    'cookie': cookie,
-                    'description': rule_config.get('description')
-                }
+                rule_map = {'description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
 
                 if not metric_samples:
                     continue
 
                 if not cookie:
-                    continue
+                    raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
 
                 for sample in metric_samples:
                     if str(sample.labels.get('cookie')) != cookie:
@@ -1097,7 +1094,7 @@ class FaucetStateCollector:
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
-    def get_list_hosts(self, url_base, src_mac):
+    def get_list_hosts(self, url_base, src_mac, gauge_metrics):
         """Get access devices"""
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
@@ -1113,7 +1110,7 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
-            self._fill_port_behavior(switch, port, mac_deets)
+            self._fill_port_behavior(switch, port, mac_deets, gauge_metrics)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
