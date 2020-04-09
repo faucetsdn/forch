@@ -578,12 +578,14 @@ class FaucetStateCollector:
             return
 
         vlans_map = switch_map.setdefault('vlans', {})
+
+        if metrics and 'flow_packet_count_vlan_acl' in metrics:
+            samples = metrics['flow_packet_count_vlan_acl'].samples
+        else:
+            samples = None
+
         for vid, vlan_config in dp_config.vlans.items():
             acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
-            if metrics and 'flow_packet_count_vlan_acl' in metrics:
-                samples = metrics['flow_packet_count_vlan_acl'].samples
-            else:
-                samples = None
             self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
 
     def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
@@ -599,12 +601,14 @@ class FaucetStateCollector:
 
         if port_config.native_vlan:
             port_map['vlan'] = int(port_config.native_vlan.vid)
+
+        if metrics and 'flow_packet_count_port_acl' in metrics:
+            samples = metrics['flow_packet_count_port_acl'].samples
+        else:
+            samples = None
+
         if port_config.acls_in:
             acl_maps_list = port_map.setdefault('acls', [])
-            if metrics and 'flow_packet_count_port_acl' in metrics:
-                samples = metrics['flow_packet_count_port_acl'].samples
-            else:
-                samples = None
             self._fill_acls_behavior(
                 switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
 
