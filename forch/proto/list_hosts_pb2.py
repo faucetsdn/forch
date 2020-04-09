@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from forch.proto import acl_state_pb2 as forch_dot_proto_dot_acl__state__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,8 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1c\x66orch/proto/list_hosts.proto\"\x80\x04\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1au\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0f\n\x07host_ip\x18\x03 \x01(\t\x12\x0c\n\x04vlan\x18\x04 \x01(\x05\x12\x1f\n\x04\x61\x63ls\x18\x05 \x03(\x0b\x32\x11.HostList.ACLData\x12\x0b\n\x03url\x18\x06 \x01(\t\x1as\n\x07\x41\x43LData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12)\n\x05rules\x18\x02 \x03(\x0b\x32\x1a.HostList.ACLData.RuleData\x1a/\n\x08RuleData\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x0e\n\x06\x63ookie\x18\x02 \x01(\tb\x06proto3')
-)
+  serialized_pb=_b('\n\x1c\x66orch/proto/list_hosts.proto\x1a\x1b\x66orch/proto/acl_state.proto\"\x83\x03\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1am\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0f\n\x07host_ip\x18\x03 \x01(\t\x12\x0c\n\x04vlan\x18\x04 \x01(\x05\x12\x17\n\x04\x61\x63ls\x18\x05 \x03(\x0b\x32\t.ACLState\x12\x0b\n\x03url\x18\x06 \x01(\tb\x06proto3')
+  ,
+  dependencies=[forch_dot_proto_dot_acl__state__pb2.DESCRIPTOR,])
 
 
 
@@ -58,8 +60,8 @@ _HOSTLIST_ETHSRCSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=175,
-  serialized_end=241,
+  serialized_start=204,
+  serialized_end=270,
 )
 
 _HOSTLIST_ETHDSTSENTRY = _descriptor.Descriptor(
@@ -95,8 +97,8 @@ _HOSTLIST_ETHDSTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=243,
-  serialized_end=309,
+  serialized_start=272,
+  serialized_end=338,
 )
 
 _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
@@ -160,82 +162,8 @@ _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=311,
-  serialized_end=428,
-)
-
-_HOSTLIST_ACLDATA_RULEDATA = _descriptor.Descriptor(
-  name='RuleData',
-  full_name='HostList.ACLData.RuleData',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='description', full_name='HostList.ACLData.RuleData.description', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='cookie', full_name='HostList.ACLData.RuleData.cookie', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=498,
-  serialized_end=545,
-)
-
-_HOSTLIST_ACLDATA = _descriptor.Descriptor(
-  name='ACLData',
-  full_name='HostList.ACLData',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='HostList.ACLData.name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='rules', full_name='HostList.ACLData.rules', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_HOSTLIST_ACLDATA_RULEDATA, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=430,
-  serialized_end=545,
+  serialized_start=340,
+  serialized_end=449,
 )
 
 _HOSTLIST = _descriptor.Descriptor(
@@ -276,7 +204,7 @@ _HOSTLIST = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_HOSTLIST_ETHSRCSENTRY, _HOSTLIST_ETHDSTSENTRY, _HOSTLIST_HOSTDATA, _HOSTLIST_ACLDATA, ],
+  nested_types=[_HOSTLIST_ETHSRCSENTRY, _HOSTLIST_ETHDSTSENTRY, _HOSTLIST_HOSTDATA, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -285,19 +213,16 @@ _HOSTLIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33,
-  serialized_end=545,
+  serialized_start=62,
+  serialized_end=449,
 )
 
 _HOSTLIST_ETHSRCSENTRY.fields_by_name['value'].message_type = _HOSTLIST_HOSTDATA
 _HOSTLIST_ETHSRCSENTRY.containing_type = _HOSTLIST
 _HOSTLIST_ETHDSTSENTRY.fields_by_name['value'].message_type = _HOSTLIST_HOSTDATA
 _HOSTLIST_ETHDSTSENTRY.containing_type = _HOSTLIST
-_HOSTLIST_HOSTDATA.fields_by_name['acls'].message_type = _HOSTLIST_ACLDATA
+_HOSTLIST_HOSTDATA.fields_by_name['acls'].message_type = forch_dot_proto_dot_acl__state__pb2._ACLSTATE
 _HOSTLIST_HOSTDATA.containing_type = _HOSTLIST
-_HOSTLIST_ACLDATA_RULEDATA.containing_type = _HOSTLIST_ACLDATA
-_HOSTLIST_ACLDATA.fields_by_name['rules'].message_type = _HOSTLIST_ACLDATA_RULEDATA
-_HOSTLIST_ACLDATA.containing_type = _HOSTLIST
 _HOSTLIST.fields_by_name['eth_srcs'].message_type = _HOSTLIST_ETHSRCSENTRY
 _HOSTLIST.fields_by_name['eth_dsts'].message_type = _HOSTLIST_ETHDSTSENTRY
 DESCRIPTOR.message_types_by_name['HostList'] = _HOSTLIST
@@ -325,20 +250,6 @@ HostList = _reflection.GeneratedProtocolMessageType('HostList', (_message.Messag
     # @@protoc_insertion_point(class_scope:HostList.HostData)
     ))
   ,
-
-  ACLData = _reflection.GeneratedProtocolMessageType('ACLData', (_message.Message,), dict(
-
-    RuleData = _reflection.GeneratedProtocolMessageType('RuleData', (_message.Message,), dict(
-      DESCRIPTOR = _HOSTLIST_ACLDATA_RULEDATA,
-      __module__ = 'forch.proto.list_hosts_pb2'
-      # @@protoc_insertion_point(class_scope:HostList.ACLData.RuleData)
-      ))
-    ,
-    DESCRIPTOR = _HOSTLIST_ACLDATA,
-    __module__ = 'forch.proto.list_hosts_pb2'
-    # @@protoc_insertion_point(class_scope:HostList.ACLData)
-    ))
-  ,
   DESCRIPTOR = _HOSTLIST,
   __module__ = 'forch.proto.list_hosts_pb2'
   # @@protoc_insertion_point(class_scope:HostList)
@@ -347,8 +258,6 @@ _sym_db.RegisterMessage(HostList)
 _sym_db.RegisterMessage(HostList.EthSrcsEntry)
 _sym_db.RegisterMessage(HostList.EthDstsEntry)
 _sym_db.RegisterMessage(HostList.HostData)
-_sym_db.RegisterMessage(HostList.ACLData)
-_sym_db.RegisterMessage(HostList.ACLData.RuleData)
 
 
 _HOSTLIST_ETHSRCSENTRY._options = None

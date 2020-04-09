@@ -1,22 +1,36 @@
 acls:
   role_red:
     - rule:
+        description: allow ICMP for IVP4
+        dl_type: 0x800      # IPv4
+        ip_proto: 1         # ICMP
         actions:
           allow: True
   role_green:
     - rule:
+        description: allow ICMP for IVP4
+        dl_type: 0x800      # IPv4
+        ip_proto: 1         # ICMP
         actions:
           allow: True
   role_blue:
     - rule:
+        description: allow all
         actions:
           allow: True
   role_yellow:
     - rule:
+        description: deny ICMP for IVP4
         dl_type: 0x800      # IPv4
         ip_proto: 1         # ICMP
         actions:
           allow: False
     - rule:
+        description: allow all
+        actions:
+          allow: True
+  tail_acl:
+    - rule:
+        description: allow all
         actions:
           allow: True
