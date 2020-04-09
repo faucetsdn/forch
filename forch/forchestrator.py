@@ -107,10 +107,10 @@ class Forchestrator:
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
         self._cpn_collector = CPNStateCollector()
 
-        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', _FAUCET_PROM_PORT_DEFAULT)
+        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', str(_FAUCET_PROM_PORT_DEFAULT))
         self._faucet_prom_endpoint = f"http://{_FAUCET_PROM_HOST}:{faucet_prom_port}"
 
-        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', _GAUGE_PROM_PORT_DEFAULT)
+        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_GAUGE_PROM_PORT_DEFAULT))
         self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
 
         LOGGER.info('Attaching event channel...')

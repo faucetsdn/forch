@@ -612,6 +612,7 @@ class FaucetStateCollector:
             self._fill_acls_behavior(
                 switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
 
+    # pylint: disable=too-many-arguments
     def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
                             metric_samples=None, port_id=None):
         for acl_config in acls_config:
