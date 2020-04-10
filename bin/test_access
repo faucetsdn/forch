@@ -21,9 +21,9 @@ function send_udp {
 function test_access {
     adesc=access-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
-    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -o '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
-    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -o '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
-    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -o '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -F '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -F '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -F '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
 }
 
 function test_dva {
