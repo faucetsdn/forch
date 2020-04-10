@@ -632,7 +632,7 @@ class FaucetStateCollector:
                         continue
                     if sample.labels.get('dp_name') != switch_name:
                         continue
-                    if port_id and sample.labels.get('in_port') != port_id:
+                    if port_id and int(sample.labels.get('in_port')) != port_id:
                         continue
                     rule_map['packet_count'] = int(sample.value)
                     has_sample = True
