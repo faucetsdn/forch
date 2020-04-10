@@ -84,6 +84,7 @@ dps:
       1:
         acls_in:
         - role_red
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 200
@@ -289,6 +290,7 @@ dps:
       1:
         acls_in:
         - role_green
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 300
@@ -494,6 +496,7 @@ dps:
       1:
         acls_in:
         - role_yellow
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 300

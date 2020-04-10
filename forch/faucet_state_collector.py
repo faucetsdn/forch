@@ -375,18 +375,18 @@ class FaucetStateCollector:
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
     @_pre_check()
-    def get_switch_state(self, switch, port, gauge_metrics, url_base=None):
+    def get_switch_state(self, switch, port, metrics, url_base=None):
         """get a set of all switches"""
-        return self._get_switch_state(switch, port, gauge_metrics, url_base)
+        return self._get_switch_state(switch, port, metrics, url_base)
 
-    def _get_switch_state(self, switch, port, gauge_metrics=None, url_base=None):
+    def _get_switch_state(self, switch, port, metrics=None, url_base=None):
         """Get switch state impl"""
         switches_data = {}
         broken = []
         change_count = 0
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
         for switch_name in self.switch_states:
-            switch_data = self._get_switch(switch_name, port, gauge_metrics)
+            switch_data = self._get_switch(switch_name, port, metrics)
             switches_data[switch_name] = switch_data
             change_count += switch_data.get(SW_STATE_CHANGE_COUNT, 0)
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
@@ -461,17 +461,17 @@ class FaucetStateCollector:
             switch_map_obj[SW_STATE_LAST_CHANGE] = last_change
             return switch_map_obj
 
-    def _get_switch(self, switch_name, port, gauge_metrics=None):
+    def _get_switch(self, switch_name, port, metrics=None):
         """lock protect get_switch_raw"""
         with self.lock:
-            return self._get_switch_raw(switch_name, port, gauge_metrics)
+            return self._get_switch_raw(switch_name, port, metrics)
 
     def _get_switch_config(self, switch_name):
         if switch_name not in self.faucet_config.get(DPS_CFG, {}):
             raise Exception(f'Missing switch configuration for {switch_name}')
         return self.faucet_config[DPS_CFG][switch_name]
 
-    def _get_switch_raw(self, switch_name, port, gauge_metrics=None):
+    def _get_switch_raw(self, switch_name, port, metrics=None):
         """get switches state"""
         switch_map = {}
 
@@ -497,16 +497,16 @@ class FaucetStateCollector:
             port_id = int(port)
             switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
             switch_map['ports_restrict'] = port_id
-            self._fill_port_behavior(switch_name, port_id, switch_port_map[port_id], gauge_metrics)
+            self._fill_port_behavior(switch_name, port_id, switch_port_map[port_id], metrics)
         else:
             for port_id in switch_states.get(PORTS, {}):
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
                 self._fill_port_behavior(
-                    switch_name, port_id, switch_port_map[port_id], gauge_metrics)
+                    switch_name, port_id, switch_port_map[port_id], metrics)
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
-        self._fill_vlan_behavior(switch_name, switch_map, gauge_metrics)
+        self._fill_vlan_behavior(switch_name, switch_map, metrics)
 
         return switch_map
 
@@ -1102,7 +1102,7 @@ class FaucetStateCollector:
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
-    def get_list_hosts(self, url_base, src_mac, gauge_metrics):
+    def get_list_hosts(self, url_base, src_mac, metrics):
         """Get access devices"""
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
@@ -1118,7 +1118,7 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
-            self._fill_port_behavior(switch, port, mac_deets, gauge_metrics)
+            self._fill_port_behavior(switch, port, mac_deets, metrics)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
