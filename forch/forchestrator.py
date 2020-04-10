@@ -21,7 +21,7 @@ from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
-from forch.varz_state_collector import VarzStateCollector
+import forch.varz_state_collector as varz_state_collector
 
 from forch.utils import yaml_proto
 
@@ -37,7 +37,29 @@ _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
 _SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
-_PROMETHEUS_HOST = '127.0.0.1'
+_FAUCET_PROM_HOST = '127.0.0.1'
+_FAUCET_PROM_PORT_DEFAULT = 9302
+_GAUGE_PROM_HOST = '127.0.0.1'
+_GAUGE_PROM_PORT_DEFAULT = 9303
+
+_TARGET_FAUCET_METRICS = (
+    'port_status',
+    'port_lacp_state',
+    'dp_status',
+    'learned_l2_port',
+    'port_stack_state',
+    'faucet_config_hash_info',
+    'faucet_event_id',
+    'dp_root_hop_port',
+    'faucet_stack_root_dpid',
+    'faucet_config_reload_cold',
+    'faucet_config_reload_warm'
+)
+
+_TARGET_GAUGE_METRICS = (
+    'flow_packet_count_vlan_acl',
+    'flow_packet_count_port_acl'
+)
 
 
 class Forchestrator:
@@ -52,9 +74,10 @@ class Forchestrator:
         self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
+        self._faucet_prom_endpoint = None
+        self._gauge_prom_endpoint = None
 
         self._faucet_collector = None
-        self._varz_collector = None
         self._local_collector = None
         self._cpn_collector = None
 
@@ -84,11 +107,11 @@ class Forchestrator:
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
         self._cpn_collector = CPNStateCollector()
 
-        prom_port = os.getenv('PROMETHEUS_PORT')
-        if not prom_port:
-            raise Exception("PROMETHEUS_PORT is not set")
-        prom_url = f"http://{_PROMETHEUS_HOST}:{prom_port}"
-        self._varz_collector = VarzStateCollector(prom_url)
+        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', str(_FAUCET_PROM_PORT_DEFAULT))
+        self._faucet_prom_endpoint = f"http://{_FAUCET_PROM_HOST}:{faucet_prom_port}"
+
+        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_GAUGE_PROM_PORT_DEFAULT))
+        self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -252,7 +275,8 @@ class Forchestrator:
         ])
 
     def _get_varz_config(self):
-        metrics = self._varz_collector.get_metrics()
+        metrics = varz_state_collector.retry_get_metrics(
+            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -573,7 +597,12 @@ class Forchestrator:
         switch = params.get('switch')
         port = params.get('port')
         host = self._extract_url_base(path)
-        reply = self._faucet_collector.get_switch_state(switch, port, host)
+        if self._faucetizer:
+            gauge_metrics = varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+            reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
+        else:
+            reply = self._faucet_collector.get_switch_state(switch, port, None, host)
         return self._augment_state_reply(reply, path)
 
     def get_dataplane_state(self, path, params):
@@ -593,7 +622,12 @@ class Forchestrator:
         """List learned access devices"""
         eth_src = params.get('eth_src')
         host = self._extract_url_base(path)
-        reply = self._faucet_collector.get_list_hosts(host, eth_src)
+        if self._faucetizer:
+            gauge_metrics = varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+            reply = self._faucet_collector.get_list_hosts(host, eth_src, gauge_metrics)
+        else:
+            reply = self._faucet_collector.get_list_hosts(host, eth_src)
         return self._augment_state_reply(reply, path)
 
     def get_cpn_state(self, path, params):

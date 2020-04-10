@@ -3,6 +3,8 @@
  */
 syntax = "proto3";
 
+import "forch/proto/acl_state.proto";
+
 /*
  * List of hosts
  */
@@ -34,7 +36,7 @@ message HostList {
         int32 vlan = 4;
 
         // ACLs
-        repeated string acls = 5;
+        repeated ACLState acls = 5;
 
         // link to list_hosts API to list possible destinations
         // or to host_path API to list path
