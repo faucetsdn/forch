@@ -597,9 +597,12 @@ class Forchestrator:
         switch = params.get('switch')
         port = params.get('port')
         host = self._extract_url_base(path)
-        gauge_metrics = varz_state_collector.retry_get_metrics(
-            self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
-        reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
+        if self._faucetizer:
+            gauge_metrics = varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+            reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
+        else:
+            reply = self._faucet_collector.get_switch_state(switch, port, None, host)
         return self._augment_state_reply(reply, path)
 
     def get_dataplane_state(self, path, params):
@@ -619,9 +622,12 @@ class Forchestrator:
         """List learned access devices"""
         eth_src = params.get('eth_src')
         host = self._extract_url_base(path)
-        gauge_metrics = varz_state_collector.retry_get_metrics(
-            self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
-        reply = self._faucet_collector.get_list_hosts(host, eth_src, gauge_metrics)
+        if self._faucetizer:
+            gauge_metrics = varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+            reply = self._faucet_collector.get_list_hosts(host, eth_src, gauge_metrics)
+        else:
+            reply = self._faucet_collector.get_list_hosts(host, eth_src)
         return self._augment_state_reply(reply, path)
 
     def get_cpn_state(self, path, params):

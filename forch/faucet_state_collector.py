@@ -375,7 +375,7 @@ class FaucetStateCollector:
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
     @_pre_check()
-    def get_switch_state(self, switch, port, metrics, url_base=None):
+    def get_switch_state(self, switch, port, metrics=None, url_base=None):
         """get a set of all switches"""
         return self._get_switch_state(switch, port, metrics, url_base)
 
@@ -582,13 +582,19 @@ class FaucetStateCollector:
         for vid, vlan_config in dp_config.vlans.items():
             if not vlan_config.acls_in:
                 continue
+
+            acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
+
+            if metrics is None:
+                self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in)
+                continue
+
             if 'flow_packet_count_vlan_acl' not in metrics:
                 raise Exception(f'VLAN ACL metric is not available for VLAN {vid}')
             samples = metrics['flow_packet_count_vlan_acl'].samples
-            acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
             self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
 
-    def _fill_port_behavior(self, switch_name, port_id, port_map, metrics):
+    def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
         if not dp_config:
             LOGGER.warning('Switch not defined in dps config: %s', switch_name)
@@ -603,17 +609,22 @@ class FaucetStateCollector:
             port_map['vlan'] = int(port_config.native_vlan.vid)
 
         if port_config.acls_in:
-            if 'flow_packet_count_port_acl' not in metrics:
-                raise Exception('No port acl metric available')
-
-            samples = metrics['flow_packet_count_port_acl'].samples
             acl_maps_list = port_map.setdefault('acls', [])
-            self._fill_acls_behavior(
-                switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
+
+            if metrics is None:
+                self._fill_acls_behavior(
+                    switch_name, acl_maps_list, port_config.acls_in, None, port_id)
+            else:
+                if 'flow_packet_count_port_acl' not in metrics:
+                    raise Exception('No port acl metric available')
+
+                samples = metrics['flow_packet_count_port_acl'].samples
+                self._fill_acls_behavior(
+                    switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
 
     # pylint: disable=too-many-arguments
     def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
-                            metric_samples, port_id=None):
+                            metric_samples=None, port_id=None):
         for acl_config in acls_config:
             acl_map = {'name': acl_config._id}
             rules_map_list = acl_map.setdefault('rules', [])
@@ -625,6 +636,9 @@ class FaucetStateCollector:
 
                 if not cookie:
                     raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
+
+                if not metric_samples:
+                    continue
 
                 has_sample = False
                 for sample in metric_samples:
@@ -1102,7 +1116,7 @@ class FaucetStateCollector:
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
-    def get_list_hosts(self, url_base, src_mac, metrics):
+    def get_list_hosts(self, url_base, src_mac, metrics=None):
         """Get access devices"""
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
