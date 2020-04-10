@@ -582,7 +582,7 @@ class FaucetStateCollector:
         for vid, vlan_config in dp_config.vlans.items():
             if not vlan_config.acls_in:
                 continue
-            if not 'flow_packet_count_vlan_acl' in metrics:
+            if 'flow_packet_count_vlan_acl' not in metrics:
                 raise Exception(f'VLAN ACL metric is not available for VLAN {vid}')
             samples = metrics['flow_packet_count_vlan_acl'].samples
             acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
@@ -603,7 +603,7 @@ class FaucetStateCollector:
             port_map['vlan'] = int(port_config.native_vlan.vid)
 
         if port_config.acls_in:
-            if not 'flow_packet_count_port_acl' in metrics:
+            if 'flow_packet_count_port_acl' not in metrics:
                 raise Exception('No port acl metric available')
 
             samples = metrics['flow_packet_count_port_acl'].samples
