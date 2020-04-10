@@ -18,11 +18,12 @@ Starting dva-vlan-assigned tests
 "role_yellow"
 @switch_state dva-vlan-assigned
 200
-"1000"
+"allow DHCP"
 0
 300
 "deny ICMP"
+@list_hosts dva-vlan-assigned
 200
-"5000"
+"allow ICMP"
 300
-"8000"
+0
