@@ -21,9 +21,9 @@ function send_udp {
 function test_access {
     adesc=access-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
-    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
-    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
-    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -oF '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -o '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -o '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+    wget localhost:$PROM_PT -O- 2>/dev/null | grep -F '1.0' | grep -o '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
 }
 
 function test_dva {
@@ -38,14 +38,14 @@ function test_dva {
     fetch_forch list_hosts
 
     api_result=$fout_dir/sys_config.json
-    echo "@sys_config $fdesc"
+    echo "@sys_config $fdesc" | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
     jq '.faucet.dps."nz-kiwi-t2sw3".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/switch_state.json
-    echo "@switch_state $fdesc"
+    echo "@switch_state $fdesc" | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".vlans."100".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw2".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
@@ -53,7 +53,7 @@ function test_dva {
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/list_hosts.json
-    echo "@list_hosts $fdesc"
+    echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:01".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".vlan' $api_result | tee -a $TEST_RESULTS
