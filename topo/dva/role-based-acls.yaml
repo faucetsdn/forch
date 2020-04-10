@@ -25,10 +25,6 @@ acls:
         ip_proto: 1         # ICMP
         actions:
           allow: False
-    - rule:
-        description: allow all
-        actions:
-          allow: True
   tail_acl:
     - rule:
         description: allow all
