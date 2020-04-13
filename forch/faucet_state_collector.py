@@ -916,7 +916,7 @@ class FaucetStateCollector:
                 egress_name = key
             elif link_state != STATE_UP:
                 link_down = key
-        if state_set == set([STATE_ACTIVE, STATE_UP]):
+        if state_set == set([STATE_ACTIVE, STATE_UP]) or state_set == set([STATE_ACTIVE]):
             state = State.healthy
         elif STATE_ACTIVE in state_set:
             state = State.damaged
