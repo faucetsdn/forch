@@ -11,6 +11,8 @@
 * Tweaks to improve forch test stability (#66)
 * Forch varz interface with basic varz (#64)
 * Remove restart_type related metrics from NOAH API (#62)
+* Modify authenticator to function as a mab standalone script (#76)
+
 ## Faucet 1.9.37
 * Lacp_standby 
 ## Faucet 1.9.36
