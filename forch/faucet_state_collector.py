@@ -429,10 +429,15 @@ class FaucetStateCollector:
         """Return egress state obj"""
         with self.lock:
             egress_obj = self.topo_state.get('egress', {})
-            target_obj[EGRESS_STATE] = State.State.Name(egress_obj.get(EGRESS_STATE))
-            target_obj[EGRESS_DETAIL] = egress_obj.get(EGRESS_DETAIL)
-            target_obj[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
-            target_obj[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+            if EGRESS_STATE not in egress_obj:
+                target_obj[EGRESS_STATE] = State.unkown
+                target_obj[EGRESS_DETAIL] = 'No LAG information received'
+            else:
+                target_obj[EGRESS_STATE] = State.State.Name(egress_obj.get(EGRESS_STATE))
+                target_obj[EGRESS_DETAIL] = egress_obj.get(EGRESS_DETAIL)
+                target_obj[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
+                target_obj[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+
             target_obj[TOPOLOGY_ROOT] = self.topo_state.get(TOPOLOGY_ROOT)
             target_obj[EGRESS_LINK_MAP] = copy.deepcopy(egress_obj.get(EGRESS_LINK_MAP))
 
