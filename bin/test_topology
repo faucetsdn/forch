@@ -18,7 +18,7 @@ fi
 
 function test_faucetizer {
     test_case=$1
-    fc_file=faucet.yaml
+    fc_file=faucet_structural.yaml
     state_file=devices_$test_case.yaml
     sample_file=faucet_$test_case.yaml
     output_file=faucet_$test_case.yaml
