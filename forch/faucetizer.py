@@ -12,7 +12,7 @@ from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, Device, SegmentsToVlans
-from forch.proto.forch_configuration_pb2 import OrchestrationConfig
+from forch.proto.forch_configuration_pb2 import ForchConfig
 
 LOGGER = logging.getLogger('faucetizer')
 
@@ -119,9 +119,19 @@ class Faucetizer:
 
     def _faucetize(self):
         if not self._structural_faucet_config:
-            raise Exception("Structural faucet configuration not provided")
+            raise Exception('Structural faucet configuration not provided')
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
+
+        if not self._config.unauthenticated_vlan:
+            raise Exception('Unauthenticated vlan is not configured')
+
+        for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
+            for port, port_map in switch_map.get('interfaces', {}).items():
+                if 'stack' in port_map or 'lacp' in port_map or 'output_only' in port_map:
+                    continue
+                port_map['native_vlan'] = self._config.unauthenticated_vlan
+
         devices = {**self._dynamic_devices, **self._static_devices}
         for mac, device in devices.items():
             if device.placement.switch and device.behavior.segment:
@@ -203,6 +213,12 @@ def load_faucet_config(file):
         return yaml.safe_load(config_file)
 
 
+def load_orch_config(file):
+    """Load forch config and return orchestration config"""
+    forch_config = yaml_proto(file, ForchConfig)
+    return forch_config.orchestration
+
+
 def parse_args(raw_args):
     """Parse sys args"""
     parser = argparse.ArgumentParser(prog='faucetizer', description='faucetizer')
@@ -212,6 +228,8 @@ def parse_args(raw_args):
                         help='segments to vlans mapping input file')
     parser.add_argument('-c', '--config-input', type=str, default='faucet.yaml',
                         help='structural faucet config input')
+    parser.add_argument('-f', '--forch-config', type=str, default='forch.yaml',
+                        help='unauthenticated_vlan')
     parser.add_argument('-o', '--output', type=str, default='faucet.yaml',
                         help='behavioral faucet config output')
     return parser.parse_args(raw_args)
@@ -227,7 +245,8 @@ if __name__ == '__main__':
     SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
     LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
 
-    ORCH_CONFIG = OrchestrationConfig()
+    FORCH_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.forch_config)
+    ORCH_CONFIG = load_orch_config(FORCH_CONFIG_FILE)
     STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
     BEHAVIORAL_CONFIG_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
 
