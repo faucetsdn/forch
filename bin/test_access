@@ -22,9 +22,9 @@ function test_access {
     adesc=access-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
     metrics=$(wget localhost:$PROM_PT -O- 2>/dev/null)
-    echo $metrics | grep 'nz-kiwi-t2sw1' | grep -F 'vid="100"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
-    echo $metrics | grep 'nz-kiwi-t2sw2' | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
-    echo $metrics | grep 'nz-kiwi-t2sw3' | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
+    grep 'nz-kiwi-t2sw1' <<< $metrics | grep -F 'vid="100"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+    grep 'nz-kiwi-t2sw2' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+    grep 'nz-kiwi-t2sw3' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
 }
 
 function test_dva {
