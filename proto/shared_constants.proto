@@ -12,7 +12,7 @@ message State {
    */
   enum State {
     // unkown: no enough information to evaluate the state
-    unkown = 0;
+    unknown = 0;
 
     // broken: unable to function because of error (default)
     broken = 1;

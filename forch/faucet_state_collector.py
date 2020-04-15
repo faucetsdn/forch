@@ -430,7 +430,7 @@ class FaucetStateCollector:
         with self.lock:
             egress_obj = self.topo_state.get('egress', {})
             if EGRESS_STATE not in egress_obj:
-                target_obj[EGRESS_STATE] = State.unkown
+                target_obj[EGRESS_STATE] = State.unknown
                 target_obj[EGRESS_DETAIL] = 'No LAG information received'
             else:
                 target_obj[EGRESS_STATE] = State.State.Name(egress_obj.get(EGRESS_STATE))
