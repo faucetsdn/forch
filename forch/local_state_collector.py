@@ -50,7 +50,7 @@ class LocalStateCollector:
         """Initialize LocalStateCollector"""
         if not self._check_vrrp:
             self._vrrp_state['is_master'] = True
-            self._active_state_handler(True)
+            self._active_state_handler(State.active)
 
         self.start_process_loop()
 
