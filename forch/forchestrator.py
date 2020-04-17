@@ -157,7 +157,7 @@ class Forchestrator:
         if not static_placement_file:
             return
         placement_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
+            os.getenv('FORCH_CONFIG_DIR'), static_placement_file)
         devices_state = yaml_proto(placement_file, DevicesState)
         for eth_src, device_placement in devices_state.device_mac_placements.items():
             self._process_device_placement(eth_src, device_placement, static=True)
@@ -167,7 +167,7 @@ class Forchestrator:
         if not static_behaviors_file:
             return
         static_behaviors_path = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
+            os.getenv('FORCH_CONFIG_DIR'), static_behaviors_file)
         devices_state = faucetizer.load_devices_state(static_behaviors_path)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._process_device_behavior(mac, device_behavior, static=True)
@@ -184,7 +184,7 @@ class Forchestrator:
         structural_config_file = orch_config.structural_config_file
         if structural_config_file:
             self._structural_config_file = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+                os.getenv('FORCH_CONFIG_DIR'), structural_config_file)
 
             if not os.path.exists(self._structural_config_file):
                 raise Exception(
@@ -208,7 +208,7 @@ class Forchestrator:
         orch_config = self._config.orchestration
 
         segments_vlans_file = orch_config.segments_vlans_file or _SEGMENTS_VLAN_DEFAULT
-        segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
+        segments_vlans_path = os.path.join(os.getenv('FORCH_CONFIG_DIR'), segments_vlans_file)
         LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
