@@ -607,8 +607,7 @@ class FaucetStateCollector:
 
         port_config = dp_config.ports.get(port_id)
         if not port_config:
-            LOGGER.warning('Port not defined in dps config: %s, %s', switch_name, port_id)
-            return
+            raise Exception('Port not defined in dps config: %s, %s', switch_name, port_id)
 
         if port_config.native_vlan:
             port_map['vlan'] = int(port_config.native_vlan.vid)
