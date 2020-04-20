@@ -12,6 +12,7 @@
 * Forch varz interface with basic varz (#64)
 * Remove restart_type related metrics from NOAH API (#62)
 * Modify authenticator to function as a mab standalone script (#76)
+* Change base dir of forch related files (#80)
 
 ## Faucet 1.9.37
 * Lacp_standby 
