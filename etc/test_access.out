@@ -5,21 +5,25 @@ Starting access-initial test...
 Starting access-minimal-learning test...
 9a:02:57:1e:8f:01
 %%% vlan-assigned
-radius_query_responses_total > 0
+Radius results 0 1
 Starting access-vlan-assigned test...
 9a:02:57:1e:8f:01
 9a:02:57:1e:8f:02
 9a:02:57:1e:8f:03
 Starting dva-vlan-assigned tests
+@sys_config dva-vlan-assigned
 200
 "role_green"
 300
 "role_yellow"
+@switch_state dva-vlan-assigned
 200
-"role_green"
+"allow DHCP"
+0
 300
-"role_yellow"
+"deny ICMP"
+@list_hosts dva-vlan-assigned
 200
-"role_red"
+"allow ICMP"
 300
-"role_yellow"
+0

@@ -9,6 +9,7 @@ site:
       port: 9020
 orchestration:
   structural_config_file: faucet_structural.yaml
+  unauthenticated_vlan: 100
   static_device_placement: example_placement.yaml
   static_device_behavior: example_behavior.yaml
   segments_vlans_file: example_segments-to-vlans.yaml

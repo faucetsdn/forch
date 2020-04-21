@@ -11,32 +11,35 @@ message State {
    * Enumeration of states
    */
   enum State {
+    // unkown: no enough information to evaluate the state
+    unknown = 0;
+
     // broken: unable to function because of error (default)
-    broken = 0;
+    broken = 1;
 
     // active: in function
-    active = 1;
+    active = 2;
 
     // damaged: partially broken
-    damaged = 2;
+    damaged = 3;
 
     // down: not in function
-    down = 3;
+    down = 4;
 
     // healthy: functioning properly
-    healthy = 4;
+    healthy = 5;
 
     // inactive: controller not active
-    inactive = 5;
+    inactive = 6;
 
     // initializing: in intialization after start
-    initializing = 6;
+    initializing = 7;
 
     // split: controller master but can not reach peer controller
-    split = 7;
+    split = 8;
 
     // up: up but not in function
-    up = 8;
+    up = 9;
   }
 }
 

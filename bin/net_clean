@@ -10,7 +10,7 @@ for image in forch/faucet forch/faux forch/gauge; do
 done
 
 echo Killing any old instances of forch...
-sudo kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+sudo kill `ps ax | fgrep forch | fgrep -v fgrep | awk '{print $1}'`
 
 echo Cleaning docker containers...
 containers=`docker ps --format '{{.Names}}'`

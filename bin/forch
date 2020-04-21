@@ -32,7 +32,8 @@ if [ -n "$base" ]; then
     FAUCET_CONFIG_DIR=$FORCH_BASE
     FORCH_CONFIG_DIR=$FORCH_BASE
     FORCH_LOG_DIR=$FORCH_BASE
-    PROM_PORT_FILE=$FORCH_BASE/PROM_PORT.9302
+    FAUCET_PROM_PORT_FILE=$FORCH_BASE/PROM_PORT.9302
+    GAUGE_PROM_PORT_FILE=$FORCH_BASE/PROM_PORT.9303
 else
     FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK}
     FAUCET_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
@@ -52,14 +53,24 @@ else
     echo Using existing controller name $CONTROLLER_NAME
 fi
 
-if [ -n "$PROMETHEUS_PORT" ]; then
-    echo Using existing prometheus port $PROMETHEUS_PORT
-elif [ -f "$PROM_PORT_FILE" ]; then
-    PROMETHEUS_PORT=$(< $PROM_PORT_FILE)
-    echo Using prometheus port $PROMETHEUS_PORT from $PROM_PORT_FILE
+if [ -n "$FAUCET_PROM_PORT" ]; then
+    echo Using existing faucet prometheus port $FAUCET_PROM_PORT
+elif [ -f "$FAUCET_PROM_PORT_FILE" ]; then
+    FAUCET_PROM_PORT=$(< $FAUCET_PROM_PORT_FILE)
+    echo Using faucet prometheus port $FAUCET_PROM_PORT from $FAUCET_PROM_PORT_FILE
 else
-    PROMETHEUS_PORT=9302
-    echo Using default prometheus port $PROMETHEUS_PORT
+    FAUCET_PROM_PORT=9302
+    echo Using default faucet prometheus port $FAUCET_PROM_PORT
+fi
+
+if [ -n "$GAUGE_PROM_PORT" ]; then
+    echo Using existing gauge prometheus port $GAUGE_PROM_PORT
+elif [ -f "$GAUGE_PROM_PORT_FILE" ]; then
+    GAUGE_PROM_PORT=$(< $GAUGE_PROM_PORT_FILE)
+    echo Using gauge prometheus port $GAUGE_PROM_PORT from $GAUGE_PROM_PORT_FILE
+else
+    GAUGE_PROM_PORT=9303
+    echo Using default gauge prometheus port $GAUGE_PROM_PORT
 fi
 
 if [ -n "$FORCH_LOG_DIR" ]; then
@@ -73,7 +84,8 @@ else
 fi
 
 export CONTROLLER_NAME
-export PROMETHEUS_PORT
+export FAUCET_PROM_PORT
+export GAUGE_PROM_PORT
 export FAUCET_EVENT_SOCK
 export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR

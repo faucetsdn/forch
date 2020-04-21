@@ -5,6 +5,7 @@ syntax = "proto3";
 
 import "forch/proto/shared_constants.proto";
 import "forch/proto/path_node.proto";
+import "forch/proto/acl_state.proto";
 
 /*
  * State of switches
@@ -66,6 +67,9 @@ message SwitchState {
     // All the egress port macs on this switch
     map<string, PortInfo> egress_port_macs = 11;
 
+    // States of all VLANs used by this switch, indexed by VLAN id
+    map<int32, VLANState> vlans = 12;
+
     // Attributes about this switch
     message Attributes {
       int64 dp_id = 1;
@@ -84,7 +88,7 @@ message SwitchState {
     int32 vlan = 3;
 
     // ACLs
-    repeated string acls = 4;
+    repeated ACLState acls = 4;
 
     // Port state last change time
     string state_last_change = 5;
@@ -131,5 +135,10 @@ message SwitchState {
 
     // Path
     repeated PathNode path = 3;
+  }
+
+  message VLANState {
+    // vlan acls states
+    repeated ACLState acls = 1;
   }
 }

@@ -252,7 +252,7 @@ function test_stack {
 
 function restart_forch {
     echo Killing any old instances of forch...
-    kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep forch | fgrep -v fgrep | awk '{print $1}'`
     kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
 
     rm -f $forch_log
@@ -386,13 +386,20 @@ function stop_and_cleanup_radius {
     docker stop radius_server_1 || true && docker rm radius_server_1 || true
 }
 
-function validate_non_zero_varz {
+function validate_radius_varz {
+    echo validating
+    set -x
+    timeouts=$(wget 0.0.0.0:8302 -O- | grep radius_query_timeouts_total | \
+		   grep -v 'HELP\|TYPE' | awk '{print $2}')
+    responses=$(wget 0.0.0.0:8302 -O- | grep radius_query_responses_total | \
+		    grep -v 'HELP\|TYPE' | awk '{print $2}')
+    timeouts=${timeouts%.0}
+    responses=${responses%.0}
+    echo Radius results $((timeouts > 0)) $((responses > 0)) | tee -a $TEST_RESULTS
+}
+
+function test_varz_value {
     varz=$1
-    results=$2
     value=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
-    if [ "$value" -gt 0 ]; then
-        echo "$varz > 0" | tee -a $results
-    else
-        echo "$varz = 0" | tee -a $results
-    fi;
+    echo $varz $value | tee -a $TEST_RESULTS
 }
