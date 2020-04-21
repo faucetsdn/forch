@@ -546,7 +546,7 @@ class Forchestrator:
             for file_name, file_hash in new_conf_hashes.items():
                 LOGGER.info('Loaded conf %s as %s', file_name, file_hash)
                 self._config_summary.hashes[file_name] = file_hash
-            for warning, message in self._config_warnings(top_conf):
+            for warning, message in self._validate_config(top_conf):
                 LOGGER.warning('Config warning %s: %s', warning, message)
                 self._config_summary.warnings[warning] = message
             return config_hash_info, new_dps, top_conf
@@ -554,13 +554,14 @@ class Forchestrator:
             LOGGER.error('Cannot read faucet config: %s', e)
             raise e
 
-    def _config_warnings(self, config):
+    def _validate_config(self, config):
         warnings = []
         for dp_name, dp_obj in config['dps'].items():
+            if 'interface_ranges' in dp_obj:
+                raise Exception(
+                    'Forch does not support parameter \'interface_ranges\' in faucet config')
             if 'faucet_dp_mac' in dp_obj:
                 warnings.append((dp_name, 'faucet_dp_mac defined'))
-            if 'interface_ranges' in dp_obj:
-                warnings.append((dp_name, 'interface_ranges defined'))
             for if_name, if_obj in dp_obj['interfaces'].items():
                 if_key = '%s:%02d' % (dp_name, int(if_name))
                 is_egress = 1 if 'lacp' in if_obj else 0
