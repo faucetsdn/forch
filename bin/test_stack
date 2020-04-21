@@ -85,7 +85,6 @@ test_varz_value process_state{process=\"forch\"}
 test_varz_value process_state{process=\"sleep\"}
 
 reset_stack
-exit 1
 sleep 32
 
 echo %%% t2sw3 down, cpn nz-kiwi-ctl1 up, t1sw1-eth9 down | tee -a $TEST_RESULTS
