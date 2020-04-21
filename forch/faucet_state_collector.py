@@ -386,7 +386,8 @@ class FaucetStateCollector:
         change_count = 0
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
         for switch_name in self.switch_states:
-            switch_data = self._get_switch(switch_name, port, metrics)
+            arg_port = port if switch_name == switch else None
+            switch_data = self._get_switch(switch_name, arg_port, metrics)
             switches_data[switch_name] = switch_data
             change_count += switch_data.get(SW_STATE_CHANGE_COUNT, 0)
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
