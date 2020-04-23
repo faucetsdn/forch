@@ -2,8 +2,8 @@
 
 import functools
 import logging
-import requests
 import threading
+import requests
 from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 
 import forch.http_server
