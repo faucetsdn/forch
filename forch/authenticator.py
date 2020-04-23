@@ -185,7 +185,6 @@ if __name__ == '__main__':
         OrchestrationConfig.AuthConfig
     )
     MOCK_RADIUS_QUERY = MockRadiusQuery()
-    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
 
     if ARGS.mab:
         AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback)
@@ -193,6 +192,7 @@ if __name__ == '__main__':
         input('Press any key to exit.')
     else:
         # test radius query call for device placement
+        AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
         TEST_MAC = '00:aa:bb:cc:dd:ee'
         DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
         AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)
