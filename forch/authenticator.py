@@ -190,6 +190,7 @@ if __name__ == '__main__':
     if ARGS.mab:
         AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback)
         AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)
+        input('Press any key to exit.')
     else:
         # test radius query call for device placement
         TEST_MAC = '00:aa:bb:cc:dd:ee'
