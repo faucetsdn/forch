@@ -9,6 +9,7 @@ import forch.http_server
 
 LOGGER = logging.getLogger('metrics')
 DEFAULT_VARZ_PORT = 8302
+DEFAULT_PROXY_PORT = 8080
 
 
 class ForchMetrics():
@@ -17,8 +18,10 @@ class ForchMetrics():
 
     def __init__(self, varz_config):
         self._local_port = varz_config.varz_port or DEFAULT_VARZ_PORT
+        self._proxy_port = DEFAULT_PROXY_PORT # TODO: Anurag make configurable
         LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
+        self._proxy_server = None
         self._metrics = {}
 
     def start(self):
@@ -31,6 +34,17 @@ class ForchMetrics():
             self._http_server.map_request('', functools.partial(self._show_error, e))
         finally:
             threading.Thread(target=self._http_server.start_server(), daemon=True).start()
+
+        self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
+        try:
+            self._proxy_server.map_request('faucet', self.get_faucet_metrics)
+            self._proxy_server.map_request('forch', self.get_forch_metrics)
+            self._proxy_server.map_request('gauge', self.get_gauge_metrics)
+            self._proxy_server.map_request('', self.get_proxy_help)
+        except Exception as e:
+            self._proxy_server.map_request('', functools.partial(self._show_error, e))
+        finally:
+            threading.Thread(target=self._proxy_server.start_server(), daemon=True).start()
 
     def stop(self):
         """Kill varz server"""
@@ -85,6 +99,25 @@ class ForchMetrics():
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
 
+    def get_faucet_metrics(self, path, params):
+        """Get faucet metrics from given port"""
+        return self._get_metrics_from_port('faucet')
+
+    def get_forch_metrics(self, path, params):
+        """Get forch metrics from given port"""
+        return self._get_metrics_from_port('forch')
+
+    def get_gauge_metrics(self, path, params):
+        """Get gauge metrics from given port"""
+        return self._get_metrics_from_port('gauge')
+
+    def _get_metrics_from_port(self, port):
+        return port
+
     def _show_error(self, error, path, params):
         """Display errors"""
         return f"Error creating varz interface: {str(error)}"
+
+    def get_proxy_help(self, path, params):
+        """Display metrics proxy help"""
+        return "Use /faucet, /gauge or /forch to get respective metrics"
