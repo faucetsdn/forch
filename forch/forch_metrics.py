@@ -44,9 +44,9 @@ class ForchMetrics():
 
         self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
         try:
-            self._proxy_server.map_request('faucet', self.get_faucet_metrics)
-            self._proxy_server.map_request('forch', self.get_forch_metrics)
-            self._proxy_server.map_request('gauge', self.get_gauge_metrics)
+            for page in self._metric_pages:
+                method = lambda path, params: self._get_path_metrics(path.split('/')[1])
+                self._proxy_server.map_request(page, method)
             self._proxy_server.map_request('', self.get_proxy_help)
         except Exception as e:
             self._proxy_server.map_request('', functools.partial(self._show_error, e))
@@ -106,19 +106,7 @@ class ForchMetrics():
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
 
-    def get_faucet_metrics(self, path, params):
-        """Get faucet metrics from given port"""
-        return self._get_metrics_from_port('faucet')
-
-    def get_forch_metrics(self, path, params):
-        """Get forch metrics from given port"""
-        return self._get_metrics_from_port('forch')
-
-    def get_gauge_metrics(self, path, params):
-        """Get gauge metrics from given port"""
-        return self._get_metrics_from_port('gauge')
-
-    def _get_metrics_from_port(self, path):
+    def _get_path_metrics(self, path):
         url = self._metric_pages.get(path)
         try:
             data = requests.get(url)
