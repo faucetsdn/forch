@@ -165,6 +165,12 @@ message EventClientConfig {
  * Varz interface section in Forch configuration
  */
 message VarzInterfaceConfig {
-  // port number to curl for varz list
-  int32 varz_port = 1;
+  // port number to curl for forch varz list
+  int32 forch_varz_port = 1;
+
+  // port number to curl for faucet varz list
+  int32 faucet_varz_port = 2;
+
+  // port number to curl for gauge varz list
+  int32 gauge_varz_port = 3;
 }

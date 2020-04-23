@@ -21,7 +21,8 @@ class ForchMetrics():
     _reg = REGISTRY
 
     def __init__(self, varz_config):
-        self._local_port = varz_config.varz_port or DEFAULT_FORCH_VARZ_PORT
+        self._varz_config = varz_config
+        self._local_port = self._varz_config.forch_varz_port or DEFAULT_FORCH_VARZ_PORT
         self._proxy_port = DEFAULT_PROXY_PORT  # TODO: Anurag make configurable
         self._metric_pages = {}
         LOGGER.info('forch_metrics port is %s', self._local_port)
@@ -125,9 +126,11 @@ class ForchMetrics():
         self._metric_pages[path] = self._get_url(server, port)
 
     def _register_metric_pages(self):
-        self._register_metric_page('faucet', LOCALHOST, DEFAULT_FAUCET_VARZ_PORT)
-        self._register_metric_page('gauge', LOCALHOST, DEFAULT_GAUGE_VARZ_PORT)
-        self._register_metric_page('forch', LOCALHOST, DEFAULT_FORCH_VARZ_PORT)
+        self._register_metric_page('faucet', LOCALHOST,
+                                   self._varz_config.faucet_varz_port or DEFAULT_FAUCET_VARZ_PORT)
+        self._register_metric_page('gauge', LOCALHOST,
+                                   self._varz_config.gauge_varz_port or DEFAULT_GAUGE_VARZ_PORT)
+        self._register_metric_page('forch', LOCALHOST, self._local_port)
 
     def get_proxy_help(self, path, params):
         """Display metrics proxy help"""
