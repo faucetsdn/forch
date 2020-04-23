@@ -28,7 +28,7 @@ git tag -d $(git tag)
 git fetch --tags
 
 # check if everything is clean
-faucet_tag=`git tag --list | fgrep v1_0`
+faucet_tag=`git tag --list | fgrep v1_0` || true
 if [ -n "$faucet_tag" ]; then
     echo Error faucet tag detected
     false
