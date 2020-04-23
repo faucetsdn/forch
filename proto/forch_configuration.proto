@@ -173,4 +173,7 @@ message VarzInterfaceConfig {
 
   // port number to curl for gauge varz list
   int32 gauge_varz_port = 3;
+
+  //port number for varz proxy
+  int32 proxy_varz_port = 4;
 }

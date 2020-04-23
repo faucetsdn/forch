@@ -23,7 +23,7 @@ class ForchMetrics():
     def __init__(self, varz_config):
         self._varz_config = varz_config
         self._local_port = self._varz_config.forch_varz_port or DEFAULT_FORCH_VARZ_PORT
-        self._proxy_port = DEFAULT_PROXY_PORT  # TODO: Anurag make configurable
+        self._proxy_port = self._varz_config.proxy_varz_port or DEFAULT_PROXY_PORT
         self._metric_pages = {}
         LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
@@ -111,7 +111,7 @@ class ForchMetrics():
         url = self._metric_pages.get(path)
         try:
             data = requests.get(url)
-        except requests.exceptions.RequestException as e:  # This is the correct syntax
+        except requests.exceptions.RequestException as e:
             return "Error retrieving data from url %s: %s" % (url, str(e))
         return data.content.decode('utf-8')
 
