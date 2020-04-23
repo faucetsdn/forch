@@ -2,6 +2,7 @@
 
 import functools
 import logging
+import requests
 import threading
 from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 
@@ -10,6 +11,8 @@ import forch.http_server
 LOGGER = logging.getLogger('metrics')
 DEFAULT_VARZ_PORT = 8302
 DEFAULT_PROXY_PORT = 8080
+DEFAULT_FAUCET_PORT = 8001
+DEFAULT_GAUGE_PORT = 9001
 
 
 class ForchMetrics():
@@ -19,6 +22,8 @@ class ForchMetrics():
     def __init__(self, varz_config):
         self._local_port = varz_config.varz_port or DEFAULT_VARZ_PORT
         self._proxy_port = DEFAULT_PROXY_PORT  # TODO: Anurag make configurable
+        self._faucet_metric_port = DEFAULT_FAUCET_PORT
+        self._gauge_metric_port = DEFAULT_GAUGE_PORT
         LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
         self._proxy_server = None
@@ -101,18 +106,23 @@ class ForchMetrics():
 
     def get_faucet_metrics(self, path, params):
         """Get faucet metrics from given port"""
-        return self._get_metrics_from_port('faucet')
+        return self._get_metrics_from_port(self._faucet_metric_port)
 
     def get_forch_metrics(self, path, params):
         """Get forch metrics from given port"""
-        return self._get_metrics_from_port('forch')
+        return self._get_metrics_from_port(self._local_port)
 
     def get_gauge_metrics(self, path, params):
         """Get gauge metrics from given port"""
-        return self._get_metrics_from_port('gauge')
+        return self._get_metrics_from_port(self._gauge_metric_port)
 
     def _get_metrics_from_port(self, port):
-        return port
+        url = "http://0.0.0.0:" + str(port)
+        try:
+            data = requests.get(url)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            return "Error retrieving dat from port %s: %s" % (port, str(e))
+        return data.content.decode('utf-8')
 
     def _show_error(self, error, path, params):
         """Display errors"""
