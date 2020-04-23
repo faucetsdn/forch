@@ -105,5 +105,17 @@ else
     echo Merge-base of $gtag and perry/master is $mtag
 fi
 
+#Check if faucet tags were added into forch
+for remote in faucet origin perry; do
+    faucet_tag=`git ls-remote $remote v1_0`
+    if [ -n "$faucet_tag" ]; then
+        echo
+        echo Error:
+        echo Faucet tag found in Forch repo: `git remote get-url $remote`
+        echo
+        false
+    fi
+done
+
 echo
 echo All remote tags are consistent.
