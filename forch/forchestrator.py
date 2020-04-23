@@ -176,7 +176,7 @@ class Forchestrator:
         orch_config = self._config.orchestration
 
         behavioral_config_file = (orch_config.behavioral_config_file or
-                                  os.getenv('FAUCET_CONFIG') or
+                                  os.getenv('FAUCET_CONFIG_FILE') or
                                   _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)

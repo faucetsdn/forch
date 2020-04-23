@@ -22,7 +22,8 @@ _FORCH_CONFIG_DEFAULT = 'forch.yaml'
 def load_config():
     """Load configuration from the configuration file"""
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
-    config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
+    config_file = os.getenv('FORCH_CONFIG_FILE', _FORCH_CONFIG_DEFAULT)
+    config_path = os.path.join(config_root, config_file)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
     try:
         return yaml_proto(config_path, ForchConfig)
