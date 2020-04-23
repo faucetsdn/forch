@@ -46,8 +46,8 @@ class ForchMetrics():
         self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
         try:
             for page in self._metric_pages:
-                method = lambda path, params: self._get_path_metrics(path.split('/')[1])
-                self._proxy_server.map_request(page, method)
+                self._proxy_server.map_request(
+                    page, lambda path, params: self._get_path_metrics(path.split('/')[1]))
             self._proxy_server.map_request('', self.get_proxy_help)
         except Exception as e:
             self._proxy_server.map_request('', functools.partial(self._show_error, e))
