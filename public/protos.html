@@ -495,6 +495,10 @@
                 </li>
               
                 <li>
+                  <a href="#MetricTarget"><span class="badge">M</span>MetricTarget</a>
+                </li>
+              
+                <li>
                   <a href="#OrchestrationConfig"><span class="badge">M</span>OrchestrationConfig</a>
                 </li>
               
@@ -524,6 +528,10 @@
               
                 <li>
                   <a href="#ProcessConfig.ProcessesEntry"><span class="badge">M</span>ProcessConfig.ProcessesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyServerConfig"><span class="badge">M</span>ProxyServerConfig</a>
                 </li>
               
                 <li>
@@ -3084,6 +3092,13 @@
                   <td><p>configuration for varz interface </p></td>
                 </tr>
               
+                <tr>
+                  <td>proxy_server</td>
+                  <td><a href="#ProxyServerConfig">ProxyServerConfig</a></td>
+                  <td></td>
+                  <td><p>configuration for port proxy server </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3106,6 +3121,37 @@
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>http root directory </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="MetricTarget">MetricTarget</h3>
+        <p>Target to scrape metrics from</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>target name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>target port </p></td>
                 </tr>
               
             </tbody>
@@ -3448,6 +3494,37 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
 
         
       
+        <h3 id="ProxyServerConfig">ProxyServerConfig</h3>
+        <p>Target to scrape metrics from</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>proxy_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port number for varz proxy </p></td>
+                </tr>
+              
+                <tr>
+                  <td>targets</td>
+                  <td><a href="#MetricTarget">MetricTarget</a></td>
+                  <td>repeated</td>
+                  <td><p>list of targets to scrape metrics from </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="SiteConfig">SiteConfig</h3>
         <p>Site section in Forch configuration</p>
 
@@ -3555,28 +3632,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td>forch_varz_port</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>port number to curl for forch varz list </p></td>
-                </tr>
-              
-                <tr>
-                  <td>faucet_varz_port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>port number to curl for faucet varz list </p></td>
-                </tr>
-              
-                <tr>
-                  <td>gauge_varz_port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>port number to curl for gauge varz list </p></td>
-                </tr>
-              
-                <tr>
-                  <td>proxy_varz_port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>port number for varz proxy </p></td>
+                  <td><p>port number for forch varz </p></td>
                 </tr>
               
             </tbody>

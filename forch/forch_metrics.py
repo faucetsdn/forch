@@ -23,7 +23,7 @@ class ForchMetrics():
     def __init__(self, varz_config):
         self._varz_config = varz_config
         self._local_port = self._varz_config.forch_varz_port or DEFAULT_FORCH_VARZ_PORT
-        self._proxy_port = self._varz_config.proxy_varz_port or DEFAULT_PROXY_PORT
+        self._proxy_port = DEFAULT_PROXY_PORT
         self._metric_pages = {}
         LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
@@ -127,9 +127,9 @@ class ForchMetrics():
 
     def _register_metric_pages(self):
         self._register_metric_page('faucet', LOCALHOST,
-                                   self._varz_config.faucet_varz_port or DEFAULT_FAUCET_VARZ_PORT)
+                                   DEFAULT_FAUCET_VARZ_PORT)
         self._register_metric_page('gauge', LOCALHOST,
-                                   self._varz_config.gauge_varz_port or DEFAULT_GAUGE_VARZ_PORT)
+                                   DEFAULT_GAUGE_VARZ_PORT)
         self._register_metric_page('forch', LOCALHOST, self._local_port)
 
     def get_proxy_help(self, path, params):

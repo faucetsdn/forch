@@ -25,6 +25,9 @@ message ForchConfig {
 
   // configuration for varz interface
   VarzInterfaceConfig varz_interface = 6;
+
+  // configuration for port proxy server
+  ProxyServerConfig proxy_server = 7;
 }
 
 /*
@@ -165,15 +168,28 @@ message EventClientConfig {
  * Varz interface section in Forch configuration
  */
 message VarzInterfaceConfig {
-  // port number to curl for forch varz list
-  int32 forch_varz_port = 1;
+  // port number for forch varz
+  int32 forch_varz_port = 2;
+}
 
-  // port number to curl for faucet varz list
-  int32 faucet_varz_port = 2;
+/*
+ * Target to scrape metrics from
+ */
+message ProxyServerConfig {
+  // port number for varz proxy
+  int32 proxy_port = 1;
 
-  // port number to curl for gauge varz list
-  int32 gauge_varz_port = 3;
+  // list of targets to scrape metrics from
+  repeated MetricTarget targets = 2;
+}
 
-  //port number for varz proxy
-  int32 proxy_varz_port = 4;
+/*
+ * Target to scrape metrics from
+ */
+message MetricTarget {
+    // target name
+    string name = 1;
+
+    // target port
+    int32 port = 2;
 }

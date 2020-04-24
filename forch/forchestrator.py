@@ -19,6 +19,7 @@ from forch.cpn_state_collector import CPNStateCollector
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
+from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 import forch.varz_state_collector as varz_state_collector
@@ -93,6 +94,7 @@ class Forchestrator:
 
         self._config_summary = None
         self._metrics = None
+        self._proxy = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -128,6 +130,8 @@ class Forchestrator:
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
+        self._proxy = ForchProxy(self._config.proxy_server)
+        self._proxy.start()
 
         self._validate_config_files()
 
@@ -360,6 +364,8 @@ class Forchestrator:
             self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
+        if self._proxy:
+            self._proxy.stop()
 
     def _process_faucet_event(self):
         try:
