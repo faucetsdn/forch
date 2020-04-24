@@ -19,7 +19,7 @@ done
 for tag in `git tag --contains 91bab3bf39`; do
     for remote in faucet perry origin; do
         echo Deleting Faucet tag $tag from $remote
-        git push --delete $remote $tag
+        git push --delete $remote $tag || true
     done
 done
 
