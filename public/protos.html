@@ -495,10 +495,6 @@
                 </li>
               
                 <li>
-                  <a href="#MetricTarget"><span class="badge">M</span>MetricTarget</a>
-                </li>
-              
-                <li>
                   <a href="#OrchestrationConfig"><span class="badge">M</span>OrchestrationConfig</a>
                 </li>
               
@@ -532,6 +528,14 @@
               
                 <li>
                   <a href="#ProxyServerConfig"><span class="badge">M</span>ProxyServerConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyServerConfig.TargetsEntry"><span class="badge">M</span>ProxyServerConfig.TargetsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyTarget"><span class="badge">M</span>ProxyTarget</a>
                 </li>
               
                 <li>
@@ -3130,37 +3134,6 @@
 
         
       
-        <h3 id="MetricTarget">MetricTarget</h3>
-        <p>Target to scrape metrics from</p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>name</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>target name </p></td>
-                </tr>
-              
-                <tr>
-                  <td>port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>target port </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
         <h3 id="OrchestrationConfig">OrchestrationConfig</h3>
         <p>Orchestration section in Forch configuration</p>
 
@@ -3495,7 +3468,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
         
       
         <h3 id="ProxyServerConfig">ProxyServerConfig</h3>
-        <p>Target to scrape metrics from</p>
+        <p>Proxy server config</p>
 
         
           <table class="field-table">
@@ -3508,14 +3481,69 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td>proxy_port</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>port number for varz proxy </p></td>
+                  <td><p>port number for proxy server </p></td>
                 </tr>
               
                 <tr>
                   <td>targets</td>
-                  <td><a href="#MetricTarget">MetricTarget</a></td>
+                  <td><a href="#ProxyServerConfig.TargetsEntry">ProxyServerConfig.TargetsEntry</a></td>
                   <td>repeated</td>
-                  <td><p>list of targets to scrape metrics from </p></td>
+                  <td><p>map of targets </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyServerConfig.TargetsEntry">ProxyServerConfig.TargetsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProxyTarget">ProxyTarget</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyTarget">ProxyTarget</h3>
+        <p>Proxy targets</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port number for target </p></td>
                 </tr>
               
             </tbody>

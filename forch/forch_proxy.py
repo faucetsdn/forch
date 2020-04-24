@@ -22,7 +22,7 @@ class ForchProxy():
         self._proxy_server = None
 
     def start(self):
-        """Start serving varz"""
+        """Start proxy server"""
         self._register_pages()
         self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
         try:
@@ -34,7 +34,7 @@ class ForchProxy():
             LOGGER.info('Started proxy server on port %s', self._proxy_port)
 
     def stop(self):
-        """Kill varz server"""
+        """Kill server"""
         LOGGER.info('Stopping proxy server')
         self._proxy_server.stop_server()
 
@@ -45,8 +45,8 @@ class ForchProxy():
         self._pages[path] = self._get_url(server, port)
 
     def _register_pages(self):
-        for target in self._proxy_config.targets:
-            self._register_page(target.name, LOCALHOST, target.port)
+        for name, target in self._proxy_config.targets.items():
+            self._register_page(name, LOCALHOST, target.port)
 
     def _get_proxy_help(self):
         """Display proxy help"""
@@ -68,4 +68,4 @@ class ForchProxy():
 
     def _show_error(self, error, path, params):
         """Display errors"""
-        return f"Error creating varz interface: {str(error)}"
+        return f"Error creating proxy server: {str(error)}"

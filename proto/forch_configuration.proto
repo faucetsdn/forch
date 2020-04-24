@@ -173,23 +173,20 @@ message VarzInterfaceConfig {
 }
 
 /*
- * Target to scrape metrics from
+ * Proxy server config
  */
 message ProxyServerConfig {
-  // port number for varz proxy
+  // port number for proxy server
   int32 proxy_port = 1;
 
-  // list of targets to scrape metrics from
-  repeated MetricTarget targets = 2;
+  // map of targets
+  map<string, ProxyTarget> targets = 2;
 }
 
 /*
- * Target to scrape metrics from
+ * Proxy targets
  */
-message MetricTarget {
-    // target name
-    string name = 1;
-
-    // target port
-    int32 port = 2;
+message ProxyTarget {
+    // port number for target
+    int32 port = 1;
 }
