@@ -52,7 +52,7 @@ class ForchProxy():
         """Display proxy help"""
         help_str = 'Following paths are supported:\n\n\t'
         for target in self._proxy_config.targets:
-            help_str += '/' + target.name + '\n\t'
+            help_str += '/' + target + '\n\t'
         return help_str
 
     def _get_path_data(self, path, params):
