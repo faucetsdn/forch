@@ -169,7 +169,7 @@ message EventClientConfig {
  */
 message VarzInterfaceConfig {
   // port number for forch varz
-  int32 varz_port = 2;
+  int32 varz_port = 1;
 }
 
 /*
