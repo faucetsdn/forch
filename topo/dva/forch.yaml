@@ -22,6 +22,14 @@ orchestration:
     query_timeout_sec: 15
     reject_timeout_sec: 360
     auth_timeout_sec: 3559
+proxy_server:
+  targets:
+      - name: faucet
+        port: 8001
+      - name: forch
+        port: 8302
+      - name: gauge
+        port: 9001
 process:
   scan_interval_sec: 10
   processes:
