@@ -329,7 +329,7 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._process_faucet_event()
+                self._faucet_events.next_event()
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
@@ -360,13 +360,6 @@ class Forchestrator:
             self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
-
-    def _process_faucet_event(self):
-        try:
-            event = self._faucet_events.next_event(blocking=True)
-        except Exception as e:
-            LOGGER.warning('While processing event %s exception: %s', event, str(e))
-            raise e
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
@@ -552,7 +545,7 @@ class Forchestrator:
             return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
-            raise e
+            raise
 
     def _validate_config(self, config):
         warnings = []
