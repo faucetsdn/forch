@@ -439,7 +439,7 @@ class FaucetStateCollector:
                 target_obj[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
                 target_obj[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
             LOGGER.warning('TAP egress state is %s', target_obj[EGRESS_STATE])
-            
+
             target_obj[TOPOLOGY_ROOT] = self.topo_state.get(TOPOLOGY_ROOT)
             target_obj[EGRESS_LINK_MAP] = copy.deepcopy(egress_obj.get(EGRESS_LINK_MAP))
 
