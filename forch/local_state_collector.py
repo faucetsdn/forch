@@ -23,7 +23,7 @@ _PROC_ATTRS = ['cmdline', 'cpu_times', 'memory_info']
 class LocalStateCollector:
     """Storing local system states"""
 
-    def __init__(self, config, cleanup_handler, active_state_handler):
+    def __init__(self, config, cleanup_handler, active_state_handler, metrics):
         self._state = {'processes': {}, 'vrrp': {}}
         self._process_state = self._state['processes']
         self._process_state['connections'] = {}
@@ -32,6 +32,7 @@ class LocalStateCollector:
         self._current_time = None
         self._conn_state = None
         self._conn_state_count = 0
+        self._metrics = metrics
         self._lock = threading.Lock()
 
         self._target_procs = config.processes
@@ -86,10 +87,12 @@ class LocalStateCollector:
             state_map['detail'] = detail
             if state:
                 state_map['state'] = State.healthy
+                self._metrics.update_var('process_state', 1, labels=[target_name])
                 state_map.update(state)
                 self._last_error.pop(target_name, None)
                 continue
             state_map['state'] = State.broken
+            self._metrics.update_var('process_state', 0, labels=[target_name])
             if detail != self._last_error.get(target_name):
                 LOGGER.error(detail)
                 self._last_error[target_name] = detail

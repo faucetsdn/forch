@@ -14,6 +14,26 @@ for remote in faucet origin perry; do
     done
 done
 
+# Check if faucet tags were added into forch, in remote or local
+bad_r=""
+for remote in faucet origin perry; do
+    faucet_tag=`git ls-remote -t $remote | grep v1_0` || true
+    if [ -n "$faucet_tag" ]; then
+        bad_r=${bad_r}" $remote"
+    fi
+done
+faucet_tag=`git tag --list | grep v1_0` || true
+if [ -n "$faucet_tag" ]; then
+    bad_r=${bad_r}" local"
+fi
+if [ -n "$bad_r" ]; then
+    echo
+    echo Error:
+    echo Faucet tag found in Forch repos in: [ $bad_r ]
+    echo
+    false
+fi
+
 mtag=`git describe perry/master --abbrev=0`
 gtag=`git describe perry/gmaster --abbrev=0`
 etag=`git describe perry/esdn --abbrev=0`

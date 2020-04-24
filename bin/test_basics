@@ -4,7 +4,8 @@ source bin/stack_functions
 
 preamble_setup
 
-bin/package_forch testing
+# TODO: Restore as per b/153483061
+#bin/package_forch testing
 bin/check_style
 bin/build_proto check
 bin/build_proto
