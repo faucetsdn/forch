@@ -13,7 +13,7 @@ LOCALHOST = '0.0.0.0'
 
 
 class ForchProxy():
-    """Class that implements the module that exposes varz for metrics"""
+    """Class that implements the module that creates a proxy server"""
 
     def __init__(self, proxy_config):
         self._proxy_config = proxy_config
@@ -23,14 +23,10 @@ class ForchProxy():
 
     def start(self):
         """Start serving varz"""
-        return
         self._register_pages()
         self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
         try:
-            for page in self._pages:
-                self._proxy_server.map_request(
-                    page, lambda path, params: self._get_path_metrics(path.split('/')[1]))
-            self._proxy_server.map_request('', self.get_proxy_help)
+            self._proxy_server.map_request('', self._get_path_data)
         except Exception as e:
             self._proxy_server.map_request('', functools.partial(self._show_error, e))
         finally:
@@ -42,3 +38,30 @@ class ForchProxy():
         LOGGER.info('Stopping proxy server')
         self._proxy_server.stop_server()
 
+    def _get_url(self, server, port):
+        return 'http://' + str(server) + ':' + str(port)
+
+    def _register_page(self, path, server, port):
+        self._pages[path] = self._get_url(server, port)
+
+    def _register_pages(self):
+        for target in self._proxy_config.targets:
+            self._register_page(target.name, LOCALHOST, target.port)
+
+    def _get_proxy_help(self):
+        """Display proxy help"""
+        help_str =  'Following paths are supported:\n\n\t'
+        for target in self._proxy_config.targets:
+            help_str += '/' + target.name + '\n\t'
+        return help_str
+
+    def _get_path_data(self, path, params):
+        path = '/'.join(path.split('/')[1:])
+        url = self._pages.get(path)
+        if not url:
+            return self._get_proxy_help()
+        try:
+            data = requests.get(url)
+        except requests.exceptions.RequestException as e:
+            return "Error retrieving data from url %s: %s" % (url, str(e))
+        return data.content.decode('utf-8')
