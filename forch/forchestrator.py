@@ -130,7 +130,7 @@ class Forchestrator:
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
-        if self._config.proxy_server:
+        if str(self._config.proxy_server):
             self._proxy = ForchProxy(self._config.proxy_server)
             self._proxy.start()
 
