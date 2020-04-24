@@ -65,3 +65,7 @@ class ForchProxy():
         except requests.exceptions.RequestException as e:
             return "Error retrieving data from url %s: %s" % (url, str(e))
         return data.content.decode('utf-8')
+
+    def _show_error(self, error, path, params):
+        """Display errors"""
+        return f"Error creating varz interface: {str(error)}"
