@@ -11,12 +11,12 @@ orchestration:
   static_device_placement: placement.yaml
 proxy_server:
   targets:
-      - name: faucet
-        port: 8001
-      - name: forch
-        port: 8302
-      - name: gauge
-        port: 9001
+    faucet: 
+      port: 8001
+    forch: 
+      port: 8302
+    gauge: 
+      port: 9001
 process:
   scan_interval_sec: 10
   processes:
