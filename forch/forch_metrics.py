@@ -3,17 +3,12 @@
 import functools
 import logging
 import threading
-import requests
 from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 
 import forch.http_server
 
 LOGGER = logging.getLogger('metrics')
-DEFAULT_FORCH_VARZ_PORT = 8302
-DEFAULT_PROXY_PORT = 8080
-DEFAULT_FAUCET_VARZ_PORT = 8001
-DEFAULT_GAUGE_VARZ_PORT = 9001
-LOCALHOST = '0.0.0.0'
+DEFAULT_VARZ_PORT = 8302
 
 
 class ForchMetrics():
@@ -21,13 +16,9 @@ class ForchMetrics():
     _reg = REGISTRY
 
     def __init__(self, varz_config):
-        self._varz_config = varz_config
-        self._local_port = self._varz_config.forch_varz_port or DEFAULT_FORCH_VARZ_PORT
-        self._proxy_port = DEFAULT_PROXY_PORT
-        self._metric_pages = {}
+        self._local_port = varz_config.varz_port or DEFAULT_VARZ_PORT
         LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
-        self._proxy_server = None
         self._metrics = {}
 
     def start(self):
@@ -40,19 +31,6 @@ class ForchMetrics():
             self._http_server.map_request('', functools.partial(self._show_error, e))
         finally:
             threading.Thread(target=self._http_server.start_server(), daemon=True).start()
-
-        self._register_metric_pages()
-
-        self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
-        try:
-            for page in self._metric_pages:
-                self._proxy_server.map_request(
-                    page, lambda path, params: self._get_path_metrics(path.split('/')[1]))
-            self._proxy_server.map_request('', self.get_proxy_help)
-        except Exception as e:
-            self._proxy_server.map_request('', functools.partial(self._show_error, e))
-        finally:
-            threading.Thread(target=self._proxy_server.start_server(), daemon=True).start()
 
     def stop(self):
         """Kill varz server"""
@@ -107,31 +85,6 @@ class ForchMetrics():
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
 
-    def _get_path_metrics(self, path):
-        url = self._metric_pages.get(path)
-        try:
-            data = requests.get(url)
-        except requests.exceptions.RequestException as e:
-            return "Error retrieving data from url %s: %s" % (url, str(e))
-        return data.content.decode('utf-8')
-
     def _show_error(self, error, path, params):
         """Display errors"""
         return f"Error creating varz interface: {str(error)}"
-
-    def _get_url(self, server, port):
-        return 'http://' + str(server) + ':' + str(port)
-
-    def _register_metric_page(self, path, server, port):
-        self._metric_pages[path] = self._get_url(server, port)
-
-    def _register_metric_pages(self):
-        self._register_metric_page('faucet', LOCALHOST,
-                                   DEFAULT_FAUCET_VARZ_PORT)
-        self._register_metric_page('gauge', LOCALHOST,
-                                   DEFAULT_GAUGE_VARZ_PORT)
-        self._register_metric_page('forch', LOCALHOST, self._local_port)
-
-    def get_proxy_help(self, path, params):
-        """Display metrics proxy help"""
-        return "Use /faucet, /gauge or /forch to get respective metrics"
