@@ -22,6 +22,7 @@ orchestration:
     max_radius_backoff: 10
     query_timeout_sec: 15
     reject_timeout_sec: 360
+    auth_timeout_sec: 3559
 proxy_server:
   targets:
     faucet: 
@@ -30,7 +31,6 @@ proxy_server:
       port: 8302
     gauge: 
       port: 9001
-    auth_timeout_sec: 3559
 process:
   scan_interval_sec: 10
   processes:
