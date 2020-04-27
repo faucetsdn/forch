@@ -185,21 +185,26 @@ if __name__ == '__main__':
         OrchestrationConfig.AuthConfig
     )
     MOCK_RADIUS_QUERY = MockRadiusQuery()
-    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
 
-    # test radius query call for device placement
-    TEST_MAC = '00:aa:bb:cc:dd:ee'
-    DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
-    AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)
-    assert MOCK_RADIUS_QUERY.get_last_mac_queried() == TEST_MAC
+    if ARGS.mab:
+        AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback)
+        AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)
+        input('Press any key to exit.')
+    else:
+        # test radius query call for device placement
+        AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
+        TEST_MAC = '00:aa:bb:cc:dd:ee'
+        DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
+        AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)
+        assert MOCK_RADIUS_QUERY.get_last_mac_queried() == TEST_MAC
 
-    # test positive RADIUS response
-    CODE = radius_query.ACCEPT
-    SEGMENT = 'test'
-    ROLE = 'test'
-    EXPECTED_MAB_RESULT[TEST_MAC] = {
-        'segment': SEGMENT,
-        'role': ROLE
-    }
-    AUTHENTICATOR.process_radius_result(TEST_MAC, CODE, SEGMENT, ROLE)
-    EXPECTED_MAB_RESULT.pop(TEST_MAC)
+        # test positive RADIUS response
+        CODE = radius_query.ACCEPT
+        SEGMENT = 'test'
+        ROLE = 'test'
+        EXPECTED_MAB_RESULT[TEST_MAC] = {
+            'segment': SEGMENT,
+            'role': ROLE
+        }
+        AUTHENTICATOR.process_radius_result(TEST_MAC, CODE, SEGMENT, ROLE)
+        EXPECTED_MAB_RESULT.pop(TEST_MAC)

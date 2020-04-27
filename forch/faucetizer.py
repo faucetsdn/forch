@@ -12,25 +12,30 @@ from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, Device, SegmentsToVlans
-from forch.proto.forch_configuration_pb2 import OrchestrationConfig
+from forch.proto.forch_configuration_pb2 import ForchConfig
 
 LOGGER = logging.getLogger('faucetizer')
+
+ACL_FILE_SUFFIX = '_augmented'
 
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
+    # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file):
+                 behavioral_config_file, reregister_acl_file_handlers=None):
         self._dynamic_devices = {}
         self._static_devices = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
+        self._next_cookie = None
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
-        self._lock = threading.Lock()
-        self.reload_structural_config()
+        self._watched_acl_files = []
+        self._reregister_acl_file_handlers = reregister_acl_file_handlers
+        self._lock = threading.RLock()
 
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
@@ -69,18 +74,64 @@ class Faucetizer:
 
             self.flush_behavioral_config()
 
-    def process_faucet_config(self, faucet_config):
+    def _process_structural_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
             self._structural_faucet_config = copy.copy(faucet_config)
 
+            self._next_cookie = 1
+            new_include = []
+            new_watched_acl_files = []
+            config_dir = os.path.dirname(self._structural_config_file)
+            for acl_file_name in self._structural_faucet_config.get('include', []):
+                acl_file_path = os.path.join(config_dir, acl_file_name)
+                self.reload_acl_file(acl_file_path)
+                new_include.append(self._augment_acl_file_path(acl_file_name))
+                new_watched_acl_files.append(acl_file_path)
+
+            self._structural_faucet_config['include'] = new_include
+
+            if not self._config.faucetize_interval_sec and self._reregister_acl_file_handlers:
+                self._reregister_acl_file_handlers(self._watched_acl_files, new_watched_acl_files)
+            self._watched_acl_files = new_watched_acl_files
+
             self.flush_behavioral_config()
+
+    def _process_acl_config(self, file_path, acls_config):
+        new_acls_config = copy.copy(acls_config)
+
+        if not self._next_cookie:
+            raise Exception('Cookie is not initialized')
+
+        with self._lock:
+            for rule_list in acls_config.get('acls', {}).values():
+                for rule_map in rule_list:
+                    if 'rule' in rule_map:
+                        rule_map['rule']['cookie'] = self._next_cookie
+                        self._next_cookie += 1
+
+        new_file_path = self._augment_acl_file_path(file_path)
+        self.flush_acl_config(new_file_path, new_acls_config)
+
+    def _augment_acl_file_path(self, file_path):
+        base_file_path, ext = os.path.splitext(file_path)
+        return base_file_path + ACL_FILE_SUFFIX + ext
 
     def _faucetize(self):
         if not self._structural_faucet_config:
-            raise Exception("Structural faucet configuration not provided")
+            raise Exception('Structural faucet configuration not provided')
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
+
+        if not self._config.unauthenticated_vlan:
+            raise Exception('Unauthenticated vlan is not configured')
+
+        for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
+            for port, port_map in switch_map.get('interfaces', {}).items():
+                if 'stack' in port_map or 'lacp' in port_map or 'output_only' in port_map:
+                    continue
+                port_map['native_vlan'] = self._config.unauthenticated_vlan
+
         devices = {**self._dynamic_devices, **self._static_devices}
         for mac, device in devices.items():
             if device.placement.switch and device.behavior.segment:
@@ -101,15 +152,24 @@ class Faucetizer:
 
                 port_cfg['native_vlan'] = vid
                 if device.behavior.role:
-                    port_cfg['acls_in'] = [f'role_{device.behavior.role}']
+                    port_cfg['acls_in'] = [f'role_{device.behavior.role}', 'tail_acl']
+                else:
+                    port_cfg['acls_in'] = ['tail_acl']
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
-    def reload_structural_config(self):
+    def reload_structural_config(self, structural_config_file=None):
         """Reload structural config from file"""
-        with open(self._structural_config_file) as structural_config_file:
-            structural_config = yaml.safe_load(structural_config_file)
-            self.process_faucet_config(structural_config)
+        structural_config_file = structural_config_file or self._structural_config_file
+        with open(structural_config_file) as file:
+            structural_config = yaml.safe_load(file)
+            self._process_structural_config(structural_config)
+
+    def reload_acl_file(self, file_path):
+        """Reload acl file"""
+        with open(file_path) as acl_file:
+            acls_config = yaml.safe_load(acl_file)
+            self._process_acl_config(file_path, acls_config)
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
@@ -118,6 +178,11 @@ class Faucetizer:
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
+
+    def flush_acl_config(self, file_path, acls_config):
+        """Write acl configs to file"""
+        with open(file_path, 'w') as acl_file:
+            yaml.dump(acls_config, acl_file)
 
 
 def load_devices_state(file):
@@ -148,6 +213,12 @@ def load_faucet_config(file):
         return yaml.safe_load(config_file)
 
 
+def load_orch_config(file):
+    """Load forch config and return orchestration config"""
+    forch_config = yaml_proto(file, ForchConfig)
+    return forch_config.orchestration
+
+
 def parse_args(raw_args):
     """Parse sys args"""
     parser = argparse.ArgumentParser(prog='faucetizer', description='faucetizer')
@@ -157,6 +228,8 @@ def parse_args(raw_args):
                         help='segments to vlans mapping input file')
     parser.add_argument('-c', '--config-input', type=str, default='faucet.yaml',
                         help='structural faucet config input')
+    parser.add_argument('-f', '--forch-config', type=str, default='forch.yaml',
+                        help='unauthenticated_vlan')
     parser.add_argument('-o', '--output', type=str, default='faucet.yaml',
                         help='behavioral faucet config output')
     return parser.parse_args(raw_args)
@@ -172,13 +245,15 @@ if __name__ == '__main__':
     SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
     LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
 
-    ORCH_CONFIG = OrchestrationConfig()
+    FORCH_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.forch_config)
+    ORCH_CONFIG = load_orch_config(FORCH_CONFIG_FILE)
     STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
     BEHAVIORAL_CONFIG_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
 
     FAUCETIZER = Faucetizer(
         ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
         BEHAVIORAL_CONFIG_FILE)
+    FAUCETIZER.reload_structural_config()
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)

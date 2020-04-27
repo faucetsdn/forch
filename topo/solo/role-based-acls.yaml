@@ -20,3 +20,7 @@ acls:
     - rule:
         actions:
           allow: True
+  tail_acl:
+    - rule:
+        actions:
+          allow: True

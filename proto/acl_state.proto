@@ -1,0 +1,20 @@
+/*
+ * ACL state
+ */
+syntax = "proto3";
+
+message ACLState {
+  // acl name
+  string name = 1;
+
+  // rule states
+  repeated RuleState rules = 2;
+
+  message RuleState {
+    // rule description
+    string description = 1;
+
+    // count of packets hitting the rule
+    int32 packet_count = 3;
+  }
+}

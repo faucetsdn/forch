@@ -56,9 +56,53 @@ dps:
     faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
     lacp_timeout: 5
-    interface_ranges:
-      1-46: {acl_in: uniform_acl, description: IoT Device, native_vlan: 171}
     interfaces:
+      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      6: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      7: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      8: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      9: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      10: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      11: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      12: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      13: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      14: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      15: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      16: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      17: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      18: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      19: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      20: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      21: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      22: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      23: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      24: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      25: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      26: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      27: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      28: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      29: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      30: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      31: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      32: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      33: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      34: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      35: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      36: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      37: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      38: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      39: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      40: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      41: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      42: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      43: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      44: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      45: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      46: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
       50:
         description: "to t1sw1 port 9"
         stack: {dp: nz-kiwi-t1sw1, port: 9}
@@ -71,12 +115,53 @@ dps:
     faucet_dp_mac: 0e:00:00:00:02:02
     hardware: Allied-Telesis
     lacp_timeout: 5
-    interface_ranges:
-      1-45: {acl_in: uniform_acl, description: IoT Device, native_vlan: 171}
     interfaces:
-      46:
-        acl_in: uniform_acl
-        native_vlan: 171
+      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      6: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      7: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      8: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      9: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      10: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      11: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      12: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      13: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      14: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      15: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      16: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      17: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      18: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      19: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      20: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      21: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      22: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      23: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      24: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      25: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      26: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      27: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      28: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      29: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      30: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      31: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      32: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      33: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      34: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      35: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      36: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      37: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      38: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      39: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      40: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      41: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      42: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      43: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      44: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      45: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      46: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
       50:
         description: "to t1sw1 port 10"
         stack: {dp: nz-kiwi-t1sw1, port: 10}
@@ -89,9 +174,53 @@ dps:
     faucet_dp_mac: 0e:00:00:00:02:03
     hardware: Allied-Telesis
     lacp_timeout: 5
-    interface_ranges:
-      1-46: {acl_in: uniform_acl, description: IoT Device, native_vlan: 171}
     interfaces:
+      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      6: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      7: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      8: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      9: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      10: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      11: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      12: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      13: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      14: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      15: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      16: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      17: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      18: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      19: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      20: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      21: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      22: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      23: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      24: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      25: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      26: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      27: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      28: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      29: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      30: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      31: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      32: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      33: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      34: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      35: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      36: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      37: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      38: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      39: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      40: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      41: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      42: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      43: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      44: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      45: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
+      46: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl}
       50:
         description: "to t1sw1 port 11"
         stack: {dp: nz-kiwi-t1sw1, port: 11}

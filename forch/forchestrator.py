@@ -16,12 +16,12 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.faucet_config_file_watcher import FaucetConfigFileWatcher
+from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
-from forch.varz_state_collector import VarzStateCollector
+import forch.varz_state_collector as varz_state_collector
 
 from forch.utils import yaml_proto
 
@@ -37,7 +37,29 @@ _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
 _SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
 _DEFAULT_PORT = 9019
-_PROMETHEUS_HOST = '127.0.0.1'
+_FAUCET_PROM_HOST = '127.0.0.1'
+_FAUCET_PROM_PORT_DEFAULT = 9302
+_GAUGE_PROM_HOST = '127.0.0.1'
+_GAUGE_PROM_PORT_DEFAULT = 9303
+
+_TARGET_FAUCET_METRICS = (
+    'port_status',
+    'port_lacp_state',
+    'dp_status',
+    'learned_l2_port',
+    'port_stack_state',
+    'faucet_config_hash_info',
+    'faucet_event_id',
+    'dp_root_hop_port',
+    'faucet_stack_root_dpid',
+    'faucet_config_reload_cold',
+    'faucet_config_reload_warm'
+)
+
+_TARGET_GAUGE_METRICS = (
+    'flow_packet_count_vlan_acl',
+    'flow_packet_count_port_acl'
+)
 
 
 class Forchestrator:
@@ -52,16 +74,17 @@ class Forchestrator:
         self._behavioral_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
+        self._faucet_prom_endpoint = None
+        self._gauge_prom_endpoint = None
 
         self._faucet_collector = None
-        self._varz_collector = None
         self._local_collector = None
         self._cpn_collector = None
 
         self._faucetizer = None
         self._authenticator = None
         self._faucetize_scheduler = None
-        self._faucet_config_file_watcher = None
+        self._config_file_watcher = None
         self._faucet_state_scheduler = None
 
         self._initialized = False
@@ -84,11 +107,11 @@ class Forchestrator:
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
         self._cpn_collector = CPNStateCollector()
 
-        prom_port = os.getenv('PROMETHEUS_PORT')
-        if not prom_port:
-            raise Exception("PROMETHEUS_PORT is not set")
-        prom_url = f"http://{_PROMETHEUS_HOST}:{prom_port}"
-        self._varz_collector = VarzStateCollector(prom_url)
+        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', str(_FAUCET_PROM_PORT_DEFAULT))
+        self._faucet_prom_endpoint = f"http://{_FAUCET_PROM_HOST}:{faucet_prom_port}"
+
+        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_GAUGE_PROM_PORT_DEFAULT))
+        self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -99,6 +122,7 @@ class Forchestrator:
 
         if self._calculate_config_files():
             self._initialize_faucetizer()
+            self._faucetizer.reload_structural_config()
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
@@ -133,7 +157,7 @@ class Forchestrator:
         if not static_placement_file:
             return
         placement_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), static_placement_file)
+            os.getenv('FORCH_CONFIG_DIR'), static_placement_file)
         devices_state = yaml_proto(placement_file, DevicesState)
         for eth_src, device_placement in devices_state.device_mac_placements.items():
             self._process_device_placement(eth_src, device_placement, static=True)
@@ -143,7 +167,7 @@ class Forchestrator:
         if not static_behaviors_file:
             return
         static_behaviors_path = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), static_behaviors_file)
+            os.getenv('FORCH_CONFIG_DIR'), static_behaviors_file)
         devices_state = faucetizer.load_devices_state(static_behaviors_path)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._process_device_behavior(mac, device_behavior, static=True)
@@ -152,7 +176,7 @@ class Forchestrator:
         orch_config = self._config.orchestration
 
         behavioral_config_file = (orch_config.behavioral_config_file or
-                                  os.getenv('FAUCET_CONFIG') or
+                                  os.getenv('FAUCET_CONFIG_FILE') or
                                   _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
@@ -160,7 +184,7 @@ class Forchestrator:
         structural_config_file = orch_config.structural_config_file
         if structural_config_file:
             self._structural_config_file = os.path.join(
-                os.getenv('FAUCET_CONFIG_DIR'), structural_config_file)
+                os.getenv('FORCH_CONFIG_DIR'), structural_config_file)
 
             if not os.path.exists(self._structural_config_file):
                 raise Exception(
@@ -184,13 +208,13 @@ class Forchestrator:
         orch_config = self._config.orchestration
 
         segments_vlans_file = orch_config.segments_vlans_file or _SEGMENTS_VLAN_DEFAULT
-        segments_vlans_path = os.path.join(os.getenv('FAUCET_CONFIG_DIR'), segments_vlans_file)
+        segments_vlans_path = os.path.join(os.getenv('FORCH_CONFIG_DIR'), segments_vlans_file)
         LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
         segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
 
         self._faucetizer = faucetizer.Faucetizer(
             orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
-            self._behavioral_config_file)
+            self._behavioral_config_file, self._reregister_acl_file_handlers)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -200,8 +224,16 @@ class Forchestrator:
                 self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
-            self._faucet_config_file_watcher = FaucetConfigFileWatcher(
-                self._structural_config_file, self._faucetizer)
+            self._config_file_watcher = FileChangeWatcher(
+                os.path.dirname(self._structural_config_file))
+            self._config_file_watcher.register_file_callback(
+                self._structural_config_file, self._faucetizer.reload_structural_config)
+
+    def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
+        self._config_file_watcher.unregister_file_callbacks(old_acl_files)
+        for new_acl_file in new_acl_files:
+            self._config_file_watcher.register_file_callback(
+                new_acl_file, self._faucetizer.reload_acl_file)
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -243,7 +275,8 @@ class Forchestrator:
         ])
 
     def _get_varz_config(self):
-        metrics = self._varz_collector.get_metrics()
+        metrics = varz_state_collector.retry_get_metrics(
+            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -296,7 +329,7 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._process_faucet_event()
+                self._faucet_events.next_event()
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
@@ -308,8 +341,8 @@ class Forchestrator:
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()
-        if self._faucet_config_file_watcher:
-            self._faucet_config_file_watcher.start()
+        if self._config_file_watcher:
+            self._config_file_watcher.start()
         if self._faucet_state_scheduler:
             self._faucet_state_scheduler.start()
         if self._metrics:
@@ -323,17 +356,10 @@ class Forchestrator:
             self._faucet_state_scheduler.stop()
         if self._authenticator:
             self._authenticator.stop()
-        if self._faucet_config_file_watcher:
-            self._faucet_config_file_watcher.stop()
+        if self._config_file_watcher:
+            self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
-
-    def _process_faucet_event(self):
-        try:
-            event = self._faucet_events.next_event(blocking=True)
-        except Exception as e:
-            LOGGER.warning('While processing event %s exception: %s', event, str(e))
-            raise e
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
@@ -513,21 +539,22 @@ class Forchestrator:
             for file_name, file_hash in new_conf_hashes.items():
                 LOGGER.info('Loaded conf %s as %s', file_name, file_hash)
                 self._config_summary.hashes[file_name] = file_hash
-            for warning, message in self._config_warnings(top_conf):
+            for warning, message in self._validate_config(top_conf):
                 LOGGER.warning('Config warning %s: %s', warning, message)
                 self._config_summary.warnings[warning] = message
             return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
-            raise e
+            raise
 
-    def _config_warnings(self, config):
+    def _validate_config(self, config):
         warnings = []
         for dp_name, dp_obj in config['dps'].items():
+            if 'interface_ranges' in dp_obj:
+                raise Exception(
+                    'Forch does not support parameter \'interface_ranges\' in faucet config')
             if 'faucet_dp_mac' in dp_obj:
                 warnings.append((dp_name, 'faucet_dp_mac defined'))
-            if 'interface_ranges' in dp_obj:
-                warnings.append((dp_name, 'interface_ranges defined'))
             for if_name, if_obj in dp_obj['interfaces'].items():
                 if_key = '%s:%02d' % (dp_name, int(if_name))
                 is_egress = 1 if 'lacp' in if_obj else 0
@@ -564,7 +591,12 @@ class Forchestrator:
         switch = params.get('switch')
         port = params.get('port')
         host = self._extract_url_base(path)
-        reply = self._faucet_collector.get_switch_state(switch, port, host)
+        if self._faucetizer:
+            gauge_metrics = varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+            reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
+        else:
+            reply = self._faucet_collector.get_switch_state(switch, port, None, host)
         return self._augment_state_reply(reply, path)
 
     def get_dataplane_state(self, path, params):
@@ -584,7 +616,12 @@ class Forchestrator:
         """List learned access devices"""
         eth_src = params.get('eth_src')
         host = self._extract_url_base(path)
-        reply = self._faucet_collector.get_list_hosts(host, eth_src)
+        if self._faucetizer:
+            gauge_metrics = varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
+            reply = self._faucet_collector.get_list_hosts(host, eth_src, gauge_metrics)
+        else:
+            reply = self._faucet_collector.get_list_hosts(host, eth_src)
         return self._augment_state_reply(reply, path)
 
     def get_cpn_state(self, path, params):
