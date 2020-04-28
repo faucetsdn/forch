@@ -636,19 +636,19 @@ class FaucetStateCollector:
             rules_map_list = acl_map.setdefault('rules', [])
 
             for rule_config in acl_config.rules:
-                num_cookie = rule_config.get('cookie')
+                cookie_num = rule_config.get('cookie')
                 rule_map = {'description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
 
                 if not metric_samples:
                     continue
 
-                if not num_cookie:
+                if not cookie_num:
                     raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
 
                 has_sample = False
                 for sample in metric_samples:
-                    if str(sample.labels.get('cookie')) != str(num_cookie):
+                    if str(sample.labels.get('cookie')) != str(cookie_num):
                         continue
                     if sample.labels.get('dp_name') != switch_name:
                         continue
@@ -660,7 +660,7 @@ class FaucetStateCollector:
 
                 if not has_sample:
                     raise Exception(
-                        f'No metric sample available for rule with cookie {cookie} '
+                        f'No metric sample available for rule with cookie {cookie_num} '
                         f'in ACL {acl_config._id}')
 
             acls_map_list.append(acl_map)
@@ -734,7 +734,7 @@ class FaucetStateCollector:
 
     def get_active_egress_path(self, src_mac):
         """Given a MAC address return active route to egress."""
-        src_switch, src_port, _ = self._get_access_switch(src_mac)
+        src_switch, src_port = self._get_access_switch(src_mac)
         if not src_switch or not src_port:
             return self._make_summary(
                 State.broken, f'Device {src_mac} is not connected to access switch')
@@ -807,8 +807,8 @@ class FaucetStateCollector:
             }
 
     def _get_host_path(self, src_mac, dst_mac):
-        src_switch, src_port, _ = self._get_access_switch(src_mac)
-        dst_switch, dst_port, _ = self._get_access_switch(dst_mac)
+        src_switch, src_port = self._get_access_switch(src_mac)
+        dst_switch, dst_port = self._get_access_switch(dst_mac)
         switch_map = self.learned_macs[dst_mac][MAC_LEARNING_SWITCH]
 
         path = []
@@ -963,29 +963,35 @@ class FaucetStateCollector:
                     self._placement_callback(mac, devices_placement)
 
                 if self._forch_metrics:
-                    self._update_learned_macs_metric(
-                        mac, name, port, ip_addr, datetime.fromtimestamp(timestamp).isoformat())
+                    self._update_learned_macs_metric(mac, name, port)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
         """process port expire event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
-            learned_macs = self.switch_states[name][LEARNED_MACS]
-            if mac in learned_macs:
-                learned_macs.remove(mac)
+
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access':
+                if self._placement_callback:
+                    devices_placement = DevicePlacement(switch=name, port=port, connected=False)
+                    self._placement_callback(mac, devices_placement)
+
+                if self._forch_metrics:
+                    self._update_learned_macs_metric(mac, name, port, expire=True)
+
+            switch_learned_macs = self.switch_states[name][LEARNED_MACS]
+            if mac in switch_learned_macs:
+                switch_learned_macs.remove(mac)
             else:
                 LOGGER.warning('Entry %s doesnt exist in learned macs dict', mac)
-            if mac not in self.learned_macs:
-                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
-            else:
+
+            if mac in self.learned_macs:
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
                 if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
                     self.learned_macs.pop(mac)
-            port_attr = self._get_port_attributes(name, port)
-            if port_attr and port_attr['type'] == 'access' and self._placement_callback:
-                devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                self._placement_callback(mac, devices_placement)
+            else:
+                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
@@ -1103,28 +1109,23 @@ class FaucetStateCollector:
 
     def _update_learned_macs_metrics(self):
         for mac, mac_map in self.learned_macs.items():
-            switch, port, timestamp = self._get_access_switch(mac)
-            ip_addr = mac_map[MAC_LEARNING_IP]
-            self._update_learned_macs_metric(mac, switch, port, ip_addr, timestamp, force=True)
+            switch, port = self._get_access_switch(mac)
+            self._update_learned_macs_metric(mac, switch, port)
 
-    def _update_learned_macs_metric(self, mac, switch_name, port, ip_addr, timestamp, force=False):
-        if not force and not self.faucet_config.get(DPS_CFG):
+    def _update_learned_macs_metric(self, mac, switch_name, port, expire=False):
+        if not self.faucet_config.get(DPS_CFG):
             return
-        mac_int = int(mac.replace(':', ''), 16)
+
         port_map = {}
         self._fill_port_behavior(switch_name, port, port_map)
         vlan = port_map.get('vlan', 0)
-        acls_map = port_map.get('acls', {})
 
-        if not acls_map:
-            self._forch_metrics.update_var(
-                'learned_macs', mac_int,
-                labels=[switch_name, port, vlan, "", timestamp])
+        ip_addr = self.learned_macs[mac].get(MAC_LEARNING_IP)
+        port = 0 if expire else port
 
-        for acl_map in acls_map:
-            self._forch_metrics.update_var(
-                'learned_macs', mac_int,
-                labels=[switch_name, port, vlan, acl_map.get('name'), ip_addr, timestamp])
+        self._forch_metrics.update_var(
+            'learned_l2_port', port,
+            labels=[switch_name, mac, vlan, ip_addr])
 
     @staticmethod
     def get_endpoints_from_link(link_map):
@@ -1142,11 +1143,10 @@ class FaucetStateCollector:
 
         for switch, switch_map in learned_switches.items():
             port = switch_map[MAC_LEARNING_PORT]
-            timestamp = switch_map[MAC_LEARNING_TS]
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'access':
-                return switch, port, timestamp
-        return None, None, None
+                return switch, port
+        return None, None
 
     @_pre_check()
     def get_host_summary(self):
@@ -1165,7 +1165,7 @@ class FaucetStateCollector:
         for mac, mac_state in self.learned_macs.items():
             if mac == src_mac:
                 continue
-            switch, port, _ = self._get_access_switch(mac)
+            switch, port = self._get_access_switch(mac)
             if not switch or not port:
                 continue
             mac_deets = host_macs.setdefault(mac, {})
