@@ -734,7 +734,7 @@ class FaucetStateCollector:
 
     def get_active_egress_path(self, src_mac):
         """Given a MAC address return active route to egress."""
-        src_switch, src_port = self._get_access_switch(src_mac)
+        src_switch, src_port, _ = self._get_access_switch(src_mac)
         if not src_switch or not src_port:
             return self._make_summary(
                 State.broken, f'Device {src_mac} is not connected to access switch')
@@ -807,8 +807,8 @@ class FaucetStateCollector:
             }
 
     def _get_host_path(self, src_mac, dst_mac):
-        src_switch, src_port = self._get_access_switch(src_mac)
-        dst_switch, dst_port = self._get_access_switch(dst_mac)
+        src_switch, src_port, _ = self._get_access_switch(src_mac)
+        dst_switch, dst_port, _ = self._get_access_switch(dst_mac)
         switch_map = self.learned_macs[dst_mac][MAC_LEARNING_SWITCH]
 
         path = []
@@ -963,16 +963,7 @@ class FaucetStateCollector:
                     self._placement_callback(mac, devices_placement)
 
                 if self._forch_metrics:
-                    mac_int = int(mac.replace(':', ''), 16)
-                    port_map = {}
-                    self._fill_port_behavior(name, port, port_map)
-                    vlan = port_map.get('vlan', 0)
-                    acls_map = port_map.get('acls', {})
-
-                    for acl_map in acls_map:
-                        self._forch_metrics.update_var(
-                            'learned_macs', mac_int,
-                            labels=[name, port, vlan, acl_map.get('name')])
+                    self._update_learned_macs_metrics(mac, name, port, timestamp)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
@@ -1037,6 +1028,8 @@ class FaucetStateCollector:
             cfg_state[DPS_CFG] = {str(dp): dp for dp in dps_config}
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
+
+            self._update_learned_macs_metrics()
 
     @_dump_states
     @_register_restore_state_method(label_name='port', metric_name='port_stack_state')
@@ -1107,6 +1100,29 @@ class FaucetStateCollector:
         self.topo_state[LINKS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
         return link_change_count
 
+    def _update_learned_macs_metrics(self):
+        for mac, mac_map in self.learned_macs.items():
+            switch, port, timestamp = self._get_access_switch(mac)
+            ip_addr = mac_map[MAC_LEARNING_IP]
+            self._update_learned_macs_metric(mac, switch, port, ip_addr, timestamp)
+
+    def _update_learned_macs_metric(self, mac, switch_name, port, ip_addr, timestamp):
+        mac_int = int(mac.replace(':', ''), 16)
+        port_map = {}
+        self._fill_port_behavior(switch_name, port, port_map)
+        vlan = port_map.get('vlan', 0)
+        acls_map = port_map.get('acls', {})
+
+        if not acls_map:
+            self._forch_metrics.update_var(
+                'learned_macs', mac_int,
+                labels=[switch_name, port, vlan, "", timestamp])
+
+        for acl_map in acls_map:
+            self._forch_metrics.update_var(
+                'learned_macs', mac_int,
+                labels=[switch_name, port, vlan, acl_map.get('name'), ip_addr, timestamp])
+
     @staticmethod
     def get_endpoints_from_link(link_map):
         """Get the the pair of switch and port for a link"""
@@ -1121,12 +1137,13 @@ class FaucetStateCollector:
         """Get access switch and port for a given MAC"""
         learned_switches = self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH)
 
-        for switch, port_map in learned_switches.items():
-            port = port_map[MAC_LEARNING_PORT]
+        for switch, switch_map in learned_switches.items():
+            port = switch_map[MAC_LEARNING_PORT]
+            timestamp = switch_map[MAC_LEARNING_TS]
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'access':
-                return switch, port
-        return None, None
+                return switch, port, timestamp
+        return None, None, None
 
     @_pre_check()
     def get_host_summary(self):
@@ -1145,7 +1162,7 @@ class FaucetStateCollector:
         for mac, mac_state in self.learned_macs.items():
             if mac == src_mac:
                 continue
-            switch, port = self._get_access_switch(mac)
+            switch, port, _ = self._get_access_switch(mac)
             if not switch or not port:
                 continue
             mac_deets = host_macs.setdefault(mac, {})
