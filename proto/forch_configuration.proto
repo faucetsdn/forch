@@ -107,6 +107,9 @@ message OrchestrationConfig {
 
     // Shell command to get RADIUS secret. Can be as simple as 'echo <secret>'
     string radius_secret_helper = 3;
+
+    // Radius port to listen on for responses
+    int32 listen_port = 4;
   }
 }
 
