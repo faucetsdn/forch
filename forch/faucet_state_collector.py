@@ -1120,7 +1120,7 @@ class FaucetStateCollector:
         self._fill_port_behavior(switch_name, port, port_map)
         vlan = port_map.get('vlan', 0)
 
-        ip_addr = self.learned_macs[mac].get(MAC_LEARNING_IP)
+        ip_addr = self.learned_macs[mac].get(MAC_LEARNING_IP, "")
         port = 0 if expire else port
 
         self._forch_metrics.update_var(
