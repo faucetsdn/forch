@@ -133,7 +133,7 @@ def parse_args(raw_args):
     parser.add_argument('-s', '--server-ip', type=str, default='0.0.0.0',
                         help='RADIUS server ip')
     parser.add_argument('-p', '--server-port', type=int, default=1812,
-                        help='Server port that remote freeradius server is listening on')
+                        help='Server port that remote radius server is listening on')
     parser.add_argument('-l', '--source-port', type=int, default=0,
                         help='Port to listen on for RADIUS responses')
     parser.add_argument('-r', '--radius-secret', type=str, default='echo SECRET',
