@@ -230,6 +230,14 @@ class SessionTimeout(Attribute):
 
 
 @register_attribute_type
+class TerminationAction(Attribute):
+    """Vendor-Specific https://tools.ietf.org/html/rfc2865#section-5.29"""
+    TYPE = 29
+    DATA_TYPE = Enum
+    DESCRIPTION = "Termination-Action"
+
+
+@register_attribute_type
 class CalledStationId(Attribute):
     """Called-Station-Id https://tools.ietf.org/html/rfc2865#section-5.30"""
     TYPE = 30
