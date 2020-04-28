@@ -963,7 +963,7 @@ class FaucetStateCollector:
                     self._placement_callback(mac, devices_placement)
 
                 if self._forch_metrics:
-                    self._update_learned_macs_metrics(mac, name, port, timestamp)
+                    self._update_learned_macs_metric(mac, name, port, timestamp)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
@@ -1104,9 +1104,11 @@ class FaucetStateCollector:
         for mac, mac_map in self.learned_macs.items():
             switch, port, timestamp = self._get_access_switch(mac)
             ip_addr = mac_map[MAC_LEARNING_IP]
-            self._update_learned_macs_metric(mac, switch, port, ip_addr, timestamp)
+            self._update_learned_macs_metric(mac, switch, port, ip_addr, timestamp, force=True)
 
-    def _update_learned_macs_metric(self, mac, switch_name, port, ip_addr, timestamp):
+    def _update_learned_macs_metric(self, mac, switch_name, port, ip_addr, timestamp, force=False):
+        if not force and not self.faucet_config.get('DPS_CFG'):
+            return
         mac_int = int(mac.replace(':', ''), 16)
         port_map = {}
         self._fill_port_behavior(switch_name, port, port_map)
