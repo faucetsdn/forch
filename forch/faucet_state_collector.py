@@ -957,13 +957,14 @@ class FaucetStateCollector:
             LOGGER.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
             port_attr = self._get_port_attributes(name, port)
 
-            if port_attr and port_attr == "access":
+            if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
                     devices_placement = DevicePlacement(switch=name, port=port, connected=True)
                     self._placement_callback(mac, devices_placement)
 
                 if self._forch_metrics:
-                    self._update_learned_macs_metric(mac, name, port, timestamp)
+                    self._update_learned_macs_metric(
+                        mac, name, port, ip_addr, datetime.fromtimestamp(timestamp).isoformat())
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
@@ -1107,7 +1108,7 @@ class FaucetStateCollector:
             self._update_learned_macs_metric(mac, switch, port, ip_addr, timestamp, force=True)
 
     def _update_learned_macs_metric(self, mac, switch_name, port, ip_addr, timestamp, force=False):
-        if not force and not self.faucet_config.get('DPS_CFG'):
+        if not force and not self.faucet_config.get(DPS_CFG):
             return
         mac_int = int(mac.replace(':', ''), 16)
         port_map = {}
