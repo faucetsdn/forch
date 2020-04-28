@@ -179,7 +179,7 @@ message ProxyServerConfig {
   // port number for proxy server
   int32 proxy_port = 1;
 
-  // map of targets
+  // map of targets with target name as key
   map<string, ProxyTarget> targets = 2;
 }
 
