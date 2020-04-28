@@ -118,6 +118,7 @@ class FaucetStateCollector:
         self._stack_state_event = 0
         self._stack_state_update = 0
         self._stack_state_data = None
+        self._forch_metrics = None
         self._change_coalesce_sec = config.stack_topo_change_coalesce_sec
 
     def set_active(self, active_state):
@@ -635,19 +636,19 @@ class FaucetStateCollector:
             rules_map_list = acl_map.setdefault('rules', [])
 
             for rule_config in acl_config.rules:
-                cookie = str(rule_config.get('cookie'))
+                num_cookie = rule_config.get('cookie')
                 rule_map = {'description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
-
-                if not cookie:
-                    raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
 
                 if not metric_samples:
                     continue
 
+                if not num_cookie:
+                    raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
+
                 has_sample = False
                 for sample in metric_samples:
-                    if str(sample.labels.get('cookie')) != cookie:
+                    if str(sample.labels.get('cookie')) != str(num_cookie):
                         continue
                     if sample.labels.get('dp_name') != switch_name:
                         continue
@@ -955,9 +956,23 @@ class FaucetStateCollector:
 
             LOGGER.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
             port_attr = self._get_port_attributes(name, port)
-            if port_attr and port_attr['type'] == 'access' and self._placement_callback:
-                devices_placement = DevicePlacement(switch=name, port=port, connected=True)
-                self._placement_callback(mac, devices_placement)
+
+            if port_attr and port_attr == "access":
+                if self._placement_callback:
+                    devices_placement = DevicePlacement(switch=name, port=port, connected=True)
+                    self._placement_callback(mac, devices_placement)
+
+                if self._forch_metrics:
+                    mac_int = int(mac.replace(':', ''), 16)
+                    port_map = {}
+                    self._fill_port_behavior(name, port, port_map)
+                    vlan = port_map.get('vlan', 0)
+                    acls_map = port_map.get('acls', {})
+
+                    for acl_map in acls_map:
+                        self._forch_metrics.update_var(
+                            'learned_macs', mac_int,
+                            labels=[name, port, vlan, acl_map.get('name')])
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
@@ -1198,3 +1213,7 @@ class FaucetStateCollector:
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
         self._placement_callback = callback
+
+    def set_forch_metrics(self, forch_metrics):
+        """set object that handles forch varz metrics exposure"""
+        self._forch_metrics = forch_metrics

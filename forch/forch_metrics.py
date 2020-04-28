@@ -80,6 +80,10 @@ class ForchMetrics():
                       'No. of RADIUS query responses received from server', Counter)
         self._add_var('process_state', 'Current process state', Gauge, labels=['process'])
 
+        learned_mac_help_text = 'MAC address stored as 64bit number to switch anme, port, VLAN, '\
+                                'and acl'
+        learned_mac_labels = ['dp_name', 'port', 'vlan', 'acl']
+        self._add_var('learned_macs', learned_mac_help_text, Gauge, learned_mac_lables)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
