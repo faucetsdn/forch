@@ -109,7 +109,7 @@ message OrchestrationConfig {
     string radius_secret_helper = 3;
 
     // Radius port to listen on for responses
-    int32 listen_port = 4;
+    int32 source_port = 4;
   }
 }
 

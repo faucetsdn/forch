@@ -33,7 +33,7 @@ class Authenticator:
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
-        listen_port = radius_info.listen_port
+        source_port = radius_info.source_port
         if radius_info.radius_secret_helper:
             secret = os.popen(radius_info.radius_secret_helper).read().strip()
         else:
@@ -44,8 +44,8 @@ class Authenticator:
                            radius_ip, radius_port, bool(secret))
             raise ConfigError
         Socket = collections.namedtuple(
-            'Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', listen_port, radius_ip, radius_port)
+            'Socket', 'source_ip, source_port, server_ip, server_port')
+        socket_info = Socket('0.0.0.0', source_port, radius_ip, radius_port)
         if radius_query_object:
             self.radius_query = radius_query_object
         else:
@@ -133,9 +133,9 @@ def parse_args(raw_args):
     parser.add_argument('-s', '--server-ip', type=str, default='0.0.0.0',
                         help='RADIUS server ip')
     parser.add_argument('-p', '--server-port', type=int, default=1812,
-                        help='Server port that freeradius is listening on')
-    parser.add_argument('-l', '--listen-port', type=int, default=0,
-                        help='Port to listen on for responses')
+                        help='Server port that remote freeradius server is listening on')
+    parser.add_argument('-l', '--source-port', type=int, default=0,
+                        help='Port to listen on for RADIUS responses')
     parser.add_argument('-r', '--radius-secret', type=str, default='echo SECRET',
                         help='Command that prints RADIUS server secret')
     parser.add_argument('-m', '--src_mac', type=str, default='8e:00:00:00:01:02',
@@ -182,7 +182,7 @@ if __name__ == '__main__':
             'radius_info': {
                 'server_ip': ARGS.server_ip,
                 'server_port': ARGS.server_port,
-                'listen_port': ARGS.listen_port,
+                'source_port': ARGS.source_port,
                 'radius_secret_helper':  f'echo {ARGS.radius_secret}'
             }
         },
