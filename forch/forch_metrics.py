@@ -83,7 +83,7 @@ class ForchMetrics():
         learned_mac_help_text = 'MAC address stored as 64bit number to switch anme, port, VLAN, '\
                                 'and acl'
         learned_mac_labels = ['dp_name', 'port', 'vlan', 'acl']
-        self._add_var('learned_macs', learned_mac_help_text, Gauge, learned_mac_lables)
+        self._add_var('learned_macs', learned_mac_help_text, Gauge, learned_mac_labels)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
