@@ -1,3 +1,34 @@
+# 1.4.0
+## Forch 0.36
+* Change packet format for RADIUS requests to better suit what corpRADIUS
+  expects and sends out (#91)
+* Expose learned macs via Forch varz (#90)
+* Make source port for RADIUS queries configurable (#92)
+* Rev-parse fix
+* Improve exception handling in processing event (#87)
+* Load forch config file from FORCH_CONFIG_FILE (#86)
+* Fix egress state traceback error (#84)
+* Wait for RADIUS response before exiting when used as a standalone tool. (#83)
+* Change topo/bond/faucet.yaml to replace interface_ranges and raise a hard
+  exception when port is not defined in config. (#82)
+* Change base dir of forch related files (#80)
+* Set egress state to unkown if no LAG info is received (#79)
+* Assign native_vlan to host ports based on forch unauthenticated_vlan
+  configuration (#78)
+* Change criteria for healthy egress state to include two active links. (#77)
+* Expose ACL metrics in NOAH switch_state API (#68)
+* Modify authenticator to function as a mab standalone script (#76)
+* Automatically assign cookies to ACL rules (#73)
+* Add process metrics (#71)
+
+## Faucet 1.9.38
+* Consolidate standalone/stacked learn/flood classes
+* Add lacp_port_role prometheus metric
+* Add lacp_port_priority setting for indicating port preference in a LACP bundle
+* FAUCET can now learn from icmp requests to VIP
+* Fix various hardware test suite flakes
+  * LACP tests should ignore Linux LACP churn metric
+  * Explicitly clear ARP cache in test hosts before pinging FAUCET VIP
 
 # 1.3.0
 ## Forch 0.35
