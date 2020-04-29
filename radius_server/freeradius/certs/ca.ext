@@ -1,0 +1,9 @@
+extensions = x509v3
+
+[ x509v3 ]
+basicConstraints      = CA:true,pathlen:0
+crlDistributionPoints = URI:http://esdn.google.com
+nsCertType            = sslCA,emailCA,objCA
+nsCaPolicyUrl         = "http://esdn.google.com"
+nsCaRevocationUrl     = "http://esdn.google.com"
+nsComment             = "Sunnyvale CA"

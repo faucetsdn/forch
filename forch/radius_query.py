@@ -3,8 +3,8 @@ import logging
 import os
 
 from forch.radius import RadiusAttributesList, RadiusAccessRequest, Radius
-from forch.radius_attributes import CallingStationId, UserName, MessageAuthenticator, \
-        NASPort, UserPassword
+from forch.radius_attributes import CallingStationId, MessageAuthenticator, \
+        NASPort, CalledStationId, ServiceType, NASPortType
 from forch.radius_socket import RadiusSocket
 from forch.utils import MessageParseError
 
@@ -16,6 +16,9 @@ ACCEPT = "ACCEPT"
 REJECT = "REJECT"
 INVALID_RESP = "INVALID_RESPONSE"
 
+SERVICE_CALL_CHECK = 10
+NAS_TYPE_ETHERNET = 15
+
 class RadiusQuery:
     """Maintains socket information and sends out and receives requests form RADIUS server"""
     def __init__(self, socket_info, radius_secret, auth_callback):
@@ -26,7 +29,7 @@ class RadiusQuery:
         self.running = True
         # TODO: Find better way to handle secret
         self.radius_secret = radius_secret
-        self.radius_socket = RadiusSocket(socket_info.listen_ip, socket_info.listen_port,
+        self.radius_socket = RadiusSocket(socket_info.source_ip, socket_info.source_port,
                                           socket_info.server_ip, socket_info.server_port)
         self.radius_socket.setup()
 
@@ -76,19 +79,14 @@ class RadiusQuery:
         self.packet_id_to_req_authenticator[radius_id] = req_authenticator
 
         attr_list = []
-        attr_list.append(UserName.create(str(src_mac).replace(':', "")))
+        attr_list.append(ServiceType.create(SERVICE_CALL_CHECK))
+        attr_list.append(CalledStationId.create(str(src_mac).replace(':', "")))
         attr_list.append(CallingStationId.create(str(src_mac).replace(':', '-')))
-
+        attr_list.append(NASPortType.create(NAS_TYPE_ETHERNET))
         if port_id:
             attr_list.append(NASPort.create(port_id))
-
-        ciphertext = UserPassword.encrypt(
-            self.radius_secret, req_authenticator, str(src_mac).replace(':', ""))
-        attr_list.append(UserPassword.create(ciphertext))
-
         attr_list.append(MessageAuthenticator.create(
             bytes.fromhex("00000000000000000000000000000000")))
-
         attributes = RadiusAttributesList(attr_list)
         access_request = RadiusAccessRequest(radius_id, req_authenticator, attributes)
         return access_request.build(self.radius_secret)

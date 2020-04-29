@@ -100,6 +100,7 @@ class Forchestrator:
         self._metrics.start()
         self._faucet_collector = FaucetStateCollector(self._config.event_client)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
+        self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update)
 
