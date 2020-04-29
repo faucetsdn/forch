@@ -23,7 +23,7 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 import forch.varz_state_collector as varz_state_collector
 
-from forch.utils import yaml_proto
+from forch.utils import proto_dict, yaml_proto
 
 from forch.__version__ import __version__
 
@@ -640,7 +640,8 @@ class Forchestrator:
         try:
             _, _, faucet_config = self._get_faucet_config()
             reply = {
-                'faucet': faucet_config
+                'faucet_behavioral': faucet_config,
+                'forch': proto_dict(self._config)
             }
             return self._augment_state_reply(reply, path)
         except Exception as e:
