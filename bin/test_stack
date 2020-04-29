@@ -81,7 +81,7 @@ sleep 32
 test_forch -healthy
 test_varz_value process_state{process=\"faucet\"} forch
 test_varz_value process_state{process=\"gauge\"} forch
-test_varz_value process_state{process=\"forch\"} 
+test_varz_value process_state{process=\"forch\"} forch
 test_varz_value process_state{process=\"sleep\"} forch
 
 reset_stack
