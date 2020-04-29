@@ -10,11 +10,11 @@ LOGGER = logging.getLogger('rsocket')
 class RadiusSocket:
     """Handle the RADIUS socket"""
 
-    def __init__(self, listen_ip, listen_port, server_ip,  # pylint: disable=too-many-arguments
+    def __init__(self, source_ip, source_port, server_ip,  # pylint: disable=too-many-arguments
                  server_port):
         self.socket = None
-        self.listen_ip = listen_ip
-        self.listen_port = listen_port
+        self.source_ip = source_ip
+        self.source_port = source_port
         self.server_ip = server_ip
         self.server_port = server_port
         self.lock = RLock()
@@ -25,7 +25,7 @@ class RadiusSocket:
         try:
             self.socket = socket.socket(socket.AF_INET,
                                         socket.SOCK_DGRAM)
-            self.socket.bind((self.listen_ip, self.listen_port))
+            self.socket.bind((self.source_ip, self.source_port))
         except socket.error as err:
             LOGGER.error("Unable to setup socket: %s", str(err))
             raise err

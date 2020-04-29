@@ -26,7 +26,7 @@ class RadiusQuery:
         self.running = True
         # TODO: Find better way to handle secret
         self.radius_secret = radius_secret
-        self.radius_socket = RadiusSocket(socket_info.listen_ip, socket_info.listen_port,
+        self.radius_socket = RadiusSocket(socket_info.source_ip, socket_info.source_port,
                                           socket_info.server_ip, socket_info.server_port)
         self.radius_socket.setup()
 
