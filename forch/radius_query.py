@@ -83,13 +83,10 @@ class RadiusQuery:
         attr_list.append(CalledStationId.create(str(src_mac).replace(':', "")))
         attr_list.append(CallingStationId.create(str(src_mac).replace(':', '-')))
         attr_list.append(NASPortType.create(NAS_TYPE_ETHERNET))
-
         if port_id:
             attr_list.append(NASPort.create(port_id))
-
         attr_list.append(MessageAuthenticator.create(
             bytes.fromhex("00000000000000000000000000000000")))
-
         attributes = RadiusAttributesList(attr_list)
         access_request = RadiusAccessRequest(radius_id, req_authenticator, attributes)
         return access_request.build(self.radius_secret)
