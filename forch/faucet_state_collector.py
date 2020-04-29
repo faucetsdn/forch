@@ -1108,7 +1108,7 @@ class FaucetStateCollector:
         return link_change_count
 
     def _update_learned_macs_metrics(self):
-        for mac in self.learned_macs.items():
+        for mac in self.learned_macs:
             switch, port = self._get_access_switch(mac)
             self._update_learned_macs_metric(mac, switch, port)
 
