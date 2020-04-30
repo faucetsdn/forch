@@ -184,6 +184,10 @@ class Faucetizer:
         with open(file_path, 'w') as acl_file:
             yaml.dump(acls_config, acl_file)
 
+    def get_structural_config(self):
+        with self._lock:
+            return self._structural_faucet_config
+
 
 def load_devices_state(file):
     """Load devices state file"""

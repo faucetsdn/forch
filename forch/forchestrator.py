@@ -638,11 +638,13 @@ class Forchestrator:
     def get_sys_config(self, path, params):
         """Get overall config from faucet config file"""
         try:
-            _, _, faucet_config = self._get_faucet_config()
+            _, _, behavioral_config = self._get_faucet_config()
             reply = {
-                'faucet_behavioral': faucet_config,
+                'faucet_behavioral': behavioral_config,
                 'forch': proto_dict(self._config)
             }
+            if self._faucetizer:
+                reply['faucet_structural'] = self._faucetizer.get_structural_config()
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
