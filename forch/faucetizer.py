@@ -188,6 +188,7 @@ class Faucetizer:
             yaml.dump(acls_config, acl_file)
 
     def get_structural_config(self):
+        """Return structural config"""
         with self._lock:
             return self._structural_faucet_config
 
