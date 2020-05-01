@@ -44,7 +44,7 @@ class AuthStateMachine():
         if expected is not None:
             message = 'state was %s expected %s' % (self._current_state, expected)
             assert self._current_state == expected, message
-        LOGGER.info('Transition: %s -> %s', self._current_state, target)
+        LOGGER.debug('Transition for %s: %s -> %s', self.src_mac, self._current_state, target)
         self._current_state = target
 
     def _reset_state_machine(self):
@@ -102,6 +102,7 @@ class AuthStateMachine():
                     if self._metrics:
                         self._metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
+                    LOGGER.debug('RADIUS request timed out for %s', self.src_mac)
                 else:
                     self._state_transition(self.REQUEST)
                     self._auth_callback(self.src_mac, None, None)
