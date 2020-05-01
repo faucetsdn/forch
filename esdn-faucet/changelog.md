@@ -1,5 +1,7 @@
 # 1.4.0
 ## Forch 0.36
+* Cleanup logs (#95)
+* Add forch and faucet structural config to sys_config API (#94)
 * Change packet format for RADIUS requests to better suit what corpRADIUS
   expects and sends out (#91)
 * Expose learned macs via Forch varz (#90)
