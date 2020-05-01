@@ -66,7 +66,7 @@ class AuthStateMachine():
                 self._reset_state_machine()
             self._state_transition(self.REQUEST, self.UNAUTH)
             self._radius_query_callback(self.src_mac, self.port_id)
-            backoff_time = (self._retry_backoff) * self._query_timeout_sec
+            backoff_time = self._retry_backoff * self._query_timeout_sec
             self._current_timeout = time.time() + backoff_time
 
     def host_expired(self):
