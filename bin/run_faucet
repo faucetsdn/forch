@@ -75,8 +75,8 @@ else
 
     expected_faucet=$(cat etc/FAUCET_VERSION)
 
-    using_hash=`cd faucet; git rev-parse $using_faucet`
-    expected_hash=`cd faucet; git rev-parse $expected_faucet`
+    using_hash=`cd faucet; git rev-list -n 1 $using_faucet`
+    expected_hash=`cd faucet; git rev-list -n 1 $expected_faucet`
     if [ "$using_hash" != "$expected_hash" ]; then
 	echo Image faucet version does not match configuration.
 	echo $using_hash $error_label $using_faucet
@@ -87,6 +87,7 @@ fi
 
 docker_envs="\
         --env FAUCET_CONFIG_STAT_RELOAD=1 \
+        --env GAUGE_CONFIG_STAT_RELOAD=1 \
         --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
         --env USERID=$(id -u) \
         --env FAUCET_EVENT_SOCK=$event_sock \

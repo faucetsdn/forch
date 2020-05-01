@@ -54,6 +54,9 @@ message OrchestrationConfig {
   // structural config file name
   string structural_config_file = 1;
 
+  // VLAN for unauthenticated devices
+  int32 unauthenticated_vlan = 8;
+
   // behavioral config file name
   string behavioral_config_file = 2;
 
@@ -104,6 +107,9 @@ message OrchestrationConfig {
 
     // Shell command to get RADIUS secret. Can be as simple as 'echo <secret>'
     string radius_secret_helper = 3;
+
+    // Port to listen on for RADIUS responses
+    int32 source_port = 4;
   }
 }
 

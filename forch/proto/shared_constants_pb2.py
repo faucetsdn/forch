@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/shared_constants.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x7f\n\x05State\"v\n\x05State\x12\n\n\x06\x62roken\x10\x00\x12\n\n\x06\x61\x63tive\x10\x01\x12\x0b\n\x07\x64\x61maged\x10\x02\x12\x08\n\x04\x64own\x10\x03\x12\x0b\n\x07healthy\x10\x04\x12\x0c\n\x08inactive\x10\x05\x12\x10\n\x0cinitializing\x10\x06\x12\t\n\x05split\x10\x07\x12\x06\n\x02up\x10\x08\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\x62\x06proto3')
+  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -32,46 +32,50 @@ _STATE_STATE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='broken', index=0, number=0,
+      name='unknown', index=0, number=0,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='active', index=1, number=1,
+      name='broken', index=1, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='damaged', index=2, number=2,
+      name='active', index=2, number=2,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='down', index=3, number=3,
+      name='damaged', index=3, number=3,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='healthy', index=4, number=4,
+      name='down', index=4, number=4,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='inactive', index=5, number=5,
+      name='healthy', index=5, number=5,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='initializing', index=6, number=6,
+      name='inactive', index=6, number=6,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='split', index=7, number=7,
+      name='initializing', index=7, number=7,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='up', index=8, number=8,
+      name='split', index=8, number=8,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='up', index=9, number=9,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=47,
-  serialized_end=165,
+  serialized_start=49,
+  serialized_end=180,
 )
 _sym_db.RegisterEnumDescriptor(_STATE_STATE)
 
@@ -104,8 +108,8 @@ _LACPSTATE_LACPSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=180,
-  serialized_end=256,
+  serialized_start=195,
+  serialized_end=271,
 )
 _sym_db.RegisterEnumDescriptor(_LACPSTATE_LACPSTATE)
 
@@ -130,8 +134,8 @@ _STATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=38,
-  serialized_end=165,
+  serialized_start=39,
+  serialized_end=180,
 )
 
 
@@ -155,8 +159,8 @@ _LACPSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=167,
-  serialized_end=256,
+  serialized_start=182,
+  serialized_end=271,
 )
 
 _STATE_STATE.containing_type = _STATE

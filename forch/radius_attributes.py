@@ -223,10 +223,18 @@ class VendorSpecific(Attribute):
 
 @register_attribute_type
 class SessionTimeout(Attribute):
-    """Vendor-Specific https://tools.ietf.org/html/rfc2865#section-5.27"""
+    """Session-Timeout https://tools.ietf.org/html/rfc2865#section-5.27"""
     TYPE = 27
     DATA_TYPE = Integer
     DESCRIPTION = "Session-Timeout"
+
+
+@register_attribute_type
+class TerminationAction(Attribute):
+    """Termination-Action https://tools.ietf.org/html/rfc2865#section-5.29"""
+    TYPE = 29
+    DATA_TYPE = Enum
+    DESCRIPTION = "Termination-Action"
 
 
 @register_attribute_type

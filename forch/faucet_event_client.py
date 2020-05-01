@@ -108,8 +108,8 @@ class FaucetEventClient():
     def _valid_event_order(self, event):
         if event.get('debounced'):
             return True
-        event_id = int(event['event_id'])
         assert self._last_event_id, '_last_event_id undefined, check for initialization errors'
+        event_id = int(event['event_id'])
         if event_id <= self._last_event_id:
             LOGGER.debug('Outdated faucet event #%d', event_id)
             return False
@@ -229,7 +229,11 @@ class FaucetEventClient():
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
             target_event = getattr(faucet_event, str(event_target), None)
-            dispatch = self._valid_event_order(event) and target_event
+            try:
+                dispatch = self._valid_event_order(event) and target_event
+            except Exception as e:
+                LOGGER.error('Validation failed for event %s: %s', event, e)
+                raise
             dispatch = dispatch and self._handle_port_change_debounce(event, target_event)
             dispatch = dispatch and self._handle_ports_status(event)
             if dispatch:

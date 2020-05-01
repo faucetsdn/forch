@@ -118,6 +118,7 @@ class FaucetStateCollector:
         self._stack_state_event = 0
         self._stack_state_update = 0
         self._stack_state_data = None
+        self._forch_metrics = None
         self._change_coalesce_sec = config.stack_topo_change_coalesce_sec
 
     def set_active(self, active_state):
@@ -375,18 +376,19 @@ class FaucetStateCollector:
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
     @_pre_check()
-    def get_switch_state(self, switch, port, url_base=None):
+    def get_switch_state(self, switch, port, metrics=None, url_base=None):
         """get a set of all switches"""
-        return self._get_switch_state(switch, port, url_base)
+        return self._get_switch_state(switch, port, metrics, url_base)
 
-    def _get_switch_state(self, switch, port, url_base=None):
+    def _get_switch_state(self, switch, port, metrics=None, url_base=None):
         """Get switch state impl"""
         switches_data = {}
         broken = []
         change_count = 0
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
         for switch_name in self.switch_states:
-            switch_data = self._get_switch(switch_name, port)
+            arg_port = port if switch_name == switch else None
+            switch_data = self._get_switch(switch_name, arg_port, metrics)
             switches_data[switch_name] = switch_data
             change_count += switch_data.get(SW_STATE_CHANGE_COUNT, 0)
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
@@ -429,10 +431,15 @@ class FaucetStateCollector:
         """Return egress state obj"""
         with self.lock:
             egress_obj = self.topo_state.get('egress', {})
-            target_obj[EGRESS_STATE] = State.State.Name(egress_obj.get(EGRESS_STATE))
-            target_obj[EGRESS_DETAIL] = egress_obj.get(EGRESS_DETAIL)
-            target_obj[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
-            target_obj[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+            if EGRESS_STATE not in egress_obj:
+                target_obj[EGRESS_STATE] = State.unknown
+                target_obj[EGRESS_DETAIL] = 'No LAG information received'
+            else:
+                target_obj[EGRESS_STATE] = egress_obj[EGRESS_STATE]
+                target_obj[EGRESS_DETAIL] = egress_obj.get(EGRESS_DETAIL)
+                target_obj[EGRESS_LAST_CHANGE] = egress_obj.get(EGRESS_LAST_CHANGE)
+                target_obj[EGRESS_CHANGE_COUNT] = egress_obj.get(EGRESS_CHANGE_COUNT)
+
             target_obj[TOPOLOGY_ROOT] = self.topo_state.get(TOPOLOGY_ROOT)
             target_obj[EGRESS_LINK_MAP] = copy.deepcopy(egress_obj.get(EGRESS_LINK_MAP))
 
@@ -461,17 +468,17 @@ class FaucetStateCollector:
             switch_map_obj[SW_STATE_LAST_CHANGE] = last_change
             return switch_map_obj
 
-    def _get_switch(self, switch_name, port):
+    def _get_switch(self, switch_name, port, metrics=None):
         """lock protect get_switch_raw"""
         with self.lock:
-            return self._get_switch_raw(switch_name, port)
+            return self._get_switch_raw(switch_name, port, metrics)
 
     def _get_switch_config(self, switch_name):
         if switch_name not in self.faucet_config.get(DPS_CFG, {}):
             raise Exception(f'Missing switch configuration for {switch_name}')
         return self.faucet_config[DPS_CFG][switch_name]
 
-    def _get_switch_raw(self, switch_name, port):
+    def _get_switch_raw(self, switch_name, port, metrics=None):
         """get switches state"""
         switch_map = {}
 
@@ -497,14 +504,16 @@ class FaucetStateCollector:
             port_id = int(port)
             switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
             switch_map['ports_restrict'] = port_id
-            self._fill_dva_states(switch_name, port_id, switch_port_map[port_id])
+            self._fill_port_behavior(switch_name, port_id, switch_port_map[port_id], metrics)
         else:
             for port_id in switch_states.get(PORTS, {}):
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
-                self._fill_dva_states(switch_name, port_id, switch_port_map[port_id])
+                self._fill_port_behavior(
+                    switch_name, port_id, switch_port_map[port_id], metrics)
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
+        self._fill_vlan_behavior(switch_name, switch_map, metrics)
 
         return switch_map
 
@@ -569,24 +578,92 @@ class FaucetStateCollector:
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)
 
-    def _fill_dva_states(self, switch_name, port_id, port_map):
-        dp_obj = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
-        if not dp_obj:
+    def _fill_vlan_behavior(self, switch_name, switch_map, metrics=None):
+        dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
+        if not dp_config:
             LOGGER.warning('Switch not defined in dps config: %s', switch_name)
             return
 
-        port_obj = dp_obj.interfaces.get(port_id)
-        if not port_obj:
-            LOGGER.warning('Port not defined in dps config: %s, %s', switch_name, port_id)
+        vlans_map = switch_map.setdefault('vlans', {})
+
+        for vid, vlan_config in dp_config.vlans.items():
+            if not vlan_config.acls_in:
+                continue
+
+            acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
+
+            if metrics is None:
+                self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in)
+                continue
+
+            if 'flow_packet_count_vlan_acl' not in metrics:
+                raise Exception(f'VLAN ACL metric is not available for VLAN {vid}')
+            samples = metrics['flow_packet_count_vlan_acl'].samples
+            self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
+
+    def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
+        dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
+        if not dp_config:
+            LOGGER.warning('Switch not defined in dps config: %s', switch_name)
             return
 
-        native_vlan = port_obj.get('native_vlan')
-        acls_in = port_obj.get('acls_in')
+        port_config = dp_config.ports.get(port_id)
+        if not port_config:
+            raise Exception('Port not defined in dps config: %s, %s' % (switch_name, port_id))
 
-        if native_vlan:
-            port_map['vlan'] = int(native_vlan)
-        if acls_in:
-            port_map['acls'] = list(acls_in)
+        if port_config.native_vlan:
+            port_map['vlan'] = int(port_config.native_vlan.vid)
+
+        if port_config.acls_in:
+            acl_maps_list = port_map.setdefault('acls', [])
+
+            if metrics is None:
+                self._fill_acls_behavior(
+                    switch_name, acl_maps_list, port_config.acls_in, None, port_id)
+            else:
+                if 'flow_packet_count_port_acl' not in metrics:
+                    raise Exception('No port acl metric available')
+
+                samples = metrics['flow_packet_count_port_acl'].samples
+                self._fill_acls_behavior(
+                    switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
+
+    # pylint: disable=too-many-arguments
+    def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
+                            metric_samples=None, port_id=None):
+        for acl_config in acls_config:
+            acl_map = {'name': acl_config._id}
+            rules_map_list = acl_map.setdefault('rules', [])
+
+            for rule_config in acl_config.rules:
+                cookie_num = rule_config.get('cookie')
+                rule_map = {'description': rule_config.get('description')}
+                rules_map_list.append(rule_map)
+
+                if not metric_samples:
+                    continue
+
+                if not cookie_num:
+                    raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
+
+                has_sample = False
+                for sample in metric_samples:
+                    if str(sample.labels.get('cookie')) != str(cookie_num):
+                        continue
+                    if sample.labels.get('dp_name') != switch_name:
+                        continue
+                    if port_id and int(sample.labels.get('in_port')) != port_id:
+                        continue
+                    rule_map['packet_count'] = int(sample.value)
+                    has_sample = True
+                    break
+
+                if not has_sample:
+                    raise Exception(
+                        f'No metric sample available for rule with cookie {cookie_num} '
+                        f'in ACL {acl_config._id}')
+
+            acls_map_list.append(acl_map)
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):
@@ -845,7 +922,7 @@ class FaucetStateCollector:
                 egress_name = key
             elif link_state != STATE_UP:
                 link_down = key
-        if state_set == set([STATE_ACTIVE, STATE_UP]):
+        if state_set == set([STATE_ACTIVE, STATE_UP]) or state_set == set([STATE_ACTIVE]):
             state = State.healthy
         elif STATE_ACTIVE in state_set:
             state = State.damaged
@@ -879,30 +956,42 @@ class FaucetStateCollector:
 
             LOGGER.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
             port_attr = self._get_port_attributes(name, port)
-            if port_attr and port_attr['type'] == 'access' and self._placement_callback:
-                devices_placement = DevicePlacement(switch=name, port=port, connected=True)
-                self._placement_callback(mac, devices_placement)
+
+            if port_attr and port_attr['type'] == 'access':
+                if self._placement_callback:
+                    devices_placement = DevicePlacement(switch=name, port=port, connected=True)
+                    self._placement_callback(mac, devices_placement)
+
+                if self._forch_metrics:
+                    self._update_learned_macs_metric(mac, name, port)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac):
         """process port expire event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
-            learned_macs = self.switch_states[name][LEARNED_MACS]
-            if mac in learned_macs:
-                learned_macs.remove(mac)
+
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access':
+                if self._placement_callback:
+                    devices_placement = DevicePlacement(switch=name, port=port, connected=False)
+                    self._placement_callback(mac, devices_placement)
+
+                if self._forch_metrics:
+                    self._update_learned_macs_metric(mac, name, port, expire=True)
+
+            switch_learned_macs = self.switch_states[name][LEARNED_MACS]
+            if mac in switch_learned_macs:
+                switch_learned_macs.remove(mac)
             else:
                 LOGGER.warning('Entry %s doesnt exist in learned macs dict', mac)
-            if mac not in self.learned_macs:
-                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
-            else:
+
+            if mac in self.learned_macs:
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
                 if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
                     self.learned_macs.pop(mac)
-            port_attr = self._get_port_attributes(name, port)
-            if port_attr and port_attr['type'] == 'access' and self._placement_callback:
-                devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                self._placement_callback(mac, devices_placement)
+            else:
+                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
@@ -946,6 +1035,8 @@ class FaucetStateCollector:
             cfg_state[DPS_CFG] = {str(dp): dp for dp in dps_config}
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
+
+            self._update_learned_macs_metrics()
 
     @_dump_states
     @_register_restore_state_method(label_name='port', metric_name='port_stack_state')
@@ -1016,6 +1107,26 @@ class FaucetStateCollector:
         self.topo_state[LINKS_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
         return link_change_count
 
+    def _update_learned_macs_metrics(self):
+        for mac in self.learned_macs:
+            switch, port = self._get_access_switch(mac)
+            self._update_learned_macs_metric(mac, switch, port)
+
+    def _update_learned_macs_metric(self, mac, switch_name, port, expire=False):
+        if not self.faucet_config.get(DPS_CFG):
+            return
+
+        port_map = {}
+        self._fill_port_behavior(switch_name, port, port_map)
+        vlan = port_map.get('vlan', 0)
+
+        ip_addr = self.learned_macs[mac].get(MAC_LEARNING_IP) or ""
+        port = 0 if expire else port
+
+        self._forch_metrics.update_var(
+            'learned_l2_port', port,
+            labels=[switch_name, mac, vlan, ip_addr])
+
     @staticmethod
     def get_endpoints_from_link(link_map):
         """Get the the pair of switch and port for a link"""
@@ -1030,8 +1141,8 @@ class FaucetStateCollector:
         """Get access switch and port for a given MAC"""
         learned_switches = self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH)
 
-        for switch, port_map in learned_switches.items():
-            port = port_map[MAC_LEARNING_PORT]
+        for switch, switch_map in learned_switches.items():
+            port = switch_map[MAC_LEARNING_PORT]
             port_attr = self._get_port_attributes(switch, port)
             if port_attr.get('type') == 'access':
                 return switch, port
@@ -1045,7 +1156,7 @@ class FaucetStateCollector:
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
-    def get_list_hosts(self, url_base, src_mac):
+    def get_list_hosts(self, url_base, src_mac, metrics=None):
         """Get access devices"""
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
@@ -1061,7 +1172,7 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
-            self._fill_dva_states(switch, port, mac_deets)
+            self._fill_port_behavior(switch, port, mac_deets, metrics)
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
@@ -1071,6 +1182,7 @@ class FaucetStateCollector:
 
         key = 'eth_dsts' if src_mac else 'eth_srcs'
         egress_url = f"{url_base}?host_path?eth_src={src_mac}&to_egress=true" if src_mac else None
+
         return dict_proto({
             key: host_macs,
             'egress_url': egress_url,
@@ -1121,3 +1233,7 @@ class FaucetStateCollector:
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
         self._placement_callback = callback
+
+    def set_forch_metrics(self, forch_metrics):
+        """set object that handles forch varz metrics exposure"""
+        self._forch_metrics = forch_metrics
