@@ -58,7 +58,7 @@ class RadiusQuery:
                 code = REJECT
             src_mac = self.get_mac_from_packet_id(radius.packet_id)['src_mac']
             LOGGER.debug("Received RADIUS msg: Code:%s src:%s attributes:%s",
-                        code, src_mac, radius.attributes.to_dict())
+                         code, src_mac, radius.attributes.to_dict())
             if self.auth_callback:
                 attr = radius.attributes.find('Tunnel-Private-Group-ID')
                 segment = attr.data().decode('utf-8') if attr else None
