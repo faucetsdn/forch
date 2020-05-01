@@ -47,12 +47,12 @@ class Faucetizer:
                 device = devices.setdefault(eth_src, Device())
                 device.placement.CopyFrom(placement)
                 LOGGER.info(
-                    'Added %s placement: %s, %s, %s',
+                    'Started DVA for %s device: %s at %s:%s',
                     device_type, eth_src, placement.switch, placement.port)
             else:
                 removed = devices.pop(eth_src, None)
                 if removed:
-                    LOGGER.info('Removed %s device: %s', device_type, eth_src)
+                    LOGGER.info('Removed DVA for %s device: %s at %s:%s', device_type, eth_src, placement.switch, placement.port)
 
             self.flush_behavioral_config()
 
@@ -64,9 +64,10 @@ class Faucetizer:
             if behavior.segment:
                 device = devices.setdefault(eth_src, Device())
                 device.behavior.CopyFrom(behavior)
+                vid = self._segments_to_vlans.get(device.behavior.segment) or 'None'
                 LOGGER.info(
-                    'Added %s behavior: %s, %s, %s',
-                    device_type, eth_src, behavior.segment, behavior.role)
+                    'DVA for %s to segment: %s, vid:%s, role:%s done from %s source.',
+                    eth_src, behavior.segment, behavior.role, device_type)
             else:
                 device = devices.get(eth_src)
                 if device:
