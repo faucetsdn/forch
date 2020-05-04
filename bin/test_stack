@@ -79,10 +79,10 @@ sudo ip link set t1sw2-eth28 up
 sleep 50.3231 &
 sleep 32
 test_forch -healthy
-test_varz_value process_state{process=\"faucet\"}
-test_varz_value process_state{process=\"gauge\"}
-test_varz_value process_state{process=\"forch\"}
-test_varz_value process_state{process=\"sleep\"}
+test_varz_value process_state{process=\"faucet\"} 8302
+test_varz_value process_state{process=\"gauge\"} 8080 forch
+test_varz_value process_state{process=\"forch\"} 8080 forch
+test_varz_value process_state{process=\"sleep\"} 8080 forch
 
 reset_stack
 sleep 32
