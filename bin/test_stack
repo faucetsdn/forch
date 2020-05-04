@@ -83,6 +83,7 @@ test_varz_value process_state{process=\"faucet\"} 8302
 test_varz_value process_state{process=\"gauge\"} 8080 forch
 test_varz_value process_state{process=\"forch\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 forch
+test_varz_value process_state{process=\"sleep\"} 8080 random_string
 
 reset_stack
 sleep 32
