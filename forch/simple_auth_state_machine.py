@@ -37,8 +37,7 @@ class AuthStateMachine():
         self._reset_state_machine()
 
     def _increment_retries(self):
-        if self._retry_backoff < self._max_radius_backoff:
-            self._retry_backoff += 1
+        self._retry_backoff += 1
 
     def _state_transition(self, target, expected=None):
         if expected is not None:
@@ -66,7 +65,8 @@ class AuthStateMachine():
                 self._reset_state_machine()
             self._state_transition(self.REQUEST, self.UNAUTH)
             self._radius_query_callback(self.src_mac, self.port_id)
-            backoff_time = self._retry_backoff * self._query_timeout_sec
+            backoff = min(self._retry_backoff, self._max_radius_backoff)
+            backoff_time = backoff * self._query_timeout_sec
             self._current_timeout = time.time() + backoff_time
 
     def host_expired(self):
@@ -99,7 +99,8 @@ class AuthStateMachine():
                     LOGGER.debug('Retrying RADIUS request for src_mac %s. Retry #%s',
                                  self.src_mac, self._retry_backoff)
                 self._radius_query_callback(self.src_mac, self.port_id)
-                backoff_time = self._retry_backoff * self._query_timeout_sec
+                backoff = min(self._retry_backoff, self._max_radius_backoff)
+                backoff_time = backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
                     if self._metrics:
