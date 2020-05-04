@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='forch/proto/forch_configuration.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"\xe9\x01\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\x12,\n\x0evarz_interface\x18\x06 \x01(\x0b\x32\x14.VarzInterfaceConfig\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xd9\x04\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1c\n\x14unauthenticated_vlan\x18\x08 \x01(\x05\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RadiusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_backoff\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1ag\n\nRadiusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x1c\n\x14radius_secret_helper\x18\x03 \x01(\t\x12\x13\n\x0bsource_port\x18\x04 \x01(\x05\"\x8b\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\'\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\"V\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x12&\n\x1estack_topo_change_coalesce_sec\x18\x02 \x01(\x05\"(\n\x13VarzInterfaceConfig\x12\x11\n\tvarz_port\x18\x01 \x01(\x05\x62\x06proto3')
+  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"\x93\x02\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\x12,\n\x0evarz_interface\x18\x06 \x01(\x0b\x32\x14.VarzInterfaceConfig\x12(\n\x0cproxy_server\x18\x07 \x01(\x0b\x32\x12.ProxyServerConfig\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xd9\x04\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1c\n\x14unauthenticated_vlan\x18\x08 \x01(\x05\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RadiusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_backoff\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1ag\n\nRadiusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x1c\n\x14radius_secret_helper\x18\x03 \x01(\t\x12\x13\n\x0bsource_port\x18\x04 \x01(\x05\"\x8b\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\'\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\"V\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x12&\n\x1estack_topo_change_coalesce_sec\x18\x02 \x01(\x05\"(\n\x13VarzInterfaceConfig\x12\x11\n\tvarz_port\x18\x01 \x01(\x05\"\x97\x01\n\x11ProxyServerConfig\x12\x12\n\nproxy_port\x18\x01 \x01(\x05\x12\x30\n\x07targets\x18\x02 \x03(\x0b\x32\x1f.ProxyServerConfig.TargetsEntry\x1a<\n\x0cTargetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.ProxyTarget:\x02\x38\x01\"\x1b\n\x0bProxyTarget\x12\x0c\n\x04port\x18\x01 \x01(\x05\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -75,6 +75,13 @@ _FORCHCONFIG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='proxy_server', full_name='ForchConfig.proxy_server', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -88,7 +95,7 @@ _FORCHCONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=42,
-  serialized_end=275,
+  serialized_end=317,
 )
 
 
@@ -125,8 +132,8 @@ _SITECONFIG_CONTROLLERSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=357,
-  serialized_end=431,
+  serialized_start=399,
+  serialized_end=473,
 )
 
 _SITECONFIG_CONTROLLER = _descriptor.Descriptor(
@@ -162,8 +169,8 @@ _SITECONFIG_CONTROLLER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=433,
-  serialized_end=473,
+  serialized_start=475,
+  serialized_end=515,
 )
 
 _SITECONFIG = _descriptor.Descriptor(
@@ -199,8 +206,8 @@ _SITECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=278,
-  serialized_end=473,
+  serialized_start=320,
+  serialized_end=515,
 )
 
 
@@ -265,8 +272,8 @@ _ORCHESTRATIONCONFIG_AUTHCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=774,
-  serialized_end=972,
+  serialized_start=816,
+  serialized_end=1014,
 )
 
 _ORCHESTRATIONCONFIG_RADIUSINFO = _descriptor.Descriptor(
@@ -316,8 +323,8 @@ _ORCHESTRATIONCONFIG_RADIUSINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=974,
-  serialized_end=1077,
+  serialized_start=1016,
+  serialized_end=1119,
 )
 
 _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
@@ -395,8 +402,8 @@ _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=476,
-  serialized_end=1077,
+  serialized_start=518,
+  serialized_end=1119,
 )
 
 
@@ -433,8 +440,8 @@ _PROCESSCONFIG_PROCESSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1248,
-  serialized_end=1320,
+  serialized_start=1290,
+  serialized_end=1362,
 )
 
 _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
@@ -470,8 +477,8 @@ _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1322,
-  serialized_end=1399,
+  serialized_start=1364,
+  serialized_end=1441,
 )
 
 _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
@@ -507,8 +514,8 @@ _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1401,
-  serialized_end=1440,
+  serialized_start=1443,
+  serialized_end=1482,
 )
 
 _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
@@ -537,8 +544,8 @@ _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1442,
-  serialized_end=1475,
+  serialized_start=1484,
+  serialized_end=1517,
 )
 
 _PROCESSCONFIG = _descriptor.Descriptor(
@@ -588,8 +595,8 @@ _PROCESSCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1080,
-  serialized_end=1475,
+  serialized_start=1122,
+  serialized_end=1517,
 )
 
 
@@ -619,8 +626,8 @@ _HTTPCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1477,
-  serialized_end=1508,
+  serialized_start=1519,
+  serialized_end=1550,
 )
 
 
@@ -657,8 +664,8 @@ _EVENTCLIENTCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1510,
-  serialized_end=1596,
+  serialized_start=1552,
+  serialized_end=1638,
 )
 
 
@@ -688,8 +695,114 @@ _VARZINTERFACECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1598,
-  serialized_end=1638,
+  serialized_start=1640,
+  serialized_end=1680,
+)
+
+
+_PROXYSERVERCONFIG_TARGETSENTRY = _descriptor.Descriptor(
+  name='TargetsEntry',
+  full_name='ProxyServerConfig.TargetsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ProxyServerConfig.TargetsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ProxyServerConfig.TargetsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1774,
+  serialized_end=1834,
+)
+
+_PROXYSERVERCONFIG = _descriptor.Descriptor(
+  name='ProxyServerConfig',
+  full_name='ProxyServerConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='proxy_port', full_name='ProxyServerConfig.proxy_port', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='targets', full_name='ProxyServerConfig.targets', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[_PROXYSERVERCONFIG_TARGETSENTRY, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1683,
+  serialized_end=1834,
+)
+
+
+_PROXYTARGET = _descriptor.Descriptor(
+  name='ProxyTarget',
+  full_name='ProxyTarget',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='port', full_name='ProxyTarget.port', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1836,
+  serialized_end=1863,
 )
 
 _FORCHCONFIG.fields_by_name['site'].message_type = _SITECONFIG
@@ -698,6 +811,7 @@ _FORCHCONFIG.fields_by_name['process'].message_type = _PROCESSCONFIG
 _FORCHCONFIG.fields_by_name['http'].message_type = _HTTPCONFIG
 _FORCHCONFIG.fields_by_name['event_client'].message_type = _EVENTCLIENTCONFIG
 _FORCHCONFIG.fields_by_name['varz_interface'].message_type = _VARZINTERFACECONFIG
+_FORCHCONFIG.fields_by_name['proxy_server'].message_type = _PROXYSERVERCONFIG
 _SITECONFIG_CONTROLLERSENTRY.fields_by_name['value'].message_type = _SITECONFIG_CONTROLLER
 _SITECONFIG_CONTROLLERSENTRY.containing_type = _SITECONFIG
 _SITECONFIG_CONTROLLER.containing_type = _SITECONFIG
@@ -714,6 +828,9 @@ _PROCESSCONFIG_PROCESS.containing_type = _PROCESSCONFIG
 _PROCESSCONFIG_CONNECTION.containing_type = _PROCESSCONFIG
 _PROCESSCONFIG.fields_by_name['processes'].message_type = _PROCESSCONFIG_PROCESSESENTRY
 _PROCESSCONFIG.fields_by_name['connections'].message_type = _PROCESSCONFIG_CONNECTIONSENTRY
+_PROXYSERVERCONFIG_TARGETSENTRY.fields_by_name['value'].message_type = _PROXYTARGET
+_PROXYSERVERCONFIG_TARGETSENTRY.containing_type = _PROXYSERVERCONFIG
+_PROXYSERVERCONFIG.fields_by_name['targets'].message_type = _PROXYSERVERCONFIG_TARGETSENTRY
 DESCRIPTOR.message_types_by_name['ForchConfig'] = _FORCHCONFIG
 DESCRIPTOR.message_types_by_name['SiteConfig'] = _SITECONFIG
 DESCRIPTOR.message_types_by_name['OrchestrationConfig'] = _ORCHESTRATIONCONFIG
@@ -721,6 +838,8 @@ DESCRIPTOR.message_types_by_name['ProcessConfig'] = _PROCESSCONFIG
 DESCRIPTOR.message_types_by_name['HttpConfig'] = _HTTPCONFIG
 DESCRIPTOR.message_types_by_name['EventClientConfig'] = _EVENTCLIENTCONFIG
 DESCRIPTOR.message_types_by_name['VarzInterfaceConfig'] = _VARZINTERFACECONFIG
+DESCRIPTOR.message_types_by_name['ProxyServerConfig'] = _PROXYSERVERCONFIG
+DESCRIPTOR.message_types_by_name['ProxyTarget'] = _PROXYTARGET
 
 ForchConfig = _reflection.GeneratedProtocolMessageType('ForchConfig', (_message.Message,), dict(
   DESCRIPTOR = _FORCHCONFIG,
@@ -835,6 +954,28 @@ VarzInterfaceConfig = _reflection.GeneratedProtocolMessageType('VarzInterfaceCon
   ))
 _sym_db.RegisterMessage(VarzInterfaceConfig)
 
+ProxyServerConfig = _reflection.GeneratedProtocolMessageType('ProxyServerConfig', (_message.Message,), dict(
+
+  TargetsEntry = _reflection.GeneratedProtocolMessageType('TargetsEntry', (_message.Message,), dict(
+    DESCRIPTOR = _PROXYSERVERCONFIG_TARGETSENTRY,
+    __module__ = 'forch.proto.forch_configuration_pb2'
+    # @@protoc_insertion_point(class_scope:ProxyServerConfig.TargetsEntry)
+    ))
+  ,
+  DESCRIPTOR = _PROXYSERVERCONFIG,
+  __module__ = 'forch.proto.forch_configuration_pb2'
+  # @@protoc_insertion_point(class_scope:ProxyServerConfig)
+  ))
+_sym_db.RegisterMessage(ProxyServerConfig)
+_sym_db.RegisterMessage(ProxyServerConfig.TargetsEntry)
+
+ProxyTarget = _reflection.GeneratedProtocolMessageType('ProxyTarget', (_message.Message,), dict(
+  DESCRIPTOR = _PROXYTARGET,
+  __module__ = 'forch.proto.forch_configuration_pb2'
+  # @@protoc_insertion_point(class_scope:ProxyTarget)
+  ))
+_sym_db.RegisterMessage(ProxyTarget)
+
 
 _SITECONFIG_CONTROLLERSENTRY.has_options = True
 _SITECONFIG_CONTROLLERSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
@@ -842,4 +983,6 @@ _PROCESSCONFIG_PROCESSESENTRY.has_options = True
 _PROCESSCONFIG_PROCESSESENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 _PROCESSCONFIG_CONNECTIONSENTRY.has_options = True
 _PROCESSCONFIG_CONNECTIONSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+_PROXYSERVERCONFIG_TARGETSENTRY.has_options = True
+_PROXYSERVERCONFIG_TARGETSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 # @@protoc_insertion_point(module_scope)
