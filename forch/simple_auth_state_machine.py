@@ -95,6 +95,8 @@ class AuthStateMachine():
         """Handle timer timeout and check.trigger timeout behavior of states"""
         with self._transition_lock:
             if time.time() > self._current_timeout:
+                if self._retry_backoff:
+                    LOGGER.debug('Retrying RADIUS request. Retry #%s', self._retry_backoff)
                 self._radius_query_callback(self.src_mac, self.port_id)
                 backoff_time = self._retry_backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
