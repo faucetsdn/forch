@@ -1,0 +1,25 @@
+server {
+    authorize {
+        if (!EAP-Message) {
+            macs
+            if (!ok) {
+                reject
+            }
+            else {
+                update control {
+                    Auth-Type := Accept
+                }
+            }
+        }
+        else {
+            eap {
+                ok = return
+            }
+            users
+        }
+    }
+
+    authenticate {
+        eap
+    }
+}

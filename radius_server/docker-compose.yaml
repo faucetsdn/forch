@@ -10,6 +10,9 @@ services:
         network_mode: bridge
         volumes:
             - "./freeradius/users:/etc/freeradius/3.0/users:ro"
+            - "./freeradius/dictionary:/etc/freeradius/3.0/dictionary:ro"
+            - "./freeradius/macs:/etc/freeradius/3.0/macs:ro"
             - "./freeradius/certs:/etc/freeradius/3.0/certs"
-            - "./freeradius/default/eap:/etc/freeradius/3.0/mods-enabled/eap:ro"
-            - "./freeradius/clients.conf:/etc/freeradius/3.0/clients.conf:ro"
+            - "./freeradius/sites-enabled:/etc/freeradius/3.0/sites-enabled"
+            - "./freeradius/eap.conf:/etc/freeradius/3.0/eap.conf:ro"
+            - "./freeradius/radiusd.conf:/etc/freeradius/3.0/radiusd.conf:ro"
