@@ -20,7 +20,7 @@ echo "Setting up Faucet and Forch..."
 bin/setup_solo
 
 VERSION=$(bin/forch --version --base inst/forch-faucet-solo | grep Forch | awk '{print $2}')
-VARZ_VERSION=$(wget 0.0.0.0:8302 -O- | grep forch_version_info | grep 1.0 | cut -d "\"" -f2 | cut -d "\"" -f1 )
+VARZ_VERSION=$(wget 0.0.0.0:8080/forch -O- | grep forch_version_info | grep 1.0 | cut -d "\"" -f2 | cut -d "\"" -f1 )
 if [ "$VARZ_VERSION" = "$VERSION" ]; then
     echo "Version from varz matches forch version." | tee -a $TEST_RESULTS
 else

@@ -527,6 +527,18 @@
                 </li>
               
                 <li>
+                  <a href="#ProxyServerConfig"><span class="badge">M</span>ProxyServerConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyServerConfig.TargetsEntry"><span class="badge">M</span>ProxyServerConfig.TargetsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyTarget"><span class="badge">M</span>ProxyTarget</a>
+                </li>
+              
+                <li>
                   <a href="#SiteConfig"><span class="badge">M</span>SiteConfig</a>
                 </li>
               
@@ -3084,6 +3096,13 @@
                   <td><p>configuration for varz interface </p></td>
                 </tr>
               
+                <tr>
+                  <td>proxy_server</td>
+                  <td><a href="#ProxyServerConfig">ProxyServerConfig</a></td>
+                  <td></td>
+                  <td><p>configuration for port proxy server </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3455,6 +3474,92 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
 
         
       
+        <h3 id="ProxyServerConfig">ProxyServerConfig</h3>
+        <p>Proxy server config</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>proxy_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port number for proxy server </p></td>
+                </tr>
+              
+                <tr>
+                  <td>targets</td>
+                  <td><a href="#ProxyServerConfig.TargetsEntry">ProxyServerConfig.TargetsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>map of targets with path prefix as key </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyServerConfig.TargetsEntry">ProxyServerConfig.TargetsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProxyTarget">ProxyTarget</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyTarget">ProxyTarget</h3>
+        <p>Proxy targets</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port number for target </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="SiteConfig">SiteConfig</h3>
         <p>Site section in Forch configuration</p>
 
@@ -3562,7 +3667,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td>varz_port</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>port number to curl for varz list </p></td>
+                  <td><p>port number for forch varz </p></td>
                 </tr>
               
             </tbody>
