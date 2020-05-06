@@ -23,7 +23,7 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 import forch.varz_state_collector as varz_state_collector
 
-from forch.utils import yaml_proto
+from forch.utils import proto_dict, yaml_proto
 
 from forch.__version__ import __version__
 
@@ -638,10 +638,13 @@ class Forchestrator:
     def get_sys_config(self, path, params):
         """Get overall config from faucet config file"""
         try:
-            _, _, faucet_config = self._get_faucet_config()
+            _, _, behavioral_config = self._get_faucet_config()
             reply = {
-                'faucet': faucet_config
+                'faucet_behavioral': behavioral_config,
+                'forch': proto_dict(self._config)
             }
+            if self._faucetizer:
+                reply['faucet_structural'] = self._faucetizer.get_structural_config()
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
