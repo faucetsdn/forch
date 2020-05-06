@@ -181,11 +181,13 @@ class Faucetizer:
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
+            LOGGER.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
     def flush_acl_config(self, file_path, acls_config):
         """Write acl configs to file"""
         with open(file_path, 'w') as acl_file:
             yaml.dump(acls_config, acl_file)
+            LOGGER.debug('Wrote augmented included file to %s', file_path)
 
     def get_structural_config(self):
         """Return structural config"""
