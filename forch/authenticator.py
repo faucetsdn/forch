@@ -28,6 +28,7 @@ class Authenticator:
                  radius_query_object=None, metrics=None):
         self.radius_query = None
         self.sessions = {}
+        self._sessions_lock = threading.Lock()
         self.auth_callback = auth_callback
         self._metrics = metrics
         radius_info = auth_config.radius_info
@@ -89,16 +90,17 @@ class Authenticator:
         """Process device placement info and initiate mab query"""
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
-        if src_mac not in self.sessions:
-            self.sessions[src_mac] = AuthStateMachine(
-                src_mac, port_id, self.auth_config,
-                self.radius_query.send_mab_request,
-                self.process_session_result, metrics=self._metrics)
-        if device_placement.connected:
-            self.sessions[src_mac].host_learned()
-        else:
-            self.sessions[src_mac].host_expired()
-            self.sessions.pop(src_mac)
+        with self._sessions_lock:
+            if src_mac not in self.sessions:
+                self.sessions[src_mac] = AuthStateMachine(
+                    src_mac, port_id, self.auth_config,
+                    self.radius_query.send_mab_request,
+                    self.process_session_result, metrics=self._metrics)
+            if device_placement.connected:
+                self.sessions[src_mac].host_learned()
+            else:
+                self.sessions[src_mac].host_expired()
+                self.sessions.pop(src_mac)
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
@@ -111,10 +113,11 @@ class Authenticator:
         if src_mac not in self.sessions:
             LOGGER.warning("Session doesn't exist for src_mac:%s", src_mac)
             return
-        if code == radius_query.ACCEPT:
-            self.sessions[src_mac].received_radius_accept(segment, role)
-        else:
-            self.sessions[src_mac].received_radius_reject()
+        with self._sessions_lock:
+            if code == radius_query.ACCEPT:
+                self.sessions[src_mac].received_radius_accept(segment, role)
+            else:
+                self.sessions[src_mac].received_radius_reject()
 
     def process_session_result(self, src_mac, segment=None, role=None):
         """Process session result"""
@@ -123,8 +126,9 @@ class Authenticator:
 
     def handle_sm_timeout(self):
         """Call timeout handlers for all active session state machines"""
-        for session in self.sessions.values():
-            session.handle_sm_timer()
+        with self._sessions_lock:
+            for session in self.sessions.values():
+                session.handle_sm_timer()
 
 
 def parse_args(raw_args):
