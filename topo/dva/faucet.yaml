@@ -1,7 +1,6 @@
 dps:
   nz-kiwi-t1sw1:
     dp_id: 177
-    faucet_dp_mac: 0e:00:00:00:01:01
     hardware: Generic
     lacp_timeout: 5
     stack:
@@ -23,11 +22,9 @@ dps:
         description: egress
         lacp: 3
         tagged_vlans: [100, 200, 300, 400]
-        loop_protect_external: True
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t1sw2:
     dp_id: 178
-    faucet_dp_mac: 0e:00:00:00:01:02
     hardware: Generic
     lacp_timeout: 5
     stack:
@@ -49,11 +46,9 @@ dps:
         description: egress
         lacp: 3
         tagged_vlans: [100]
-        loop_protect_external: True
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
     dp_id: 147058200627
-    faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
     lacp_timeout: 5
     interfaces:
@@ -112,7 +107,6 @@ dps:
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw2:
     dp_id: 1296
-    faucet_dp_mac: 0e:00:00:00:02:02
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
@@ -171,7 +165,6 @@ dps:
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw3:
     dp_id: 1297
-    faucet_dp_mac: 0e:00:00:00:02:03
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
