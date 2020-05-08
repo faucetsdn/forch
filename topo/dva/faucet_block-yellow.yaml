@@ -1,6 +1,7 @@
 dps:
   nz-kiwi-t1sw1:
     dp_id: 177
+    faucet_dp_mac: 0e:00:00:00:01:01
     hardware: Generic
     interfaces:
       6:
@@ -39,6 +40,7 @@ dps:
       priority: 1
   nz-kiwi-t1sw2:
     dp_id: 178
+    faucet_dp_mac: 0e:00:00:00:01:02
     hardware: Generic
     interfaces:
       6:
@@ -74,6 +76,7 @@ dps:
       priority: 1
   nz-kiwi-t2sw1:
     dp_id: 147058200627
+    faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
     interfaces:
       1:
@@ -279,6 +282,7 @@ dps:
       send_interval: 5
   nz-kiwi-t2sw2:
     dp_id: 1296
+    faucet_dp_mac: 0e:00:00:00:02:02
     hardware: Allied-Telesis
     interfaces:
       1:
@@ -484,6 +488,7 @@ dps:
       send_interval: 5
   nz-kiwi-t2sw3:
     dp_id: 1297
+    faucet_dp_mac: 0e:00:00:00:02:03
     hardware: Allied-Telesis
     interfaces:
       1:
