@@ -136,10 +136,7 @@ test_forch -reset
 echo %%% restarting Forch | tee -a $TEST_RESULTS
 restart_forch
 sleep 32
-# TODO
-echo "--- Restarting Forch ---"
 test_forch -restart
-echo "--- Done restart test ---"
 
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`
