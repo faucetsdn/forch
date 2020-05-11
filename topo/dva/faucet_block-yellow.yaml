@@ -27,7 +27,6 @@ dps:
       28:
         description: egress
         lacp: 3
-        loop_protect_external: true
         tagged_vlans:
         - 100
         - 200
@@ -67,7 +66,6 @@ dps:
       28:
         description: egress
         lacp: 3
-        loop_protect_external: true
         tagged_vlans:
         - 100
     lacp_timeout: 5
