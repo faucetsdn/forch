@@ -158,7 +158,8 @@ class LocalStateCollector:
         if target_proc_config.cpu_percent_threshold:
             if proc_map['cpu_percent'] > target_proc_config.cpu_percent_threshold:
                 error = f'CPU percent of process {proc_name} is {proc_map["cpu_percent"]}, '
-                error += f'exceeding threashold {target_proc_config.cpu_percent_threshold}'
+                error += f'exceeding threshold {target_proc_config.cpu_percent_threshold}'
+                LOGGER.error(error)
                 return None, error
 
         return proc_map, None
@@ -179,7 +180,7 @@ class LocalStateCollector:
                     cpu_time_iowait = 0.0
                 cpu_time_iowait += proc.cpu_times().iowait
 
-            cpu_percent += proc.info['cput_percent']
+            cpu_percent += proc.info['cpu_percent']
 
             memory_rss += proc.info['memory_info'].rss / 1e6
             memory_vms += proc.info['memory_info'].vms / 1e6
