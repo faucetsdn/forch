@@ -335,7 +335,7 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._faucet_events.next_event()
+                self._faucet_events.next_event(blocking=True)
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
