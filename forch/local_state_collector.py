@@ -159,7 +159,7 @@ class LocalStateCollector:
             if proc_map['cpu_percent'] > target_proc_config.cpu_percent_threshold:
                 error = f'CPU percent of process {proc_name} is {proc_map["cpu_percent"]}, '
                 error += f'exceeding threshold {target_proc_config.cpu_percent_threshold}'
-                LOGGER.error(error)
+                LOGGER.warning(error)
                 return None, error
 
         return proc_map, None
@@ -196,8 +196,6 @@ class LocalStateCollector:
         proc_map['memory_info_mb'] = {}
         proc_map['memory_info_mb']['rss'] = memory_rss / len(proc_list)
         proc_map['memory_info_mb']['vms'] = memory_vms / len(proc_list)
-
-        return None
 
     def _check_connections(self):
         connections = self._fetch_connections()
