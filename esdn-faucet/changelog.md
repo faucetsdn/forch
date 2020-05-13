@@ -1,3 +1,25 @@
+# 1.5.0
+## Forch 0.37
+* Faucet version 1.9.42
+* Make sessions dictionary thread safe (#102)
+* Update learned mac metrics only for access port (#98)
+* Log RADIUS retries in debug. (#96)
+* Proxy server to serve up varz on various ports (#85)
+* Add forch and faucet structural config to sys_config API (#94)
+## Faucet 1.9.42
+* Fix switches that require static table IDs.
+* Faucet can now automatically generate non-colliding port IDs for LACP
+* Added prometheus metric for exposing LACP Port ID.
+## Faucet 1.9.41
+* Add stack port/graph info to events when stack changes.
+* Fix graph object in the STACK_TOPO_CHANGE event.
+* Fix order of flow adds/mods not deterministic
+## Faucet 1.9.40
+* N/A -- there was no release
+## Faucet 1.9.39
+* Make edge_learn_stack_root the default stack learning algorithm
+* Fix flows for tagged ports were being deleted on warm start
+
 # 1.4.0
 ## Forch 0.36
 * Cleanup logs (#95)
