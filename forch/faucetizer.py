@@ -129,7 +129,7 @@ class Faucetizer:
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
 
         if not self._config.unauthenticated_vlan:
-            LOGGER.info('Unauthenticated vlan is not configured')
+            raise Exception('Unauthenticated vlan is not configured')
 
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
