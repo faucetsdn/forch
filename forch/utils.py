@@ -26,12 +26,12 @@ def get_log_path():
     return os.path.join(forch_log_dir, 'forch.log')
 
 
-def configure_logging():
+def configure_logging(level=logging.INFO):
     """Configure logging with some basic parameters"""
     logging.basicConfig(filename=get_log_path(),
                         format=_LOG_FORMAT,
                         datefmt=_LOG_DATE_FORMAT,
-                        level=logging.INFO)
+                        level=level)
 
 
 def yaml_proto(file_name, proto_func):

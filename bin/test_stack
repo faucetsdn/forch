@@ -133,6 +133,11 @@ reset_stack
 sleep 32
 test_forch -reset
 
+echo %%% restarting Forch | tee -a $TEST_RESULTS
+restart_forch
+sleep 32
+test_forch -restart
+
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`
 

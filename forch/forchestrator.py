@@ -335,7 +335,7 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._faucet_events.next_event()
+                self._faucet_events.next_event(blocking=True)
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
@@ -557,12 +557,15 @@ class Forchestrator:
 
     def _validate_config(self, config):
         warnings = []
+        faucet_dp_macs = set()
         for dp_name, dp_obj in config['dps'].items():
             if 'interface_ranges' in dp_obj:
                 raise Exception(
                     'Forch does not support parameter \'interface_ranges\' in faucet config')
-            if 'faucet_dp_mac' in dp_obj:
-                warnings.append((dp_name, 'faucet_dp_mac defined'))
+            if 'faucet_dp_mac' not in dp_obj:
+                warnings.append((dp_name, 'faucet_dp_mac not defined'))
+            else:
+                faucet_dp_macs.add(dp_obj['faucet_dp_mac'])
             for if_name, if_obj in dp_obj['interfaces'].items():
                 if_key = '%s:%02d' % (dp_name, int(if_name))
                 is_egress = 1 if 'lacp' in if_obj else 0
@@ -575,6 +578,9 @@ class Forchestrator:
                     warnings.append((if_key, 'deprecated loop_protect_external'))
                 if is_access and 'max_hosts' not in if_obj:
                     warnings.append((if_key, 'missing recommended max_hosts'))
+
+            if len(faucet_dp_macs) > 1:
+                warnings.append(('faucet_dp_mac', 'faucet_dp_mac for DPs are not identical'))
         return warnings
 
     def _populate_versions(self, versions):

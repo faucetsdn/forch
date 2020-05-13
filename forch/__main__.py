@@ -14,9 +14,10 @@ from forch.utils import configure_logging, yaml_proto
 
 from forch.__version__ import __version__
 
-LOGGER = logging.getLogger('forch')
+LOGGER = logging.getLogger('main')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
+_LOG_LEVEL_DEFAULT = 'INFO'
 
 
 def load_config():
@@ -39,7 +40,8 @@ def show_error(error, path, params):
 
 def run_forchestrator():
     """main function to start forch"""
-    configure_logging()
+    log_level_str = os.getenv('LOG_LEVEL', _LOG_LEVEL_DEFAULT)
+    configure_logging(level=log_level_str)
 
     config = load_config()
     if not config:
