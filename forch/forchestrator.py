@@ -19,11 +19,12 @@ from forch.cpn_state_collector import CPNStateCollector
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
+from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 import forch.varz_state_collector as varz_state_collector
 
-from forch.utils import yaml_proto
+from forch.utils import proto_dict, yaml_proto
 
 from forch.__version__ import __version__
 
@@ -93,6 +94,7 @@ class Forchestrator:
 
         self._config_summary = None
         self._metrics = None
+        self._proxy = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -129,6 +131,9 @@ class Forchestrator:
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
+        if str(self._config.proxy_server):
+            self._proxy = ForchProxy(self._config.proxy_server)
+            self._proxy.start()
 
         self._validate_config_files()
 
@@ -330,7 +335,7 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._faucet_events.next_event()
+                self._faucet_events.next_event(blocking=True)
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
@@ -361,6 +366,8 @@ class Forchestrator:
             self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
+        if self._proxy:
+            self._proxy.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
@@ -550,12 +557,15 @@ class Forchestrator:
 
     def _validate_config(self, config):
         warnings = []
+        faucet_dp_macs = set()
         for dp_name, dp_obj in config['dps'].items():
             if 'interface_ranges' in dp_obj:
                 raise Exception(
                     'Forch does not support parameter \'interface_ranges\' in faucet config')
-            if 'faucet_dp_mac' in dp_obj:
-                warnings.append((dp_name, 'faucet_dp_mac defined'))
+            if 'faucet_dp_mac' not in dp_obj:
+                warnings.append((dp_name, 'faucet_dp_mac not defined'))
+            else:
+                faucet_dp_macs.add(dp_obj['faucet_dp_mac'])
             for if_name, if_obj in dp_obj['interfaces'].items():
                 if_key = '%s:%02d' % (dp_name, int(if_name))
                 is_egress = 1 if 'lacp' in if_obj else 0
@@ -568,6 +578,9 @@ class Forchestrator:
                     warnings.append((if_key, 'deprecated loop_protect_external'))
                 if is_access and 'max_hosts' not in if_obj:
                     warnings.append((if_key, 'missing recommended max_hosts'))
+
+            if len(faucet_dp_macs) > 1:
+                warnings.append(('faucet_dp_mac', 'faucet_dp_mac for DPs are not identical'))
         return warnings
 
     def _populate_versions(self, versions):
@@ -638,10 +651,13 @@ class Forchestrator:
     def get_sys_config(self, path, params):
         """Get overall config from faucet config file"""
         try:
-            _, _, faucet_config = self._get_faucet_config()
+            _, _, behavioral_config = self._get_faucet_config()
             reply = {
-                'faucet': faucet_config
+                'faucet_behavioral': behavioral_config,
+                'forch': proto_dict(self._config)
             }
+            if self._faucetizer:
+                reply['faucet_structural'] = self._faucetizer.get_structural_config()
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"

@@ -43,7 +43,7 @@ class RadiusQuery:
     def receive_radius_messages(self):
         """Listen on socket for incoming messages and decode them"""
         while self.running:
-            LOGGER.info("Waiting for RADIUS messages.")
+            LOGGER.debug("Waiting for RADIUS messages.")
             packed_message = self.radius_socket.receive()
             try:
                 radius = self._decode_radius_response(packed_message)
@@ -57,8 +57,8 @@ class RadiusQuery:
             elif radius.CODE == 3:
                 code = REJECT
             src_mac = self.get_mac_from_packet_id(radius.packet_id)['src_mac']
-            LOGGER.info("Received RADIUS msg: Code:%s src:%s attributes:%s",
-                        code, src_mac, radius.attributes.to_dict())
+            LOGGER.debug("Received RADIUS msg: Code:%s src:%s attributes:%s",
+                         code, src_mac, radius.attributes.to_dict())
             if self.auth_callback:
                 attr = radius.attributes.find('Tunnel-Private-Group-ID')
                 segment = attr.data().decode('utf-8') if attr else None

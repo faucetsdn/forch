@@ -400,6 +400,9 @@ function validate_radius_varz {
 
 function test_varz_value {
     varz=$1
-    value=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+    port=$2
+    path=$3
+    query_path=0.0.0.0:$port/$path
+    value=$( printf "%.0f" $(wget $query_path -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
     echo $varz $value | tee -a $TEST_RESULTS
 }

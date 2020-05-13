@@ -29,6 +29,7 @@ class Faucetizer:
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
+        self._behavioral_include = None
         self._next_cookie = None
         self._config = orch_config
         self._structural_config_file = structural_config_file
@@ -80,16 +81,16 @@ class Faucetizer:
             self._structural_faucet_config = copy.copy(faucet_config)
 
             self._next_cookie = 1
-            new_include = []
+            behavioral_include = []
             new_watched_acl_files = []
             config_dir = os.path.dirname(self._structural_config_file)
             for acl_file_name in self._structural_faucet_config.get('include', []):
                 acl_file_path = os.path.join(config_dir, acl_file_name)
                 self.reload_acl_file(acl_file_path)
-                new_include.append(self._augment_acl_file_path(acl_file_name))
+                behavioral_include.append(self._augment_acl_file_path(acl_file_name))
                 new_watched_acl_files.append(acl_file_path)
 
-            self._structural_faucet_config['include'] = new_include
+            self._behavioral_include = behavioral_include
 
             if not self._config.faucetize_interval_sec and self._reregister_acl_file_handlers:
                 self._reregister_acl_file_handlers(self._watched_acl_files, new_watched_acl_files)
@@ -156,6 +157,8 @@ class Faucetizer:
                 else:
                     port_cfg['acls_in'] = ['tail_acl']
 
+        behavioral_faucet_config['include'] = self._behavioral_include
+
         self._behavioral_faucet_config = behavioral_faucet_config
 
     def reload_structural_config(self, structural_config_file=None):
@@ -178,11 +181,18 @@ class Faucetizer:
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
+            LOGGER.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
     def flush_acl_config(self, file_path, acls_config):
         """Write acl configs to file"""
         with open(file_path, 'w') as acl_file:
             yaml.dump(acls_config, acl_file)
+            LOGGER.debug('Wrote augmented included file to %s', file_path)
+
+    def get_structural_config(self):
+        """Return structural config"""
+        with self._lock:
+            return self._structural_faucet_config
 
 
 def load_devices_state(file):

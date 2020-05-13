@@ -65,7 +65,7 @@ fgrep "Network Operations Administrative Helper" $OUT_DIR/index.html || exit 1
 curl http://$CONTROLLER_NAME:9019/protos.html > $OUT_DIR/protos.html
 fgrep "forch/proto/system_state.proto" $OUT_DIR/protos.html || exit 1
 curl http://$CONTROLLER_NAME:9019/sys_config > $OUT_DIR/sys_config.json
-jq '.faucet.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
+jq '.faucet_behavioral.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
 
 echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid
@@ -79,10 +79,11 @@ sudo ip link set t1sw2-eth28 up
 sleep 50.3231 &
 sleep 32
 test_forch -healthy
-test_varz_value process_state{process=\"faucet\"}
-test_varz_value process_state{process=\"gauge\"}
-test_varz_value process_state{process=\"forch\"}
-test_varz_value process_state{process=\"sleep\"}
+test_varz_value process_state{process=\"faucet\"} 8302
+test_varz_value process_state{process=\"gauge\"} 8080 forch
+test_varz_value process_state{process=\"forch\"} 8080 forch
+test_varz_value process_state{process=\"sleep\"} 8080 forch
+test_varz_value process_state{process=\"sleep\"} 8080 jkdhfgjksdhg
 
 reset_stack
 sleep 32
@@ -131,6 +132,11 @@ restart_ovs
 reset_stack
 sleep 32
 test_forch -reset
+
+echo %%% restarting Forch | tee -a $TEST_RESULTS
+restart_forch
+sleep 32
+test_forch -restart
 
 echo Killing forch...
 sudo kill `ps ax | fgrep forch | awk '{print $1}'`
