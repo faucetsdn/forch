@@ -52,7 +52,8 @@ class TestFaucetizer(unittest.TestCase):
     def test_faucetize_normal(self):
         """Test normal faucetize behavior"""
         print('testing') # TODO
-        self._faucetizer.flush_behavioral_config(forch=True)
+        self._faucetizer.reload_structural_config()
+        self._faucetizer.flush_behavioral_config(force=True)
 
         method_config = TEST_METHOD_CONFIGS[self._testMethodName]
         expected_behavioral_config = forch.faucetizer.load_faucet_config(
