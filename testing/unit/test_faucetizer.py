@@ -11,15 +11,6 @@ from forch.utils import text_proto
 
 TEST_DATA_DIR = os.getenv('TEST_DATA_DIR')
 
-TEST_METHOD_CONFIGS = {
-    'test_faucetize_simple': {
-        'forch_config_file': 'forch_dva.yaml',
-        'structural_config_file': 'simple_faucet_structural.yaml',
-        'behavioral_config_file': 'simple_faucet_behavioral.yaml',
-        'segments_to_vlans': 'segments_to_vlans.yaml',
-    }
-}
-
 
 class FaucetizerTestBase(unittest.TestCase):
     """Base class for Faucetizer unit tests"""
@@ -38,8 +29,8 @@ class FaucetizerTestBase(unittest.TestCase):
 
     def _setup_config_files(self):
         self._temp_dir = tempfile.mkdtemp()
-        self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
-        self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        _, self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        _, self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
 
         with open(self._temp_structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
