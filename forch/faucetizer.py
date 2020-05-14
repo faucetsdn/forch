@@ -11,7 +11,7 @@ import yaml
 from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
-from forch.proto.devices_state_pb2 import DevicesState, Device, SegmentsToVlans
+from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 
