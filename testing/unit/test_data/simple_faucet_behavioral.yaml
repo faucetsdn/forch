@@ -5,6 +5,8 @@ dps:
       1:
         description: "HOST"
         max_hosts: 1
+        native_vlan: 100
       2:
         description: "HOST"
         max_hosts: 1
+          native_vlan: 100

@@ -19,11 +19,12 @@ TEST_METHOD_CONFIGS = {
 
 OUTPUT_BEHAVIROAL_CONFIG_FILE = 'output_faucet_behavioral.yaml'
 
+
 class TestFaucetizer(unittest.TestCase):
     """Test cases for Faucetizer"""
 
-    def __init__(self):
-        unittest.TestCase.__init__()
+    def __init__(self, methodName='runTest'):
+        unittest.TestCase.__init__(methodName)
         self._faucetizer = None
         self._output_behavioral_config_file = OUTPUT_BEHAVIROAL_CONFIG_FILE
 
@@ -49,9 +50,17 @@ class TestFaucetizer(unittest.TestCase):
             behavioral_config_file)
 
     def test_faucetize_normal(self):
-        """Test if normal faucetize behavior"""
+        """Test normal faucetize behavior"""
         print('testing') # TODO
+        self._faucetizer.flush_behavioral_config(forch=True)
+
         method_config = TEST_METHOD_CONFIGS[self._testMethodName]
         expected_behavioral_config = forch.faucetizer.load_faucet_config(
-            method_config['behavioral_config_file'])
-        self.assertEqual(expected_behavioral_config, expected_behavioral_config) # TODO
+            os.path.join(TEST_DATA_DIR, method_config['behavioral_config_file']))
+        output_behavioral_config = forch.faucetizer.load_faucet_config(
+            self._output_behavioral_config_file)
+        self.assertEqual(output_behavioral_config, expected_behavioral_config) # TODO
+
+
+if __name__ == '__main__':
+    unittest.main()
