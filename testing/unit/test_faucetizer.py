@@ -9,7 +9,7 @@ from forch.faucetizer import Faucetizer
 TEST_DATA_DIR = os.getenv('TEST_DATA_DIR')
 
 TEST_METHOD_CONFIGS = {
-    'test_faucetize_normal': {
+    'test_faucetize_simple': {
         'forch_config_file': 'forch_dva.yaml',
         'structural_config_file': 'simple_faucet_structural.yaml',
         'behavioral_config_file': 'simple_faucet_behavioral.yaml',
@@ -29,7 +29,6 @@ class TestFaucetizer(unittest.TestCase):
         self._output_behavioral_config_file = OUTPUT_BEHAVIROAL_CONFIG_FILE
 
     def setUp(self):
-        print(f'** method name: {self._testMethodName}') # TODO
         self._configure_faucetizer()
 
     def tearDown(self):
@@ -38,6 +37,7 @@ class TestFaucetizer(unittest.TestCase):
 
     def _configure_faucetizer(self):
         method_config = TEST_METHOD_CONFIGS[self._testMethodName]
+
         orch_config = forch.faucetizer.load_orch_config(
             os.path.join(TEST_DATA_DIR, method_config['forch_config_file']))
         structural_config_file = os.path.join(
@@ -45,13 +45,13 @@ class TestFaucetizer(unittest.TestCase):
         segments_to_vlans = forch.faucetizer.load_segments_to_vlans(
             os.path.join(TEST_DATA_DIR, method_config['segments_to_vlans']))
         behavioral_config_file = self._output_behavioral_config_file
+
         self._faucetizer = Faucetizer(
             orch_config, structural_config_file, segments_to_vlans.segments_to_vlans,
             behavioral_config_file)
 
-    def test_faucetize_normal(self):
+    def test_faucetize_simple(self):
         """Test normal faucetize behavior"""
-        print('testing') # TODO
         self._faucetizer.reload_structural_config()
         self._faucetizer.flush_behavioral_config(force=True)
 
@@ -60,7 +60,8 @@ class TestFaucetizer(unittest.TestCase):
             os.path.join(TEST_DATA_DIR, method_config['behavioral_config_file']))
         output_behavioral_config = forch.faucetizer.load_faucet_config(
             self._output_behavioral_config_file)
-        self.assertEqual(output_behavioral_config, expected_behavioral_config) # TODO
+
+        self.assertEqual(output_behavioral_config, expected_behavioral_config)
 
 
 if __name__ == '__main__':
