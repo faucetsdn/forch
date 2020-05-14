@@ -1,10 +1,13 @@
 """Unit tests for Faucetizer"""
 
 import os
+import tempfile
 import unittest
+import yaml
 
-import forch.faucetizer
 from forch.faucetizer import Faucetizer
+from forch.proto.forch_configuration_pb2 import OrchestrationConfig
+from forch.utils import text_proto
 
 TEST_DATA_DIR = os.getenv('TEST_DATA_DIR')
 
@@ -17,51 +20,91 @@ TEST_METHOD_CONFIGS = {
     }
 }
 
-OUTPUT_BEHAVIROAL_CONFIG_FILE = 'output_faucet_behavioral.yaml'
 
+class FaucetizerTestBase(unittest.TestCase):
+    """Base class for Faucetizer unit tests"""
 
-class TestFaucetizer(unittest.TestCase):
-    """Test cases for Faucetizer"""
+    ORCH_CONFIG = ''
+    FAUCET_STRUCTURAL_CONFIG = ''
+    FAUCET_BEHAVIORAL_CONFIG = ''
+    SEGMENTS_TO_VLANS = {}
 
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._faucetizer = None
-        self._output_behavioral_config_file = OUTPUT_BEHAVIROAL_CONFIG_FILE
+        self._temp_dir = None
+        self._temp_structural_config_file = None
+        self._temp_behavioral_config_file = None
+
+    def _setup_config_files(self):
+        self._temp_dir = tempfile.mkdtemp()
+        self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
+
+        with open(self._temp_structural_config_file, 'w') as structural_config_file:
+            structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
+
+    def _cleanup_config_files(self):
+        os.rmdir(self._temp_dir)
+
+    def _initialize_faucetizer(self):
+        orch_config = text_proto(self.ORCH_CONFIG, OrchestrationConfig)
+
+        self._faucetizer = Faucetizer(
+            orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS, self._temp_behavioral_config_file)
+
+
+class FaucetizerSimpleTestCase(FaucetizerTestBase):
+    """Test basic functionality of Faucetizer"""
+    ORCH_CONFIG = 'unauthneticated_vlan: 100'
+
+    FAUCET_STRUCTURAL_CONFIG = """
+    dps:
+      t2sw1:
+      dp_id: 121
+      interfaces:
+        1:
+          description: "HOST"
+          max_hosts: 1
+        2:
+          description: "HOST"
+          max_hosts: 1
+    """
+
+    FAUCET_BEHAVIORAL_CONFIG = """
+    dps:
+      t2sw1:
+      dp_id: 121
+      interfaces:
+        1:
+          description: "HOST"
+          max_hosts: 1
+          native_vlan: 100
+        2:
+          description: "HOST"
+          max_hosts: 1
+          native_vlan: 100
+    include: []
+    """
 
     def setUp(self):
-        self._configure_faucetizer()
+        self._setup_config_files()
+        self._initialize_faucetizer()
 
     def tearDown(self):
         self._faucetizer = None
-        os.remove(self._output_behavioral_config_file)
-
-    def _configure_faucetizer(self):
-        method_config = TEST_METHOD_CONFIGS[self._testMethodName]
-
-        orch_config = forch.faucetizer.load_orch_config(
-            os.path.join(TEST_DATA_DIR, method_config['forch_config_file']))
-        structural_config_file = os.path.join(
-            TEST_DATA_DIR, method_config['structural_config_file'])
-        segments_to_vlans = forch.faucetizer.load_segments_to_vlans(
-            os.path.join(TEST_DATA_DIR, method_config['segments_to_vlans']))
-        behavioral_config_file = self._output_behavioral_config_file
-
-        self._faucetizer = Faucetizer(
-            orch_config, structural_config_file, segments_to_vlans.segments_to_vlans,
-            behavioral_config_file)
+        self._cleanup_config_files()
 
     def test_faucetize_simple(self):
         """Test normal faucetize behavior"""
         self._faucetizer.reload_structural_config()
         self._faucetizer.flush_behavioral_config(force=True)
 
-        method_config = TEST_METHOD_CONFIGS[self._testMethodName]
-        expected_behavioral_config = forch.faucetizer.load_faucet_config(
-            os.path.join(TEST_DATA_DIR, method_config['behavioral_config_file']))
-        output_behavioral_config = forch.faucetizer.load_faucet_config(
-            self._output_behavioral_config_file)
+        expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
+            faucetizer_behavioral_config = yaml.safe_load(temp_behavioral_config_file)
 
-        self.assertEqual(output_behavioral_config, expected_behavioral_config)
+        self.assertEqual(faucetizer_behavioral_config, expected_behavioral_config)
 
 
 if __name__ == '__main__':

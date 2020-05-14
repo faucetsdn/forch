@@ -4,7 +4,7 @@ import logging
 import os
 import yaml
 
-from google.protobuf import json_format
+from google.protobuf import json_format, text_format
 
 _LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
@@ -64,3 +64,8 @@ def proto_json(message):
 def dict_proto(message, proto_func, ignore_unknown_fields=False):
     """Convert a standard dict object to a proto object"""
     return json_format.ParseDict(message, proto_func(), ignore_unknown_fields)
+
+
+def text_proto(message_text, proto_func):
+    """Convert a string represented protobuf message to proto object"""
+    return text_format.Parse(message_text, proto_func())
