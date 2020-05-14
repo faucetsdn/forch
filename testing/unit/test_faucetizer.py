@@ -1,6 +1,7 @@
 """Unit tests for Faucetizer"""
 
 import os
+import shutil
 import tempfile
 import unittest
 import yaml
@@ -36,45 +37,46 @@ class FaucetizerTestBase(unittest.TestCase):
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
 
     def _cleanup_config_files(self):
-        os.rmdir(self._temp_dir)
+        shutil.rmtree(self._temp_dir)
 
     def _initialize_faucetizer(self):
         orch_config = text_proto(self.ORCH_CONFIG, OrchestrationConfig)
 
         self._faucetizer = Faucetizer(
             orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS, self._temp_behavioral_config_file)
+        self._faucetizer.reload_structural_config()
 
 
 class FaucetizerSimpleTestCase(FaucetizerTestBase):
     """Test basic functionality of Faucetizer"""
-    ORCH_CONFIG = 'unauthneticated_vlan: 100'
+    ORCH_CONFIG = 'unauthenticated_vlan: 100'
 
     FAUCET_STRUCTURAL_CONFIG = """
     dps:
       t2sw1:
-      dp_id: 121
-      interfaces:
-        1:
-          description: "HOST"
-          max_hosts: 1
-        2:
-          description: "HOST"
-          max_hosts: 1
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+          2:
+            description: HOST
+            max_hosts: 1
     """
 
     FAUCET_BEHAVIORAL_CONFIG = """
     dps:
       t2sw1:
       dp_id: 121
-      interfaces:
-        1:
-          description: "HOST"
-          max_hosts: 1
-          native_vlan: 100
-        2:
-          description: "HOST"
-          max_hosts: 1
-          native_vlan: 100
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+          2:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
     include: []
     """
 
