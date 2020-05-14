@@ -67,7 +67,7 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
     FAUCET_BEHAVIORAL_CONFIG = """
     dps:
       t2sw1:
-      dp_id: 121
+        dp_id: 121
         interfaces:
           1:
             description: HOST
