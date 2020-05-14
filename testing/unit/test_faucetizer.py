@@ -13,7 +13,7 @@ TEST_METHOD_CONFIGS = {
         'forch_config_file': 'forch_dva.yaml',
         'structural_config_file': 'simple_faucet_structural.yaml',
         'behavioral_config_file': 'simple_faucet_behavioral.yaml',
-        'segments_to_vlans': 'simple_segments_to_vlans',
+        'segments_to_vlans': 'segments_to_vlans.yaml',
     }
 }
 
@@ -24,12 +24,12 @@ class TestFaucetizer(unittest.TestCase):
     """Test cases for Faucetizer"""
 
     def __init__(self, methodName='runTest'):
-        unittest.TestCase.__init__(methodName)
+        super().__init__(methodName)
         self._faucetizer = None
         self._output_behavioral_config_file = OUTPUT_BEHAVIROAL_CONFIG_FILE
 
     def setUp(self):
-        print(self._testMethodName) # TODO
+        print(f'** method name: {self._testMethodName}') # TODO
         self._configure_faucetizer()
 
     def tearDown(self):
