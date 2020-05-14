@@ -25,3 +25,4 @@ env:
     - TEST_SET=reconfig
     - TEST_SET=solo SKIP_STACK=true
     - TEST_SET=stack
+    - TEST_SET=unit SKIP_INSTALL=true SKIP_STACK=true

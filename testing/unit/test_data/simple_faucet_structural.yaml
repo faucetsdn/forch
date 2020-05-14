@@ -1,0 +1,10 @@
+dps:
+  t2sw1:
+    dp_id: 121
+    interfaces:
+      1:
+        description: "HOST"
+        max_hosts: 1
+      2:
+        description: "HOST"
+        max_hosts: 1
