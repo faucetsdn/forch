@@ -61,8 +61,11 @@ message ProcessState {
     // CPU time consumption (in second)
     CpuTime cpu_times_s = 8;
 
+    // CPU percent
+    float cpu_percent = 9;
+
     // Memory consumption (in MB)
-    MemoryInfo memory_info_mb = 9;
+    MemoryInfo memory_info_mb = 10;
   }
 
   /*
@@ -96,7 +99,7 @@ message ProcessState {
   message ConnectionSummary {
     // Summary state of connections
     string state = 1;
-    
+
     // Summary detail of connection state
     string detail = 2;
 
@@ -108,18 +111,18 @@ message ProcessState {
 
     // Last time connections changed
     string last_change = 5;
-    
-    // Established connections	
+
+    // Established connections
     map<string, ConnectionInfo> local_ports = 6;
   }
-  
+
   /*
    * Established connection
    */
   message ConnectionInfo {
     // Process entry
     string process_entry = 1;
-    
+
     // Foreign addresses
     map<string, ForeignAddress>  foreign_addresses = 2;
   }
