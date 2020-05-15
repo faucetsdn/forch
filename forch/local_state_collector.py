@@ -161,7 +161,7 @@ class LocalStateCollector:
                     'CPU percent of process %s is %.2f, exceeding threshold %.2f',
                     proc_name, proc_map['cpu_percent'], target_proc_config.cpu_percent_threshold)
 
-                return None, f'CPU usage is higher than threshold'
+                return proc_map, f'CPU usage is higher than threshold'
 
         return proc_map, None
 
