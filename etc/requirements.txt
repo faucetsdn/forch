@@ -1,5 +1,6 @@
 setuptools
 wheel
+coverage
 netaddr
 networkx
 pbr>=1.9
