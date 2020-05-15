@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+source bin/stack_functions
+
+preamble_setup
+
 export FORCH_CONFIG_DIR=topo/dva
 export FAUCET_CONFIG_DIR=$OUT_DIR
 
