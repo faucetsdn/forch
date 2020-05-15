@@ -136,9 +136,9 @@ class Faucetizer:
                 if 'stack' in port_map or 'lacp' in port_map or 'output_only' in port_map:
                     continue
 
-                if self._config.unauthenticated_vlan:
-                    port_map['native_vlan'] = self._config.unauthenticated_vlan
+                port_map['native_vlan'] = self._config.unauthenticated_vlan
 
+        # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
                              **self._static_devices.device_mac_placements}
         device_behaviors = {**self._dynamic_devices.device_mac_behaviors,
