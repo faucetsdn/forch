@@ -157,9 +157,9 @@ class LocalStateCollector:
         target_proc_config = self._target_procs[proc_name]
         if target_proc_config.cpu_percent_threshold:
             if proc_map['cpu_percent'] > target_proc_config.cpu_percent_threshold:
-                log_msg = f'CPU percent of process {proc_name} is {proc_map["cpu_percent"]}, '
-                log_msg += f'exceeding threshold {target_proc_config.cpu_percent_threshold}'
-                LOGGER.warning(log_msg)
+                LOGGER.warning(
+                    'CPU percent of process %s is %.2f, exceeding threshold %.2f',
+                    proc_name, proc_map['cpu_percent'], target_proc_config.cpu_percent_threshold)
 
                 return None, f'CPU usage is higher than threshold'
 
