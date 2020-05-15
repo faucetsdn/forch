@@ -4,7 +4,7 @@ source bin/stack_functions
 
 preamble_setup
 
-export TEST_RESULT
+export TEST_RESULTS
 
 # These two tests below could be run as their own test shards, if desired.
 testing/test_basics
