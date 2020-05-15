@@ -16,7 +16,7 @@ else
 fi
 
 # clean up coverage
-$ROOT/venv/bin/coverage erase
+$COVERAGE erase
 
 # start all unit tests in TEST_DIR
 $COVERAGE run \
