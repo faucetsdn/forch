@@ -154,14 +154,13 @@ class LocalStateCollector:
         except Exception as e:
             return None, f'Error in extracting info for process {proc_name}: {e}'
 
-        target_proc_config = self._target_procs[proc_name]
-        if target_proc_config.cpu_percent_threshold:
-            if proc_map['cpu_percent'] > target_proc_config.cpu_percent_threshold:
-                LOGGER.warning(
-                    'CPU percent of process %s is %.2f, exceeding threshold %.2f',
-                    proc_name, proc_map['cpu_percent'], target_proc_config.cpu_percent_threshold)
+        cpu_percent_threshold = self._target_procs[proc_name].cpu_percent_threshold
+        if cpu_percent_threshold and proc_map['cpu_percent'] > cpu_percent_threshold:
+            LOGGER.warning(
+                'CPU percent of process %s is %.2f, exceeding threshold %.2f',
+                proc_name, proc_map['cpu_percent'], cpu_percent_threshold)
 
-                return proc_map, f'CPU usage is higher than threshold'
+            return proc_map, f'CPU usage is higher than threshold {cpu_percent_threshold}'
 
         return proc_map, None
 
