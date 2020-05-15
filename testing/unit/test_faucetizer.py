@@ -1,6 +1,5 @@
 """Unit tests for Faucetizer"""
 
-import os
 import shutil
 import tempfile
 import unittest
@@ -9,8 +8,6 @@ import yaml
 from forch.faucetizer import Faucetizer
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 from forch.utils import text_proto
-
-TEST_DATA_DIR = os.getenv('TEST_DATA_DIR')
 
 
 class FaucetizerTestBase(unittest.TestCase):
@@ -43,12 +40,14 @@ class FaucetizerTestBase(unittest.TestCase):
         orch_config = text_proto(self.ORCH_CONFIG, OrchestrationConfig)
 
         self._faucetizer = Faucetizer(
-            orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS, self._temp_behavioral_config_file)
+            orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
+            self._temp_behavioral_config_file)
         self._faucetizer.reload_structural_config()
 
 
 class FaucetizerSimpleTestCase(FaucetizerTestBase):
     """Test basic functionality of Faucetizer"""
+
     ORCH_CONFIG = 'unauthenticated_vlan: 100'
 
     FAUCET_STRUCTURAL_CONFIG = """
@@ -81,10 +80,12 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
     """
 
     def setUp(self):
+        """setup fixture for each test method"""
         self._setup_config_files()
         self._initialize_faucetizer()
 
     def tearDown(self):
+        """cleanup after each test method finishes"""
         self._faucetizer = None
         self._cleanup_config_files()
 
