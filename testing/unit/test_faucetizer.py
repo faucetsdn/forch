@@ -7,7 +7,7 @@ import yaml
 
 from forch.faucetizer import Faucetizer
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
-from forch.utils import text_proto
+from forch.utils import str_proto
 
 
 class FaucetizerTestBase(unittest.TestCase):
@@ -37,7 +37,7 @@ class FaucetizerTestBase(unittest.TestCase):
         shutil.rmtree(self._temp_dir)
 
     def _initialize_faucetizer(self):
-        orch_config = text_proto(self.ORCH_CONFIG, OrchestrationConfig)
+        orch_config = str_proto(self.ORCH_CONFIG, OrchestrationConfig)
 
         self._faucetizer = Faucetizer(
             orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,

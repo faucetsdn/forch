@@ -66,6 +66,6 @@ def dict_proto(message, proto_func, ignore_unknown_fields=False):
     return json_format.ParseDict(message, proto_func(), ignore_unknown_fields)
 
 
-def text_proto(message_text, proto_func):
+def str_proto(message_text, proto_func):
     """Convert a string represented protobuf message to proto object"""
     return text_format.Parse(message_text, proto_func())
