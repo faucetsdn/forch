@@ -1,4 +1,4 @@
-bin/test_reconfig
+testing/test_reconfig
 ping initstate 1 1 1 1 1 2 packets transmitted, 2
 ping sw2down01 1 1 0 1 1 2 packets transmitted, 2
 ping sw2down02 1 1 0 1 1 2 packets transmitted, 2
