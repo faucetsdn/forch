@@ -1,0 +1,29 @@
+#!/bin/bash -e
+
+MINCOVERAGE=92
+ROOT=$(realpath $(dirname $0)/..)
+TEST_DIR=$ROOT/testing/unit
+TEST_DATA_DIR=$TEST_DIR/test_data
+PYTHONPATH=$ROOT/forch
+
+export TEST_DATA_DIR
+export PYTHONPATH
+
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/coverage3 ]; then
+    COVERAGE=venv/bin/coverage3
+else
+    COVERAGE=coverage3
+fi
+
+# clean up coverage
+$COVERAGE erase
+
+# start all unit tests in TEST_DIR
+$COVERAGE run \
+    --source $PYTHONPATH \
+    -m unittest discover \
+    -s $TEST_DIR \
+    -p "test_*.py"
+
+$COVERAGE combine || true
+$COVERAGE report -m
