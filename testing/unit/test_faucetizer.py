@@ -16,7 +16,6 @@ class FaucetizerTestBase(unittest.TestCase):
 
     ORCH_CONFIG = ''
     FAUCET_STRUCTURAL_CONFIG = ''
-    FAUCET_BEHAVIORAL_CONFIG = ''
     SEGMENTS_TO_VLANS = {}
 
     def __init__(self, *args, **kwargs):
@@ -109,7 +108,7 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
                 native_vlan: 100
         include: []
         """
-        self._verify_behavioral_config(yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG))
+        self._verify_behavioral_config(yaml.safe_load(self.expected_behavioral_config_str))
 
 
 class FaucetizerBehaviorTestCase(FaucetizerTestBase):
@@ -246,12 +245,13 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
               2:
                 description: HOST
                 max_hosts: 1
+                native_vlan: 100
               7:
                 stack: {dp: t1sw1, port: 7}
         include: []
         """
         self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config_str))
-        
+
         # device expired
         self._process_device_placement(placements[4])
         self._process_device_placement(placements[5])
@@ -290,9 +290,11 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
               1:
                 description: HOST
                 max_hosts: 1
+                native_vlan: 100
               2:
                 description: HOST
                 max_hosts: 1
+                native_vlan: 100
               7:
                 stack: {dp: t1sw1, port: 7}
         include: []
