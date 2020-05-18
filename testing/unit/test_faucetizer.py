@@ -108,7 +108,7 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
                 native_vlan: 100
         include: []
         """
-        self._verify_behavioral_config(yaml.safe_load(self.expected_behavioral_config_str))
+        self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config_str))
 
 
 class FaucetizerBehaviorTestCase(FaucetizerTestBase):
