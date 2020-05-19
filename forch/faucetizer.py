@@ -122,6 +122,12 @@ class Faucetizer:
         base_file_path, ext = os.path.splitext(file_path)
         return base_file_path + ACL_FILE_SUFFIX + ext
 
+    def _is_access_port(self, port_cfg):
+        non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
+        port_properties = [
+            property for property in non_access_port_properties if property in port_cfg]
+        return len(port_properties) == 0
+
     def _faucetize(self):
         if not self._structural_faucet_config:
             raise Exception('Structural faucet configuration not provided')
@@ -133,10 +139,8 @@ class Faucetizer:
 
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if 'stack' in port_map or 'lacp' in port_map or 'output_only' in port_map:
-                    continue
-
-                port_map['native_vlan'] = self._config.unauthenticated_vlan
+                if self._is_access_port(port_map):
+                    port_map['native_vlan'] = self._config.unauthenticated_vlan
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
@@ -152,8 +156,8 @@ class Faucetizer:
             port_cfg = switch_cfg.get('interfaces', {}).get(device_placement.port)
 
             if not port_cfg:
-                LOGGER.warning('Switch or port not defined in faucet config: %s, %s',
-                               device_placement.switch, device_placement.port)
+                LOGGER.warning('Switch or port not defined in faucet config for MAC %s: %s, %s',
+                               mac, device_placement.switch, device_placement.port)
                 continue
 
             vid = self._segments_to_vlans.get(device_behavior.segment)

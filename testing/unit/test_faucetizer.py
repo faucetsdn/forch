@@ -54,6 +54,11 @@ class FaucetizerTestBase(unittest.TestCase):
             behavior_tuple[0], dict_proto(behavior_tuple[1], DeviceBehavior),
             behavior_tuple[2])
 
+    def _update_port_config(self, behavioral_config, switch, port, vlan, role):
+        port_config = behavioral_config['dps'][switch]['interfaces'][port]
+        port_config['native_vlan'] = vlan
+        port_config['acls_in'] = [f'role_{role}', 'tail_acl']
+
     def _verify_behavioral_config(self, expected_behavioral_config):
         with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
             faucetizer_behavioral_config = yaml.safe_load(temp_behavioral_config_file)
@@ -153,6 +158,48 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             stack: {dp: t1sw1, port: 7}
     """
 
+    FAUCET_BEHAVIORAL_CONFIG = """
+    dps:
+      t1sw1:
+        dp_id: 111
+        interfaces:
+          1:
+            output_only: true
+          6:
+            stack: {dp: t2sw1, port: 6}
+          7:
+            stack: {dp: t2sw2, port: 7}
+          23:
+            lacp: 3
+      t2sw1:
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+          2:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+          6:
+            stack: {dp: t1sw1, port: 6}
+      t2sw2:
+        dp_id: 122
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+          2:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+          7:
+            stack: {dp: t1sw1, port: 7}
+    include: []
+    """
+
     SEGMENTS_TO_VLANS = {
         'SEG_A': 200,
         'SEG_B': 300,
@@ -206,100 +253,20 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._process_device_placement(placements[3])
         self._process_device_behavior(behaviors[3])
 
-        expected_behavioral_config_str = """
-        dps:
-          t1sw1:
-            dp_id: 111
-            interfaces:
-              1:
-                output_only: true
-              6:
-                stack: {dp: t2sw1, port: 6}
-              7:
-                stack: {dp: t2sw2, port: 7}
-              23:
-                lacp: 3
-          t2sw1:
-            dp_id: 121
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 200
-                acls_in: [role_red, tail_acl]
-              2:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 300
-                acls_in: [role_green, tail_acl]
-              6:
-                stack: {dp: t1sw1, port: 6}
-          t2sw2:
-            dp_id: 122
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 400
-                acls_in: [role_blue, tail_acl]
-              2:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-              7:
-                stack: {dp: t1sw1, port: 7}
-        include: []
-        """
-        self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config_str))
+        expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(expected_behavioral_config, 't2sw1', 1, 200, 'red')
+        self._update_port_config(expected_behavioral_config, 't2sw1', 2, 300, 'green')
+        self._update_port_config(expected_behavioral_config, 't2sw2', 1, 400, 'green')
+        self._verify_behavioral_config(expected_behavioral_config)
 
         # device expired
         self._process_device_placement(placements[4])
         self._process_device_placement(placements[5])
 
-        expected_behavioral_config_str = """
-        dps:
-          t1sw1:
-            dp_id: 111
-            interfaces:
-              1:
-                output_only: true
-              6:
-                stack: {dp: t2sw1, port: 6}
-              7:
-                stack: {dp: t2sw2, port: 7}
-              23:
-                lacp: 3
-          t2sw1:
-            dp_id: 121
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 200
-                acls_in: [role_red, tail_acl]
-              2:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 300
-                acls_in: [role_green, tail_acl]
-              6:
-                stack: {dp: t1sw1, port: 6}
-          t2sw2:
-            dp_id: 122
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-              2:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-              7:
-                stack: {dp: t1sw1, port: 7}
-        include: []
-        """
-        self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config_str))
+        expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(expected_behavioral_config, 't2sw1', 1, 200, 'red')
+        self._update_port_config(expected_behavioral_config, 't2sw1', 2, 300, 'green')
+        self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config))
 
 
 if __name__ == '__main__':
