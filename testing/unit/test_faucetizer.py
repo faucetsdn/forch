@@ -256,7 +256,7 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._update_port_config(expected_behavioral_config, 't2sw1', 1, 200, 'red')
         self._update_port_config(expected_behavioral_config, 't2sw1', 2, 300, 'green')
-        self._update_port_config(expected_behavioral_config, 't2sw2', 1, 400, 'green')
+        self._update_port_config(expected_behavioral_config, 't2sw2', 1, 400, 'blue')
         self._verify_behavioral_config(expected_behavioral_config)
 
         # device expired
@@ -266,7 +266,7 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._update_port_config(expected_behavioral_config, 't2sw1', 1, 200, 'red')
         self._update_port_config(expected_behavioral_config, 't2sw1', 2, 300, 'green')
-        self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config))
+        self._verify_behavioral_config(expected_behavioral_config)
 
 
 if __name__ == '__main__':
