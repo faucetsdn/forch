@@ -255,6 +255,8 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._process_device_behavior(behaviors[2])
         self._process_device_placement(placements[2])
         self._process_device_placement(placements[3])
+        self._process_device_placement(placements[4])
+        self._process_device_behavior(behaviors[4])
         self._process_device_behavior(behaviors[3])
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
@@ -264,8 +266,8 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
         # device expired
-        self._process_device_placement(placements[4])
         self._process_device_placement(placements[5])
+        self._process_device_placement(placements[6])
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
