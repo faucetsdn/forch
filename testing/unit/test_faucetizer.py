@@ -83,6 +83,22 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
             max_hosts: 1
     """
 
+    FAUCET_BEHAVIORAL_CONFIG = """
+    dps:
+      t2sw1:
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+          2:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+    include: []
+    """
+
     def setUp(self):
         """setup fixture for each test method"""
         self._setup_config_files()
@@ -98,22 +114,8 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
         self._faucetizer.reload_structural_config()
         self._faucetizer.flush_behavioral_config(force=True)
 
-        expected_behavioral_config_str = """
-        dps:
-          t2sw1:
-            dp_id: 121
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-              2:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-        include: []
-        """
-        self._verify_behavioral_config(yaml.safe_load(expected_behavioral_config_str))
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._verify_behavioral_config(expected_config)
 
 
 class FaucetizerBehaviorTestCase(FaucetizerTestBase):
@@ -227,6 +229,7 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             # devices dynamically learned
             ('02:00:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
             ('02:00:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': True}, False),
+            ('02:00:00:00:00:04', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
             # devices expired
             ('02:00:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': False}, False),
             ('02:00:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': False}, False)
@@ -238,7 +241,8 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             ('02:00:00:00:00:03', {'segment': 'SEG_C', 'role': 'blue'}, True),
             # devices authenticated
             ('02:00:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
-            ('02:00:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False)
+            ('02:00:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
+            ('02:00:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
         ]
 
         # process static device info
@@ -253,20 +257,20 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._process_device_placement(placements[3])
         self._process_device_behavior(behaviors[3])
 
-        expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
-        self._update_port_config(expected_behavioral_config, 't2sw1', 1, 200, 'red')
-        self._update_port_config(expected_behavioral_config, 't2sw1', 2, 300, 'green')
-        self._update_port_config(expected_behavioral_config, 't2sw2', 1, 400, 'blue')
-        self._verify_behavioral_config(expected_behavioral_config)
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
+        self._update_port_config(expected_config, switch='t2sw1', port=2, vlan=300, role='green')
+        self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=400, role='blue')
+        self._verify_behavioral_config(expected_config)
 
         # device expired
         self._process_device_placement(placements[4])
         self._process_device_placement(placements[5])
 
-        expected_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
-        self._update_port_config(expected_behavioral_config, 't2sw1', 1, 200, 'red')
-        self._update_port_config(expected_behavioral_config, 't2sw1', 2, 300, 'green')
-        self._verify_behavioral_config(expected_behavioral_config)
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
+        self._update_port_config(expected_config, switch='t2sw1', port=2, vlan=300, role='green')
+        self._verify_behavioral_config(expected_config)
 
 
 if __name__ == '__main__':
