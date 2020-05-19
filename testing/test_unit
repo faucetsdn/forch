@@ -3,10 +3,8 @@
 MINCOVERAGE=92
 ROOT=$(realpath $(dirname $0)/..)
 TEST_DIR=$ROOT/testing/unit
-TEST_DATA_DIR=$TEST_DIR/test_data
 PYTHONPATH=$ROOT/forch
 
-export TEST_DATA_DIR
 export PYTHONPATH
 
 if [ -z "$VIRTUAL_ENV" -a -f venv/bin/coverage3 ]; then
