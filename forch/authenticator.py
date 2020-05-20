@@ -96,9 +96,9 @@ class Authenticator:
                     src_mac, port_id, self.auth_config,
                     self.radius_query.send_mab_request,
                     self.process_session_result, metrics=self._metrics)
-            if device_placement.connected:
-                self.sessions[src_mac].host_learned()
-            else:
+                if device_placement.connected:
+                    self.sessions[src_mac].host_learned()
+            else if not device_placement.connected:
                 self.sessions[src_mac].host_expired()
                 self.sessions.pop(src_mac)
 

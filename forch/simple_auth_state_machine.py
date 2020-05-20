@@ -78,6 +78,9 @@ class AuthStateMachine():
     def received_radius_accept(self, segment, role):
         """Received RADIUS accept message"""
         with self._transition_lock:
+            if self._current_state != self.REQUEST:
+                LOGGER.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                return
             self._state_transition(self.ACCEPT, self.REQUEST)
             self._current_timeout = time.time() + self._auth_timeout_sec
             self._retry_backoff = 0
@@ -86,6 +89,9 @@ class AuthStateMachine():
     def received_radius_reject(self):
         """Received RADIUS reject message"""
         with self._transition_lock:
+            if self._current_state != self.REQUEST:
+                LOGGER.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                return
             self._state_transition(self.UNAUTH, self.REQUEST)
             self._current_timeout = time.time() + self._rej_timeout_sec
             self._retry_backoff = 0
