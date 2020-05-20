@@ -54,7 +54,7 @@ class FaucetizerTestBase(unittest.TestCase):
             behavior_tuple[0], dict_proto(behavior_tuple[1], DeviceBehavior),
             behavior_tuple[2])
 
-    def v_update_port_config(self, behavioral_config, switch, port, vlan, role=None, tail_acl=None):
+    def _update_port_config(self, behavioral_config, switch, port, vlan, role=None, tail_acl=None):
         port_config = behavioral_config['dps'][switch]['interfaces'][port]
         port_config['native_vlan'] = vlan
         port_config['acls_in'] = [f'role_{role}'] if role else []
@@ -123,7 +123,7 @@ class FaucetizerInitialFaucetConfigTestCase(FaucetizerSimpleTestCase):
 
     ORCH_CONFIG = """
     unauthenticated_vlan: 100
-    tail_acl: tail_acl
+    tail_acl: 'tail_acl'
     """
 
     FAUCET_BEHAVIORAL_CONFIG = """
