@@ -98,7 +98,7 @@ class Authenticator:
                     self.process_session_result, metrics=self._metrics)
                 if device_placement.connected:
                     self.sessions[src_mac].host_learned()
-            else if not device_placement.connected:
+            elif not device_placement.connected:
                 self.sessions[src_mac].host_expired()
                 self.sessions.pop(src_mac)
 
