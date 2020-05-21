@@ -169,10 +169,8 @@ class Faucetizer:
             port_cfg['native_vlan'] = vid
             if device_behavior.role:
                 port_cfg['acls_in'] = [f'role_{device_behavior.role}']
-            else:
-                port_cfg['acls_in'] = []
             if self._config.tail_acl:
-                port_cfg['acls_in'].append(self._config.tail_acl)
+                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
 
         behavioral_faucet_config['include'] = self._behavioral_include
 
