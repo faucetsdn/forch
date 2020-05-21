@@ -4480,20 +4480,26 @@ or to host_path API to list path </p></td>
           <tbody>
             
               <tr>
-                <td>unauthenticated</td>
+                <td>initial</td>
                 <td>0</td>
+                <td><p>unassigned</p></td>
+              </tr>
+            
+              <tr>
+                <td>unauthenticated</td>
+                <td>1</td>
                 <td><p>unauthenticated</p></td>
               </tr>
             
               <tr>
                 <td>static</td>
-                <td>1</td>
+                <td>2</td>
                 <td><p>static</p></td>
               </tr>
             
               <tr>
-                <td>authenticated</td>
-                <td>2</td>
+                <td>dynamic</td>
+                <td>3</td>
                 <td><p>authenticated</p></td>
               </tr>
             
@@ -4760,7 +4766,7 @@ or to host_path API to list path </p></td>
                 </tr>
               
                 <tr>
-                  <td>state</td>
+                  <td>dva_state</td>
                   <td><a href="#DVAState.State">DVAState.State</a></td>
                   <td></td>
                   <td><p>DVA state </p></td>
