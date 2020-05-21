@@ -56,9 +56,6 @@ function test_dva {
     api_result=$fout_dir/list_hosts.json
     echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:01".vlan' $api_result | tee -a $TEST_RESULTS
-    jq '.eth_srcs."9a:02:57:1e:8f:01".radius_result.access' $api_result | tee -a $TEST_RESULTS
-    jq '.eth_srcs."9a:02:57:1e:8f:01".radius_result.segment' $api_result | tee -a $TEST_RESULTS
-    jq '.eth_srcs."9a:02:57:1e:8f:01".radius_result.role' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.access' $api_result | tee -a $TEST_RESULTS
