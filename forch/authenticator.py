@@ -177,7 +177,8 @@ if __name__ == '__main__':
         """Mocks auth callback passed to Authenticator"""
         mab_result = EXPECTED_MAB_RESULT.get(src_mac, {})
         assert mab_result.get('segment') == segment and mab_result.get('role') == role
-        sys.stdout.write('auth_callback for %s: access:%s segment:%s role:%s\n' % (src_mac, access, segment, role))
+        sys.stdout.write('auth_callback for %s: access:%s segment:%s role:%s\n'
+                         % (src_mac, access, segment, role))
 
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
