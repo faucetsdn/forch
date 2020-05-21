@@ -1,4 +1,4 @@
-./testing/test_access
+testing/test_access
 %%% initial
 Starting access-initial test...
 %%% minimal-learning
