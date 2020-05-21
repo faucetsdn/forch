@@ -1,4 +1,4 @@
-testing/test_access
+./testing/test_access
 %%% initial
 Starting access-initial test...
 %%% minimal-learning
@@ -24,6 +24,12 @@ Starting dva-vlan-assigned tests
 "deny ICMP"
 @list_hosts dva-vlan-assigned
 200
+"Authorized"
+"BOS"
+"blue"
 "allow ICMP"
 300
+"Authorized"
+"BOS"
+"yellow"
 0
