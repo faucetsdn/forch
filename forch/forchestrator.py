@@ -29,7 +29,7 @@ from forch.utils import proto_dict, yaml_proto
 from forch.__version__ import __version__
 
 from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
-from forch.proto.shared_constants_pb2 import DVAState, State
+from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
 
 LOGGER = logging.getLogger('forch')
