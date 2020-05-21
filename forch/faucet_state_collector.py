@@ -72,6 +72,10 @@ MAC_LEARNING_SWITCH = "switches"
 MAC_LEARNING_PORT = "port"
 MAC_LEARNING_IP = "ip_address"
 MAC_LEARNING_TS = "timestamp"
+MAC_RADIUS_RESULT = "radius_result"
+MAC_RADIUS_ACCESS = "access"
+MAC_RADIUS_SEGMENT = "segment"
+MAC_RADIUS_ROLE = "role"
 CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
 SW_STATE_LAST_CHANGE = "switch_state_last_change"
@@ -1149,6 +1153,14 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
+    def update_radius_result(self, mac, access, segment=None, role=None):
+        """Update RADIUS result information for learned host"""
+        learned_host = self.learned_macs[mac]
+        host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
+        host_radius[MAC_RADIUS_ACCESS] = access
+        host_radius[MAC_RADIUS_SEGMENT] = segment
+        host_radius[MAC_RADIUS_ROLE] = role
+
     @_pre_check()
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
@@ -1174,6 +1186,9 @@ class FaucetStateCollector:
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
             self._fill_port_behavior(switch, port, mac_deets, metrics)
+
+            if MAC_RADIUS_RESULT in mac_state:
+                mac_deets[MAC_RADIUS_RESULT] = mac_state[MAC_RADIUS_RESULT]
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
