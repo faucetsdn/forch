@@ -1155,7 +1155,11 @@ class FaucetStateCollector:
 
     def update_radius_result(self, mac, access, segment=None, role=None):
         """Update RADIUS result information for learned host"""
-        learned_host = self.learned_macs[mac]
+        learned_host = self.learned_macs.get(mac)
+        if not learned_host:
+            # This covers the case where we do a RADIUS request for a static placement
+            LOGGER.warning('%s is not a learned mac. Skipping faucet_state_collector update.', mac)
+            return
         host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
         host_radius[MAC_RADIUS_ACCESS] = access
         host_radius[MAC_RADIUS_SEGMENT] = segment

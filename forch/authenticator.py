@@ -119,10 +119,10 @@ class Authenticator:
             else:
                 self.sessions[src_mac].received_radius_reject()
 
-    def process_session_result(self, src_mac, segment=None, role=None):
+    def process_session_result(self, src_mac, access, segment=None, role=None):
         """Process session result"""
         if self.auth_callback:
-            self.auth_callback(src_mac, segment, role)
+            self.auth_callback(src_mac, access, segment, role)
 
     def handle_sm_timeout(self):
         """Call timeout handlers for all active session state machines"""
