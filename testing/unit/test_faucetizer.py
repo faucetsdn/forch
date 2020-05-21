@@ -58,7 +58,8 @@ class FaucetizerTestBase(unittest.TestCase):
         port_config = behavioral_config['dps'][switch]['interfaces'][port]
         port_config['native_vlan'] = vlan
         port_config['acls_in'] = [f'role_{role}'] if role else []
-        port_config['acls_in'].append(tail_acl)
+        if tail_acl:
+            port_config['acls_in'].append(tail_acl)
 
     def _verify_behavioral_config(self, expected_behavioral_config):
         with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
