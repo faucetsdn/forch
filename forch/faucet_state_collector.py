@@ -16,7 +16,7 @@ from forch.constants import \
 
 from forch.utils import dict_proto
 
-from forch.proto.shared_constants_pb2 import State, LacpState
+from forch.proto.shared_constants_pb2 import DVAState, LacpState, State
 from forch.proto.system_state_pb2 import StateSummary
 
 from forch.proto.dataplane_state_pb2 import DataplaneState
@@ -115,6 +115,7 @@ class FaucetStateCollector:
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
+        self._get_dva_state = None
         self._stack_state_event = 0
         self._stack_state_update = 0
         self._stack_state_data = None
@@ -613,6 +614,7 @@ class FaucetStateCollector:
 
         if port_config.native_vlan:
             port_map['vlan'] = int(port_config.native_vlan.vid)
+            port_map['dva_state'] = self._get_dva_state(switch_name, port_id) or DVAState.initial
 
         if port_config.acls_in:
             acl_maps_list = port_map.setdefault('acls', [])
@@ -1234,6 +1236,10 @@ class FaucetStateCollector:
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
         self._placement_callback = callback
+
+    def set_get_dva_state(self, func):
+        """set get_dva_states method"""
+        self._get_dva_state = func
 
     def set_forch_metrics(self, forch_metrics):
         """set object that handles forch varz metrics exposure"""
