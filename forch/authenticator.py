@@ -119,10 +119,10 @@ class Authenticator:
             else:
                 self.sessions[src_mac].received_radius_reject()
 
-    def process_session_result(self, src_mac, segment=None, role=None):
+    def process_session_result(self, src_mac, access, segment=None, role=None):
         """Process session result"""
         if self.auth_callback:
-            self.auth_callback(src_mac, segment, role)
+            self.auth_callback(src_mac, access, segment, role)
 
     def handle_sm_timeout(self):
         """Call timeout handlers for all active session state machines"""
@@ -173,11 +173,12 @@ if __name__ == '__main__':
 
     EXPECTED_MAB_RESULT = {}
 
-    def mock_auth_callback(src_mac, segment, role):
+    def mock_auth_callback(src_mac, access, segment, role):
         """Mocks auth callback passed to Authenticator"""
         mab_result = EXPECTED_MAB_RESULT.get(src_mac, {})
         assert mab_result.get('segment') == segment and mab_result.get('role') == role
-        sys.stdout.write('auth_callback for %s: segment:%s role:%s\n' % (src_mac, segment, role))
+        sys.stdout.write('auth_callback for %s: access:%s segment:%s role:%s\n'
+                         % (src_mac, access, segment, role))
 
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
