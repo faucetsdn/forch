@@ -596,6 +596,10 @@
                   <a href="#HostList.HostData"><span class="badge">M</span>HostList.HostData</a>
                 </li>
               
+                <li>
+                  <a href="#HostList.RadiusResult"><span class="badge">M</span>HostList.RadiusResult</a>
+                </li>
+              
               
               
               
@@ -3922,6 +3926,51 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td></td>
                   <td><p>link to list_hosts API to list possible destinations
 or to host_path API to list path </p></td>
+                </tr>
+              
+                <tr>
+                  <td>radius_result</td>
+                  <td><a href="#HostList.RadiusResult">HostList.RadiusResult</a></td>
+                  <td></td>
+                  <td><p>RADIUS result for host if applicable </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.RadiusResult">HostList.RadiusResult</h3>
+        <p>RADIUS result for host</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>access</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>RADIUS access accept/reject </p></td>
+                </tr>
+              
+                <tr>
+                  <td>segment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Segment in RADIUS result </p></td>
+                </tr>
+              
+                <tr>
+                  <td>role</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Role in RADIUS result </p></td>
                 </tr>
               
             </tbody>

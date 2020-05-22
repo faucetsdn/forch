@@ -26,4 +26,7 @@ Starting dva-vlan-assigned tests
 200
 "allow ICMP"
 300
+"Authorized"
+"BOS"
+"yellow"
 0
