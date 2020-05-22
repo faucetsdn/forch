@@ -663,9 +663,9 @@ class FaucetStateCollector:
                     break
 
                 if not has_sample:
-                    raise Exception(
-                        f'No metric sample available for rule with cookie {cookie_num} '
-                        f'in ACL {acl_config._id}')
+                    LOGGER.debug(
+                        'No metric sample available for switch, port, ACL, rule: %s, %s, %s ,%s',
+                        switch_name, port_id, acl_config._id, cookie_num)
 
             acls_map_list.append(acl_map)
 
