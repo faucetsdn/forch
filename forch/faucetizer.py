@@ -139,14 +139,15 @@ class Faucetizer:
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
 
-        if not self._config.unauthenticated_vlan:
-            raise Exception('Unauthenticated vlan is not configured')
-
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if self._is_access_port(port_map):
+                if not self._is_access_port(port_map):
+                    continue
+                if self._config.unauthenticated_vlan:
                     port_map['native_vlan'] = self._config.unauthenticated_vlan
                     self._update_vlan_state(switch, port, DVAState.unauthenticated)
+                if self._config.tail_acl:
+                    port_map['acls_in'] = [self._config.tail_acl]
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
@@ -174,9 +175,9 @@ class Faucetizer:
 
             port_cfg['native_vlan'] = vid
             if device_behavior.role:
-                port_cfg['acls_in'] = [f'role_{device_behavior.role}', 'tail_acl']
-            else:
-                port_cfg['acls_in'] = ['tail_acl']
+                port_cfg['acls_in'] = [f'role_{device_behavior.role}']
+            if self._config.tail_acl:
+                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
 
             if mac in self._static_devices.device_mac_behaviors:
                 self._update_vlan_state(

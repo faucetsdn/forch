@@ -41,5 +41,20 @@ message HostList {
         // link to list_hosts API to list possible destinations
         // or to host_path API to list path
         string url = 6;
+
+        // RADIUS result for host if applicable
+        RadiusResult radius_result = 7;
+    }
+    
+    // RADIUS result for host
+    message RadiusResult {
+        // RADIUS access accept/reject
+        string access = 1;
+
+        // Segment in RADIUS result
+        string segment = 2;
+
+        // Role in RADIUS result
+        string role = 3;
     }
 }

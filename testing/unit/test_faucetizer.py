@@ -54,10 +54,13 @@ class FaucetizerTestBase(unittest.TestCase):
             behavior_tuple[0], dict_proto(behavior_tuple[1], DeviceBehavior),
             behavior_tuple[2])
 
-    def _update_port_config(self, behavioral_config, switch, port, vlan, role):
+    def _update_port_config(self, behavioral_config, switch, port, vlan, role=None, tail_acl=None):
         port_config = behavioral_config['dps'][switch]['interfaces'][port]
         port_config['native_vlan'] = vlan
-        port_config['acls_in'] = [f'role_{role}', 'tail_acl']
+        if role:
+            port_config['acls_in'] = [f'role_{role}']
+        if tail_acl:
+            port_config.setdefault('acls_in', []).append(tail_acl)
 
     def _verify_behavioral_config(self, expected_behavioral_config):
         with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
@@ -68,7 +71,8 @@ class FaucetizerTestBase(unittest.TestCase):
 class FaucetizerSimpleTestCase(FaucetizerTestBase):
     """Test basic functionality of Faucetizer"""
 
-    ORCH_CONFIG = 'unauthenticated_vlan: 100'
+    ORCH_CONFIG = """
+    """
 
     FAUCET_STRUCTURAL_CONFIG = """
     dps:
@@ -91,11 +95,9 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
           1:
             description: HOST
             max_hosts: 1
-            native_vlan: 100
           2:
             description: HOST
             max_hosts: 1
-            native_vlan: 100
     include: []
     """
 
@@ -116,6 +118,33 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._verify_behavioral_config(expected_config)
+
+
+class FaucetizerInitialFaucetConfigTestCase(FaucetizerSimpleTestCase):
+    """Test basic functionality of Faucetizer"""
+
+    ORCH_CONFIG = """
+    unauthenticated_vlan: 100
+    tail_acl: 'tail_acl'
+    """
+
+    FAUCET_BEHAVIORAL_CONFIG = """
+    dps:
+      t2sw1:
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+            acls_in: ['tail_acl']
+          2:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+            acls_in: ['tail_acl']
+    include: []
+    """
 
 
 class FaucetizerBehaviorTestCase(FaucetizerTestBase):

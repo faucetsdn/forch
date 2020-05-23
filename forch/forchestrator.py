@@ -260,8 +260,9 @@ class Forchestrator:
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
-    def handle_auth_result(self, mac, segment, role):
+    def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
+        self._faucet_collector.update_radius_result(mac, access, segment, role)
         device_behavior = DeviceBehavior(segment=segment, role=role)
         self._process_device_behavior(mac, device_behavior)
 
