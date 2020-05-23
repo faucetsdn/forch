@@ -25,11 +25,11 @@ orchestration:
     auth_timeout_sec: 3559
 proxy_server:
   targets:
-    faucet: 
+    faucet:
       port: 8001
-    forch: 
+    forch:
       port: 8302
-    gauge: 
+    gauge:
       port: 9001
 process:
   scan_interval_sec: 10

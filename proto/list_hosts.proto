@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "forch/proto/acl_state.proto";
+import "forch/proto/shared_constants.proto";
 
 /*
  * List of hosts
@@ -35,17 +36,20 @@ message HostList {
         // VLAN
         int32 vlan = 4;
 
+        // DVA state
+        DVAState.State dva_state = 5;
+
         // ACLs
-        repeated ACLState acls = 5;
+        repeated ACLState acls = 6;
 
         // link to list_hosts API to list possible destinations
         // or to host_path API to list path
-        string url = 6;
+        string url = 7;
 
         // RADIUS result for host if applicable
-        RadiusResult radius_result = 7;
+        RadiusResult radius_result = 8;
     }
-    
+
     // RADIUS result for host
     message RadiusResult {
         // RADIUS access accept/reject
