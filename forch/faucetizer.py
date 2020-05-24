@@ -141,7 +141,7 @@ class Faucetizer:
 
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if not self._is_access_port(port_map):
+                if self._is_access_port(port_map):
                     if self._config.unauthenticated_vlan:
                         port_map['native_vlan'] = self._config.unauthenticated_vlan
                         self._update_vlan_state(switch, port, DVAState.unauthenticated)
