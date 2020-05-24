@@ -27,8 +27,10 @@ Starting dva-vlan-assigned tests
 "deny ICMP"
 @list_hosts dva-vlan-assigned
 200
+"static"
 "allow ICMP"
 300
+"dynamic"
 "Authorized"
 "BOS"
 "yellow"
