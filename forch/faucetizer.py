@@ -133,6 +133,7 @@ class Faucetizer:
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
 
+    # pylint: disable=too-many-branches
     def _faucetize(self):
         if not self._structural_faucet_config:
             raise Exception('Structural faucet configuration not provided')
@@ -141,12 +142,13 @@ class Faucetizer:
 
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if self._is_access_port(port_map):
-                    if self._config.unauthenticated_vlan:
-                        port_map['native_vlan'] = self._config.unauthenticated_vlan
-                        self._update_vlan_state(switch, port, DVAState.unauthenticated)
-                    if self._config.tail_acl:
-                        port_map['acls_in'] = [self._config.tail_acl]
+                if not self._is_access_port(port_map):
+                    continue
+                if self._config.unauthenticated_vlan:
+                    port_map['native_vlan'] = self._config.unauthenticated_vlan
+                    self._update_vlan_state(switch, port, DVAState.unauthenticated)
+                if self._config.tail_acl:
+                    port_map['acls_in'] = [self._config.tail_acl]
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
