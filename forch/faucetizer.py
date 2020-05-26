@@ -151,9 +151,7 @@ class Faucetizer:
 
         return behavioral_faucet_config
 
-    # pylint: disable=too-many-branches
     def _faucetize(self):
-
         behavioral_faucet_config = self._initialize_host_ports()
 
         # static information of a device should overwrite the corresponding dynamic one
