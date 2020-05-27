@@ -678,6 +678,10 @@
             <ul>
               
                 <li>
+                  <a href="#DVAState"><span class="badge">M</span>DVAState</a>
+                </li>
+              
+                <li>
                   <a href="#LacpState"><span class="badge">M</span>LacpState</a>
                 </li>
               
@@ -685,6 +689,10 @@
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
+              
+                <li>
+                  <a href="#DVAState.State"><span class="badge">E</span>DVAState.State</a>
+                </li>
               
                 <li>
                   <a href="#LacpState.LacpState"><span class="badge">E</span>LacpState.LacpState</a>
@@ -3914,6 +3922,13 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
+                  <td>dva_state</td>
+                  <td><a href="#DVAState.State">DVAState.State</a></td>
+                  <td></td>
+                  <td><p>DVA state </p></td>
+                </tr>
+              
+                <tr>
                   <td>acls</td>
                   <td><a href="#ACLState">ACLState</a></td>
                   <td>repeated</td>
@@ -4496,6 +4511,13 @@ or to host_path API to list path </p></td>
       <p>constants</p>
 
       
+        <h3 id="DVAState">DVAState</h3>
+        <p>DVA State</p>
+
+        
+
+        
+      
         <h3 id="LacpState">LacpState</h3>
         <p>LACP States</p>
 
@@ -4511,6 +4533,41 @@ or to host_path API to list path </p></td>
         
       
 
+      
+        <h3 id="DVAState.State">DVAState.State</h3>
+        <p>Enumeration of DVA states</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>initial</td>
+                <td>0</td>
+                <td><p>unassigned</p></td>
+              </tr>
+            
+              <tr>
+                <td>unauthenticated</td>
+                <td>1</td>
+                <td><p>unauthenticated</p></td>
+              </tr>
+            
+              <tr>
+                <td>static</td>
+                <td>2</td>
+                <td><p>static</p></td>
+              </tr>
+            
+              <tr>
+                <td>dynamic</td>
+                <td>3</td>
+                <td><p>authenticated</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
       
         <h3 id="LacpState.LacpState">LacpState.LacpState</h3>
         <p>Enumeration of LACP states</p>
@@ -4769,6 +4826,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>native VLAN </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dva_state</td>
+                  <td><a href="#DVAState.State">DVAState.State</a></td>
+                  <td></td>
+                  <td><p>DVA state </p></td>
                 </tr>
               
                 <tr>

@@ -14,6 +14,7 @@ from forch.utils import yaml_proto
 from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.proto.shared_constants_pb2 import DVAState
 
 LOGGER = logging.getLogger('faucetizer')
 
@@ -27,6 +28,7 @@ class Faucetizer:
                  behavioral_config_file, reregister_acl_file_handlers=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
+        self._vlan_states = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
@@ -128,7 +130,10 @@ class Faucetizer:
             property for property in non_access_port_properties if property in port_cfg]
         return len(port_properties) == 0
 
-    def _faucetize(self):
+    def _update_vlan_state(self, switch, port, state):
+        self._vlan_states.setdefault(switch, {})[port] = state
+
+    def _initialize_host_ports(self):
         if not self._structural_faucet_config:
             raise Exception('Structural faucet configuration not provided')
 
@@ -136,11 +141,18 @@ class Faucetizer:
 
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if self._is_access_port(port_map):
-                    if self._config.unauthenticated_vlan:
-                        port_map['native_vlan'] = self._config.unauthenticated_vlan
-                    if self._config.tail_acl:
-                        port_map['acls_in'] = [self._config.tail_acl]
+                if not self._is_access_port(port_map):
+                    continue
+                if self._config.unauthenticated_vlan:
+                    port_map['native_vlan'] = self._config.unauthenticated_vlan
+                    self._update_vlan_state(switch, port, DVAState.unauthenticated)
+                if self._config.tail_acl:
+                    port_map['acls_in'] = [self._config.tail_acl]
+
+        return behavioral_faucet_config
+
+    def _faucetize(self):
+        behavioral_faucet_config = self._initialize_host_ports()
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
@@ -171,6 +183,11 @@ class Faucetizer:
                 port_cfg['acls_in'] = [f'role_{device_behavior.role}']
             if self._config.tail_acl:
                 port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
+
+            dva_state = (DVAState.static if mac in self._static_devices.device_mac_behaviors
+                         else DVAState.dynamic)
+            self._update_vlan_state(
+                device_placement.switch, device_placement.port, dva_state)
 
         behavioral_faucet_config['include'] = self._behavioral_include
 
@@ -208,6 +225,10 @@ class Faucetizer:
         """Return structural config"""
         with self._lock:
             return self._structural_faucet_config
+
+    def get_dva_state(self, switch, port):
+        """Get DVA state"""
+        return self._vlan_states.get(switch, {}).get(port)
 
 
 def load_devices_state(file):
