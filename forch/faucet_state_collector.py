@@ -1114,10 +1114,10 @@ class FaucetStateCollector:
     def _update_learned_macs_metrics(self):
         for mac in self.learned_macs:
             switch, port = self._get_access_switch(mac)
-            if not (switch and port):
-                raise RuntimeError('Could not find access switch for mac %s', mac)
             if switch and port:
                 self._update_learned_macs_metric(mac, switch, port)
+            else:
+                raise RuntimeError('Could not find access switch for mac %s', mac)
 
     def _update_learned_macs_metric(self, mac, switch_name, port, expire=False):
         if not self.faucet_config.get(DPS_CFG):
