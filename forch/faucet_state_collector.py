@@ -1205,7 +1205,6 @@ class FaucetStateCollector:
         key = 'eth_dsts' if src_mac else 'eth_srcs'
         egress_url = f"{url_base}?host_path?eth_src={src_mac}&to_egress=true" if src_mac else None
 
-        print(f'** host_macs:\n{json.dumps(host_macs, indent=4)}')
         return dict_proto({
             key: host_macs,
             'egress_url': egress_url,
