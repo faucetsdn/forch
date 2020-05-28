@@ -1,3 +1,18 @@
+# 1.6.0
+## Forch 0.38
+* Expose DVA state in NOAH API (#111)
+* Change initial Faucet config behavior (#110)
+* Expose RADIUS result info in NOAH (#112)
+* Handle unexpected RADIUS responses. Accept learning events only if it doesn't exist in map (#109)
+* Decouple device behavior from device placement in Faucetizer (#107)
+* Add unit test framework and reorganize tests (#108)
+* Monitor CPU percent of target processes (#105)
+## Faucet 1.9.43
+* Optimize stack reloading - don't take down stack ports on config restart, unless there was a topology change.
+* Update dependencies:
+  + grafana to v7.0.0 [apt, docker]
+  + prometheus to v2.18.1 [docker]
+
 # 1.5.0
 ## Forch 0.37
 * Faucet version 1.9.42
