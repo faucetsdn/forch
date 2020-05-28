@@ -18,7 +18,7 @@ from forch.utils import dict_proto
 
 LOGGER = logging.getLogger('lstate')
 
-_PROC_ATTRS = ['cmdline', 'cpu_times', 'memory_info']
+_PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
 
 class LocalStateCollector:
     """Storing local system states"""
@@ -149,10 +149,18 @@ class LocalStateCollector:
             proc_map['create_time_change_count'] = change_count
             proc_map['create_time_last_change'] = self._current_time
 
-        error = self._aggregate_process_stats(proc_map, proc_list)
+        try:
+            self._aggregate_process_stats(proc_map, proc_list)
+        except Exception as e:
+            return None, f'Error in extracting info for process {proc_name}: {e}'
 
-        if error:
-            return None, error
+        cpu_percent_threshold = self._target_procs[proc_name].cpu_percent_threshold
+        if cpu_percent_threshold and proc_map['cpu_percent'] > cpu_percent_threshold:
+            LOGGER.warning(
+                'CPU percent of process %s is %.2f, exceeding threshold %.2f',
+                proc_name, proc_map['cpu_percent'], cpu_percent_threshold)
+
+            return proc_map, f'CPU usage is higher than threshold {cpu_percent_threshold}'
 
         return proc_map, None
 
@@ -160,22 +168,22 @@ class LocalStateCollector:
         cpu_time_user = 0.0
         cpu_time_system = 0.0
         cpu_time_iowait = None
+        cpu_percent = 0.0
         memory_rss = 0.0
         memory_vms = 0.0
 
-        try:
-            for proc in proc_list:
-                cpu_time_user += proc.info['cpu_times'].user
-                cpu_time_system += proc.info['cpu_times'].system
-                if hasattr(proc.info['cpu_times'], 'iowait'):
-                    if not cpu_time_iowait:
-                        cpu_time_iowait = 0.0
-                    cpu_time_iowait += proc.cpu_times().iowait
+        for proc in proc_list:
+            cpu_time_user += proc.info['cpu_times'].user
+            cpu_time_system += proc.info['cpu_times'].system
+            if hasattr(proc.info['cpu_times'], 'iowait'):
+                if not cpu_time_iowait:
+                    cpu_time_iowait = 0.0
+                cpu_time_iowait += proc.cpu_times().iowait
 
-                memory_rss += proc.info['memory_info'].rss / 1e6
-                memory_vms += proc.info['memory_info'].vms / 1e6
-        except Exception as e:
-            return "Error extracting process info: %s" % e
+            cpu_percent += proc.info['cpu_percent']
+
+            memory_rss += proc.info['memory_info'].rss / 1e6
+            memory_vms += proc.info['memory_info'].vms / 1e6
 
         proc_map['cpu_times_s'] = {}
         proc_map['cpu_times_s']['user'] = cpu_time_user / len(proc_list)
@@ -183,11 +191,11 @@ class LocalStateCollector:
         if cpu_time_iowait:
             proc_map['cpu_times_s']['iowait'] = cpu_time_iowait / len(proc_list)
 
+        proc_map['cpu_percent'] = cpu_percent / len(proc_list)
+
         proc_map['memory_info_mb'] = {}
         proc_map['memory_info_mb']['rss'] = memory_rss / len(proc_list)
         proc_map['memory_info_mb']['vms'] = memory_vms / len(proc_list)
-
-        return None
 
     def _check_connections(self):
         connections = self._fetch_connections()

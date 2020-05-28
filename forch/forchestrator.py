@@ -102,6 +102,9 @@ class Forchestrator:
         self._metrics.start()
         self._faucet_collector = FaucetStateCollector(self._config.event_client)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
+        self._faucet_collector.set_get_dva_state(
+            (lambda switch, port:
+             self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
         self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update)
@@ -257,8 +260,9 @@ class Forchestrator:
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
-    def handle_auth_result(self, mac, segment, role):
+    def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
+        self._faucet_collector.update_radius_result(mac, access, segment, role)
         device_behavior = DeviceBehavior(segment=segment, role=role)
         self._process_device_behavior(mac, device_behavior)
 

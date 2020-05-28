@@ -1,4 +1,4 @@
-bin/test_stack
+testing/test_stack
 supercalifragilisticexpialidocious
 port_lacp_state{dp_id="0xb1",dp_name="nz-kiwi-t1sw1",port="28",port_description="egress"} 3.0
 port_lacp_state{dp_id="0xb2",dp_name="nz-kiwi-t1sw2",port="28",port_description="egress"} 0.0

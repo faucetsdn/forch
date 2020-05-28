@@ -16,7 +16,7 @@ from forch.constants import \
 
 from forch.utils import dict_proto
 
-from forch.proto.shared_constants_pb2 import State, LacpState
+from forch.proto.shared_constants_pb2 import DVAState, LacpState, State
 from forch.proto.system_state_pb2 import StateSummary
 
 from forch.proto.dataplane_state_pb2 import DataplaneState
@@ -72,6 +72,10 @@ MAC_LEARNING_SWITCH = "switches"
 MAC_LEARNING_PORT = "port"
 MAC_LEARNING_IP = "ip_address"
 MAC_LEARNING_TS = "timestamp"
+MAC_RADIUS_RESULT = "radius_result"
+MAC_RADIUS_ACCESS = "access"
+MAC_RADIUS_SEGMENT = "segment"
+MAC_RADIUS_ROLE = "role"
 CONFIG_CHANGE_COUNT = "config_change_count"
 SW_STATE = "switch_state"
 SW_STATE_LAST_CHANGE = "switch_state_last_change"
@@ -115,6 +119,7 @@ class FaucetStateCollector:
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
+        self._get_dva_state = None
         self._stack_state_event = 0
         self._stack_state_update = 0
         self._stack_state_data = None
@@ -613,6 +618,7 @@ class FaucetStateCollector:
 
         if port_config.native_vlan:
             port_map['vlan'] = int(port_config.native_vlan.vid)
+            port_map['dva_state'] = self._get_dva_state(switch_name, port_id) or DVAState.initial
 
         if port_config.acls_in:
             acl_maps_list = port_map.setdefault('acls', [])
@@ -659,9 +665,9 @@ class FaucetStateCollector:
                     break
 
                 if not has_sample:
-                    raise Exception(
-                        f'No metric sample available for rule with cookie {cookie_num} '
-                        f'in ACL {acl_config._id}')
+                    LOGGER.debug(
+                        'No metric sample available for switch, port, ACL, rule: %s, %s, %s ,%s',
+                        switch_name, port_id, acl_config._id, cookie_num)
 
             acls_map_list.append(acl_map)
 
@@ -1149,6 +1155,18 @@ class FaucetStateCollector:
                 return switch, port
         return None, None
 
+    def update_radius_result(self, mac, access, segment=None, role=None):
+        """Update RADIUS result information for learned host"""
+        learned_host = self.learned_macs.get(mac)
+        if not learned_host:
+            # This covers the case where we do a RADIUS request for a static placement
+            LOGGER.warning('%s is not a learned mac. Skipping faucet_state_collector update.', mac)
+            return
+        host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
+        host_radius[MAC_RADIUS_ACCESS] = access
+        host_radius[MAC_RADIUS_SEGMENT] = segment
+        host_radius[MAC_RADIUS_ROLE] = role
+
     @_pre_check()
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
@@ -1174,6 +1192,9 @@ class FaucetStateCollector:
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
             self._fill_port_behavior(switch, port, mac_deets, metrics)
+
+            if MAC_RADIUS_RESULT in mac_state:
+                mac_deets[MAC_RADIUS_RESULT] = mac_state[MAC_RADIUS_RESULT]
 
             if src_mac:
                 url = f"{url_base}/?host_path?eth_src={src_mac}&eth_dst={mac}"
@@ -1234,6 +1255,10 @@ class FaucetStateCollector:
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
         self._placement_callback = callback
+
+    def set_get_dva_state(self, func):
+        """set get_dva_states method"""
+        self._get_dva_state = func
 
     def set_forch_metrics(self, forch_metrics):
         """set object that handles forch varz metrics exposure"""

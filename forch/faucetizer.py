@@ -11,8 +11,10 @@ import yaml
 from forch.utils import configure_logging
 from forch.utils import yaml_proto
 
-from forch.proto.devices_state_pb2 import DevicesState, Device, SegmentsToVlans
+from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
+from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.proto.shared_constants_pb2 import DVAState
 
 LOGGER = logging.getLogger('faucetizer')
 
@@ -24,8 +26,9 @@ class Faucetizer:
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
                  behavioral_config_file, reregister_acl_file_handlers=None):
-        self._dynamic_devices = {}
-        self._static_devices = {}
+        self._static_devices = DevicesState()
+        self._dynamic_devices = DevicesState()
+        self._vlan_states = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
@@ -40,37 +43,40 @@ class Faucetizer:
 
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
-        devices = self._static_devices if static else self._dynamic_devices
+        if not placement.switch or not placement.port:
+            raise Exception(f'Incomplete placement for {eth_src}: {placement}')
+        devices_state = self._static_devices if static else self._dynamic_devices
         device_type = "static" if static else "dynamic"
         with self._lock:
+            device_placements = devices_state.device_mac_placements
             if placement.connected:
-                device = devices.setdefault(eth_src, Device())
-                device.placement.CopyFrom(placement)
+                device_placement = device_placements.setdefault(eth_src, DevicePlacement())
+                device_placement.CopyFrom(placement)
                 LOGGER.info(
-                    'Added %s placement: %s, %s, %s',
-                    device_type, eth_src, placement.switch, placement.port)
+                    'Received %s placement: %s, %s, %s',
+                    device_type, eth_src, device_placement.switch, device_placement.port)
             else:
-                removed = devices.pop(eth_src, None)
+                removed = device_placements.pop(eth_src, None)
                 if removed:
-                    LOGGER.info('Removed %s device: %s', device_type, eth_src)
+                    LOGGER.info('Removed %s placement: %s', device_type, eth_src)
 
             self.flush_behavioral_config()
 
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
-        devices = self._static_devices if static else self._dynamic_devices
+        devices_state = self._static_devices if static else self._dynamic_devices
         device_type = "static" if static else "dynamic"
         with self._lock:
+            device_behaviors = devices_state.device_mac_behaviors
             if behavior.segment:
-                device = devices.setdefault(eth_src, Device())
-                device.behavior.CopyFrom(behavior)
+                device_behavior = device_behaviors.setdefault(eth_src, DeviceBehavior())
+                device_behavior.CopyFrom(behavior)
                 LOGGER.info(
-                    'Added %s behavior: %s, %s, %s',
-                    device_type, eth_src, behavior.segment, behavior.role)
+                    'Received %s behavior: %s, %s, %s',
+                    device_type, eth_src, device_behavior.segment, device_behavior.role)
             else:
-                device = devices.get(eth_src)
-                if device:
-                    device.behavior.Clear()
+                removed = device_behaviors.pop(eth_src, None)
+                if removed:
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
             self.flush_behavioral_config()
@@ -118,44 +124,70 @@ class Faucetizer:
         base_file_path, ext = os.path.splitext(file_path)
         return base_file_path + ACL_FILE_SUFFIX + ext
 
-    def _faucetize(self):
+    def _is_access_port(self, port_cfg):
+        non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
+        port_properties = [
+            property for property in non_access_port_properties if property in port_cfg]
+        return len(port_properties) == 0
+
+    def _update_vlan_state(self, switch, port, state):
+        self._vlan_states.setdefault(switch, {})[port] = state
+
+    def _initialize_host_ports(self):
         if not self._structural_faucet_config:
             raise Exception('Structural faucet configuration not provided')
 
         behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
 
-        if not self._config.unauthenticated_vlan:
-            raise Exception('Unauthenticated vlan is not configured')
-
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if 'stack' in port_map or 'lacp' in port_map or 'output_only' in port_map:
+                if not self._is_access_port(port_map):
                     continue
-                port_map['native_vlan'] = self._config.unauthenticated_vlan
+                if self._config.unauthenticated_vlan:
+                    port_map['native_vlan'] = self._config.unauthenticated_vlan
+                    self._update_vlan_state(switch, port, DVAState.unauthenticated)
+                if self._config.tail_acl:
+                    port_map['acls_in'] = [self._config.tail_acl]
 
-        devices = {**self._dynamic_devices, **self._static_devices}
-        for mac, device in devices.items():
-            if device.placement.switch and device.behavior.segment:
-                switch_cfg = behavioral_faucet_config.get('dps', {}).get(
-                    device.placement.switch, {})
-                port_cfg = switch_cfg.get('interfaces', {}).get(device.placement.port)
+        return behavioral_faucet_config
 
-                if not port_cfg:
-                    LOGGER.warning('Switch or port not defined in faucet config: %s, %s',
-                                   device.placement.switch, device.placement.port)
-                    continue
+    def _faucetize(self):
+        behavioral_faucet_config = self._initialize_host_ports()
 
-                vid = self._segments_to_vlans.get(device.behavior.segment)
-                if not vid:
-                    LOGGER.warning('Device segment does not have a matching vlan: %s, %s',
-                                   mac, device.behavior.segment)
-                    continue
+        # static information of a device should overwrite the corresponding dynamic one
+        device_placements = {**self._dynamic_devices.device_mac_placements,
+                             **self._static_devices.device_mac_placements}
+        device_behaviors = {**self._dynamic_devices.device_mac_behaviors,
+                            **self._static_devices.device_mac_behaviors}
+        for mac, device_placement in device_placements.items():
+            device_behavior = device_behaviors.get(mac)
+            if not device_behavior:
+                continue
 
-                port_cfg['native_vlan'] = vid
-                if device.behavior.role:
-                    port_cfg['acls_in'] = [f'role_{device.behavior.role}', 'tail_acl']
-                else:
-                    port_cfg['acls_in'] = ['tail_acl']
+            switch_cfg = behavioral_faucet_config.get('dps', {}).get(device_placement.switch, {})
+            port_cfg = switch_cfg.get('interfaces', {}).get(device_placement.port)
+
+            if not port_cfg:
+                LOGGER.warning('Switch or port not defined in faucet config for MAC %s: %s, %s',
+                               mac, device_placement.switch, device_placement.port)
+                continue
+
+            vid = self._segments_to_vlans.get(device_behavior.segment)
+            if not vid:
+                LOGGER.warning('Device segment does not have a matching vlan: %s, %s',
+                               mac, device_behavior.segment)
+                continue
+
+            port_cfg['native_vlan'] = vid
+            if device_behavior.role:
+                port_cfg['acls_in'] = [f'role_{device_behavior.role}']
+            if self._config.tail_acl:
+                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
+
+            dva_state = (DVAState.static if mac in self._static_devices.device_mac_behaviors
+                         else DVAState.dynamic)
+            self._update_vlan_state(
+                device_placement.switch, device_placement.port, dva_state)
 
         behavioral_faucet_config['include'] = self._behavioral_include
 
@@ -193,6 +225,10 @@ class Faucetizer:
         """Return structural config"""
         with self._lock:
             return self._structural_faucet_config
+
+    def get_dva_state(self, switch, port):
+        """Get DVA state"""
+        return self._vlan_states.get(switch, {}).get(port)
 
 
 def load_devices_state(file):
