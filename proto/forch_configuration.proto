@@ -60,6 +60,9 @@ message OrchestrationConfig {
   // VLAN for unauthenticated devices
   int32 unauthenticated_vlan = 8;
 
+  // Name of the optional tail ACL to add to host ports
+  string tail_acl = 9;
+
   // behavioral config file name
   string behavioral_config_file = 2;
 
@@ -139,6 +142,9 @@ message ProcessConfig {
 
     // count of instances of a target process
     int32 count = 2;
+
+    // CPU percent threshold
+    float cpu_percent_threshold = 3;
   }
 
   // Connection

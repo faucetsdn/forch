@@ -6,3 +6,21 @@
     Reply-Message = "welcome-infra-ap",
     Session-Timeout = 3600,
     Termination-Action = RADIUS-Request
+
+9a-02-57-1e-8f-02
+    Tunnel-Type = VLAN,
+    Tunnel-Medium-Type = IEEE-802,
+    Tunnel-Private-Group-Id = "BOS",
+    Tunnel-Assignment-Id = "green",
+    Reply-Message = "welcome-infra-ap",
+    Session-Timeout = 3600,
+    Termination-Action = RADIUS-Request
+
+9a-02-57-1e-8f-01
+    Tunnel-Type = VLAN,
+    Tunnel-Medium-Type = IEEE-802,
+    Tunnel-Private-Group-Id = "BOS",
+    Tunnel-Assignment-Id = "blue",
+    Reply-Message = "welcome-infra-ap",
+    Session-Timeout = 3600,
+    Termination-Action = RADIUS-Request
