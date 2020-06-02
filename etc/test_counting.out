@@ -1,0 +1,35 @@
+testing/test_counting
+Starting dva-initial tests
+"allow ICMP"
+0
+"arp"
+0
+"allow ICMP"
+0
+"arp"
+0
+"allow ICMP"
+0
+"arp"
+0
+"deny ICMP"
+0
+"arp"
+0
+Starting dva-basic tests
+"allow ICMP"
+5
+"arp"
+3
+"allow ICMP"
+0
+"arp"
+6
+"allow ICMP"
+5
+"arp"
+2
+"deny ICMP"
+5
+"arp"
+1

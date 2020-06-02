@@ -24,4 +24,5 @@ env:
     - TEST_SET=base SKIP_INSTALL=true SKIP_STACK=true
     - TEST_SET=reconfig
     - TEST_SET=solo SKIP_STACK=true
+    - TEST_SET=counting SKIP_STACK=true
     - TEST_SET=stack
