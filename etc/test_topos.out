@@ -3,7 +3,7 @@ testing/test_topos
 Version from varz matches forch version.
 5 received
 Radius results 1 0
-Starting dva-initial tests
+Starting counting-initial tests
 "allow ICMP"
 0
 "arp"
@@ -20,7 +20,7 @@ Starting dva-initial tests
 0
 "arp"
 0
-Starting dva-basic tests
+Starting counting-basic tests
 "allow ICMP"
 5
 "arp"

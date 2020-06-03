@@ -7,7 +7,7 @@ preamble_setup
 export CONTROLLER_NAME=127.0.0.1
 
 function test_counting {
-    fdesc=dva-$1
+    fdesc=counting-$1
     fout_dir=$OUT_DIR/$fdesc
     mkdir -p $fout_dir
 
