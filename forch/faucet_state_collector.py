@@ -871,6 +871,12 @@ class FaucetStateCollector:
     def process_port_state(self, timestamp, name, port, state):
         """process port state event"""
         with self.lock:
+            switch_config = self.faucet_config.get(name)
+            if not switch_config:
+                raise Exception('Switch %s is not in faucet config', name)
+            if port not in switch_config.interfaces:
+                raise Exception('Port %s is not in switch config %s', port, name)
+
             port_table = self.switch_states\
                 .setdefault(name, {})\
                 .setdefault(PORTS, {})\
@@ -879,6 +885,8 @@ class FaucetStateCollector:
             port_table[PORT_STATE_UP] = state
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
+
+            LOGGER.info('port_state update %s %s %s', name, port, state)
 
     def process_port_change(self, event):
         """Wrapper for process_port_state"""
