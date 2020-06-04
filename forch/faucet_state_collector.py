@@ -871,11 +871,10 @@ class FaucetStateCollector:
     def process_port_state(self, timestamp, name, port, state):
         """process port state event"""
         with self.lock:
-            switch_config = self.faucet_config.get(name)
-            if not switch_config:
-                raise Exception('Switch %s is not in faucet config', name)
-            if port not in switch_config.interfaces:
-                raise Exception('Port %s is not in switch config %s', port, name)
+            switch_config = self.faucet_config.get(DPS_CFG, {}).get(name)
+            assert switch_config, 'Switch %s is not in faucet config' % name
+            port_config = switch_config.interfaces.get(port)
+            assert port_config, 'Port %d is not in switch config %s' % (port, name)
 
             port_table = self.switch_states\
                 .setdefault(name, {})\
