@@ -10,6 +10,7 @@ site:
 orchestration:
   structural_config_file: faucet_structural.yaml
   unauthenticated_vlan: 100
+  tail_acl: tail_acl
   static_device_placement: placement.yaml
   static_device_behavior: behaviors.yaml
   auth_config:
@@ -22,6 +23,14 @@ orchestration:
     query_timeout_sec: 15
     reject_timeout_sec: 360
     auth_timeout_sec: 3559
+proxy_server:
+  targets:
+    faucet:
+      port: 8001
+    forch:
+      port: 8302
+    gauge:
+      port: 9001
 process:
   scan_interval_sec: 10
   processes:

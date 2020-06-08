@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\x93\n\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x12\x34\n\x0b\x63onnections\x18\x08 \x01(\x0b\x32\x1f.ProcessState.ConnectionSummary\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xa3\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x30\n\x0ememory_info_mb\x18\t \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x1a\x89\x02\n\x11\x43onnectionSummary\x12\r\n\x05state\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x44\n\x0blocal_ports\x18\x06 \x03(\x0b\x32/.ProcessState.ConnectionSummary.LocalPortsEntry\x1aO\n\x0fLocalPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ConnectionInfo:\x02\x38\x01\x1a\xcd\x01\n\x0e\x43onnectionInfo\x12\x15\n\rprocess_entry\x18\x01 \x01(\t\x12M\n\x11\x66oreign_addresses\x18\x02 \x03(\x0b\x32\x32.ProcessState.ConnectionInfo.ForeignAddressesEntry\x1aU\n\x15\x46oreignAddressesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ForeignAddress:\x02\x38\x01\x1a%\n\x0e\x46oreignAddress\x12\x13\n\x0b\x65stablished\x18\x01 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xa8\n\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x12\x34\n\x0b\x63onnections\x18\x08 \x01(\x0b\x32\x1f.ProcessState.ConnectionSummary\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xb8\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x13\n\x0b\x63pu_percent\x18\t \x01(\x02\x12\x30\n\x0ememory_info_mb\x18\n \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x1a\x89\x02\n\x11\x43onnectionSummary\x12\r\n\x05state\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x44\n\x0blocal_ports\x18\x06 \x03(\x0b\x32/.ProcessState.ConnectionSummary.LocalPortsEntry\x1aO\n\x0fLocalPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ConnectionInfo:\x02\x38\x01\x1a\xcd\x01\n\x0e\x43onnectionInfo\x12\x15\n\rprocess_entry\x18\x01 \x01(\t\x12M\n\x11\x66oreign_addresses\x18\x02 \x03(\x0b\x32\x32.ProcessState.ConnectionInfo.ForeignAddressesEntry\x1aU\n\x15\x46oreignAddressesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ForeignAddress:\x02\x38\x01\x1a%\n\x0e\x46oreignAddress\x12\x13\n\x0b\x65stablished\x18\x01 \x01(\tb\x06proto3')
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -128,8 +128,15 @@ _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='memory_info_mb', full_name='ProcessState.ProcessData.memory_info_mb', index=8,
-      number=9, type=11, cpp_type=10, label=1,
+      name='cpu_percent', full_name='ProcessState.ProcessData.cpu_percent', index=8,
+      number=9, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='memory_info_mb', full_name='ProcessState.ProcessData.memory_info_mb', index=9,
+      number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -147,7 +154,7 @@ _PROCESSSTATE_PROCESSDATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=468,
-  serialized_end=759,
+  serialized_end=780,
 )
 
 _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
@@ -190,8 +197,8 @@ _PROCESSSTATE_CPUTIME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=761,
-  serialized_end=816,
+  serialized_start=782,
+  serialized_end=837,
 )
 
 _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
@@ -227,8 +234,8 @@ _PROCESSSTATE_MEMORYINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=818,
-  serialized_end=856,
+  serialized_start=839,
+  serialized_end=877,
 )
 
 _PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY = _descriptor.Descriptor(
@@ -264,8 +271,8 @@ _PROCESSSTATE_CONNECTIONSUMMARY_LOCALPORTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1045,
-  serialized_end=1124,
+  serialized_start=1066,
+  serialized_end=1145,
 )
 
 _PROCESSSTATE_CONNECTIONSUMMARY = _descriptor.Descriptor(
@@ -329,8 +336,8 @@ _PROCESSSTATE_CONNECTIONSUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=859,
-  serialized_end=1124,
+  serialized_start=880,
+  serialized_end=1145,
 )
 
 _PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY = _descriptor.Descriptor(
@@ -366,8 +373,8 @@ _PROCESSSTATE_CONNECTIONINFO_FOREIGNADDRESSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1247,
-  serialized_end=1332,
+  serialized_start=1268,
+  serialized_end=1353,
 )
 
 _PROCESSSTATE_CONNECTIONINFO = _descriptor.Descriptor(
@@ -403,8 +410,8 @@ _PROCESSSTATE_CONNECTIONINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1127,
-  serialized_end=1332,
+  serialized_start=1148,
+  serialized_end=1353,
 )
 
 _PROCESSSTATE_FOREIGNADDRESS = _descriptor.Descriptor(
@@ -433,8 +440,8 @@ _PROCESSSTATE_FOREIGNADDRESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1334,
-  serialized_end=1371,
+  serialized_start=1355,
+  serialized_end=1392,
 )
 
 _PROCESSSTATE = _descriptor.Descriptor(
@@ -513,7 +520,7 @@ _PROCESSSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=72,
-  serialized_end=1371,
+  serialized_end=1392,
 )
 
 _PROCESSSTATE_PROCESSESENTRY.fields_by_name['value'].message_type = _PROCESSSTATE_PROCESSDATA

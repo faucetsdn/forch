@@ -527,6 +527,18 @@
                 </li>
               
                 <li>
+                  <a href="#ProxyServerConfig"><span class="badge">M</span>ProxyServerConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyServerConfig.TargetsEntry"><span class="badge">M</span>ProxyServerConfig.TargetsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#ProxyTarget"><span class="badge">M</span>ProxyTarget</a>
+                </li>
+              
+                <li>
                   <a href="#SiteConfig"><span class="badge">M</span>SiteConfig</a>
                 </li>
               
@@ -582,6 +594,10 @@
               
                 <li>
                   <a href="#HostList.HostData"><span class="badge">M</span>HostList.HostData</a>
+                </li>
+              
+                <li>
+                  <a href="#HostList.RadiusResult"><span class="badge">M</span>HostList.RadiusResult</a>
                 </li>
               
               
@@ -662,6 +678,10 @@
             <ul>
               
                 <li>
+                  <a href="#DVAState"><span class="badge">M</span>DVAState</a>
+                </li>
+              
+                <li>
                   <a href="#LacpState"><span class="badge">M</span>LacpState</a>
                 </li>
               
@@ -669,6 +689,10 @@
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
+              
+                <li>
+                  <a href="#DVAState.State"><span class="badge">E</span>DVAState.State</a>
+                </li>
               
                 <li>
                   <a href="#LacpState.LacpState"><span class="badge">E</span>LacpState.LacpState</a>
@@ -3084,6 +3108,13 @@
                   <td><p>configuration for varz interface </p></td>
                 </tr>
               
+                <tr>
+                  <td>proxy_server</td>
+                  <td><a href="#ProxyServerConfig">ProxyServerConfig</a></td>
+                  <td></td>
+                  <td><p>configuration for port proxy server </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3137,6 +3168,13 @@
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>VLAN for unauthenticated devices </p></td>
+                </tr>
+              
+                <tr>
+                  <td>tail_acl</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Name of the optional tail ACL to add to host ports </p></td>
                 </tr>
               
                 <tr>
@@ -3279,6 +3317,13 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><p>Shell command to get RADIUS secret. Can be as simple as &#39;echo <secret>&#39; </p></td>
                 </tr>
               
+                <tr>
+                  <td>source_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Port to listen on for RADIUS responses </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3410,6 +3455,13 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><p>count of instances of a target process </p></td>
                 </tr>
               
+                <tr>
+                  <td>cpu_percent_threshold</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>CPU percent threshold </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3439,6 +3491,92 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><a href="#ProcessConfig.Process">ProcessConfig.Process</a></td>
                   <td></td>
                   <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyServerConfig">ProxyServerConfig</h3>
+        <p>Proxy server config</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>proxy_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port number for proxy server </p></td>
+                </tr>
+              
+                <tr>
+                  <td>targets</td>
+                  <td><a href="#ProxyServerConfig.TargetsEntry">ProxyServerConfig.TargetsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>map of targets with path prefix as key </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyServerConfig.TargetsEntry">ProxyServerConfig.TargetsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#ProxyTarget">ProxyTarget</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ProxyTarget">ProxyTarget</h3>
+        <p>Proxy targets</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port number for target </p></td>
                 </tr>
               
             </tbody>
@@ -3555,7 +3693,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td>varz_port</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>port number to curl for varz list </p></td>
+                  <td><p>port number for forch varz </p></td>
                 </tr>
               
             </tbody>
@@ -3784,6 +3922,13 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
+                  <td>dva_state</td>
+                  <td><a href="#DVAState.State">DVAState.State</a></td>
+                  <td></td>
+                  <td><p>DVA state </p></td>
+                </tr>
+              
+                <tr>
                   <td>acls</td>
                   <td><a href="#ACLState">ACLState</a></td>
                   <td>repeated</td>
@@ -3796,6 +3941,51 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td></td>
                   <td><p>link to list_hosts API to list possible destinations
 or to host_path API to list path </p></td>
+                </tr>
+              
+                <tr>
+                  <td>radius_result</td>
+                  <td><a href="#HostList.RadiusResult">HostList.RadiusResult</a></td>
+                  <td></td>
+                  <td><p>RADIUS result for host if applicable </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="HostList.RadiusResult">HostList.RadiusResult</h3>
+        <p>RADIUS result for host</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>access</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>RADIUS access accept/reject </p></td>
+                </tr>
+              
+                <tr>
+                  <td>segment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Segment in RADIUS result </p></td>
+                </tr>
+              
+                <tr>
+                  <td>role</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Role in RADIUS result </p></td>
                 </tr>
               
             </tbody>
@@ -4256,6 +4446,13 @@ or to host_path API to list path </p></td>
                 </tr>
               
                 <tr>
+                  <td>cpu_percent</td>
+                  <td><a href="#float">float</a></td>
+                  <td></td>
+                  <td><p>CPU percent </p></td>
+                </tr>
+              
+                <tr>
                   <td>memory_info_mb</td>
                   <td><a href="#ProcessState.MemoryInfo">ProcessState.MemoryInfo</a></td>
                   <td></td>
@@ -4314,6 +4511,13 @@ or to host_path API to list path </p></td>
       <p>constants</p>
 
       
+        <h3 id="DVAState">DVAState</h3>
+        <p>DVA State</p>
+
+        
+
+        
+      
         <h3 id="LacpState">LacpState</h3>
         <p>LACP States</p>
 
@@ -4329,6 +4533,41 @@ or to host_path API to list path </p></td>
         
       
 
+      
+        <h3 id="DVAState.State">DVAState.State</h3>
+        <p>Enumeration of DVA states</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>initial</td>
+                <td>0</td>
+                <td><p>unassigned</p></td>
+              </tr>
+            
+              <tr>
+                <td>unauthenticated</td>
+                <td>1</td>
+                <td><p>unauthenticated</p></td>
+              </tr>
+            
+              <tr>
+                <td>static</td>
+                <td>2</td>
+                <td><p>static</p></td>
+              </tr>
+            
+              <tr>
+                <td>dynamic</td>
+                <td>3</td>
+                <td><p>authenticated</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
       
         <h3 id="LacpState.LacpState">LacpState.LacpState</h3>
         <p>Enumeration of LACP states</p>
@@ -4587,6 +4826,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>native VLAN </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dva_state</td>
+                  <td><a href="#DVAState.State">DVAState.State</a></td>
+                  <td></td>
+                  <td><p>DVA state </p></td>
                 </tr>
               
                 <tr>

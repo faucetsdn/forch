@@ -28,11 +28,13 @@ class Authenticator:
                  radius_query_object=None, metrics=None):
         self.radius_query = None
         self.sessions = {}
+        self._sessions_lock = threading.Lock()
         self.auth_callback = auth_callback
         self._metrics = metrics
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
+        source_port = radius_info.source_port
         if radius_info.radius_secret_helper:
             secret = os.popen(radius_info.radius_secret_helper).read().strip()
         else:
@@ -43,8 +45,8 @@ class Authenticator:
                            radius_ip, radius_port, bool(secret))
             raise ConfigError
         Socket = collections.namedtuple(
-            'Socket', 'listen_ip, listen_port, server_ip, server_port')
-        socket_info = Socket('0.0.0.0', radius_port, radius_ip, radius_port)
+            'Socket', 'source_ip, source_port, server_ip, server_port')
+        socket_info = Socket('0.0.0.0', source_port, radius_ip, radius_port)
         if radius_query_object:
             self.radius_query = radius_query_object
         else:
@@ -88,16 +90,17 @@ class Authenticator:
         """Process device placement info and initiate mab query"""
         portid_hash = ((device_placement.switch + str(device_placement.port)).encode('utf-8')).hex()
         port_id = int(portid_hash[:6], 16)
-        if src_mac not in self.sessions:
-            self.sessions[src_mac] = AuthStateMachine(
-                src_mac, port_id, self.auth_config,
-                self.radius_query.send_mab_request,
-                self.process_session_result, metrics=self._metrics)
-        if device_placement.connected:
-            self.sessions[src_mac].host_learned()
-        else:
-            self.sessions[src_mac].host_expired()
-            self.sessions.pop(src_mac)
+        with self._sessions_lock:
+            if src_mac not in self.sessions:
+                self.sessions[src_mac] = AuthStateMachine(
+                    src_mac, port_id, self.auth_config,
+                    self.radius_query.send_mab_request,
+                    self.process_session_result, metrics=self._metrics)
+                if device_placement.connected:
+                    self.sessions[src_mac].host_learned()
+            elif not device_placement.connected:
+                self.sessions[src_mac].host_expired()
+                self.sessions.pop(src_mac)
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
@@ -110,20 +113,22 @@ class Authenticator:
         if src_mac not in self.sessions:
             LOGGER.warning("Session doesn't exist for src_mac:%s", src_mac)
             return
-        if code == radius_query.ACCEPT:
-            self.sessions[src_mac].received_radius_accept(segment, role)
-        else:
-            self.sessions[src_mac].received_radius_reject()
+        with self._sessions_lock:
+            if code == radius_query.ACCEPT:
+                self.sessions[src_mac].received_radius_accept(segment, role)
+            else:
+                self.sessions[src_mac].received_radius_reject()
 
-    def process_session_result(self, src_mac, segment=None, role=None):
+    def process_session_result(self, src_mac, access, segment=None, role=None):
         """Process session result"""
         if self.auth_callback:
-            self.auth_callback(src_mac, segment, role)
+            self.auth_callback(src_mac, access, segment, role)
 
     def handle_sm_timeout(self):
         """Call timeout handlers for all active session state machines"""
-        for session in self.sessions.values():
-            session.handle_sm_timer()
+        with self._sessions_lock:
+            for session in self.sessions.values():
+                session.handle_sm_timer()
 
 
 def parse_args(raw_args):
@@ -132,7 +137,9 @@ def parse_args(raw_args):
     parser.add_argument('-s', '--server-ip', type=str, default='0.0.0.0',
                         help='RADIUS server ip')
     parser.add_argument('-p', '--server-port', type=int, default=1812,
-                        help='Server port that freeradius is listening on')
+                        help='Server port that remote radius server is listening on')
+    parser.add_argument('-l', '--source-port', type=int, default=0,
+                        help='Port to listen on for RADIUS responses')
     parser.add_argument('-r', '--radius-secret', type=str, default='echo SECRET',
                         help='Command that prints RADIUS server secret')
     parser.add_argument('-m', '--src_mac', type=str, default='8e:00:00:00:01:02',
@@ -166,11 +173,12 @@ if __name__ == '__main__':
 
     EXPECTED_MAB_RESULT = {}
 
-    def mock_auth_callback(src_mac, segment, role):
+    def mock_auth_callback(src_mac, access, segment, role):
         """Mocks auth callback passed to Authenticator"""
         mab_result = EXPECTED_MAB_RESULT.get(src_mac, {})
         assert mab_result.get('segment') == segment and mab_result.get('role') == role
-        sys.stdout.write('auth_callback for %s: segment:%s role:%s\n' % (src_mac, segment, role))
+        sys.stdout.write('auth_callback for %s: access:%s segment:%s role:%s\n'
+                         % (src_mac, access, segment, role))
 
     configure_logging()
     ARGS = parse_args(sys.argv[1:])
@@ -179,19 +187,21 @@ if __name__ == '__main__':
             'radius_info': {
                 'server_ip': ARGS.server_ip,
                 'server_port': ARGS.server_port,
+                'source_port': ARGS.source_port,
                 'radius_secret_helper':  f'echo {ARGS.radius_secret}'
             }
         },
         OrchestrationConfig.AuthConfig
     )
     MOCK_RADIUS_QUERY = MockRadiusQuery()
-    AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
 
     if ARGS.mab:
         AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback)
         AUTHENTICATOR.do_mab_request(ARGS.src_mac, ARGS.port_id)
+        input('Press any key to exit.')
     else:
         # test radius query call for device placement
+        AUTHENTICATOR = Authenticator(AUTH_CONFIG, mock_auth_callback, MOCK_RADIUS_QUERY)
         TEST_MAC = '00:aa:bb:cc:dd:ee'
         DEV_PLACEMENT = DevicePlacement(switch='t2s2', port=1, connected=True)
         AUTHENTICATOR.process_device_placement(TEST_MAC, DEV_PLACEMENT)

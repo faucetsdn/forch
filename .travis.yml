@@ -21,7 +21,7 @@ script:
 env:
   matrix:
     - TEST_SET=access CONN_CHECK=skip-conn-check MODE=dva
-    - TEST_SET=topology SKIP_INSTALL=true SKIP_STACK=true
+    - TEST_SET=base SKIP_INSTALL=true SKIP_STACK=true
     - TEST_SET=reconfig
-    - TEST_SET=solo SKIP_STACK=true
+    - TEST_SET=topos SKIP_STACK=true
     - TEST_SET=stack

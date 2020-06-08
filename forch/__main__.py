@@ -14,15 +14,17 @@ from forch.utils import configure_logging, yaml_proto
 
 from forch.__version__ import __version__
 
-LOGGER = logging.getLogger('forch')
+LOGGER = logging.getLogger('main')
 
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
+_LOG_LEVEL_DEFAULT = 'INFO'
 
 
 def load_config():
     """Load configuration from the configuration file"""
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
-    config_path = os.path.join(config_root, _FORCH_CONFIG_DEFAULT)
+    config_file = os.getenv('FORCH_CONFIG_FILE', _FORCH_CONFIG_DEFAULT)
+    config_path = os.path.join(config_root, config_file)
     LOGGER.info('Reading config file %s', os.path.abspath(config_path))
     try:
         return yaml_proto(config_path, ForchConfig)
@@ -38,7 +40,8 @@ def show_error(error, path, params):
 
 def run_forchestrator():
     """main function to start forch"""
-    configure_logging()
+    log_level_str = os.getenv('LOG_LEVEL', _LOG_LEVEL_DEFAULT)
+    configure_logging(level=log_level_str)
 
     config = load_config()
     if not config:

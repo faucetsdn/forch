@@ -19,11 +19,12 @@ from forch.cpn_state_collector import CPNStateCollector
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
+from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 import forch.varz_state_collector as varz_state_collector
 
-from forch.utils import yaml_proto
+from forch.utils import proto_dict, yaml_proto
 
 from forch.__version__ import __version__
 
@@ -93,6 +94,7 @@ class Forchestrator:
 
         self._config_summary = None
         self._metrics = None
+        self._proxy = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -100,6 +102,10 @@ class Forchestrator:
         self._metrics.start()
         self._faucet_collector = FaucetStateCollector(self._config.event_client)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
+        self._faucet_collector.set_get_dva_state(
+            (lambda switch, port:
+             self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
+        self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update)
 
@@ -128,6 +134,9 @@ class Forchestrator:
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
+        if str(self._config.proxy_server):
+            self._proxy = ForchProxy(self._config.proxy_server)
+            self._proxy.start()
 
         self._validate_config_files()
 
@@ -176,7 +185,7 @@ class Forchestrator:
         orch_config = self._config.orchestration
 
         behavioral_config_file = (orch_config.behavioral_config_file or
-                                  os.getenv('FAUCET_CONFIG') or
+                                  os.getenv('FAUCET_CONFIG_FILE') or
                                   _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
@@ -251,8 +260,9 @@ class Forchestrator:
         if self._faucetizer:
             self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
-    def handle_auth_result(self, mac, segment, role):
+    def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
+        self._faucet_collector.update_radius_result(mac, access, segment, role)
         device_behavior = DeviceBehavior(segment=segment, role=role)
         self._process_device_behavior(mac, device_behavior)
 
@@ -329,7 +339,7 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._process_faucet_event()
+                self._faucet_events.next_event(blocking=True)
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
@@ -360,13 +370,8 @@ class Forchestrator:
             self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
-
-    def _process_faucet_event(self):
-        try:
-            event = self._faucet_events.next_event(blocking=True)
-        except Exception as e:
-            LOGGER.warning('While processing event %s exception: %s', event, str(e))
-            raise e
+        if self._proxy:
+            self._proxy.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
@@ -552,16 +557,19 @@ class Forchestrator:
             return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
-            raise e
+            raise
 
     def _validate_config(self, config):
         warnings = []
+        faucet_dp_macs = set()
         for dp_name, dp_obj in config['dps'].items():
             if 'interface_ranges' in dp_obj:
                 raise Exception(
                     'Forch does not support parameter \'interface_ranges\' in faucet config')
-            if 'faucet_dp_mac' in dp_obj:
-                warnings.append((dp_name, 'faucet_dp_mac defined'))
+            if 'faucet_dp_mac' not in dp_obj:
+                warnings.append((dp_name, 'faucet_dp_mac not defined'))
+            else:
+                faucet_dp_macs.add(dp_obj['faucet_dp_mac'])
             for if_name, if_obj in dp_obj['interfaces'].items():
                 if_key = '%s:%02d' % (dp_name, int(if_name))
                 is_egress = 1 if 'lacp' in if_obj else 0
@@ -574,6 +582,9 @@ class Forchestrator:
                     warnings.append((if_key, 'deprecated loop_protect_external'))
                 if is_access and 'max_hosts' not in if_obj:
                     warnings.append((if_key, 'missing recommended max_hosts'))
+
+            if len(faucet_dp_macs) > 1:
+                warnings.append(('faucet_dp_mac', 'faucet_dp_mac for DPs are not identical'))
         return warnings
 
     def _populate_versions(self, versions):
@@ -644,10 +655,13 @@ class Forchestrator:
     def get_sys_config(self, path, params):
         """Get overall config from faucet config file"""
         try:
-            _, _, faucet_config = self._get_faucet_config()
+            _, _, behavioral_config = self._get_faucet_config()
             reply = {
-                'faucet': faucet_config
+                'faucet_behavioral': behavioral_config,
+                'forch': proto_dict(self._config)
             }
+            if self._faucetizer:
+                reply['faucet_structural'] = self._faucetizer.get_structural_config()
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"

@@ -4,7 +4,7 @@ import logging
 import os
 import yaml
 
-from google.protobuf import json_format
+from google.protobuf import json_format, text_format
 
 _LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
@@ -26,12 +26,12 @@ def get_log_path():
     return os.path.join(forch_log_dir, 'forch.log')
 
 
-def configure_logging():
+def configure_logging(level=logging.INFO):
     """Configure logging with some basic parameters"""
     logging.basicConfig(filename=get_log_path(),
                         format=_LOG_FORMAT,
                         datefmt=_LOG_DATE_FORMAT,
-                        level=logging.INFO)
+                        level=level)
 
 
 def yaml_proto(file_name, proto_func):
@@ -64,3 +64,8 @@ def proto_json(message):
 def dict_proto(message, proto_func, ignore_unknown_fields=False):
     """Convert a standard dict object to a proto object"""
     return json_format.ParseDict(message, proto_func(), ignore_unknown_fields)
+
+
+def str_proto(message_text, proto_func):
+    """Convert a string represented protobuf message to proto object"""
+    return text_format.Parse(message_text, proto_func())

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source bin/stack_functions
+
+preamble_setup
+
+export CONTROLLER_NAME=127.0.0.1
+
+
+echo Setting up OVS...
+add_br sw1 0x12345 6653
+add_faux sw1 2 1
+add_faux sw1 4 2
+
+sleep 5
+
+docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
+
+echo "Setting up Faucet and Forch..."
+bin/setup_solo
+
+VERSION=$(bin/forch --version --base inst/forch-faucet-solo | grep Forch | awk '{print $2}')
+VARZ_VERSION=$(wget 0.0.0.0:8080/forch -O- | grep forch_version_info | grep 1.0 | cut -d "\"" -f2 | cut -d "\"" -f1 )
+if [ "$VARZ_VERSION" = "$VERSION" ]; then
+    echo "Version from varz matches forch version." | tee -a $TEST_RESULTS
+else
+    echo "Varz Version mismatch." | tee -a $TEST_RESULTS
+fi;
+
+sleep 20
+
+docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
+
+validate_radius_varz
+

@@ -1,0 +1,17 @@
+device_mac_placements:
+  "9a:02:57:1e:8f:01":
+    switch: "nz-kiwi-t2sw1"
+    port: 1
+    connected: True
+  "9a:02:57:1e:8f:02":
+    switch: "nz-kiwi-t2sw1"
+    port: 2
+    connected: True
+  "9a:02:57:1e:8f:03":
+    switch: "nz-kiwi-t2sw2"
+    port: 1
+    connected: True
+  "9a:02:57:1e:8f:04":
+    switch: "nz-kiwi-t2sw2"
+    port: 2
+    connected: True

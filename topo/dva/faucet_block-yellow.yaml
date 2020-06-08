@@ -27,7 +27,6 @@ dps:
       28:
         description: egress
         lacp: 3
-        loop_protect_external: true
         tagged_vlans:
         - 100
         - 200
@@ -67,7 +66,6 @@ dps:
       28:
         description: egress
         lacp: 3
-        loop_protect_external: true
         tagged_vlans:
         - 100
     lacp_timeout: 5
@@ -89,182 +87,272 @@ dps:
         max_hosts: 1
         native_vlan: 200
       2:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       3:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       4:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       5:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       6:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       7:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       8:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       9:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       10:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       11:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       12:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       13:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       14:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       15:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       16:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       17:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       18:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       19:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       20:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       21:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       22:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       23:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       24:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       25:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       26:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       27:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       28:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       29:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       30:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       31:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       32:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       33:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       34:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       35:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       36:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       37:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       38:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       39:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       40:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       41:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       42:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       43:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       44:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       45:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       46:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
@@ -295,182 +383,272 @@ dps:
         max_hosts: 1
         native_vlan: 300
       2:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       3:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       4:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       5:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       6:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       7:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       8:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       9:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       10:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       11:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       12:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       13:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       14:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       15:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       16:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       17:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       18:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       19:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       20:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       21:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       22:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       23:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       24:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       25:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       26:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       27:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       28:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       29:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       30:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       31:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       32:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       33:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       34:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       35:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       36:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       37:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       38:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       39:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       40:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       41:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       42:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       43:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       44:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       45:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       46:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
@@ -501,182 +679,272 @@ dps:
         max_hosts: 1
         native_vlan: 300
       2:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       3:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       4:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       5:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       6:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       7:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       8:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       9:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       10:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       11:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       12:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       13:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       14:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       15:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       16:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       17:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       18:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       19:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       20:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       21:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       22:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       23:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       24:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       25:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       26:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       27:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       28:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       29:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       30:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       31:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       32:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       33:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       34:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       35:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       36:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       37:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       38:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       39:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       40:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       41:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       42:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       43:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       44:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       45:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
       46:
+        acls_in:
+        - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100

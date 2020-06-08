@@ -1,4 +1,4 @@
-bin/test_access
+testing/test_access
 %%% initial
 Starting access-initial test...
 %%% minimal-learning
@@ -12,18 +12,26 @@ Starting access-vlan-assigned test...
 9a:02:57:1e:8f:03
 Starting dva-vlan-assigned tests
 @sys_config dva-vlan-assigned
-200
+1
 "role_green"
 300
 "role_yellow"
 @switch_state dva-vlan-assigned
 200
+"static"
 "allow DHCP"
+"static"
 0
 300
+"dynamic"
 "deny ICMP"
 @list_hosts dva-vlan-assigned
 200
+"static"
 "allow ICMP"
 300
+"dynamic"
+"Authorized"
+"BOS"
+"yellow"
 0

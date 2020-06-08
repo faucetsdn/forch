@@ -252,13 +252,22 @@ function test_stack {
 
 function restart_forch {
     echo Killing any old instances of forch...
-    kill `ps ax | fgrep forch | fgrep -v fgrep | awk '{print $1}'`
-    kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
+    kill `ps ax | fgrep forch | fgrep -v fgrep | awk '{print $1}'` || true
+    kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'` || true
 
     rm -f $forch_log
     tail --retry -f $forch_log &
 
-    bin/forch --base inst/forch-faucet-1 2>&1 &
+    local inst=
+    if [ -n "$1" ]; then
+        inst=$1
+    else
+        inst=1
+    fi
+
+    local base="inst/forch-faucet-$inst"
+    echo Starting Forch with base $base
+    bin/forch --base $base 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
     sleep 20
@@ -400,6 +409,9 @@ function validate_radius_varz {
 
 function test_varz_value {
     varz=$1
-    value=$( printf "%.0f" $(wget 0.0.0.0:8302 -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+    port=$2
+    path=$3
+    query_path=0.0.0.0:$port/$path
+    value=$( printf "%.0f" $(wget $query_path -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
     echo $varz $value | tee -a $TEST_RESULTS
 }

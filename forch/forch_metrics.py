@@ -80,6 +80,9 @@ class ForchMetrics():
                       'No. of RADIUS query responses received from server', Counter)
         self._add_var('process_state', 'Current process state', Gauge, labels=['process'])
 
+        learned_l2_port_help_text = 'learned port of l2 entries'
+        learned_l2_port_labels = ['dp_name', 'eth_src', 'vid', 'ip']
+        self._add_var('learned_l2_port', learned_l2_port_help_text, Gauge, learned_l2_port_labels)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""

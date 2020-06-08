@@ -1,0 +1,31 @@
+#!/bin/bash -e
+
+source bin/stack_functions
+
+preamble_setup
+
+export FORCH_CONFIG_DIR=topo/dva
+export FAUCET_CONFIG_DIR=$OUT_DIR
+
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
+    PYTHON=venv/bin/python3
+else
+    PYTHON=python3
+fi
+
+function test_faucetizer {
+    test_case=$1
+    fc_file=faucet_structural.yaml
+    state_file=devices_$test_case.yaml
+    sample_file=faucet_$test_case.yaml
+    output_file=faucet_$test_case.yaml
+
+    $PYTHON -m forch.faucetizer -s $state_file -c $fc_file -o $output_file
+    echo Comparing $OUT_DIR/$output_file and $FORCH_CONFIG_DIR/$sample_file
+    (diff $OUT_DIR/$output_file $FORCH_CONFIG_DIR/$sample_file && echo 0 || echo 1) >> $TEST_RESULTS
+}
+
+$PYTHON -m forch.topology >> $TEST_RESULTS
+$PYTHON -m forch.authenticator >> $TEST_RESULTS
+
+test_faucetizer block-yellow

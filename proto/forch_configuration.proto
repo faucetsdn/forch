@@ -25,6 +25,9 @@ message ForchConfig {
 
   // configuration for varz interface
   VarzInterfaceConfig varz_interface = 6;
+
+  // configuration for port proxy server
+  ProxyServerConfig proxy_server = 7;
 }
 
 /*
@@ -56,6 +59,9 @@ message OrchestrationConfig {
 
   // VLAN for unauthenticated devices
   int32 unauthenticated_vlan = 8;
+
+  // Name of the optional tail ACL to add to host ports
+  string tail_acl = 9;
 
   // behavioral config file name
   string behavioral_config_file = 2;
@@ -107,6 +113,9 @@ message OrchestrationConfig {
 
     // Shell command to get RADIUS secret. Can be as simple as 'echo <secret>'
     string radius_secret_helper = 3;
+
+    // Port to listen on for RADIUS responses
+    int32 source_port = 4;
   }
 }
 
@@ -133,6 +142,9 @@ message ProcessConfig {
 
     // count of instances of a target process
     int32 count = 2;
+
+    // CPU percent threshold
+    float cpu_percent_threshold = 3;
   }
 
   // Connection
@@ -165,6 +177,25 @@ message EventClientConfig {
  * Varz interface section in Forch configuration
  */
 message VarzInterfaceConfig {
-  // port number to curl for varz list
+  // port number for forch varz
   int32 varz_port = 1;
+}
+
+/*
+ * Proxy server config
+ */
+message ProxyServerConfig {
+  // port number for proxy server
+  int32 proxy_port = 1;
+
+  // map of targets with path prefix as key
+  map<string, ProxyTarget> targets = 2;
+}
+
+/*
+ * Proxy targets
+ */
+message ProxyTarget {
+    // port number for target
+    int32 port = 1;
 }

@@ -37,14 +37,13 @@ class AuthStateMachine():
         self._reset_state_machine()
 
     def _increment_retries(self):
-        if self._retry_backoff < self._max_radius_backoff:
-            self._retry_backoff += 1
+        self._retry_backoff += 1
 
     def _state_transition(self, target, expected=None):
         if expected is not None:
             message = 'state was %s expected %s' % (self._current_state, expected)
             assert self._current_state == expected, message
-        LOGGER.info('Transition: %s -> %s', self._current_state, target)
+        LOGGER.debug('Transition for %s: %s -> %s', self.src_mac, self._current_state, target)
         self._current_state = target
 
     def _reset_state_machine(self):
@@ -66,42 +65,54 @@ class AuthStateMachine():
                 self._reset_state_machine()
             self._state_transition(self.REQUEST, self.UNAUTH)
             self._radius_query_callback(self.src_mac, self.port_id)
-            backoff_time = self._retry_backoff * self._query_timeout_sec
+            backoff = min(self._retry_backoff, self._max_radius_backoff)
+            backoff_time = backoff * self._query_timeout_sec
             self._current_timeout = time.time() + backoff_time
 
     def host_expired(self):
         """Host expired"""
         with self._transition_lock:
             self._reset_state_machine()
-            self._auth_callback(self.src_mac, None, None)
+            self._auth_callback(self.src_mac, self.UNAUTH, None, None)
 
     def received_radius_accept(self, segment, role):
         """Received RADIUS accept message"""
         with self._transition_lock:
+            if self._current_state != self.REQUEST:
+                LOGGER.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                return
             self._state_transition(self.ACCEPT, self.REQUEST)
             self._current_timeout = time.time() + self._auth_timeout_sec
             self._retry_backoff = 0
-            self._auth_callback(self.src_mac, segment, role)
+            self._auth_callback(self.src_mac, self.ACCEPT, segment, role)
 
     def received_radius_reject(self):
         """Received RADIUS reject message"""
         with self._transition_lock:
+            if self._current_state != self.REQUEST:
+                LOGGER.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                return
             self._state_transition(self.UNAUTH, self.REQUEST)
             self._current_timeout = time.time() + self._rej_timeout_sec
             self._retry_backoff = 0
-            self._auth_callback(self.src_mac, None, None)
+            self._auth_callback(self.src_mac, self.UNAUTH, None, None)
 
     def handle_sm_timer(self):
         """Handle timer timeout and check.trigger timeout behavior of states"""
         with self._transition_lock:
             if time.time() > self._current_timeout:
+                if self._retry_backoff:
+                    LOGGER.debug('Retrying RADIUS request for src_mac %s. Retry #%s',
+                                 self.src_mac, self._retry_backoff)
                 self._radius_query_callback(self.src_mac, self.port_id)
-                backoff_time = self._retry_backoff * self._query_timeout_sec
+                backoff = min(self._retry_backoff, self._max_radius_backoff)
+                backoff_time = backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
                     if self._metrics:
                         self._metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
+                    LOGGER.debug('RADIUS request timed out for %s', self.src_mac)
                 else:
                     self._state_transition(self.REQUEST)
-                    self._auth_callback(self.src_mac, None, None)
+                    self._auth_callback(self.src_mac, self.UNAUTH, None, None)

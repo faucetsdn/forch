@@ -67,3 +67,25 @@ message LacpState {
     noact = 5;
   }
 }
+
+/*
+ * DVA State
+ */
+message DVAState {
+  /*
+   * Enumeration of DVA states
+   */
+  enum State {
+    // unassigned
+    initial = 0;
+
+    // unauthenticated
+    unauthenticated = 1;
+
+    // static
+    static = 2;
+
+    // authenticated
+    dynamic = 3;
+  }
+}
