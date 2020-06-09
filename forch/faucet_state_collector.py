@@ -871,6 +871,11 @@ class FaucetStateCollector:
     def process_port_state(self, timestamp, name, port, state):
         """process port state event"""
         with self.lock:
+            switch_config = self.faucet_config.get(DPS_CFG, {}).get(name)
+            assert switch_config, 'Switch %s is not in faucet config' % name
+            port_config = switch_config.interfaces.get(port)
+            assert port_config, 'Port %d is not in switch config %s' % (port, name)
+
             port_table = self.switch_states\
                 .setdefault(name, {})\
                 .setdefault(PORTS, {})\
@@ -879,6 +884,8 @@ class FaucetStateCollector:
             port_table[PORT_STATE_UP] = state
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
+
+            LOGGER.info('port_state update %s %s %s', name, port, state)
 
     def process_port_change(self, event):
         """Wrapper for process_port_state"""
@@ -1116,8 +1123,8 @@ class FaucetStateCollector:
     def _update_learned_macs_metrics(self):
         for mac in self.learned_macs:
             switch, port = self._get_access_switch(mac)
-            if switch and port:
-                self._update_learned_macs_metric(mac, switch, port)
+            assert port and switch, 'Could not find access switch for mac %s' % mac
+            self._update_learned_macs_metric(mac, switch, port)
 
     def _update_learned_macs_metric(self, mac, switch_name, port, expire=False):
         if not self.faucet_config.get(DPS_CFG):
