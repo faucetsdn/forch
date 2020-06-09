@@ -28,6 +28,9 @@ message ForchConfig {
 
   // configuration for port proxy server
   ProxyServerConfig proxy_server = 7;
+
+  // configuration for switches monitoring
+  SwitchMonitoring switch_monitoring = 8;
 }
 
 /*
@@ -196,6 +199,14 @@ message ProxyServerConfig {
  * Proxy targets
  */
 message ProxyTarget {
-    // port number for target
-    int32 port = 1;
+  // port number for target
+  int32 port = 1;
+}
+
+/*
+ * Monitoring for switches
+ */
+message SwitchMonitoring {
+  // threshold for number of packets per second each switch forwards for each vlan
+  int32 vlan_packet_per_sec_threshold = 1;
 }

@@ -102,6 +102,11 @@ EGRESS_DETAIL = "egress_state_detail"
 EGRESS_LAST_CHANGE = "egress_state_last_change"
 EGRESS_CHANGE_COUNT = "egress_state_change_count"
 EGRESS_LINK_MAP = "links"
+VLAN_STATES = "vlan_states"
+PACKET_COUNTS = "packet_counts"
+PACKET_RATE_STATE = "packet_rate_state"
+
+VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 
 
 # pylint: disable=too-many-public-methods
@@ -124,7 +129,8 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
-        self._change_coalesce_sec = config.stack_topo_change_coalesce_sec
+        self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
+        self._packet_per_sec_threshold = config.switch_monitoring.vlan_packet_per_sec_threshold
 
     def set_active(self, active_state):
         """Set active state"""
@@ -137,7 +143,7 @@ class FaucetStateCollector:
             self._is_state_restored = is_restored
             self._state_restore_error = restore_error
 
-    def heartbeat_update(self):
+    def heartbeat_update_stack_state(self):
         """Check for any necessary periodic updates"""
         if not self._stack_state_data:
             return
@@ -151,6 +157,54 @@ class FaucetStateCollector:
             self._update_stack_topo_state_raw(*state_data)
         else:
             LOGGER.warning('stack_state_links update ignore %ds', event_delta)
+
+    def _get_packet_counts_from_metrics(self, get_metrics):
+        packet_count_metric = get_metrics([VLAN_PACKET_COUNT_METRIC]).get(VLAN_PACKET_COUNT_METRIC)
+        if not packet_count_metric:
+            logging.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
+            return
+
+        switch_vlan_counts = {}
+        for sample in packet_count_metric.samples:
+            switch_name = sample.labels['dp_name']
+            vlan = sample.labels['vlan']
+            vlan_id = int(vlan) if vlan else 0
+
+            vlan_count = switch_vlan_counts.setdefault(switch_name, {}).setdefault(vlan_id, 0)
+            switch_vlan_counts[switch_name][vlan_id] = vlan_count + int(sample.value)
+
+        return switch_vlan_counts
+
+    def _update_packet_count_states(self, switch_vlan_counts, interval):
+        for switch_name, vlan_counts in switch_vlan_counts.items():
+            for vlan_id, vlan_count in vlan_counts.items():
+                last_switch_map = self.switch_states.setdefault(switch_name, {})
+                last_vlan_map = last_switch_map.setdefault(VLAN_STATES, {}).setdefault(vlan_id, {})
+                last_vlan_count = last_vlan_map.get(PACKET_COUNTS)
+                last_vlan_map[PACKET_COUNTS] = vlan_count
+
+                if last_vlan_count is None:
+                    continue
+
+                rate = (vlan_count - last_vlan_count) / interval
+                if rate > self._packet_per_sec_threshold:
+                    LOGGER.error(
+                        'Packet per sec at switch %s for vlan %d is greater than'
+                        'threshold %d: %.2f',
+                        switch_name, vlan_id, self._packet_per_sec_threshold, rate)
+                    last_vlan_map[PACKET_RATE_STATE] = State.broken
+                else:
+                    last_vlan_map[PACKET_RATE_STATE] = State.healthy
+
+    def heartbeat_update_packet_count(self, interval, get_metrics):
+        """Evaluate packet count change rate for each switch and vlan"""
+        if not self._packet_per_sec_threshold:
+            return
+
+        switch_vlan_counts = self._get_packet_counts_from_metrics(get_metrics)
+
+        with self._lock:
+            self._update_packet_count_states(switch_vlan_counts, interval)
 
     def _make_summary(self, state, detail):
         summary = StateSummary()
@@ -515,6 +569,13 @@ class FaucetStateCollector:
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
                 self._fill_port_behavior(
                     switch_name, port_id, switch_port_map[port_id], metrics)
+
+        # filling packet rate
+        for vlan_id, vlan_states in switch_states.get(VLAN_STATES, {}).items():
+            packet_rate_state = vlan_states.get(PACKET_RATE_STATE)
+            if packet_rate_state:
+                vlan_map = switch_map.setdefault('vlans', {}).setdefault(vlan_id, {})
+                vlan_map['packet_rate_state'] = packet_rate_state
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
