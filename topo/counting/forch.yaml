@@ -1,0 +1,35 @@
+site:
+  name: nz-kiwi
+  controllers:
+    127.0.0.1:
+      fqdn: 127.0.0.1
+      port: 9019
+    nz-kiwi-ctl1:
+      fqdn: localhost.n
+      port: 9020
+orchestration:
+  structural_config_file: faucet_structural.yaml
+  unauthenticated_vlan: 100
+  tail_acl: tail_acl
+  static_device_placement: placement.yaml
+  static_device_behavior: behaviors.yaml
+proxy_server:
+  targets:
+    faucet:
+      port: 8001
+    forch:
+      port: 8302
+    gauge:
+      port: 9001
+process:
+  scan_interval_sec: 10
+  processes:
+    faucet:
+      regex: python.*ryu-manager.*faucet\.faucet
+      count: 2
+    gauge:
+      regex: python.*ryu-manager.*faucet\.gauge
+    forch:
+      regex: ^python.*forch$
+    sleep:
+      regex: "sleep 50\\.3231"
