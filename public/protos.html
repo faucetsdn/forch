@@ -551,6 +551,10 @@
                 </li>
               
                 <li>
+                  <a href="#SwitchMonitoring"><span class="badge">M</span>SwitchMonitoring</a>
+                </li>
+              
+                <li>
                   <a href="#VarzInterfaceConfig"><span class="badge">M</span>VarzInterfaceConfig</a>
                 </li>
               
@@ -3115,6 +3119,13 @@
                   <td><p>configuration for port proxy server </p></td>
                 </tr>
               
+                <tr>
+                  <td>switch_monitoring</td>
+                  <td><a href="#SwitchMonitoring">SwitchMonitoring</a></td>
+                  <td></td>
+                  <td><p>configuration for switches monitoring </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3670,6 +3681,30 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><a href="#SiteConfig.Controller">SiteConfig.Controller</a></td>
                   <td></td>
                   <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SwitchMonitoring">SwitchMonitoring</h3>
+        <p>Monitoring for switches</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>vlan_packet_per_sec_threshold</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>threshold for number of packets per second each switch forwards for each vlan </p></td>
                 </tr>
               
             </tbody>
@@ -5279,6 +5314,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#ACLState">ACLState</a></td>
                   <td>repeated</td>
                   <td><p>vlan acls states </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_rate_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>packet rate state </p></td>
                 </tr>
               
             </tbody>
