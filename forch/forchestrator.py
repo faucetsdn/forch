@@ -111,16 +111,9 @@ class Forchestrator:
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update_stack_state)
 
-        gauge_metrics_interval_sec = 10
-        get_gauge_metrics = (
-            lambda target_metrics:
-            varz_state_collector.retry_get_metrics(self._gauge_prom_endpoint, target_metrics))
-        heartbeat_update_packet_count = functools.partial(
-            self._faucet_collector.heartbeat_update_packet_count,
-            interval=gauge_metrics_interval_sec, get_metrics=get_gauge_metrics)
-        self._gauge_metrics_scheduler = HeartbeatScheduler(interval_sec=gauge_metrics_interval_sec)
-        self._gauge_metrics_scheduler.add_callback(heartbeat_update_packet_count)
-
+        gauge_metrics_interval_sec = self._config.dataplane_monitoring.pkt_rate_interval_sec
+        if gauge_metrics_interval_sec:
+            self._initialize_gauge_metrics_scheduler(gauge_metrics_interval_sec)
 
         self._local_collector = LocalStateCollector(
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
@@ -250,6 +243,17 @@ class Forchestrator:
                 os.path.dirname(self._structural_config_file))
             self._config_file_watcher.register_file_callback(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
+
+    def _initialize_gauge_metrics_scheduler(self, interval_sec):
+        get_gauge_metrics = (
+            lambda target_metrics:
+            varz_state_collector.retry_get_metrics(self._gauge_prom_endpoint, target_metrics))
+        heartbeat_update_packet_count = functools.partial(
+            self._faucet_collector.heartbeat_update_packet_count,
+            interval=interval_sec, get_metrics=get_gauge_metrics)
+        self._gauge_metrics_scheduler = HeartbeatScheduler(interval_sec=interval_sec)
+        self._gauge_metrics_scheduler.add_callback(heartbeat_update_packet_count)
+
 
     def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
         self._config_file_watcher.unregister_file_callbacks(old_acl_files)

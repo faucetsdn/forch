@@ -30,7 +30,7 @@ message ForchConfig {
   ProxyServerConfig proxy_server = 7;
 
   // configuration for switches monitoring
-  SwitchMonitoring switch_monitoring = 8;
+  DataplaneMonitoring dataplane_monitoring = 8;
 }
 
 /*
@@ -204,9 +204,12 @@ message ProxyTarget {
 }
 
 /*
- * Monitoring for switches
+ * Monitoring for dataplane
  */
-message SwitchMonitoring {
-  // threshold for number of packets per second each switch forwards for each vlan
-  int32 vlan_packet_per_sec_threshold = 1;
+message DataplaneMonitoring {
+  // vlan packet rate polling interval in seconds
+  int32 pkt_rate_interval_sec = 1;
+
+  // threshold of number of packets per second for each vlan; indexed by vlan
+  map<int32, int32> vlan_pkt_per_sec_thresholds = 2;
 }
