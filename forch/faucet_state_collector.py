@@ -192,7 +192,7 @@ class FaucetStateCollector:
 
     def heartbeat_update_packet_count(self, interval, get_metrics):
         """Evaluate packet count change rate for each switch and vlan"""
-        if not self._packet_per_sec_threshold:
+        if not self._packet_per_sec_thresholds:
             return
 
         packet_count_metric = get_metrics([VLAN_PACKET_COUNT_METRIC]).get(VLAN_PACKET_COUNT_METRIC)
