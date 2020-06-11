@@ -112,7 +112,7 @@ class Forchestrator:
         self._faucet_state_scheduler.add_callback(
             self._faucet_collector.heartbeat_update_stack_state)
 
-        gauge_metrics_interval_sec = self._config.dataplane_monitoring.pkt_rate_interval_sec
+        gauge_metrics_interval_sec = self._config.dataplane_monitoring.gauge_metrics_interval_sec
         if gauge_metrics_interval_sec:
             self._initialize_gauge_metrics_scheduler(gauge_metrics_interval_sec)
 

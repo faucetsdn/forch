@@ -48,10 +48,10 @@ function test_dva {
 
     api_result=$fout_dir/dataplane_state.json
     echo "@dataplane_state $fdesc" | tee -a $TEST_RESULTS
-    jq '.vlans."100".packet_rate_state' $api_result
-    jq '.vlans."200".packet_rate_state' $api_result
-    jq '.vlans."500".packet_rate_state' $api_result
-    jq '.vlans."4096".packet_rate_state' $api_result
+    jq '.vlans."100".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."200".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."500".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."4096".packet_rate_state' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/switch_state.json
     echo "@switch_state $fdesc" | tee -a $TEST_RESULTS
@@ -105,7 +105,8 @@ validate_radius_varz
 
 echo Waiting for RADIUS result
 sleep 65
-send_udp forch-faux-3 "192.168.1.1/68" 60 &
+send_udp forch-faux-3 "192.168.1.2/68" 60 &
+sudo tcpdump -ni faux-1 &
 sleep 10
 
 test_access vlan-assigned

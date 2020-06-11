@@ -103,6 +103,7 @@ EGRESS_LAST_CHANGE = "egress_state_last_change"
 EGRESS_CHANGE_COUNT = "egress_state_change_count"
 EGRESS_LINK_MAP = "links"
 VLAN_STATES = "vlan_states"
+VLANS = "vlans"
 PACKET_COUNTS = "packet_counts"
 PACKET_RATE_STATE = "packet_rate_state"
 
@@ -363,6 +364,11 @@ class FaucetStateCollector:
             state = State.broken
             detail.append("broken links: " + str(broken_links))
 
+        broken_vlans = self._get_broken_vlans(dplane_state)
+        if broken_vlans:
+            state = State.broken
+            detail.append('broken vlans: ' + str(broken_vlans))
+
         dplane_state['dataplane_state'] = state
         dplane_state['dataplane_state_detail'] = "; ".join(detail)
 
@@ -392,15 +398,15 @@ class FaucetStateCollector:
         change_counts.append(egress_state.get(EGRESS_CHANGE_COUNT, 0))
         last_change = max(last_change, egress_state.get(EGRESS_LAST_CHANGE, ''))
 
-        self._update_dataplane_detail(dplane_state)
-        dplane_state['dataplane_state_change_count'] = sum(change_counts)
-        dplane_state['dataplane_state_last_change'] = last_change
-
         vlan_states = {}
         for vlan_id, vlan_map in self.packet_counts.items():
             vlan_state = vlan_states.setdefault(vlan_id, {})
-            vlan_state['packet_rate_state'] = vlan_map.get(PACKET_RATE_STATE)
-        dplane_state['vlans'] = vlan_states
+            vlan_state[PACKET_RATE_STATE] = vlan_map.get(PACKET_RATE_STATE)
+        dplane_state[VLANS] = vlan_states
+
+        self._update_dataplane_detail(dplane_state)
+        dplane_state['dataplane_state_change_count'] = sum(change_counts)
+        dplane_state['dataplane_state_last_change'] = last_change
 
         LOGGER.info('dataplane_state_change_count sources: %s', change_counts)
 
@@ -422,6 +428,15 @@ class FaucetStateCollector:
                 broken_links.append(link)
         broken_links.sort()
         return broken_links
+
+    def _get_broken_vlans(self, dplane_state):
+        broken_vlans = []
+        vlan_states = dplane_state.get('vlans')
+        for vlan_id, vlan_state in vlan_states.items():
+            if vlan_state.get(PACKET_RATE_STATE) == State.broken:
+                broken_vlans.append(vlan_id)
+        broken_vlans.sort()
+        return broken_vlans
 
     @_pre_check()
     def get_switch_summary(self):

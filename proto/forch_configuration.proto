@@ -208,7 +208,7 @@ message ProxyTarget {
  */
 message DataplaneMonitoring {
   // vlan packet rate polling interval in seconds
-  int32 pkt_rate_interval_sec = 1;
+  int32 gauge_metrics_interval_sec = 1;
 
   // threshold of number of packets per second for each vlan; indexed by vlan
   map<int32, int32> vlan_pkt_per_sec_thresholds = 2;
