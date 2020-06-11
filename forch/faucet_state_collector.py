@@ -369,8 +369,7 @@ class FaucetStateCollector:
     @_pre_check()
     def get_dataplane_state(self):
         """get the topology state"""
-        with self._lock:
-            return self._get_dataplane_state()
+        return self._get_dataplane_state()
 
     def _get_dataplane_state(self):
         """get the topology state impl"""
