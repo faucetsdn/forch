@@ -109,7 +109,8 @@ class Forchestrator:
              self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
         self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
-        self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update_stack_state)
+        self._faucet_state_scheduler.add_callback(
+            self._faucet_collector.heartbeat_update_stack_state)
 
         gauge_metrics_interval_sec = self._config.dataplane_monitoring.pkt_rate_interval_sec
         if gauge_metrics_interval_sec:

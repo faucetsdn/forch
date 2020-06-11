@@ -46,9 +46,7 @@ process:
 dataplane_monitoring:
   pkt_rate_interval_sec: 10
   vlan_pkt_per_sec_thresholds:
-    0: 1
-    100: 1
-    200: 1
-    300: 1
-    400: 1
-    4096: 1
+    0: 20
+    100: 20
+    500: 1
+    4096: 2
