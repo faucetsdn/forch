@@ -44,7 +44,7 @@ process:
     sleep:
       regex: "sleep 50\\.3231"
 dataplane_monitoring:
-  pkt_rate_interval_sec: 10
+  gauge_metrics_interval_sec: 10
   vlan_pkt_per_sec_thresholds:
     0: 20
     100: 20
