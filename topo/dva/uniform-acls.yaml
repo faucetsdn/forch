@@ -7,7 +7,13 @@ acls:
         ipv4_dst: 192.168.1.254
         udp_dst: 67
         actions:
-           allow: True
+          allow: True
+    - rule:
+        description: allow ARP request
+        dl_type: 0x0806
+        eth_dst: "ff:ff:ff:ff:ff:ff"
+        actions:
+          allow: True
     - rule:
         description: deny all
         actions:
