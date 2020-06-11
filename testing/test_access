@@ -12,9 +12,16 @@ function send_udp {
     container=$1
     addr=$2
     count=$3
+    interval=
+    if [ -z "$4" ]; then
+        interval=1
+    else
+        interval=$4
+    fi
+
     for i in $(seq 1 $count); do
         docker exec $container bash -c "echo -n 'abc' > /dev/udp/$addr"
-        sleep 0.5
+        sleep $(interval)
     done
 }
 
@@ -105,8 +112,8 @@ validate_radius_varz
 
 echo Waiting for RADIUS result
 sleep 65
-send_udp forch-faux-3 "192.168.1.2/68" 60 &
-sudo tcpdump -ni faux-1 &
+send_udp forch-faux-3 "192.168.1.2/68" 60 0 &
+sudo tcpdump -ni faux-2 &
 sleep 10
 
 test_access vlan-assigned
