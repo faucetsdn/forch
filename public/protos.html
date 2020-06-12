@@ -349,6 +349,14 @@
                   <a href="#DataplaneState.SwitchStatus"><span class="badge">M</span>DataplaneState.SwitchStatus</a>
                 </li>
               
+                <li>
+                  <a href="#DataplaneState.VLANState"><span class="badge">M</span>DataplaneState.VLANState</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneState.VlansEntry"><span class="badge">M</span>DataplaneState.VlansEntry</a>
+                </li>
+              
               
               
               
@@ -481,6 +489,14 @@
           <li>
             <a href="#forch%2fproto%2fforch_configuration.proto">forch/proto/forch_configuration.proto</a>
             <ul>
+              
+                <li>
+                  <a href="#DataplaneMonitoring"><span class="badge">M</span>DataplaneMonitoring</a>
+                </li>
+              
+                <li>
+                  <a href="#DataplaneMonitoring.VlanPktPerSecThresholdsEntry"><span class="badge">M</span>DataplaneMonitoring.VlanPktPerSecThresholdsEntry</a>
+                </li>
               
                 <li>
                   <a href="#EventClientConfig"><span class="badge">M</span>EventClientConfig</a>
@@ -1628,6 +1644,13 @@
                 </tr>
               
                 <tr>
+                  <td>vlans</td>
+                  <td><a href="#DataplaneState.VlansEntry">DataplaneState.VlansEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>VLAN states indexed by VLAN ID </p></td>
+                </tr>
+              
+                <tr>
                   <td>dataplane_state</td>
                   <td><a href="#State.State">State.State</a></td>
                   <td></td>
@@ -1943,6 +1966,61 @@
                   <td><a href="#State.State">State.State</a></td>
                   <td></td>
                   <td><p>Switch status, active or down </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.VLANState">DataplaneState.VLANState</h3>
+        <p>VLAN state</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>packet_rate_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>packet rate state: unkown, healthy or broken </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneState.VlansEntry">DataplaneState.VlansEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#DataplaneState.VLANState">DataplaneState.VLANState</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -3025,6 +3103,68 @@
       <p>Encapsulating Forch configuration</p>
 
       
+        <h3 id="DataplaneMonitoring">DataplaneMonitoring</h3>
+        <p>Monitoring for dataplane</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>gauge_metrics_interval_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>vlan packet rate polling interval in seconds </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vlan_pkt_per_sec_thresholds</td>
+                  <td><a href="#DataplaneMonitoring.VlanPktPerSecThresholdsEntry">DataplaneMonitoring.VlanPktPerSecThresholdsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>threshold of number of packets per second for each vlan; indexed by vlan </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DataplaneMonitoring.VlanPktPerSecThresholdsEntry">DataplaneMonitoring.VlanPktPerSecThresholdsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="EventClientConfig">EventClientConfig</h3>
         <p>Event client section in Forch configuration</p>
 
@@ -3113,6 +3253,13 @@
                   <td><a href="#ProxyServerConfig">ProxyServerConfig</a></td>
                   <td></td>
                   <td><p>configuration for port proxy server </p></td>
+                </tr>
+              
+                <tr>
+                  <td>dataplane_monitoring</td>
+                  <td><a href="#DataplaneMonitoring">DataplaneMonitoring</a></td>
+                  <td></td>
+                  <td><p>configuration for switches monitoring </p></td>
                 </tr>
               
             </tbody>
@@ -5279,6 +5426,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#ACLState">ACLState</a></td>
                   <td>repeated</td>
                   <td><p>vlan acls states </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_rate_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>packet rate state </p></td>
                 </tr>
               
             </tbody>
