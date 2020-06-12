@@ -6,7 +6,8 @@ preamble_setup
 
 export CONTROLLER_NAME=127.0.0.1
 
-PROM_PT=8001
+FAUCET_VARZ_PORT=8001
+FORCH_VARZ_PORT=8302
 
 function send_udp {
     container=$1
@@ -23,7 +24,7 @@ function send_udp {
 function test_access {
     adesc=access-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
-    metrics=$(wget localhost:$PROM_PT -O- 2>/dev/null)
+    metrics=$(wget localhost:$FAUCET_VARZ_PORT -O- 2>/dev/null)
     grep 'nz-kiwi-t2sw1' <<< $metrics | grep -F 'vid="100"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
     grep 'nz-kiwi-t2sw2' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
     grep 'nz-kiwi-t2sw3' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
@@ -80,6 +81,16 @@ function test_dva {
     jq '.eth_srcs."9a:02:57:1e:8f:03".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
 }
 
+function test_forch_varz {
+    adesc=varz-$1
+    echo Starting $adesc test... | tee -a $TEST_RESULTS
+    metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
+    grep 'vlan_packet_rate_state' <<< $metrics | grep 'vlan="100"' | cut -d'}' -f2
+    grep 'vlan_packet_rate_state' <<< $metrics | grep 'vlan="200"' | cut -d'}' -f2
+    grep 'vlan_packet_rate_state' <<< $metrics | grep 'vlan="500"' | cut -d'}' -f2
+    grep 'vlan_packet_rate_state' <<< $metrics | grep 'vlan="4096"' | cut -d'}' -f2
+}
+
 echo %%% initial | tee -a $TEST_RESULTS
 test_access initial
 
@@ -114,5 +125,6 @@ sleep 20
 
 test_access vlan-assigned
 test_dva vlan-assigned
+test_forch_varz vlan-assigned
 
 stop_and_cleanup_radius

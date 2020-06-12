@@ -84,6 +84,11 @@ class ForchMetrics():
         learned_l2_port_labels = ['dp_name', 'eth_src', 'vid', 'ip']
         self._add_var('learned_l2_port', learned_l2_port_help_text, Gauge, learned_l2_port_labels)
 
+        vlan_packet_rate_help_text = 'packet rate state of vlan'
+        vlan_packet_rate_labels = ['vlan']
+        self._add_var(
+            'vlan_packet_rate_state', vlan_packet_rate_help_text, Gauge, vlan_packet_rate_labels)
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
