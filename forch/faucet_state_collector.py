@@ -175,7 +175,7 @@ class FaucetStateCollector:
             last_vlan_map[PACKET_COUNTS] = vlan_count
 
             self._forch_metrics.update_var(
-                'packet_count_vlan', vlan_count, labels=[vlan_id])
+                'dataplane_packet_count_vlan', vlan_count, labels=[vlan_id])
 
             if last_vlan_count is None:
                 continue
@@ -195,7 +195,7 @@ class FaucetStateCollector:
 
             last_vlan_map[PACKET_RATE_STATE] = rate_state
             self._forch_metrics.update_var(
-                'packet_rate_state_vlan', rate_state, labels=[vlan_id])
+                'dataplane_packet_rate_state_vlan', rate_state, labels=[vlan_id])
 
     def heartbeat_update_packet_count(self, interval, get_metrics):
         """Evaluate packet count change rate for each switch and vlan"""
