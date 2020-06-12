@@ -181,7 +181,7 @@ class FaucetStateCollector:
             threshold = self._packet_per_sec_thresholds.get(vlan_id)
 
             if not threshold:
-                rate_state = State.unkown
+                rate_state = State.unknown
             elif rate > threshold:
                 LOGGER.error(
                     'Packet per sec for vlan %d is greater than threshold %d: %.2f',
