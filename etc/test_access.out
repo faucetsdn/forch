@@ -17,6 +17,7 @@ Starting dva-vlan-assigned tests
 300
 "role_yellow"
 @dataplane_state dva-vlan-assigned
+"broken"
 "healthy"
 "unknown"
 null

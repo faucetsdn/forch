@@ -12,12 +12,7 @@ function send_udp {
     container=$1
     addr=$2
     count=$3
-    interval=
-    if [ -z "$4" ]; then
-        interval=1
-    else
-        interval=$4
-    fi
+    interval=${4:-1}
 
     for i in $(seq 1 $count); do
         docker exec $container bash -c "echo -n 'abc' > /dev/udp/$addr"
@@ -55,6 +50,7 @@ function test_dva {
 
     api_result=$fout_dir/dataplane_state.json
     echo "@dataplane_state $fdesc" | tee -a $TEST_RESULTS
+    jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."100".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."200".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."500".packet_rate_state' $api_result | tee -a $TEST_RESULTS
