@@ -85,13 +85,13 @@ function test_forch_varz {
     adesc=varz-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
     metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
-    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="100"' | cut -d'}' -f2 | tee -a $TEST_RESULTS
-    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="200"' | cut -d'}' -f2 | tee -a $TEST_RESULTS
-    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="500"' | cut -d'}' -f2 | tee -a $TEST_RESULTS
-    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="4096"' | cut -d'}' -f2 | tee -a $TEST_RESULTS
+    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="100"' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="200"' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="500"' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="4096"' | awk '{print $2}' | tee -a $TEST_RESULTS
 
-    grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="300"' | cut -d'}' -f2 | tee -a $TEST_RESULTS
-    vlan_4096_count=grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="4096"'
+    grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="300"' | cut -d' ' -f2 | tee -a $TEST_RESULTS
+    vlan_4096_count=$(grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="4096"' | awk '{print $2}')
     echo $vlan_4096_count # TODO remove
     echo $((vlan_4096_count > 40)) | tee -a $TEST_RESULTS
 }
