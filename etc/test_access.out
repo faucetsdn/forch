@@ -18,7 +18,7 @@ Starting dva-vlan-assigned tests
 "role_yellow"
 @switch_state dva-vlan-assigned
 200
-"dynamic"
+"static"
 "allow DHCP"
 "static"
 0
