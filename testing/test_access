@@ -12,9 +12,11 @@ function send_udp {
     container=$1
     addr=$2
     count=$3
+    interval=${4:-1}
+
     for i in $(seq 1 $count); do
         docker exec $container bash -c "echo -n 'abc' > /dev/udp/$addr"
-        sleep 1
+        sleep $interval
     done
 }
 
@@ -35,6 +37,7 @@ function test_dva {
     echo Starting $fdesc tests | tee -a $TEST_RESULTS
     echo $fout_dir
     fetch_forch sys_config
+    fetch_forch dataplane_state
     fetch_forch switch_state
     fetch_forch list_hosts
 
@@ -45,16 +48,24 @@ function test_dva {
     jq '.faucet_behavioral.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
     jq '.faucet_behavioral.dps."nz-kiwi-t2sw3".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
 
+    api_result=$fout_dir/dataplane_state.json
+    echo "@dataplane_state $fdesc" | tee -a $TEST_RESULTS
+    jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."100".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."200".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."500".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."4096".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+
     api_result=$fout_dir/switch_state.json
     echo "@switch_state $fdesc" | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".vlans."100".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw2".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw2".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/list_hosts.json
     echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
@@ -97,8 +108,9 @@ validate_radius_varz
 
 echo Waiting for RADIUS result
 sleep 65
-send_udp forch-faux-3 "192.168.1.254/68" 5
-sleep 10
+send_udp forch-faux-3 "192.168.1.2/68" 1200 0.5 &
+sudo tcpdump -ni faux-2 &
+sleep 20
 
 test_access vlan-assigned
 test_dva vlan-assigned

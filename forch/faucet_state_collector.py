@@ -102,6 +102,12 @@ EGRESS_DETAIL = "egress_state_detail"
 EGRESS_LAST_CHANGE = "egress_state_last_change"
 EGRESS_CHANGE_COUNT = "egress_state_change_count"
 EGRESS_LINK_MAP = "links"
+VLAN_STATES = "vlan_states"
+VLANS = "vlans"
+PACKET_COUNTS = "packet_counts"
+PACKET_RATE_STATE = "packet_rate_state"
+
+VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 
 
 # pylint: disable=too-many-public-methods
@@ -112,6 +118,7 @@ class FaucetStateCollector:
         self.topo_state = {}
         self.learned_macs = {}
         self.faucet_config = {}
+        self.packet_counts = {}
         self.lock = RLock()
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
@@ -124,7 +131,8 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
-        self._change_coalesce_sec = config.stack_topo_change_coalesce_sec
+        self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
+        self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
 
     def set_active(self, active_state):
         """Set active state"""
@@ -137,7 +145,7 @@ class FaucetStateCollector:
             self._is_state_restored = is_restored
             self._state_restore_error = restore_error
 
-    def heartbeat_update(self):
+    def heartbeat_update_stack_state(self):
         """Check for any necessary periodic updates"""
         if not self._stack_state_data:
             return
@@ -151,6 +159,52 @@ class FaucetStateCollector:
             self._update_stack_topo_state_raw(*state_data)
         else:
             LOGGER.warning('stack_state_links update ignore %ds', event_delta)
+
+    def _get_packet_counts_from_samples(self, metric_samples):
+        vlan_counts = {}
+        for sample in metric_samples:
+            vlan_str = sample.labels['vlan']
+            vlan_id = int(vlan_str) if vlan_str else 0
+            vlan_counts[vlan_id] = vlan_counts.get(vlan_id, 0) + int(sample.value)
+        return vlan_counts
+
+    def _update_packet_count_states(self, vlan_counts, interval):
+        for vlan_id, vlan_count in vlan_counts.items():
+            last_vlan_map = self.packet_counts.setdefault(vlan_id, {})
+            last_vlan_count = last_vlan_map.get(PACKET_COUNTS)
+            last_vlan_map[PACKET_COUNTS] = vlan_count
+
+            if last_vlan_count is None:
+                continue
+
+            rate = (vlan_count - last_vlan_count) / interval
+            threshold = self._packet_per_sec_thresholds.get(vlan_id)
+
+            if not threshold:
+                continue
+
+            if rate > threshold:
+                LOGGER.error(
+                    'Packet per sec for vlan %d is greater than threshold %d: %.2f',
+                    vlan_id, threshold, rate)
+                last_vlan_map[PACKET_RATE_STATE] = State.broken
+            else:
+                last_vlan_map[PACKET_RATE_STATE] = State.healthy
+
+    def heartbeat_update_packet_count(self, interval, get_metrics):
+        """Evaluate packet count change rate for each switch and vlan"""
+        if not self._packet_per_sec_thresholds:
+            return
+
+        packet_count_metric = get_metrics([VLAN_PACKET_COUNT_METRIC]).get(VLAN_PACKET_COUNT_METRIC)
+        if not packet_count_metric:
+            logging.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
+            return
+
+        vlan_counts = self._get_packet_counts_from_samples(packet_count_metric.samples)
+
+        with self._lock:
+            self._update_packet_count_states(vlan_counts, interval)
 
     def _make_summary(self, state, detail):
         summary = StateSummary()
@@ -310,6 +364,11 @@ class FaucetStateCollector:
             state = State.broken
             detail.append("broken links: " + str(broken_links))
 
+        broken_vlans = self._get_broken_vlans(dplane_state)
+        if broken_vlans:
+            state = State.broken
+            detail.append('broken vlans: ' + str(broken_vlans))
+
         dplane_state['dataplane_state'] = state
         dplane_state['dataplane_state_detail'] = "; ".join(detail)
 
@@ -339,6 +398,12 @@ class FaucetStateCollector:
         change_counts.append(egress_state.get(EGRESS_CHANGE_COUNT, 0))
         last_change = max(last_change, egress_state.get(EGRESS_LAST_CHANGE, ''))
 
+        vlan_states = {}
+        for vlan_id, vlan_map in self.packet_counts.items():
+            vlan_state = vlan_states.setdefault(vlan_id, {})
+            vlan_state[PACKET_RATE_STATE] = vlan_map.get(PACKET_RATE_STATE)
+        dplane_state[VLANS] = vlan_states
+
         self._update_dataplane_detail(dplane_state)
         dplane_state['dataplane_state_change_count'] = sum(change_counts)
         dplane_state['dataplane_state_last_change'] = last_change
@@ -363,6 +428,15 @@ class FaucetStateCollector:
                 broken_links.append(link)
         broken_links.sort()
         return broken_links
+
+    def _get_broken_vlans(self, dplane_state):
+        broken_vlans = []
+        vlan_states = dplane_state.get('vlans')
+        for vlan_id, vlan_state in vlan_states.items():
+            if vlan_state.get(PACKET_RATE_STATE) == State.broken:
+                broken_vlans.append(vlan_id)
+        broken_vlans.sort()
+        return broken_vlans
 
     @_pre_check()
     def get_switch_summary(self):
@@ -515,6 +589,13 @@ class FaucetStateCollector:
                 switch_port_map[port_id] = self._get_port_state(switch_name, port_id)
                 self._fill_port_behavior(
                     switch_name, port_id, switch_port_map[port_id], metrics)
+
+        # filling packet rate
+        for vlan_id, vlan_states in switch_states.get(VLAN_STATES, {}).items():
+            packet_rate_state = vlan_states.get(PACKET_RATE_STATE)
+            if packet_rate_state:
+                vlan_map = switch_map.setdefault('vlans', {}).setdefault(vlan_id, {})
+                vlan_map['packet_rate_state'] = packet_rate_state
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
@@ -997,14 +1078,14 @@ class FaucetStateCollector:
             if mac in switch_learned_macs:
                 switch_learned_macs.remove(mac)
             else:
-                LOGGER.warning('Entry %s doesnt exist in learned macs dict', mac)
+                LOGGER.warning('Entry %s does not exist in learned macs dict', mac)
 
-            if mac in self.learned_macs:
+            if name in self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH, {}):
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
                 if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
                     self.learned_macs.pop(mac)
             else:
-                LOGGER.warning('Entry %s doesnt exist in learned macs set', mac)
+                LOGGER.warning('Entry %s does not exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
