@@ -90,10 +90,9 @@ function test_forch_varz {
     grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="500"' | awk '{print $2}' | tee -a $TEST_RESULTS
     grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="4096"' | awk '{print $2}' | tee -a $TEST_RESULTS
 
-    grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="300"' | cut -d' ' -f2 | tee -a $TEST_RESULTS
+    grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="300"' | awk '{print $2}' | tee -a $TEST_RESULTS
     vlan_4096_count=$(grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="4096"' | awk '{print $2}')
-    echo $vlan_4096_count # TODO remove
-    echo $((vlan_4096_count > 40)) | tee -a $TEST_RESULTS
+    echo $((${vlan_4096_count%.0} > 40)) | tee -a $TEST_RESULTS
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
