@@ -2,7 +2,6 @@
 ## Forch 0.39
 * Check if port change event's port exists in dp config (#119)
 * Add ACLs counting topo and corresponding tests (#118)
-* Raise exception if no access switch found (#115)
 ## Faucet 1.9.43
 (same version as 1.6.0, see below)
 
