@@ -113,9 +113,10 @@ start_radius_server
 docker ps
 restart_forch
 
-# vlan and roles are assigned now so any traffic should not be dropped
+# vlan and role is assigned for faux-1
+# trigger ARP and UDP traffic from faux-2 and faux-3 for mac learning
 echo %%% vlan-assigned | tee -a $TEST_RESULTS
-send_udp forch-faux-2 "192.168.1.254/68" 5
+send_udp forch-faux-2 "192.168.1.253/68" 5
 send_udp forch-faux-3 "192.168.1.254/67" 5
 tail -f inst/forch-faucet-1/forch.log &
 

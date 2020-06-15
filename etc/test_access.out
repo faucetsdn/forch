@@ -26,7 +26,7 @@ null
 200
 "static"
 "allow DHCP"
-"static"
+"dynamic"
 300
 "dynamic"
 "deny ICMP"
