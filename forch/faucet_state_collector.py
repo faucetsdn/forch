@@ -174,6 +174,9 @@ class FaucetStateCollector:
             last_vlan_count = last_vlan_map.get(PACKET_COUNTS)
             last_vlan_map[PACKET_COUNTS] = vlan_count
 
+            self._forch_metrics.update_var(
+                'dataplane_packet_count_vlan', vlan_count, labels=[vlan_id])
+
             if last_vlan_count is None:
                 continue
 
@@ -181,15 +184,18 @@ class FaucetStateCollector:
             threshold = self._packet_per_sec_thresholds.get(vlan_id)
 
             if not threshold:
-                continue
-
-            if rate > threshold:
+                rate_state = State.unknown
+            elif rate > threshold:
                 LOGGER.error(
                     'Packet per sec for vlan %d is greater than threshold %d: %.2f',
                     vlan_id, threshold, rate)
-                last_vlan_map[PACKET_RATE_STATE] = State.broken
+                rate_state = State.broken
             else:
-                last_vlan_map[PACKET_RATE_STATE] = State.healthy
+                rate_state = State.healthy
+
+            last_vlan_map[PACKET_RATE_STATE] = rate_state
+            self._forch_metrics.update_var(
+                'dataplane_packet_rate_state_vlan', rate_state, labels=[vlan_id])
 
     def heartbeat_update_packet_count(self, interval, get_metrics):
         """Evaluate packet count change rate for each switch and vlan"""
