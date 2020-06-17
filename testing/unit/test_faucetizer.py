@@ -113,8 +113,6 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
     def test_faucetize_simple(self):
         """test normal faucetize behavior"""
         self._faucetizer.reload_structural_config()
-        # TODO remove below
-        #self._faucetizer.flush_behavioral_config(force=True)
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._verify_behavioral_config(expected_config)
