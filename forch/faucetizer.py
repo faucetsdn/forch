@@ -199,6 +199,8 @@ class Faucetizer:
                 acl_name = f'role_{device_behavior.role}'
                 if self._has_acl(acl_name):
                     port_cfg['acls_in'] = [acl_name]
+                else:
+                    LOGGER.error('No ACL defined for role %s', device_behavior.role)
             if self._config.tail_acl:
                 port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
 
