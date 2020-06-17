@@ -255,12 +255,11 @@ class Forchestrator:
         self._gauge_metrics_scheduler = HeartbeatScheduler(interval_sec=interval_sec)
         self._gauge_metrics_scheduler.add_callback(heartbeat_update_packet_count)
 
-
-    def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
-        self._config_file_watcher.unregister_file_callbacks(old_acl_files)
-        for new_acl_file in new_acl_files:
+    def _reregister_include_file_handlers(self, old_include_files, new_include_files):
+        self._config_file_watcher.unregister_file_callbacks(old_include_files)
+        for new_include_file in new_include_files:
             self._config_file_watcher.register_file_callback(
-                new_acl_file, self._faucetizer.reload_acl_file)
+                new_include_file, self._faucetizer.reload_include_file)
 
     def initialized(self):
         """If forch is initialized or not"""
