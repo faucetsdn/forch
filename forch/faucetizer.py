@@ -109,7 +109,8 @@ class Faucetizer:
             self._behavioral_include = behavioral_include
 
             if not self._config.faucetize_interval_sec and self._reregister_include_file_handlers:
-                self._reregister_include_file_handlers(self._watched_include_files, new_watched_include_files)
+                self._reregister_include_file_handlers(
+                    self._watched_include_files, new_watched_include_files)
             self._watched_include_files = new_watched_include_files
 
             self.flush_behavioral_config()
