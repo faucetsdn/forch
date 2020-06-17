@@ -436,10 +436,9 @@ class FaucetizerNoTailACLDefinitionTestCase(FaucetizerACLTestCaseBase):
     tail_acl: 'non_existing_acl'
     """
 
-    @unittest.expectedFailure
     def test_no_tail_acl_definition(self):
         """test faucetizer behavior when no ACL is defined for tail_acl"""
-        self._faucetizer.reload_structural_config()
+        self.assertRaises(Exception, self._faucetizer.reload_structural_config)
 
 
 if __name__ == '__main__':
