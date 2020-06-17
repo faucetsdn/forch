@@ -336,9 +336,8 @@ class FaucetizerNoTailACLDefinitionTestCase(FaucetizerTestBase):
             description: HOST
             max_hosts: 1
     acls:
-      role_red:
+      tail_acl:
         - rule:
-            dl_type: 0x800
             actions:
               allow: True
     """
