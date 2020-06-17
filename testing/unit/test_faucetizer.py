@@ -278,8 +278,8 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerACLTestCaseBase(FaucetizerTestBase):
-    """Base configurations for ACL related tests"""
+class FaucetizerACLBehaviorTestCase(FaucetizerTestBase):
+    """Test Faucetizer ACL augmentation and assignment behavior"""
 
     ORCH_CONFIG = """
     unauthenticated_vlan: 100
@@ -359,10 +359,6 @@ class FaucetizerACLTestCaseBase(FaucetizerTestBase):
         self._faucetizer = None
         self._cleanup_config_files()
 
-
-class FaucetizerACLBehaviorTestCase(FaucetizerACLTestCaseBase):
-    """Test Faucetizer ACL augmentation and assignment behavior"""
-
     def test_acl_augmentation_and_assignment(self):
         """test normal faucetizer ACL behavior"""
         self._faucetizer.reload_structural_config()
@@ -428,7 +424,7 @@ class FaucetizerACLBehaviorTestCase(FaucetizerACLTestCaseBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerNoTailACLDefinitionTestCase(FaucetizerACLTestCaseBase):
+class FaucetizerNoTailACLDefinitionTestCase(FaucetizerTestBase):
     """Test case where no ACL is defined for the tail_acl specified in forch.yaml"""
 
     ORCH_CONFIG = """
@@ -436,9 +432,26 @@ class FaucetizerNoTailACLDefinitionTestCase(FaucetizerACLTestCaseBase):
     tail_acl: 'non_existing_acl'
     """
 
+    FAUCET_STRUCTURAL_CONFIG = """
+    dps:
+      t2sw1:
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+    acls:
+      role_red:
+        - rule:
+            dl_type: 0x800
+            actions:
+              allow: True
+    """
+
     def test_no_tail_acl_definition(self):
         """test faucetizer behavior when no ACL is defined for tail_acl"""
-        self.assertRaises(Exception, self._faucetizer.reload_structural_config)
+        self._setup_config_files()
+        self.assertRaises(Exception, self._initialize_faucetizer)
 
 
 if __name__ == '__main__':
