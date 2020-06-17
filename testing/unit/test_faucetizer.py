@@ -121,33 +121,6 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerInitialFaucetConfigTestCase(FaucetizerSimpleTestCase):
-    """Test basic functionality of Faucetizer"""
-
-    ORCH_CONFIG = """
-    unauthenticated_vlan: 100
-    tail_acl: 'tail_acl'
-    """
-
-    FAUCET_BEHAVIORAL_CONFIG = """
-    dps:
-      t2sw1:
-        dp_id: 121
-        interfaces:
-          1:
-            description: HOST
-            max_hosts: 1
-            native_vlan: 100
-            acls_in: ['tail_acl']
-          2:
-            description: HOST
-            max_hosts: 1
-            native_vlan: 100
-            acls_in: ['tail_acl']
-    include: []
-    """
-
-
 class FaucetizerBehaviorTestCase(FaucetizerTestBase):
     """Test Faucetizer's behavior after several iterations of device information processing"""
 
@@ -310,7 +283,7 @@ class FaucetizerACLTestCaseBase(FaucetizerTestBase):
 
     ORCH_CONFIG = """
     unauthenticated_vlan: 100
-    tail_acl: tail_acl
+    tail_acl: 'tail_acl'
     """
 
     FAUCET_STRUCTURAL_CONFIG = """
@@ -460,7 +433,7 @@ class FaucetizerNoTailACLDefinitionTestCase(FaucetizerACLTestCaseBase):
 
     ORCH_CONFIG = """
     unauthenticated_vlan: 100
-    tail_acl: non_existing_acl
+    tail_acl: 'non_existing_acl'
     """
 
     @unittest.expectedFailure
