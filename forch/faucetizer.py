@@ -104,7 +104,7 @@ class Faucetizer:
 
             tail_acl_name = self._config.tail_acl
             if tail_acl_name and not self._has_acl(tail_acl_name):
-                raise Exception('No ACL is defined for tail ACL %s', tail_acl_name)
+                raise Exception('No ACL is defined for tail ACL %s' % tail_acl_name)
 
             self._behavioral_include = behavioral_include
 
@@ -207,7 +207,7 @@ class Faucetizer:
             else:
                 port_cfg['acls_in'] = []
             if self._config.tail_acl:
-                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
+                port_cfg['acls_in'].append(self._config.tail_acl)
 
             dva_state = (DVAState.static if mac in self._static_devices.device_mac_behaviors
                          else DVAState.dynamic)
