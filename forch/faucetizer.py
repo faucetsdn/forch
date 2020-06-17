@@ -194,6 +194,7 @@ class Faucetizer:
                                mac, device_behavior.segment)
                 continue
 
+            # update port vlan and acls
             port_cfg['native_vlan'] = vid
             if device_behavior.role:
                 acl_name = f'role_{device_behavior.role}'
@@ -202,6 +203,8 @@ class Faucetizer:
                 else:
                     port_cfg['acls_in'] = []
                     LOGGER.error('No ACL defined for role %s', device_behavior.role)
+            else:
+                port_cfg['acls_in'] = []
             if self._config.tail_acl:
                 port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
 
