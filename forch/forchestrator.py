@@ -1,6 +1,7 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
 from datetime import datetime
+import functools
 import logging
 import os
 import threading
@@ -87,6 +88,7 @@ class Forchestrator:
         self._faucetize_scheduler = None
         self._config_file_watcher = None
         self._faucet_state_scheduler = None
+        self._gauge_metrics_scheduler = None
 
         self._initialized = False
         self._active_state = State.initializing
@@ -100,14 +102,19 @@ class Forchestrator:
         """Initialize forchestrator instance"""
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
-        self._faucet_collector = FaucetStateCollector(self._config.event_client)
+        self._faucet_collector = FaucetStateCollector(self._config)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._faucet_collector.set_get_dva_state(
             (lambda switch, port:
              self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
         self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
-        self._faucet_state_scheduler.add_callback(self._faucet_collector.heartbeat_update)
+        self._faucet_state_scheduler.add_callback(
+            self._faucet_collector.heartbeat_update_stack_state)
+
+        gauge_metrics_interval_sec = self._config.dataplane_monitoring.gauge_metrics_interval_sec
+        if gauge_metrics_interval_sec:
+            self._initialize_gauge_metrics_scheduler(gauge_metrics_interval_sec)
 
         self._local_collector = LocalStateCollector(
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
@@ -223,7 +230,7 @@ class Forchestrator:
 
         self._faucetizer = faucetizer.Faucetizer(
             orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
-            self._behavioral_config_file, self._reregister_acl_file_handlers)
+            self._behavioral_config_file, self._reregister_include_file_handlers)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -238,11 +245,21 @@ class Forchestrator:
             self._config_file_watcher.register_file_callback(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
 
-    def _reregister_acl_file_handlers(self, old_acl_files, new_acl_files,):
-        self._config_file_watcher.unregister_file_callbacks(old_acl_files)
-        for new_acl_file in new_acl_files:
+    def _initialize_gauge_metrics_scheduler(self, interval_sec):
+        get_gauge_metrics = (
+            lambda target_metrics:
+            varz_state_collector.retry_get_metrics(self._gauge_prom_endpoint, target_metrics))
+        heartbeat_update_packet_count = functools.partial(
+            self._faucet_collector.heartbeat_update_packet_count,
+            interval=interval_sec, get_metrics=get_gauge_metrics)
+        self._gauge_metrics_scheduler = HeartbeatScheduler(interval_sec=interval_sec)
+        self._gauge_metrics_scheduler.add_callback(heartbeat_update_packet_count)
+
+    def _reregister_include_file_handlers(self, old_include_files, new_include_files):
+        self._config_file_watcher.unregister_file_callbacks(old_include_files)
+        for new_include_file in new_include_files:
             self._config_file_watcher.register_file_callback(
-                new_acl_file, self._faucetizer.reload_acl_file)
+                new_include_file, self._faucetizer.reload_include_file)
 
     def initialized(self):
         """If forch is initialized or not"""
@@ -355,6 +372,8 @@ class Forchestrator:
             self._config_file_watcher.start()
         if self._faucet_state_scheduler:
             self._faucet_state_scheduler.start()
+        if self._gauge_metrics_scheduler:
+            self._gauge_metrics_scheduler.start()
         if self._metrics:
             self._metrics.update_var('forch_version', {'version': __version__})
 

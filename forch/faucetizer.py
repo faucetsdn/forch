@@ -18,16 +18,17 @@ from forch.proto.shared_constants_pb2 import DVAState
 
 LOGGER = logging.getLogger('faucetizer')
 
-ACL_FILE_SUFFIX = '_augmented'
+INCLUDE_FILE_SUFFIX = '_augmented'
 
 
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file, reregister_acl_file_handlers=None):
+                 behavioral_config_file, reregister_include_file_handlers=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
+        self._acl_configs = {}
         self._vlan_states = {}
         self._segments_to_vlans = segments_to_vlans
         self._structural_faucet_config = None
@@ -37,8 +38,8 @@ class Faucetizer:
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
-        self._watched_acl_files = []
-        self._reregister_acl_file_handlers = reregister_acl_file_handlers
+        self._watched_include_files = []
+        self._reregister_include_file_handlers = reregister_include_file_handlers
         self._lock = threading.RLock()
 
     def process_device_placement(self, eth_src, placement, static=False):
@@ -84,45 +85,55 @@ class Faucetizer:
     def _process_structural_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
-            self._structural_faucet_config = copy.copy(faucet_config)
+            self._structural_faucet_config = copy.deepcopy(faucet_config)
+            self._acl_configs.clear()
 
             self._next_cookie = 1
             behavioral_include = []
-            new_watched_acl_files = []
-            config_dir = os.path.dirname(self._structural_config_file)
-            for acl_file_name in self._structural_faucet_config.get('include', []):
-                acl_file_path = os.path.join(config_dir, acl_file_name)
-                self.reload_acl_file(acl_file_path)
-                behavioral_include.append(self._augment_acl_file_path(acl_file_name))
-                new_watched_acl_files.append(acl_file_path)
+            new_watched_include_files = []
+            forch_config_dir = os.path.dirname(self._structural_config_file)
+
+            for include_file_name in self._structural_faucet_config.get('include', []):
+                include_file_path = os.path.join(forch_config_dir, include_file_name)
+                self.reload_include_file(include_file_path)
+                behavioral_include.append(self._augment_include_file_path(include_file_name))
+                new_watched_include_files.append(include_file_path)
+
+            structural_acls_config = copy.deepcopy(self._structural_faucet_config.get('acls'))
+            self._augment_acls_config(structural_acls_config, self._structural_config_file, )
+
+            tail_acl_name = self._config.tail_acl
+            if tail_acl_name and not self._has_acl(tail_acl_name):
+                raise Exception('No ACL is defined for tail ACL %s' % tail_acl_name)
 
             self._behavioral_include = behavioral_include
 
-            if not self._config.faucetize_interval_sec and self._reregister_acl_file_handlers:
-                self._reregister_acl_file_handlers(self._watched_acl_files, new_watched_acl_files)
-            self._watched_acl_files = new_watched_acl_files
+            if not self._config.faucetize_interval_sec and self._reregister_include_file_handlers:
+                self._reregister_include_file_handlers(
+                    self._watched_include_files, new_watched_include_files)
+            self._watched_include_files = new_watched_include_files
 
             self.flush_behavioral_config()
 
-    def _process_acl_config(self, file_path, acls_config):
-        new_acls_config = copy.copy(acls_config)
+    def _augment_acls_config(self, acls_config, file_path):
+        if not acls_config:
+            return
 
         if not self._next_cookie:
             raise Exception('Cookie is not initialized')
 
         with self._lock:
-            for rule_list in acls_config.get('acls', {}).values():
+            for rule_list in acls_config.values():
                 for rule_map in rule_list:
                     if 'rule' in rule_map:
                         rule_map['rule']['cookie'] = self._next_cookie
                         self._next_cookie += 1
 
-        new_file_path = self._augment_acl_file_path(file_path)
-        self.flush_acl_config(new_file_path, new_acls_config)
+            self._acl_configs[file_path] = copy.deepcopy(acls_config)
 
-    def _augment_acl_file_path(self, file_path):
+    def _augment_include_file_path(self, file_path):
         base_file_path, ext = os.path.splitext(file_path)
-        return base_file_path + ACL_FILE_SUFFIX + ext
+        return base_file_path + INCLUDE_FILE_SUFFIX + ext
 
     def _is_access_port(self, port_cfg):
         non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
@@ -151,6 +162,12 @@ class Faucetizer:
 
         return behavioral_faucet_config
 
+    def _has_acl(self, acl_name):
+        for acl_config in self._acl_configs.values():
+            if acl_name in acl_config:
+                return True
+        return False
+
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
@@ -178,18 +195,31 @@ class Faucetizer:
                                mac, device_behavior.segment)
                 continue
 
+            # update port vlan and acls
             port_cfg['native_vlan'] = vid
             if device_behavior.role:
-                port_cfg['acls_in'] = [f'role_{device_behavior.role}']
+                acl_name = f'role_{device_behavior.role}'
+                if self._has_acl(acl_name):
+                    port_cfg['acls_in'] = [acl_name]
+                else:
+                    port_cfg['acls_in'] = []
+                    LOGGER.error('No ACL defined for role %s', device_behavior.role)
+            else:
+                port_cfg['acls_in'] = []
             if self._config.tail_acl:
-                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
+                port_cfg['acls_in'].append(self._config.tail_acl)
 
             dva_state = (DVAState.static if mac in self._static_devices.device_mac_behaviors
                          else DVAState.dynamic)
             self._update_vlan_state(
                 device_placement.switch, device_placement.port, dva_state)
 
-        behavioral_faucet_config['include'] = self._behavioral_include
+        if self._behavioral_include:
+            behavioral_faucet_config['include'] = self._behavioral_include
+
+        structural_acls_config = self._acl_configs.get(self._structural_config_file)
+        if structural_acls_config:
+            behavioral_faucet_config['acls'] = structural_acls_config
 
         self._behavioral_faucet_config = behavioral_faucet_config
 
@@ -200,11 +230,19 @@ class Faucetizer:
             structural_config = yaml.safe_load(file)
             self._process_structural_config(structural_config)
 
-    def reload_acl_file(self, file_path):
+    def reload_include_file(self, file_path):
         """Reload acl file"""
-        with open(file_path) as acl_file:
-            acls_config = yaml.safe_load(acl_file)
-            self._process_acl_config(file_path, acls_config)
+        with open(file_path) as file:
+            include_config = yaml.safe_load(file)
+            if not include_config:
+                LOGGER.warning('Included file is empty: %s', file_path)
+                return
+
+            acls_config = include_config.get('acls')
+            self._augment_acls_config(acls_config, file_path)
+
+            new_file_path = self._augment_include_file_path(file_path)
+            self.flush_include_config(new_file_path, include_config)
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
@@ -215,10 +253,10 @@ class Faucetizer:
             yaml.dump(self._behavioral_faucet_config, file)
             LOGGER.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
-    def flush_acl_config(self, file_path, acls_config):
+    def flush_include_config(self, file_path, include_config):
         """Write acl configs to file"""
-        with open(file_path, 'w') as acl_file:
-            yaml.dump(acls_config, acl_file)
+        with open(file_path, 'w') as file:
+            yaml.dump(include_config, file)
             LOGGER.debug('Wrote augmented included file to %s', file_path)
 
     def get_structural_config(self):

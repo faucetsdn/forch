@@ -143,5 +143,8 @@ message SwitchState {
   message VLANState {
     // vlan acls states
     repeated ACLState acls = 1;
+
+    // packet rate state
+    State.State packet_rate_state = 2;
   }
 }

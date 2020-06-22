@@ -18,20 +18,23 @@ message DataplaneState {
   // Details of the egress links in the dataplane.
   Egress egress = 3;
 
+  // VLAN states indexed by VLAN ID
+  map<int32, VLANState> vlans = 4;
+
   // Overall status of the dataplane state.
-  State.State dataplane_state = 4;
+  State.State dataplane_state = 5;
 
   // Summary detail of the dataplane state.
-  string dataplane_state_detail = 5;
+  string dataplane_state_detail = 6;
 
   // Number of times dataplane state ahs changed.
-  int32 dataplane_state_change_count = 6;
+  int32 dataplane_state_change_count = 7;
 
   // The last time dataplane state changed.
-  string dataplane_state_last_change = 7;
+  string dataplane_state_last_change = 8;
 
   // Link to top level system state.
-  string system_state_url = 8;
+  string system_state_url = 9;
 
   /*
    * Dataplane switches details
@@ -101,5 +104,13 @@ message DataplaneState {
   message LinkStatus {
     // Stack link status, active, up or down
     State.State link_state = 1;
+  }
+
+  /*
+   * VLAN state
+   */
+  message VLANState {
+    // packet rate state: unkown, healthy or broken
+    State.State packet_rate_state = 1;
   }
 }
