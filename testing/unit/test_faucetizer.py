@@ -257,25 +257,25 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
 
         placements = [
             # mocking static placements
-            ('02:00:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
-            ('02:00:00:00:00:02', {'switch': 't2sw1', 'port': 2, 'connected': True}, True),
+            ('02:0A:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
+            ('02:0b:00:00:00:02', {'switch': 't2sw1', 'port': 2, 'connected': True}, True),
             # devices dynamically learned
-            ('02:00:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
-            ('02:00:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': True}, False),
-            ('02:00:00:00:00:04', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
+            ('02:0a:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
+            ('02:0c:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': True}, False),
+            ('02:0D:00:00:00:04', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
             # devices expired
-            ('02:00:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': False}, False),
-            ('02:00:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': False}, False)
+            ('02:0a:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': False}, False),
+            ('02:0c:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': False}, False)
         ]
 
         behaviors = [
             # mocking static behaviors
-            ('02:00:00:00:00:01', {'segment': 'SEG_A', 'role': 'red'}, True),
-            ('02:00:00:00:00:03', {'segment': 'SEG_C'}, True),
+            ('02:0a:00:00:00:01', {'segment': 'SEG_A', 'role': 'red'}, True),
+            ('02:0c:00:00:00:03', {'segment': 'SEG_C'}, True),
             # devices authenticated
-            ('02:00:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
-            ('02:00:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
-            ('02:00:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
+            ('02:0B:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
+            ('02:0c:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
+            ('02:0D:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
         ]
 
         # process static device info
