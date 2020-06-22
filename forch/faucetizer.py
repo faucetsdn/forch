@@ -46,8 +46,11 @@ class Faucetizer:
         """Process device placement"""
         if not placement.switch or not placement.port:
             raise Exception(f'Incomplete placement for {eth_src}: {placement}')
+
         devices_state = self._static_devices if static else self._dynamic_devices
         device_type = "static" if static else "dynamic"
+        eth_src = eth_src.lower()
+
         with self._lock:
             device_placements = devices_state.device_mac_placements
             if placement.connected:
@@ -67,6 +70,8 @@ class Faucetizer:
         """Process device behavior"""
         devices_state = self._static_devices if static else self._dynamic_devices
         device_type = "static" if static else "dynamic"
+        eth_src = eth_src.lower()
+
         with self._lock:
             device_behaviors = devices_state.device_mac_behaviors
             if behavior.segment:
