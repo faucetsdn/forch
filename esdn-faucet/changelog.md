@@ -1,3 +1,17 @@
+## 1.8.0
+## Forch 0.40
+* Use lowercase MAC addresses in Faucetizer (#126)
+* Augment ACLs in faucet.yaml and verify role-based ACLs existence (#125)
+* Add ARP allow rule in initial VLAN ACL (#122)
+* Add Forch varz for vlan packet counts (#123)
+* Do not assert existence of access switch for a MAC (#124)
+* Monitor packet rate for each VLAN (#121)
+## Faucet 1.9.46
+* Optimise out actions that won't have any effect (e.g. modify packet header before dropping it)
+* Fix coprocessor traffic being subject to VLAN ACLs
+* Move LACP implementation to switch manager classes
+* Remove unneeded mininet dependency in unit tests
+
 # 1.7.0
 ## Forch 0.39
 * Check if port change event's port exists in dp config (#119)
