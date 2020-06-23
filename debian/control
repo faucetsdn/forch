@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Faucet Maintainers <maintainers@faucet.nz>
 Build-Depends: debhelper (>= 9),
                dh-python,
-               python3-all (>= 3.7), python3-all (<< 3.8),
+               python3-all (>= 3.7),
                python3-setuptools,
                python3-yaml,
                python3-prometheus-client,
@@ -16,7 +16,7 @@ Build-Depends: debhelper (>= 9),
                pylint,
                python3-pbr (>= 1.9),
 Standards-Version: 3.9.6
-X-Python3-Version: >= 3.7, << 3.8
+X-Python3-Version: >= 3.7
 Homepage: https://github.com/faucetsdn/forch
 Vcs-Git: https://github.com/faucetsdn/forch.git
 Vcs-Browser: https://github.com/faucetsdn/forch
@@ -24,10 +24,10 @@ Vcs-Browser: https://github.com/faucetsdn/forch
 Package: python3-forch
 Architecture: all
 Depends: python3-faucet (= FAUCET_VERSION),
-         python3-all (>= 3.7), python3-all (<< 3.8),
+         python3-all (>= 3.7),
          python3-netaddr,
          python3-networkx,
-         python3-prometheus-client (>= 0.7.1), python3-prometheus-client (<< 0.7.2),
+         python3-prometheus-client (>= 0.8.0), python3-prometheus-client (<< 0.8.1),
          python3-protobuf,
          python3-psutil,
          python3-requests,
