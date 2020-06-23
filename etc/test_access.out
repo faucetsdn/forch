@@ -16,15 +16,21 @@ Starting dva-vlan-assigned tests
 "role_green"
 300
 "role_yellow"
+@dataplane_state dva-vlan-assigned
+"broken"
+"healthy"
+"unknown"
+null
+"broken"
 @switch_state dva-vlan-assigned
 200
 "static"
 "allow DHCP"
-"static"
-0
+"dynamic"
 300
 "dynamic"
 "deny ICMP"
+0
 @list_hosts dva-vlan-assigned
 200
 "static"
@@ -35,3 +41,9 @@ Starting dva-vlan-assigned tests
 "BOS"
 "yellow"
 0
+Starting varz-vlan-assigned test...
+5.0
+0.0
+1.0
+0.0
+1
