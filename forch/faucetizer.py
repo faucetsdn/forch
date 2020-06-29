@@ -273,7 +273,8 @@ class Faucetizer:
 
     def get_dva_state(self, switch, port):
         """Get DVA state"""
-        return self._vlan_states.get(switch, {}).get(port)
+        with self._lock:
+            return self._vlan_states.get(switch, {}).get(port)
 
 
 def load_devices_state(file):
