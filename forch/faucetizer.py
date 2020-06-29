@@ -101,7 +101,7 @@ class Faucetizer:
             for include_file_name in self._structural_faucet_config.get('include', []):
                 include_file_path = os.path.join(forch_config_dir, include_file_name)
                 self.reload_include_file(include_file_path)
-                behavioral_include.append(self._augment_include_file_path(include_file_name))
+                behavioral_include.append(self._augment_include_file_name(include_file_name))
                 new_watched_include_files.append(include_file_path)
 
             structural_acls_config = copy.deepcopy(self._structural_faucet_config.get('acls'))
@@ -136,9 +136,9 @@ class Faucetizer:
 
             self._acl_configs[file_path] = copy.deepcopy(acls_config)
 
-    def _augment_include_file_path(self, file_path):
-        base_file_path, ext = os.path.splitext(file_path)
-        return base_file_path + INCLUDE_FILE_SUFFIX + ext
+    def _augment_include_file_name(self, file_name):
+        base_file_name, ext = os.path.splitext(file_name)
+        return base_file_name + INCLUDE_FILE_SUFFIX + ext
 
     def _is_access_port(self, port_cfg):
         non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
@@ -236,7 +236,7 @@ class Faucetizer:
             self._process_structural_config(structural_config)
 
     def reload_include_file(self, file_path):
-        """Reload acl file"""
+        """Reload include file"""
         with open(file_path) as file:
             include_config = yaml.safe_load(file)
             if not include_config:
@@ -246,8 +246,8 @@ class Faucetizer:
             acls_config = include_config.get('acls')
             self._augment_acls_config(acls_config, file_path)
 
-            new_file_path = self._augment_include_file_path(file_path)
-            self.flush_include_config(new_file_path, include_config)
+            new_file_name = self._augment_include_file_name(os.path.split(file_path)[1])
+            self.flush_include_config(new_file_name, include_config)
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
@@ -258,11 +258,13 @@ class Faucetizer:
             yaml.dump(self._behavioral_faucet_config, file)
             LOGGER.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
-    def flush_include_config(self, file_path, include_config):
-        """Write acl configs to file"""
-        with open(file_path, 'w') as file:
+    def flush_include_config(self, include_file_name, include_config):
+        """Write include configs to file"""
+        faucet_config_dir = os.path.dirname(self._behavioral_config_file)
+        faucet_include_file_path = os.path.join(faucet_config_dir, include_file_name)
+        with open(faucet_include_file_path, 'w') as file:
             yaml.dump(include_config, file)
-            LOGGER.debug('Wrote augmented included file to %s', file_path)
+            LOGGER.debug('Wrote augmented included file to %s', faucet_include_file_path)
 
     def get_structural_config(self):
         """Return structural config"""
