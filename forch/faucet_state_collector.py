@@ -696,7 +696,7 @@ class FaucetStateCollector:
 
             if self._is_faucetizer_enabled:
                 assert 'flow_packet_count_vlan_acl' in metrics, (
-                f'VLAN ACL metric is not available for VLAN {vid}')
+                    f'VLAN ACL metric is not available for VLAN {vid}')
 
                 samples = metrics['flow_packet_count_vlan_acl'].samples
                 self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
