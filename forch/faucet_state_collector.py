@@ -694,16 +694,16 @@ class FaucetStateCollector:
 
             acl_maps_list = vlans_map.setdefault(int(vid), {}).setdefault('acls', [])
 
-            if self._is_faucetizer_enabled:
+            if metrics is None:
+                self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in)
+            else:
                 assert 'flow_packet_count_vlan_acl' in metrics, (
                     f'VLAN ACL metric is not available for VLAN {vid}')
 
                 samples = metrics['flow_packet_count_vlan_acl'].samples
                 self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
-            else:
-                self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in)
 
-    def _fill_port_behavior(self, switch_name, port_id, port_map, metrics):
+    def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
         if not dp_config:
             LOGGER.warning('Switch not defined in dps config: %s', switch_name)
@@ -720,15 +720,15 @@ class FaucetStateCollector:
         if port_config.acls_in:
             acl_maps_list = port_map.setdefault('acls', [])
 
-            if self._is_faucetizer_enabled:
+            if metrics is None:
+                self._fill_acls_behavior(
+                    switch_name, acl_maps_list, port_config.acls_in, None, port_id)
+            else:
                 assert 'flow_packet_count_port_acl' in metrics, 'No port acl metric available'
 
                 samples = metrics['flow_packet_count_port_acl'].samples
                 self._fill_acls_behavior(
                     switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
-            else:
-                self._fill_acls_behavior(
-                    switch_name, acl_maps_list, port_config.acls_in, None, port_id)
 
     # pylint: disable=too-many-arguments
     def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
@@ -742,7 +742,7 @@ class FaucetStateCollector:
                 rule_map = {'description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
 
-                if not metric_samples:
+                if not self._is_faucetizer_enabled or not metric_samples:
                     continue
 
                 if not cookie_num:
