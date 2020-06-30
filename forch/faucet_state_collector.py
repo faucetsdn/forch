@@ -123,6 +123,7 @@ class FaucetStateCollector:
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
         self._active_state = State.initializing
+        self._is_faucetizer_enabled = False
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
@@ -138,6 +139,11 @@ class FaucetStateCollector:
         """Set active state"""
         with self._lock:
             self._active_state = active_state
+
+    def set_faucetizer_enabled(self, faucetizer_enabled):
+        """Set flag indicating if faucetizer_enabled is enabled or not"""
+        with self._lock:
+            self._is_faucetizer_enabled = faucetizer_enabled
 
     def set_state_restored(self, is_restored, restore_error=None):
         """Set state restore result"""
@@ -733,11 +739,11 @@ class FaucetStateCollector:
                 rule_map = {'description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
 
-                if not metric_samples:
+                if not self._is_faucetizer_enabled or not metric_samples:
                     continue
 
                 if not cookie_num:
-                    raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
+                    raise Exception(f'Cookie is not generated for acl {acl_config._id}')
 
                 has_sample = False
                 for sample in metric_samples:
