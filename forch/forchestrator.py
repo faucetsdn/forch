@@ -94,12 +94,16 @@ class Forchestrator:
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
 
+        self._should_enable_faucetizer = False
+
         self._config_summary = None
         self._metrics = None
         self._proxy = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
+        self._should_enable_faucetizer = self._calculate_config_files()
+
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
 
@@ -115,6 +119,7 @@ class Forchestrator:
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(
             self._faucet_collector.heartbeat_update_stack_state)
+        self._faucet_collector.set_faucetizer_enabled(self._should_enable_faucetizer)
 
         gauge_metrics_interval_sec = self._config.dataplane_monitoring.gauge_metrics_interval_sec
         if gauge_metrics_interval_sec:
@@ -137,10 +142,9 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        if self._calculate_config_files():
+        if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
-            self._faucet_collector.set_faucetizer_enabled(True)
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()

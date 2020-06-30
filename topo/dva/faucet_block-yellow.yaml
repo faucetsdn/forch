@@ -1,3 +1,38 @@
+acls:
+  uniform_100:
+    - rule:
+        description: allow DHCP
+        dl_type: 0x0800
+        ip_proto: 17
+        ipv4_dst: 192.168.1.254
+        udp_dst: 67
+        actions:
+          allow: True
+    - rule:
+        description: allow ARP request
+        dl_type: 0x0806
+        eth_dst: "ff:ff:ff:ff:ff:ff"
+        actions:
+          allow: True
+    - rule:
+        description: deny all
+        actions:
+          allow: False
+  uniform_200:
+    - rule:
+        description: allow all
+        actions:
+          allow: True
+  uniform_300:
+    - rule:
+        description: allow all
+        actions:
+          allow: True
+  uniform_400:
+    - rule:
+        description: allow all
+        actions:
+          allow: False
 dps:
   nz-kiwi-t1sw1:
     dp_id: 177
@@ -962,41 +997,6 @@ dps:
     lldp_beacon:
       max_per_interval: 5
       send_interval: 5
-acls:
-  uniform_100:
-    - rule:
-        description: allow DHCP
-        dl_type: 0x0800
-        ip_proto: 17
-        ipv4_dst: 192.168.1.254
-        udp_dst: 67
-        actions:
-          allow: True
-    - rule:
-        description: allow ARP request
-        dl_type: 0x0806
-        eth_dst: "ff:ff:ff:ff:ff:ff"
-        actions:
-          allow: True
-    - rule:
-        description: deny all
-        actions:
-          allow: False
-  uniform_200:
-    - rule:
-        description: allow all
-        actions:
-          allow: True
-  uniform_300:
-    - rule:
-        description: allow all
-        actions:
-          allow: True
-  uniform_400:
-    - rule:
-        description: allow all
-        actions:
-          allow: False
 include:
 - role-based-acls_augmented.yaml
 version: 2
