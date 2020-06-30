@@ -107,7 +107,8 @@ class Forchestrator:
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
 
-        self._faucet_collector = FaucetStateCollector(self._config)
+        self._faucet_collector = FaucetStateCollector(
+            self._config, is_faucetizer_enabled=self._should_enable_faucetizer)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._faucet_collector.set_get_gauge_metrics(
             lambda: varz_state_collector.retry_get_metrics(
@@ -119,7 +120,6 @@ class Forchestrator:
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(
             self._faucet_collector.heartbeat_update_stack_state)
-        self._faucet_collector.set_faucetizer_enabled(self._should_enable_faucetizer)
 
         gauge_metrics_interval_sec = self._config.dataplane_monitoring.gauge_metrics_interval_sec
         if gauge_metrics_interval_sec:

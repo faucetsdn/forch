@@ -113,7 +113,7 @@ VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 # pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
-    def __init__(self, config):
+    def __init__(self, config, is_faucetizer_enabled):
         self.switch_states = {}
         self.topo_state = {}
         self.learned_macs = {}
@@ -123,7 +123,7 @@ class FaucetStateCollector:
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False)
         self._active_state = State.initializing
-        self._is_faucetizer_enabled = False
+        self._is_faucetizer_enabled = is_faucetizer_enabled
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
@@ -140,11 +140,6 @@ class FaucetStateCollector:
         """Set active state"""
         with self._lock:
             self._active_state = active_state
-
-    def set_faucetizer_enabled(self, faucetizer_enabled):
-        """Set flag indicating if faucetizer_enabled is enabled or not"""
-        with self._lock:
-            self._is_faucetizer_enabled = faucetizer_enabled
 
     def set_state_restored(self, is_restored, restore_error=None):
         """Set state restore result"""
