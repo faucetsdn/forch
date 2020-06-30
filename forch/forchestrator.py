@@ -105,11 +105,9 @@ class Forchestrator:
 
         self._faucet_collector = FaucetStateCollector(self._config)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
-
-        get_gauge_metrics_func = functools.partial(
-            varz_state_collector.retry_get_metrics,
-            self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
-        self._faucet_collector.set_get_gauge_metrics(get_gauge_metrics_func)
+        self._faucet_collector.set_get_gauge_metrics(
+            lambda: varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS))
         self._faucet_collector.set_get_dva_state(
             (lambda switch, port:
              self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
