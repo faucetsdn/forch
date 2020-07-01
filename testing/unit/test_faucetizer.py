@@ -98,7 +98,6 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
           2:
             description: HOST
             max_hosts: 1
-    include: []
     """
 
     def setUp(self):
@@ -114,43 +113,18 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
     def test_faucetize_simple(self):
         """test normal faucetize behavior"""
         self._faucetizer.reload_structural_config()
-        self._faucetizer.flush_behavioral_config(force=True)
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerInitialFaucetConfigTestCase(FaucetizerSimpleTestCase):
-    """Test basic functionality of Faucetizer"""
+class FaucetizerBehaviorTestCase(FaucetizerTestBase):
+    """Test Faucetizer's behavior after several iterations of device information processing"""
 
     ORCH_CONFIG = """
     unauthenticated_vlan: 100
     tail_acl: 'tail_acl'
     """
-
-    FAUCET_BEHAVIORAL_CONFIG = """
-    dps:
-      t2sw1:
-        dp_id: 121
-        interfaces:
-          1:
-            description: HOST
-            max_hosts: 1
-            native_vlan: 100
-            acls_in: ['tail_acl']
-          2:
-            description: HOST
-            max_hosts: 1
-            native_vlan: 100
-            acls_in: ['tail_acl']
-    include: []
-    """
-
-
-class FaucetizerBehaviorTestCase(FaucetizerTestBase):
-    """Test Faucetizer's behavior after several iterations of device information processing"""
-
-    ORCH_CONFIG = 'unauthenticated_vlan: 100'
 
     FAUCET_STRUCTURAL_CONFIG = """
     dps:
@@ -187,6 +161,20 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             max_hosts: 1
           7:
             stack: {dp: t1sw1, port: 7}
+    acls:
+      role_red:
+        - rule:
+            dl_type: 0x800
+            actions:
+              allow: True
+      role_green:
+        - rule:
+            actions:
+              allow: False
+      tail_acl:
+        - rule:
+            actions:
+              allow: True
     """
 
     FAUCET_BEHAVIORAL_CONFIG = """
@@ -228,7 +216,23 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             native_vlan: 100
           7:
             stack: {dp: t1sw1, port: 7}
-    include: []
+    acls:
+      role_red:
+        - rule:
+            cookie: 1
+            dl_type: 2048
+            actions:
+              allow: True
+      role_green:
+        - rule:
+            cookie: 2
+            actions:
+              allow: False
+      tail_acl:
+        - rule:
+            cookie: 3
+            actions:
+              allow: True
     """
 
     SEGMENTS_TO_VLANS = {
@@ -253,25 +257,25 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
 
         placements = [
             # mocking static placements
-            ('02:00:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
-            ('02:00:00:00:00:02', {'switch': 't2sw1', 'port': 2, 'connected': True}, True),
+            ('02:0A:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
+            ('02:0b:00:00:00:02', {'switch': 't2sw1', 'port': 2, 'connected': True}, True),
             # devices dynamically learned
-            ('02:00:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
-            ('02:00:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': True}, False),
-            ('02:00:00:00:00:04', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
+            ('02:0a:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
+            ('02:0c:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': True}, False),
+            ('02:0D:00:00:00:04', {'switch': 't2sw2', 'port': 2, 'connected': True}, False),
             # devices expired
-            ('02:00:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': False}, False),
-            ('02:00:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': False}, False)
+            ('02:0a:00:00:00:01', {'switch': 't2sw2', 'port': 2, 'connected': False}, False),
+            ('02:0c:00:00:00:03', {'switch': 't2sw2', 'port': 1, 'connected': False}, False)
         ]
 
         behaviors = [
             # mocking static behaviors
-            ('02:00:00:00:00:01', {'segment': 'SEG_A', 'role': 'red'}, True),
-            ('02:00:00:00:00:03', {'segment': 'SEG_C', 'role': 'blue'}, True),
+            ('02:0a:00:00:00:01', {'segment': 'SEG_A', 'role': 'red'}, True),
+            ('02:0c:00:00:00:03', {'segment': 'SEG_C'}, True),
             # devices authenticated
-            ('02:00:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
-            ('02:00:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
-            ('02:00:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
+            ('02:0B:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
+            ('02:0c:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
+            ('02:0D:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
         ]
 
         # process static device info
@@ -289,9 +293,14 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._process_device_behavior(behaviors[3])
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
-        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
-        self._update_port_config(expected_config, switch='t2sw1', port=2, vlan=300, role='green')
-        self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=400, role='blue')
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=1, vlan=200, role='red', tail_acl='tail_acl')
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=2, vlan=300, role='green', tail_acl='tail_acl')
+        self._update_port_config(
+            expected_config, switch='t2sw2', port=1, vlan=400, tail_acl='tail_acl')
+        self._update_port_config(
+            expected_config, switch='t2sw2', port=2, vlan=100, tail_acl='tail_acl')
         self._verify_behavioral_config(expected_config)
 
         # device expired
@@ -299,9 +308,44 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._process_device_placement(placements[6])
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
-        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
-        self._update_port_config(expected_config, switch='t2sw1', port=2, vlan=300, role='green')
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=1, vlan=200, role='red', tail_acl='tail_acl')
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=2, vlan=300, role='green', tail_acl='tail_acl')
+        self._update_port_config(
+            expected_config, switch='t2sw2', port=1, vlan=100, tail_acl='tail_acl')
+        self._update_port_config(
+            expected_config, switch='t2sw2', port=2, vlan=100, tail_acl='tail_acl')
         self._verify_behavioral_config(expected_config)
+
+
+class FaucetizerNoTailACLDefinitionTestCase(FaucetizerTestBase):
+    """Test case where no ACL is defined for the tail_acl specified in forch.yaml"""
+
+    ORCH_CONFIG = """
+    unauthenticated_vlan: 100
+    tail_acl: 'non_existing_acl'
+    """
+
+    FAUCET_STRUCTURAL_CONFIG = """
+    dps:
+      t2sw1:
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+    acls:
+      tail_acl:
+        - rule:
+            actions:
+              allow: True
+    """
+
+    def test_no_tail_acl_definition(self):
+        """test faucetizer behavior when no ACL is defined for tail_acl"""
+        self._setup_config_files()
+        self.assertRaises(Exception, self._initialize_faucetizer)
 
 
 if __name__ == '__main__':
