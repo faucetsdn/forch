@@ -1002,7 +1002,6 @@ class FaucetStateCollector:
         self.process_port_state(event.timestamp, event.dp_name, event.port_no, state)
 
     @_dump_states
-    #@_register_restore_state_method(label_name='port', metric_name='port_lacp_role')
     def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
@@ -1371,7 +1370,7 @@ class FaucetStateCollector:
     def _is_egress_port(self, switch, port):
         port_attr = self._get_port_attributes(switch, port)
         if not port_attr:
-            return false
+            return False
         port_type = port_attr['type']
         return port_type == 'egress'
 
