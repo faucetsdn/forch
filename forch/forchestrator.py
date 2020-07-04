@@ -47,6 +47,7 @@ _GAUGE_PROM_PORT_DEFAULT = 9303
 _TARGET_FAUCET_METRICS = (
     'port_status',
     'port_lacp_state',
+    'port_lacp_role',
     'dp_status',
     'learned_l2_port',
     'port_stack_state',
@@ -299,7 +300,7 @@ class Forchestrator:
             (FaucetEvent.DpChange, lambda event: fcoll.process_dp_change(
                 event.timestamp, event.dp_name, None, event.reason == "cold_start")),
             (FaucetEvent.LagChange, lambda event: fcoll.process_lag_state(
-                event.timestamp, event.dp_name, event.port_no, event.state)),
+                event.timestamp, event.dp_name, event.port_no, event.role, event.state)),
             (FaucetEvent.StackState, lambda event: fcoll.process_stack_state(
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
