@@ -97,7 +97,7 @@ message LacpRole {
   /*
    * Enumeration of LACP roles
    */
-  enum LacpState {
+  enum LacpRole {
     // default: startup state
     default = 0;
 
