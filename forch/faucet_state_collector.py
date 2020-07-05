@@ -312,7 +312,7 @@ class FaucetStateCollector:
         self._update_stack_topo_state(timestamp, link_graph, stack_root, dps)
 
     def _restore_lag_state_from_metrics(self, metrics):
-        """Restores dataplane state from prometheus metrics. relies on STACK_STATE being restored"""
+        """Restores dataplane state from prometheus metrics. Relies on STACK_STATE being restored"""
         for sample in metrics.get('port_lacp_state').samples:
             switch = sample.labels.get('dp_name')
             port = sample.labels.get('port')
