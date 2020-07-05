@@ -1393,14 +1393,11 @@ class FaucetStateCollector:
     def _get_lacp_link_state(self, lacp_role, lacp_state):
         """Return forch link state for given  faucet lacp role and state"""
         if lacp_role == LacpRole.unselected:
-            if lacp_state == LacpState.noact or lacp_state == LacpState.active:
+            if lacp_state in (LacpState.noact, LacpState.active):
                 return STATE_UP
-            else:
-                return STATE_DOWN
-        elif lacp_role == LacpRole.selected:
+            return STATE_DOWN
+        if lacp_role == LacpRole.selected:
             if lacp_state != LacpState.active:
                 return STATE_DOWN
-            else:
-                return STATE_ACTIVE
-        else:
-            return STATE_DOWN
+            return STATE_ACTIVE
+        return STATE_DOWN
