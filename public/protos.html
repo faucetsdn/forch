@@ -698,6 +698,10 @@
                 </li>
               
                 <li>
+                  <a href="#LacpRole"><span class="badge">M</span>LacpRole</a>
+                </li>
+              
+                <li>
                   <a href="#LacpState"><span class="badge">M</span>LacpState</a>
                 </li>
               
@@ -708,6 +712,10 @@
               
                 <li>
                   <a href="#DVAState.State"><span class="badge">E</span>DVAState.State</a>
+                </li>
+              
+                <li>
+                  <a href="#LacpRole.LacpRole"><span class="badge">E</span>LacpRole.LacpRole</a>
                 </li>
               
                 <li>
@@ -2705,6 +2713,13 @@
                   <td><p> </p></td>
                 </tr>
               
+                <tr>
+                  <td>role</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -4665,6 +4680,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="LacpRole">LacpRole</h3>
+        <p>LACP Roles</p>
+
+        
+
+        
+      
         <h3 id="LacpState">LacpState</h3>
         <p>LACP States</p>
 
@@ -4711,6 +4733,47 @@ or to host_path API to list path </p></td>
                 <td>dynamic</td>
                 <td>3</td>
                 <td><p>authenticated</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="LacpRole.LacpRole">LacpRole.LacpRole</h3>
+        <p>Enumeration of LACP roles</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>default</td>
+                <td>0</td>
+                <td><p>default: startup state</p></td>
+              </tr>
+            
+              <tr>
+                <td>none</td>
+                <td>-1</td>
+                <td><p>notlacp: the port is not configured as lacp</p></td>
+              </tr>
+            
+              <tr>
+                <td>unselected</td>
+                <td>1</td>
+                <td><p>unselected: port is not a lacp port on the nominated DP</p></td>
+              </tr>
+            
+              <tr>
+                <td>selected</td>
+                <td>2</td>
+                <td><p>selected: port is a lacp port on nominated DP, will send/receive</p></td>
+              </tr>
+            
+              <tr>
+                <td>standby</td>
+                <td>3</td>
+                <td><p>standby: port is a lacp port that is on standby</p></td>
               </tr>
             
           </tbody>
