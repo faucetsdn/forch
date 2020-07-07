@@ -94,7 +94,7 @@ docker_envs="\
         --env FAUCET_CONFIG=$faucet_config"
 
 docker_volumes+="\
-        -v $INSTDIR:/etc/faucet \
+        -v $INSTDIR/faucet:/etc/faucet \
         -v $INSTDIR:/var/log/faucet"
 
 if [ -n "$prom_pt" ]; then
