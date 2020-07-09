@@ -16,7 +16,7 @@ from forch.constants import \
 
 from forch.utils import dict_proto
 
-from forch.proto.shared_constants_pb2 import DVAState, LacpState, State
+from forch.proto.shared_constants_pb2 import DVAState, LacpState, State, LacpRole
 from forch.proto.system_state_pb2 import StateSummary
 
 from forch.proto.dataplane_state_pb2 import DataplaneState
@@ -113,7 +113,7 @@ VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 # pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
-    def __init__(self, config):
+    def __init__(self, config, is_faucetizer_enabled):
         self.switch_states = {}
         self.topo_state = {}
         self.learned_macs = {}
@@ -121,11 +121,13 @@ class FaucetStateCollector:
         self.packet_counts = {}
         self.lock = RLock()
         self._lock = threading.Lock()
-        self.process_lag_state(time.time(), None, None, False)
+        self.process_lag_state(time.time(), None, None, False, False)
         self._active_state = State.initializing
+        self._is_faucetizer_enabled = is_faucetizer_enabled
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
         self._placement_callback = None
+        self._get_gauge_metrics = None
         self._get_dva_state = None
         self._stack_state_event = 0
         self._stack_state_update = 0
@@ -261,6 +263,7 @@ class FaucetStateCollector:
                     switch = sample.labels['dp_name']
                     label = int(sample.labels.get(label_name, 0))
                     restore_method(self, current_time, switch, label, int(sample.value))
+        self._restore_lag_state_from_metrics(metrics)
         self._restore_dataplane_state_from_metrics(metrics)
         self._restore_l2_learn_state_from_samples(metrics['learned_l2_port'].samples)
         self._restore_dp_config_change(metrics)
@@ -307,6 +310,23 @@ class FaucetStateCollector:
 
         timestamp = time.time()
         self._update_stack_topo_state(timestamp, link_graph, stack_root, dps)
+
+    def _restore_lag_state_from_metrics(self, metrics):
+        """Restores dataplane state from prometheus metrics. Relies on STACK_STATE being restored"""
+        for sample in metrics.get('port_lacp_state').samples:
+            switch = sample.labels.get('dp_name')
+            port = sample.labels.get('port')
+            port_attr = self._get_port_attributes(switch, port)
+            if not port_attr:
+                continue
+            port_type = port_attr['type']
+            if port_type != 'egress':
+                continue
+            role_sample = [sample for sample in metrics.get('port_lacp_role').samples
+                           if sample.labels.get('dp_name') == switch and
+                           sample.labels.get('port') == port][0]
+            timestamp = time.time()
+            self.process_lag_state(timestamp, switch, port, role_sample.value, sample.value)
 
     def _restore_dp_config_change(self, metrics):
         with self.lock:
@@ -461,16 +481,19 @@ class FaucetStateCollector:
                 mac_data['url'] = f"{url_base}/?list_hosts?eth_src={mac}"
 
     @_pre_check()
-    def get_switch_state(self, switch, port, metrics=None, url_base=None):
+    def get_switch_state(self, switch, port, url_base=None):
         """get a set of all switches"""
-        return self._get_switch_state(switch, port, metrics, url_base)
+        return self._get_switch_state(switch, port, url_base)
 
-    def _get_switch_state(self, switch, port, metrics=None, url_base=None):
+    def _get_switch_state(self, switch, port, url_base=None):
         """Get switch state impl"""
         switches_data = {}
         broken = []
         change_count = 0
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
+
+        metrics = self._get_gauge_metrics()
+
         for switch_name in self.switch_states:
             arg_port = port if switch_name == switch else None
             switch_data = self._get_switch(switch_name, arg_port, metrics)
@@ -553,7 +576,7 @@ class FaucetStateCollector:
             switch_map_obj[SW_STATE_LAST_CHANGE] = last_change
             return switch_map_obj
 
-    def _get_switch(self, switch_name, port, metrics=None):
+    def _get_switch(self, switch_name, port, metrics):
         """lock protect get_switch_raw"""
         with self.lock:
             return self._get_switch_raw(switch_name, port, metrics)
@@ -563,7 +586,7 @@ class FaucetStateCollector:
             raise Exception(f'Missing switch configuration for {switch_name}')
         return self.faucet_config[DPS_CFG][switch_name]
 
-    def _get_switch_raw(self, switch_name, port, metrics=None):
+    def _get_switch_raw(self, switch_name, port, metrics):
         """get switches state"""
         switch_map = {}
 
@@ -686,12 +709,12 @@ class FaucetStateCollector:
 
             if metrics is None:
                 self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in)
-                continue
+            else:
+                assert 'flow_packet_count_vlan_acl' in metrics, (
+                    f'VLAN ACL metric is not available for VLAN {vid}')
 
-            if 'flow_packet_count_vlan_acl' not in metrics:
-                raise Exception(f'VLAN ACL metric is not available for VLAN {vid}')
-            samples = metrics['flow_packet_count_vlan_acl'].samples
-            self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
+                samples = metrics['flow_packet_count_vlan_acl'].samples
+                self._fill_acls_behavior(switch_name, acl_maps_list, vlan_config.acls_in, samples)
 
     def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
@@ -714,8 +737,7 @@ class FaucetStateCollector:
                 self._fill_acls_behavior(
                     switch_name, acl_maps_list, port_config.acls_in, None, port_id)
             else:
-                if 'flow_packet_count_port_acl' not in metrics:
-                    raise Exception('No port acl metric available')
+                assert 'flow_packet_count_port_acl' in metrics, 'No port acl metric available'
 
                 samples = metrics['flow_packet_count_port_acl'].samples
                 self._fill_acls_behavior(
@@ -733,11 +755,11 @@ class FaucetStateCollector:
                 rule_map = {'description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
 
-                if not metric_samples:
+                if not self._is_faucetizer_enabled or not metric_samples:
                     continue
 
                 if not cookie_num:
-                    raise Exception(f'Cookie is not generated for acl %s', acl_config._id)
+                    raise Exception(f'Cookie is not generated for acl {acl_config._id}')
 
                 has_sample = False
                 for sample in metric_samples:
@@ -980,12 +1002,12 @@ class FaucetStateCollector:
         self.process_port_state(event.timestamp, event.dp_name, event.port_no, state)
 
     @_dump_states
-    @_register_restore_state_method(label_name='port', metric_name='port_lacp_state')
-    def process_lag_state(self, timestamp, name, port, lacp_state):
+    def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info('lag_state update %s %s %s', name, port, lacp_state)
+            LOGGER.info('lag_state update %s %s %s %s', name, port, lacp_role, lacp_state)
             egress_state = self.topo_state.setdefault('egress', {})
+            lacp_role = int(lacp_role)  # varz returns float. Need to convert to int
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
 
             links = egress_state.setdefault(EGRESS_LINK_MAP, {})
@@ -997,7 +1019,7 @@ class FaucetStateCollector:
 
             key = '%s:%s' % (name, port)
             link = links.setdefault(key, {})
-            link_state = LACP_TO_LINK_STATE[lacp_state]
+            link_state = self._get_lacp_link_state(lacp_role, lacp_state)
 
             if link_state != link.get(LINK_STATE):
                 change_count = change_count + 1
@@ -1269,7 +1291,7 @@ class FaucetStateCollector:
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
-    def get_list_hosts(self, url_base, src_mac, metrics=None):
+    def get_list_hosts(self, url_base, src_mac):
         """Get access devices"""
         host_macs = {}
         if src_mac and src_mac not in self.learned_macs:
@@ -1285,6 +1307,8 @@ class FaucetStateCollector:
             mac_deets['switch'] = switch
             mac_deets['port'] = port
             mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
+
+            metrics = self._get_gauge_metrics()
             self._fill_port_behavior(switch, port, mac_deets, metrics)
 
             if MAC_RADIUS_RESULT in mac_state:
@@ -1344,11 +1368,19 @@ class FaucetStateCollector:
         return None
 
     def _is_egress_port(self, switch, port):
-        return self._get_egress_port(switch) == port
+        port_attr = self._get_port_attributes(switch, port)
+        if not port_attr:
+            return False
+        port_type = port_attr['type']
+        return port_type == 'egress'
 
     def set_placement_callback(self, callback):
         """register callback method to call to process placement info"""
         self._placement_callback = callback
+
+    def set_get_gauge_metrics(self, func):
+        """Set get_gauge_metrics method"""
+        self._get_gauge_metrics = func
 
     def set_get_dva_state(self, func):
         """set get_dva_states method"""
@@ -1357,3 +1389,15 @@ class FaucetStateCollector:
     def set_forch_metrics(self, forch_metrics):
         """set object that handles forch varz metrics exposure"""
         self._forch_metrics = forch_metrics
+
+    def _get_lacp_link_state(self, lacp_role, lacp_state):
+        """Return forch link state for given  faucet lacp role and state"""
+        if lacp_role == LacpRole.unselected:
+            if lacp_state in (LacpState.noact, LacpState.active):
+                return STATE_UP
+            return STATE_DOWN
+        if lacp_role == LacpRole.selected:
+            if lacp_state != LacpState.active:
+                return STATE_DOWN
+            return STATE_ACTIVE
+        return STATE_DOWN

@@ -1,3 +1,44 @@
+acls:
+  uniform_100:
+  - rule:
+      actions:
+        allow: true
+      cookie: 6
+      description: allow DHCP
+      dl_type: 2048
+      ip_proto: 17
+      ipv4_dst: 192.168.1.254
+      udp_dst: 67
+  - rule:
+      actions:
+        allow: true
+      cookie: 7
+      description: allow ARP request
+      dl_type: 2054
+      eth_dst: ff:ff:ff:ff:ff:ff
+  - rule:
+      actions:
+        allow: false
+      cookie: 8
+      description: deny all
+  uniform_200:
+  - rule:
+      actions:
+        allow: true
+      cookie: 9
+      description: allow all
+  uniform_300:
+  - rule:
+      actions:
+        allow: true
+      cookie: 10
+      description: allow all
+  uniform_400:
+  - rule:
+      actions:
+        allow: false
+      cookie: 11
+      description: allow all
 dps:
   nz-kiwi-t1sw1:
     dp_id: 177
@@ -963,7 +1004,6 @@ dps:
       max_per_interval: 5
       send_interval: 5
 include:
-- uniform-acls_augmented.yaml
 - role-based-acls_augmented.yaml
 version: 2
 vlans:

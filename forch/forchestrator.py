@@ -47,6 +47,7 @@ _GAUGE_PROM_PORT_DEFAULT = 9303
 _TARGET_FAUCET_METRICS = (
     'port_status',
     'port_lacp_state',
+    'port_lacp_role',
     'dp_status',
     'learned_l2_port',
     'port_stack_state',
@@ -94,16 +95,25 @@ class Forchestrator:
         self._active_state = State.initializing
         self._active_state_lock = threading.Lock()
 
+        self._should_enable_faucetizer = False
+
         self._config_summary = None
         self._metrics = None
         self._proxy = None
 
     def initialize(self):
         """Initialize forchestrator instance"""
+        self._should_enable_faucetizer = self._calculate_config_files()
+
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
-        self._faucet_collector = FaucetStateCollector(self._config)
+
+        self._faucet_collector = FaucetStateCollector(
+            self._config, is_faucetizer_enabled=self._should_enable_faucetizer)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
+        self._faucet_collector.set_get_gauge_metrics(
+            lambda: varz_state_collector.retry_get_metrics(
+                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS))
         self._faucet_collector.set_get_dva_state(
             (lambda switch, port:
              self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
@@ -133,7 +143,7 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-        if self._calculate_config_files():
+        if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
         self._attempt_authenticator_initialise()
@@ -290,7 +300,7 @@ class Forchestrator:
             (FaucetEvent.DpChange, lambda event: fcoll.process_dp_change(
                 event.timestamp, event.dp_name, None, event.reason == "cold_start")),
             (FaucetEvent.LagChange, lambda event: fcoll.process_lag_state(
-                event.timestamp, event.dp_name, event.port_no, event.state)),
+                event.timestamp, event.dp_name, event.port_no, event.role, event.state)),
             (FaucetEvent.StackState, lambda event: fcoll.process_stack_state(
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
@@ -628,12 +638,7 @@ class Forchestrator:
         switch = params.get('switch')
         port = params.get('port')
         host = self._extract_url_base(path)
-        if self._faucetizer:
-            gauge_metrics = varz_state_collector.retry_get_metrics(
-                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
-            reply = self._faucet_collector.get_switch_state(switch, port, gauge_metrics, host)
-        else:
-            reply = self._faucet_collector.get_switch_state(switch, port, None, host)
+        reply = self._faucet_collector.get_switch_state(switch, port, host)
         return self._augment_state_reply(reply, path)
 
     def get_dataplane_state(self, path, params):
@@ -653,12 +658,7 @@ class Forchestrator:
         """List learned access devices"""
         eth_src = params.get('eth_src')
         host = self._extract_url_base(path)
-        if self._faucetizer:
-            gauge_metrics = varz_state_collector.retry_get_metrics(
-                self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS)
-            reply = self._faucet_collector.get_list_hosts(host, eth_src, gauge_metrics)
-        else:
-            reply = self._faucet_collector.get_list_hosts(host, eth_src)
+        reply = self._faucet_collector.get_list_hosts(host, eth_src)
         return self._augment_state_reply(reply, path)
 
     def get_cpn_state(self, path, params):

@@ -30,6 +30,7 @@ message LagChange {
   string dp_name = 2;
   int32 port_no = 3;
   int32 state = 4;
+  int32 role = 5;
 }
 
 
