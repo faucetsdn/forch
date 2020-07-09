@@ -147,6 +147,8 @@ class Forchestrator:
         if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
+            if self._gauge_config_file:
+                self._faucetizer.reload_and_flush_gauge_config()
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -261,6 +263,9 @@ class Forchestrator:
                 os.path.dirname(self._structural_config_file))
             self._config_file_watcher.register_file_callback(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
+            if self._gauge_config_file:
+                self._config_file_watcher.register_file_callback(
+                    self._gauge_config_file, self._faucetizer.reload_and_flush_gauge_config)
 
     def _initialize_gauge_metrics_scheduler(self, interval_sec):
         get_gauge_metrics = (
