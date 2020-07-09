@@ -8,7 +8,7 @@ site:
       fqdn: localhost.n
       port: 9020
 orchestration:
-  structural_config_file: faucet_structural.yaml
+  structural_config_file: faucet.yaml
   unauthenticated_vlan: 100
   tail_acl: tail_acl
   static_device_placement: placement.yaml
