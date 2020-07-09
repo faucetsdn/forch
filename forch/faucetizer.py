@@ -243,7 +243,7 @@ class Faucetizer:
 
         gauge_file_name = os.path.split(gauge_config_file)[1]
         new_gauge_file_path = os.path.join(self._faucet_config_dir, gauge_file_name)
-        with open(new_gauge_file_path) as file:
+        with open(new_gauge_file_path, 'w') as file:
             yaml.dump(gauge_config, file)
 
     def reload_include_file(self, file_path):

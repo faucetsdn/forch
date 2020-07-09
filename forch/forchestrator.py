@@ -148,7 +148,7 @@ class Forchestrator:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
             if self._gauge_config_file:
-                self._faucetizer.reload_and_flush_gauge_config()
+                self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
