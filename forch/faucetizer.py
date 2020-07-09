@@ -38,6 +38,8 @@ class Faucetizer:
         self._config = orch_config
         self._structural_config_file = structural_config_file
         self._behavioral_config_file = behavioral_config_file
+        self._forch_config_dir = os.path.dirname(self._structural_config_file)
+        self._faucet_config_dir = os.path.dirname(self._behavioral_config_file)
         self._watched_include_files = []
         self._reregister_include_file_handlers = reregister_include_file_handlers
         self._lock = threading.RLock()
@@ -96,10 +98,9 @@ class Faucetizer:
             self._next_cookie = 1
             behavioral_include = []
             new_watched_include_files = []
-            forch_config_dir = os.path.dirname(self._structural_config_file)
 
             for include_file_name in self._structural_faucet_config.get('include', []):
-                include_file_path = os.path.join(forch_config_dir, include_file_name)
+                include_file_path = os.path.join(self._forch_config_dir, include_file_name)
                 self.reload_include_file(include_file_path)
                 behavioral_include.append(self._augment_include_file_name(include_file_name))
                 new_watched_include_files.append(include_file_path)
@@ -235,6 +236,16 @@ class Faucetizer:
             structural_config = yaml.safe_load(file)
             self._process_structural_config(structural_config)
 
+    def reload_and_flush_gauge_config(self, gauge_config_file):
+        """Reload gauge config file and rewrite to faucet config directory"""
+        with open(gauge_config_file) as file:
+            gauge_config = yaml.safe_load(file)
+
+        gauge_file_name = os.path.split(gauge_config_file)[1]
+        new_gauge_file_path = os.path.join(self._faucet_config_dir, gauge_file_name)
+        with open(new_gauge_file_path) as file:
+            yaml.dump(gauge_config, file)
+
     def reload_include_file(self, file_path):
         """Reload include file"""
         with open(file_path) as file:
@@ -260,8 +271,7 @@ class Faucetizer:
 
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
-        faucet_config_dir = os.path.dirname(self._behavioral_config_file)
-        faucet_include_file_path = os.path.join(faucet_config_dir, include_file_name)
+        faucet_include_file_path = os.path.join(self._faucet_config_dir, include_file_name)
         with open(faucet_include_file_path, 'w') as file:
             yaml.dump(include_config, file)
             LOGGER.debug('Wrote augmented included file to %s', faucet_include_file_path)
