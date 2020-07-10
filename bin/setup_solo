@@ -30,7 +30,7 @@ if [ -n "$setup_base" ]; then
 fi
 
 inst_dir=inst/forch-faucet-solo
-mkdir -p $inst_dir
+mkdir -p $inst_dir/faucet
 rm -rf $inst_dir/* || true
 cp -r topo/solo/* $inst_dir/
 
