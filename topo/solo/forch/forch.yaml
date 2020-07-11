@@ -8,11 +8,21 @@ site:
       fqdn: localhost.n
       port: 9020
 orchestration:
-  structural_config_file: faucet_structural.yaml
+  structural_config_file: faucet.yaml
   unauthenticated_vlan: 100
-  tail_acl: tail_acl
-  static_device_placement: placement.yaml
-  static_device_behavior: behaviors.yaml
+  static_device_placement: example_placement.yaml
+  static_device_behavior: example_behavior.yaml
+  segments_vlans_file: example_segments-to-vlans.yaml
+  auth_config:
+    radius_info:
+      server_ip: 172.17.0.5
+      server_port: 1812
+      radius_secret_helper: 'echo SECRET'
+    heartbeat_sec: 5
+    max_radius_backoff: 10
+    query_timeout_sec: 15
+    reject_timeout_sec: 360
+    auth_timeout_sec: 3559
 proxy_server:
   targets:
     faucet:
@@ -30,6 +40,6 @@ process:
     gauge:
       regex: python.*ryu-manager.*faucet\.gauge
     forch:
-      regex: ^python.*forch$
+      regex: ^python.*forch\.forchestrator
     sleep:
       regex: "sleep 50\\.3231"
