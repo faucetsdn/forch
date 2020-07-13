@@ -1,3 +1,20 @@
+## 1.9.0
+## Forch 0.41
+* Output augmented include files to faucet directory (#129)
+* Account for port role while calculating egress link state. Change is egress port to fix error querying lag state when varz are queried.  (#128)
+* Reflect switch state cookie error in system state (#127)
+* Use lowercase MAC addresses in Faucetizer (#126)
+## Faucet 1.9.47
+* Optimization: suppress unneeded overlapping OpenFlow delete messages.
+* Do not allow overlapping interface ranges in configuration file.
+* Add a prometheus variable for stack root status by datapath.
+* Update dependencies
+  * prometheus 2.19.2 [docker]
+  * grafana 7.0.4 [apt, docker]
+  * sphinx 3.1.1 [docs]
+  * sphinx rtd theme 0.5.0 [docs]
+  * pytype 2020.6.26 [tests]
+
 ## 1.8.0
 ## Forch 0.40
 * Use lowercase MAC addresses in Faucetizer (#126)
