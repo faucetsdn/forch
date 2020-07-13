@@ -89,3 +89,28 @@ message DVAState {
     dynamic = 3;
   }
 }
+
+/*
+ * LACP Roles
+ */
+message LacpRole {
+  /*
+   * Enumeration of LACP roles
+   */
+  enum LacpRole {
+    // default: startup state
+    default = 0;
+
+    // notlacp: the port is not configured as lacp
+    none = -1;
+
+    // unselected: port is not a lacp port on the nominated DP
+    unselected = 1;
+
+    // selected: port is a lacp port on nominated DP, will send/receive
+    selected = 2;
+
+    // standby: port is a lacp port that is on standby
+    standby = 3;
+  }
+}
