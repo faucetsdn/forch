@@ -63,7 +63,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             raise HttpException(f'Host is empty. Path: {self.path}',
                                 http.HTTPStatus.BAD_REQUEST)
         if not self.path:
-            raise HttpException(f'Path is empty', http.HTTPStatus.BAD_REQUEST)
+            raise HttpException('Path is empty', http.HTTPStatus.BAD_REQUEST)
         if '..' in self.path:
             raise HttpException(f'Path contains directory traversal notations: {self.path}',
                                 http.HTTPStatus.BAD_REQUEST)
