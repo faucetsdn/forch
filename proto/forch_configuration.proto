@@ -78,6 +78,9 @@ message OrchestrationConfig {
   // segment to vlan mappings file name
   string segments_vlans_file = 5;
 
+  // name of gauge config file
+  string gauge_config_file = 10;
+
   // interval of periodic faucetizing task in seconds.
   // NB: no value or setting to 0 indicates instant faucetizing
   int32 faucetize_interval_sec = 6;

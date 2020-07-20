@@ -8,14 +8,18 @@ site:
       fqdn: localhost.n
       port: 9020
 orchestration:
+  structural_config_file: faucet.yaml
+  unauthenticated_vlan: 100
+  tail_acl: tail_acl
   static_device_placement: placement.yaml
+  static_device_behavior: behaviors.yaml
 proxy_server:
   targets:
-    faucet: 
+    faucet:
       port: 8001
-    forch: 
+    forch:
       port: 8302
-    gauge: 
+    gauge:
       port: 9001
 process:
   scan_interval_sec: 10
@@ -29,8 +33,3 @@ process:
       regex: ^python.*forch$
     sleep:
       regex: "sleep 50\\.3231"
-  connections:
-    6001:
-      description: Faucet openflow port
-event_client:
-  stack_topo_change_coalesce_sec: 15

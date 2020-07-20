@@ -78,8 +78,8 @@ fi
 
 echo Starting faucet instances...
 sudo rm -rf inst/
-mkdir -p inst/forch-faucet-corp
-cp topo/$mode/corp_conf.yaml inst/forch-faucet-corp/faucet.yaml
+mkdir -p inst/forch-faucet-corp/faucet
+cp topo/$mode/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
 docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet $local corp 6683
@@ -87,7 +87,8 @@ bin/run_faucet $local corp 6683
 for index in 1; do
     controller=forch-faucet-$index
     mkdir -p inst/$controller/
-    cp topo/$mode/*.yaml inst/$controller/
+    cp -r topo/$mode/forch inst/$controller/
+    cp -r topo/$mode/faucet inst/$controller/
     docker kill $controller || true
     bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
     bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))

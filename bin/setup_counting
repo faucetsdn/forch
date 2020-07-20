@@ -46,7 +46,7 @@ echo Starting faucet instances...
 sudo rm -rf inst/
 controller=forch-faucet-counting
 mkdir -p inst/$controller/
-cp topo/counting/*.yaml inst/$controller/
+cp -r topo/counting/* inst/$controller/
 docker kill $controller || true
 bin/run_faucet $local counting 6001 8001
 bin/run_faucet $local gauge counting 7001 9001

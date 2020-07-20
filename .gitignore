@@ -1,8 +1,8 @@
-faucet
-inst/
-test_out/
-protoc-gen-doc/
-ovs/
+/faucet
+/inst/
+/test_out/
+/protoc-gen-doc/
+/ovs/
 
 # package build files
 

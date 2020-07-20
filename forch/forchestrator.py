@@ -75,6 +75,7 @@ class Forchestrator:
         self._config = config
         self._structural_config_file = None
         self._behavioral_config_file = None
+        self._gauge_config_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_prom_endpoint = None
@@ -146,6 +147,9 @@ class Forchestrator:
         if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
+            if self._gauge_config_file:
+                self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
+
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
@@ -207,6 +211,11 @@ class Forchestrator:
         self._behavioral_config_file = os.path.join(
             os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
 
+        gauge_config_file = orch_config.gauge_config_file
+        if gauge_config_file:
+            self._gauge_config_file = os.path.join(
+                os.getenv('FORCH_CONFIG_DIR'), gauge_config_file)
+
         structural_config_file = orch_config.structural_config_file
         if structural_config_file:
             self._structural_config_file = os.path.join(
@@ -254,6 +263,9 @@ class Forchestrator:
                 os.path.dirname(self._structural_config_file))
             self._config_file_watcher.register_file_callback(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
+            if self._gauge_config_file:
+                self._config_file_watcher.register_file_callback(
+                    self._gauge_config_file, self._faucetizer.reload_and_flush_gauge_config)
 
     def _initialize_gauge_metrics_scheduler(self, interval_sec):
         get_gauge_metrics = (
