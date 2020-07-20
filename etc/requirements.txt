@@ -4,12 +4,12 @@ coverage
 netaddr
 networkx
 pbr>=1.9
-prometheus_client==0.7.1
+prometheus_client==0.8.0
 protobuf
 psutil
-pylint==2.4.4
+pylint==2.5.3
 pytricia
 pyyaml
 requests
-ryu==4.32
+ryu==4.34
 watchdog
