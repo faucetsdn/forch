@@ -1,3 +1,7 @@
+## 1.10.0
+## Forch 0.42
+* Make Forch manage gauge.yaml and reorganize files in integration tests (#131)
+
 ## 1.9.0
 ## Forch 0.41
 * Output augmented include files to faucet directory (#129)
