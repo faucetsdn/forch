@@ -687,8 +687,12 @@ class Forchestrator:
         """Get overall config from faucet config file"""
         try:
             _, _, behavioral_config = self._get_faucet_config()
+            behavioral_config_map = {
+                'content': behavioral_config,
+                'warnings': proto_dict(self._config_summary.warnings)
+            }
             reply = {
-                'faucet_behavioral': behavioral_config,
+                'faucet_behavioral': behavioral_config_map,
                 'forch': proto_dict(self._config)
             }
             if self._faucetizer:
