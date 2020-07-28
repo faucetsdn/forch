@@ -44,10 +44,10 @@ function test_dva {
 
     api_result=$fout_dir/sys_config.json
     echo "@sys_config $fdesc" | tee -a $TEST_RESULTS
-    jq '.faucet_structural.dps."nz-kiwi-t2sw1".interfaces."1".max_hosts' $api_result | tee -a $TEST_RESULTS
-    jq '.faucet_behavioral.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
-    jq '.faucet_behavioral.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
-    jq '.faucet_behavioral.dps."nz-kiwi-t2sw3".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet_structural.content.dps."nz-kiwi-t2sw1".interfaces."1".max_hosts' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet_behavioral.content.dps."nz-kiwi-t2sw2".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet_behavioral.content.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $api_result | tee -a $TEST_RESULTS
+    jq '.faucet_behavioral.content.dps."nz-kiwi-t2sw3".interfaces."1".acls_in[0]' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/dataplane_state.json
     echo "@dataplane_state $fdesc" | tee -a $TEST_RESULTS
