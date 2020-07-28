@@ -399,9 +399,9 @@ function validate_radius_varz {
     echo validating
     set -x
     timeouts=$(wget 0.0.0.0:8302 -O- | grep radius_query_timeouts_total | \
-		   grep -v 'HELP\|TYPE' | awk '{print $2}')
+                   grep -v 'HELP\|TYPE' | awk '{print $2}')
     responses=$(wget 0.0.0.0:8302 -O- | grep radius_query_responses_total | \
-		    grep -v 'HELP\|TYPE' | awk '{print $2}')
+                    grep -v 'HELP\|TYPE' | awk '{print $2}')
     timeouts=${timeouts%.0}
     responses=${responses%.0}
     echo Radius results $((timeouts > 0)) $((responses > 0)) | tee -a $TEST_RESULTS
@@ -412,6 +412,6 @@ function test_varz_value {
     port=$2
     path=$3
     query_path=0.0.0.0:$port/$path
-    value=$( printf "%.0f" $(wget $query_path -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2'}) )
+    value=$( printf "%.0f" $(wget $query_path -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2}') )
     echo $varz $value | tee -a $TEST_RESULTS
 }
