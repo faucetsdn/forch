@@ -694,16 +694,16 @@ class Forchestrator:
         """Get overall config from faucet config file"""
         try:
             _, _, behavioral_config = self._get_faucet_config()
-            behavioral_config_map = {
-                'content': behavioral_config,
+            faucet_config_map = {
+                'behavioral': behavioral_config,
                 'warnings': dict(self._config_summary.warnings)
             }
             reply = {
-                'faucet_behavioral': behavioral_config_map,
+                'faucet': faucet_config_map,
                 'forch': proto_dict(self._config)
             }
             if self._faucetizer:
-                reply['faucet_structural'] = self._faucetizer.get_structural_config()
+                reply['faucet']['structural'] = self._faucetizer.get_structural_config()
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"
