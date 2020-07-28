@@ -632,7 +632,7 @@ class Forchestrator:
     def _update_config_warning_varz(self):
         self._metrics.update_var(
             'faucet_config_warning_count', len(self._config_summary.warnings))
-        for warning_key, warning_msg in self._config_summary.warnings:
+        for warning_key, warning_msg in self._config_summary.warnings.items():
             self._metrics.update_var('faucet_config_warning', 0, warning_msg)
 
     def _populate_versions(self, versions):
