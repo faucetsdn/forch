@@ -89,6 +89,9 @@ class ForchMetrics():
         self._add_var(
             'dataplane_packet_count_vlan', 'number of packets in vlan', Gauge, ['vlan'])
 
+        self._add_var('faucet_config_warning_count', 'Count of Faucet configuration warnings', Gauge)
+        self._add_var('faucet_config_warning', 'Faucet configuration warning', Gauge, ['key', 'warning'])
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')

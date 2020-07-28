@@ -351,6 +351,7 @@ class Forchestrator:
 
     def _restore_faucet_config(self, timestamp, config_hash):
         config_info, faucet_dps, _ = self._get_faucet_config()
+        self._update_config_warning_varz()
         assert config_hash == config_info['hashes'], 'config hash info does not match'
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
@@ -628,6 +629,12 @@ class Forchestrator:
                 warnings.append(('faucet_dp_mac', 'faucet_dp_mac for DPs are not identical'))
         return warnings
 
+    def _update_config_warning_varz(self):
+        self._metrics.update_var(
+            'faucet_config_warning_count', len(self._config_summary.warnings))
+        for warning_key, warning_msg in self._config_summary.warnings:
+            self._metrics.update_var('faucet_config_warning', 0, warning_msg)
+
     def _populate_versions(self, versions):
         versions.forch = __version__
         try:
@@ -689,7 +696,7 @@ class Forchestrator:
             _, _, behavioral_config = self._get_faucet_config()
             behavioral_config_map = {
                 'content': behavioral_config,
-                'warnings': proto_dict(self._config_summary.warnings)
+                'warnings': dict(self._config_summary.warnings)
             }
             reply = {
                 'faucet_behavioral': behavioral_config_map,
