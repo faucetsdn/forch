@@ -65,8 +65,8 @@ fgrep "Network Operations Administrative Helper" $OUT_DIR/index.html || exit 1
 curl http://$CONTROLLER_NAME:9019/protos.html > $OUT_DIR/protos.html
 fgrep "forch/proto/system_state.proto" $OUT_DIR/protos.html || exit 1
 curl http://$CONTROLLER_NAME:9019/sys_config > $OUT_DIR/sys_config.json
-jq '.faucet_behavioral.content.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
-jq '.faucet_behavioral.warnings.faucet_dp_mac' $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
+jq '.faucet.behavioral.dps."nz-kiwi-t2sw3"'.faucet_dp_mac $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
+jq '.faucet.warnings.faucet_dp_mac' $OUT_DIR/sys_config.json | tee -a $TEST_RESULTS
 test_varz_value faucet_config_warning_count 8302 forch
 
 echo %%% initial solid state | tee -a $TEST_RESULTS
