@@ -36,6 +36,7 @@ fi
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
     INSTDIR=$INSTDIR/forch-faucet-$1
+    id=$1
     shift
 fi
 
@@ -107,6 +108,15 @@ cid=$(docker run -d --privileged --name $CONTAINER \
              -p $ext_ofpt:6653 $port_opts $IMAGE)
 
 echo Container $CONTAINER started as $cid
+
+if [ $IMAGE == "forch/faucet"  ]; then
+    pid=$(docker inspect --format="{{ .State.Pid  }}" $cid)
+    echo Adding CPN interface to $CONTAINER pid:$pid...
+    cpn_intf_name=f-cpn-$id
+    intf_mac=9a:02:57:1e:8f:$(printf %02x $((10 + $id)))
+    sudo ip link add $cpn_intf_name type veth peer name cpn addr $intf_mac netns $pid
+    sudo ip link set $cpn_intf_name up
+fi
 
 while [ -n "$FAUCET_SOCK" -a ! -e $INSTDIR/$FAUCET_SOCK ]; do
     status=`docker inspect $CONTAINER | jq -r '.[0].State.Status'`
