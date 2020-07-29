@@ -36,7 +36,7 @@ fi
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
     INSTDIR=$INSTDIR/forch-faucet-$1
-    id=$1
+    faucet_id=$1
     shift
 fi
 
@@ -90,7 +90,7 @@ docker_envs="\
         --env FAUCET_CONFIG_STAT_RELOAD=1 \
         --env GAUGE_CONFIG_STAT_RELOAD=1 \
         --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
-        --env USERID=$(id -u) \
+        --env USERID=$(faucet_id -u) \
         --env FAUCET_EVENT_SOCK=$event_sock \
         --env FAUCET_CONFIG=$faucet_config"
 
@@ -112,8 +112,8 @@ echo Container $CONTAINER started as $cid
 if [ $IMAGE == "forch/faucet"  ]; then
     pid=$(docker inspect --format="{{ .State.Pid  }}" $cid)
     echo Adding CPN interface to $CONTAINER pid:$pid...
-    cpn_intf_name=f-cpn-$id
-    intf_mac=9a:02:57:1e:8f:$(printf %02x $((10 + $id)))
+    cpn_intf_name=f-cpn-$faucet_id
+    intf_mac=9a:02:57:1e:8f:$(printf %02x $((10 + $faucet_id)))
     sudo ip link add $cpn_intf_name type veth peer name cpn addr $intf_mac netns $pid
     sudo ip link set $cpn_intf_name up
 fi
