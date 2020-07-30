@@ -1,8 +1,5 @@
 #!/bin/bash -e
 
-echo "Getting interface..."
-route -n | grep -E '^0\.0\.0\.0'
-
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
