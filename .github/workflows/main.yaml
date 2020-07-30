@@ -28,8 +28,6 @@ jobs:
         run: bin/setup_base
       - name: setup faucet
         run: bin/setup_faucet
-      - name: compile ovs
-        run: bin/compile_ovs
       - name: run test
         run: bin/run_test_set base
 
