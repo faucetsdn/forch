@@ -96,8 +96,8 @@ function add_faux {
     port=$2
     fnum=$3
     bin/run_faux $fnum
-    docker exec -ti forch-faux-$fnum ip addr flush faux-eth0
-    docker exec -ti forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
+    docker exec forch-faux-$fnum ip addr flush faux-eth0
+    docker exec forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
     add_iface $switch $port faux-$fnum
 }
 
