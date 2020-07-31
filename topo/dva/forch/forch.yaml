@@ -41,7 +41,7 @@ process:
     gauge:
       regex: python.*ryu-manager.*faucet\.gauge
     forch:
-      regex: ^python.*forch$
+      regex: "python3 -m forch"
     sleep:
       regex: "sleep 50\\.3231"
 dataplane_monitoring:
