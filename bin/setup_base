@@ -21,7 +21,7 @@ fi
 
 pip3 install -r etc/requirements.txt
 
-DEF_IFACE=`route -n | grep -E '^0\.0\.0\.0' | awk '{print $8}'`
+DEF_IFACE=`route -n | egrep '\sUG\s' | awk '{print $8}'`
 if [ -n "$DEF_IFACE" ]; then
     echo Allowing docker external access through interface $DEF_IFACE...
     sudo iptables -o docker0 -i $DEF_IFACE -A FORWARD -j ACCEPT
