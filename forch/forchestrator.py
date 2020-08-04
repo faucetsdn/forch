@@ -351,6 +351,7 @@ class Forchestrator:
 
     def _restore_faucet_config(self, timestamp, config_hash):
         config_info, faucet_dps, _ = self._get_faucet_config()
+        self._update_config_warning_varz()
         assert config_hash == config_info['hashes'], 'config hash info does not match'
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
@@ -628,6 +629,12 @@ class Forchestrator:
                 warnings.append(('faucet_dp_mac', 'faucet_dp_mac for DPs are not identical'))
         return warnings
 
+    def _update_config_warning_varz(self):
+        self._metrics.update_var(
+            'faucet_config_warning_count', len(self._config_summary.warnings))
+        for warning_key, warning_msg in self._config_summary.warnings.items():
+            self._metrics.update_var('faucet_config_warning', 1, [warning_key, warning_msg])
+
     def _populate_versions(self, versions):
         versions.forch = __version__
         try:
@@ -687,12 +694,16 @@ class Forchestrator:
         """Get overall config from faucet config file"""
         try:
             _, _, behavioral_config = self._get_faucet_config()
+            faucet_config_map = {
+                'behavioral': behavioral_config,
+                'warnings': dict(self._config_summary.warnings)
+            }
             reply = {
-                'faucet_behavioral': behavioral_config,
+                'faucet': faucet_config_map,
                 'forch': proto_dict(self._config)
             }
             if self._faucetizer:
-                reply['faucet_structural'] = self._faucetizer.get_structural_config()
+                reply['faucet']['structural'] = self._faucetizer.get_structural_config()
             return self._augment_state_reply(reply, path)
         except Exception as e:
             return f"Cannot read faucet config: {e}"

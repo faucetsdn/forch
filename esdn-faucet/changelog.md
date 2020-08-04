@@ -1,3 +1,9 @@
+## 1.11.0
+## Forch 0.43
+* Add github workflows for integration tests (#136)
+* Create /etc/faucet/faucetat the end of Forch installation (#135)
+* Expose faucet config warning through API and Varz (#133)
+
 ## 1.10.0
 ## Forch 0.42
 * Make Forch manage gauge.yaml and reorganize files in integration tests (#131)
