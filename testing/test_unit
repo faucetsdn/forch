@@ -3,7 +3,7 @@
 MINCOVERAGE=92
 ROOT=$(realpath $(dirname $0)/..)
 TEST_DIR=$ROOT/testing/unit
-PYTHONPATH=$ROOT/forch
+PYTHONPATH=$ROOT/
 
 export PYTHONPATH
 

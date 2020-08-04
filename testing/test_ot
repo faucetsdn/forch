@@ -1,0 +1,18 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+TEST_DIR=testing/integration
+PYTHONPATH=$ROOT/testing:$ROOT
+
+export PYTHONPATH
+
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
+    PYTHON=venv/bin/python3
+else
+    PYTHON=python3
+fi
+
+cd $ROOT
+$PYTHON -m unittest discover \
+    -s $TEST_DIR \
+    -p "test_*.py"
