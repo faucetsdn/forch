@@ -52,7 +52,7 @@ class IntegrationTestBase(unittest.TestCase):
         cmd_list = ping_cmd.split()
         return_code, out, err = self._run_shell_command(cmd_list)
         logger.debug(str(out, 'utf-8'))
-        logger.debug('Return code: %s\nstderr: %s' %(return_code, str(err, 'utf-8')))
+        logger.debug('Return code: %s\nstderr: %s' % (return_code, str(err, 'utf-8')))
         return not return_code
 
     def test_stack(self):
