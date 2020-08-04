@@ -1,0 +1,101 @@
+name: Faucet Orchestrator integration tests
+
+on: [push, pull_request]
+
+jobs:
+  test_access:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack local skip-conn-check dva
+      - name: run test
+        run: bin/run_test_set access
+
+  test_base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: run test
+        run: bin/run_test_set base
+
+  test_reconfig:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack
+      - name: run test
+        run: bin/run_test_set reconfig
+
+  test_topos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: run test
+        run: bin/run_test_set topos
+
+  test_stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack local
+      - name: run test
+        run: bin/run_test_set stack

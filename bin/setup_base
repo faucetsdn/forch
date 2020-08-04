@@ -5,6 +5,12 @@ cd $ROOT
 
 GO_VERSION=1.13.3
 
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+
 sudo apt-get install openvswitch-switch protobuf-compiler \
      python3-venv python3-dev jq docker-ce
 
@@ -15,7 +21,7 @@ fi
 
 pip3 install -r etc/requirements.txt
 
-DEF_IFACE=`route -n | fgrep UG | awk '{print $8}'`
+DEF_IFACE=`route -n | egrep '\sUG\s' | awk '{print $8}'`
 if [ -n "$DEF_IFACE" ]; then
     echo Allowing docker external access through interface $DEF_IFACE...
     sudo iptables -o docker0 -i $DEF_IFACE -A FORWARD -j ACCEPT
