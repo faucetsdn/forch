@@ -32,7 +32,7 @@ class IntegrationTestBase(unittest.TestCase):
         return self._run_shell_command(command)
 
     def _setup_stack(self):
-        code, out, err = self._run_forch_script('bin/setup_stack', ['local', 'skip-conn-check'])
+        code, out, err = self._run_forch_script('bin/setup_stack', ['local', 'skip-conn-check', 'no_clean'])
         logger.debug('setup stack stdout: \n' + str(out, 'utf-8'))
         logger.debug('setup stack stderr: \n' + str(err, 'utf-8'))
         if not code:
