@@ -32,7 +32,7 @@ source bin/stack_functions
 
 ###########################################################
 
-bin/net_clean
+# bin/net_clean
 
 echo Configuring mode $mode...
 
