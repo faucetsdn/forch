@@ -37,9 +37,9 @@ class IntegrationTestBase(unittest.TestCase):
         logger.debug('setup stack stdout: \n' + str(out, 'utf-8'))
         logger.debug('setup stack stderr: \n' + str(err, 'utf-8'))
         if not code:
-            logger.info('setup_stack finished successfully')
+            logger.debug('setup_stack finished successfully')
         else:
-            logger.info('setup_stack failed')
+            logger.debug('setup_stack failed')
 
     def _clean_stack(self):
         code, out, err = self._run_forch_script('bin/net_clean')
@@ -54,13 +54,6 @@ class IntegrationTestBase(unittest.TestCase):
         logger.debug(str(out, 'utf-8'))
         logger.debug('Return code: %s\nstderr: %s' % (return_code, str(err, 'utf-8')))
         return not return_code
-
-    def test_stack(self):
-        self._clean_stack()
-        self._setup_stack()
-        self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
-        self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.12'))
-        self._clean_stack()
 
 
 if __name__ == '__main__':
