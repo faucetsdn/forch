@@ -2,12 +2,9 @@
 
 ROOT=$(realpath $(dirname $0)/..)
 TEST_DIR=testing/integration
-PYTHONPATH=$ROOT/
-PYTHONPATH=$ROOT/testing:$PYTHONPATH
+PYTHONPATH=$ROOT/testing:$ROOT
 
 export PYTHONPATH
-
-echo $PYTHONPATH
 
 if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
     PYTHON=venv/bin/python3
