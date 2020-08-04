@@ -1,8 +1,7 @@
 """Integration test base class for Forch"""
-
 import unittest
 
-from forch.test_lib.integration_base import IntegrationTestBase, logger
+from test_lib.integration_base import IntegrationTestBase, logger
 
 
 class OTConfigTest(IntegrationTestBase):
