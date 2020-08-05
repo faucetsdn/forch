@@ -118,13 +118,8 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerBehaviorTestCase(FaucetizerTestBase):
-    """Test Faucetizer's behavior after several iterations of device information processing"""
-
-    ORCH_CONFIG = """
-    unauthenticated_vlan: 100
-    tail_acl: 'tail_acl'
-    """
+class FaucetizerBehaviorBaseTestCase(FaucetizerTestBase):
+    """Base test case to test Faucetizer behavior"""
 
     FAUCET_STRUCTURAL_CONFIG = """
     dps:
@@ -251,6 +246,15 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._faucetizer = None
         self._cleanup_config_files()
 
+
+class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
+    """Test Faucetizer's behavior after several iterations of device information processing"""
+
+    ORCH_CONFIG = """
+    unauthenticated_vlan: 100
+    tail_acl: 'tail_acl'
+    """
+
     def test_devices_learned_and_authenticated(self):
         """devices with different combinations of static and dynamic info"""
         self._faucetizer.reload_structural_config()
@@ -319,88 +323,12 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerTestBase):
+class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerBehaviorBaseTestCase):
     """Test Faucetizer's behavior with no tail_acl setting in Forch config"""
 
     ORCH_CONFIG = """
     unauthenticated_vlan: 100
     """
-
-    FAUCET_STRUCTURAL_CONFIG = """
-        dps:
-          t1sw1:
-            dp_id: 111
-            interfaces:
-              1:
-                output_only: true
-              6:
-                stack: {dp: t2sw1, port: 6}
-              7:
-                stack: {dp: t2sw2, port: 7}
-              23:
-                lacp: 3
-          t2sw1:
-            dp_id: 121
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-              2:
-                description: HOST
-                max_hosts: 1
-              6:
-                stack: {dp: t1sw1, port: 6}
-        """
-
-    FAUCET_BEHAVIORAL_CONFIG = """
-        dps:
-          t1sw1:
-            dp_id: 111
-            interfaces:
-              1:
-                output_only: true
-              6:
-                stack: {dp: t2sw1, port: 6}
-              7:
-                stack: {dp: t2sw2, port: 7}
-              23:
-                lacp: 3
-          t2sw1:
-            dp_id: 121
-            interfaces:
-              1:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-              2:
-                description: HOST
-                max_hosts: 1
-                native_vlan: 100
-              6:
-                stack: {dp: t1sw1, port: 6}
-        acls:
-          role_red:
-            - rule:
-                cookie: 1
-                dl_type: 2048
-                actions:
-                  allow: True
-        """
-
-    SEGMENTS_TO_VLANS = {
-        'SEG_A': 200,
-        'SEG_B': 300
-    }
-
-    def setUp(self):
-        """setup fixture for each test method"""
-        self._setup_config_files()
-        self._initialize_faucetizer()
-
-    def tearDown(self):
-        """cleanup after each test method finishes"""
-        self._faucetizer = None
-        self._cleanup_config_files()
 
     def test_devices_learned_and_authenticated(self):
         """devices with different combinations of static and dynamic info"""
@@ -436,7 +364,7 @@ class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerNoTailACLDefinitionTestCase(FaucetizerTestBase):
+class FaucetizerMissingTailACLDefinitionTestCase(FaucetizerTestBase):
     """Test case where no ACL is defined for the tail_acl specified in forch.yaml"""
 
     ORCH_CONFIG = """
