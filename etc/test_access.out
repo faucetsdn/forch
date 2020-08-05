@@ -13,7 +13,7 @@ Starting access-vlan-assigned test...
 Starting dva-vlan-assigned tests
 @sys_config dva-vlan-assigned
 1
-"role_green"
+null
 300
 "role_yellow"
 @dataplane_state dva-vlan-assigned

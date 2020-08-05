@@ -274,7 +274,7 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             ('02:0c:00:00:00:03', {'segment': 'SEG_C'}, True),
             # devices authenticated
             ('02:0B:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
-            ('02:0c:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
+            ('02:0c:00:00:00:03', {'segment': 'SEG_A', 'role': 'black'}, False),
             ('02:0D:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
         ]
 
@@ -316,6 +316,123 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             expected_config, switch='t2sw2', port=1, vlan=100, tail_acl='tail_acl')
         self._update_port_config(
             expected_config, switch='t2sw2', port=2, vlan=100, tail_acl='tail_acl')
+        self._verify_behavioral_config(expected_config)
+
+
+class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerTestBase):
+    """Test Faucetizer's behavior with no tail_acl setting in Forch config"""
+
+    ORCH_CONFIG = """
+    unauthenticated_vlan: 100
+    """
+
+    FAUCET_STRUCTURAL_CONFIG = """
+        dps:
+          t1sw1:
+            dp_id: 111
+            interfaces:
+              1:
+                output_only: true
+              6:
+                stack: {dp: t2sw1, port: 6}
+              7:
+                stack: {dp: t2sw2, port: 7}
+              23:
+                lacp: 3
+          t2sw1:
+            dp_id: 121
+            interfaces:
+              1:
+                description: HOST
+                max_hosts: 1
+              2:
+                description: HOST
+                max_hosts: 1
+              6:
+                stack: {dp: t1sw1, port: 6}
+        """
+
+    FAUCET_BEHAVIORAL_CONFIG = """
+        dps:
+          t1sw1:
+            dp_id: 111
+            interfaces:
+              1:
+                output_only: true
+              6:
+                stack: {dp: t2sw1, port: 6}
+              7:
+                stack: {dp: t2sw2, port: 7}
+              23:
+                lacp: 3
+          t2sw1:
+            dp_id: 121
+            interfaces:
+              1:
+                description: HOST
+                max_hosts: 1
+                native_vlan: 100
+              2:
+                description: HOST
+                max_hosts: 1
+                native_vlan: 100
+              6:
+                stack: {dp: t1sw1, port: 6}
+        acls:
+          role_red:
+            - rule:
+                cookie: 1
+                dl_type: 2048
+                actions:
+                  allow: True
+        """
+
+    SEGMENTS_TO_VLANS = {
+        'SEG_A': 200,
+        'SEG_B': 300
+    }
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._setup_config_files()
+        self._initialize_faucetizer()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._faucetizer = None
+        self._cleanup_config_files()
+
+    def test_devices_learned_and_authenticated(self):
+        """devices with different combinations of static and dynamic info"""
+        self._faucetizer.reload_structural_config()
+
+        placements = [
+            # static placement
+            ('02:0A:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
+            # dynamic placement
+            ('02:0a:00:00:00:02', {'switch': 't2sw1', 'port': 2, 'connected': True}, False),
+        ]
+
+        behaviors = [
+            # static behavior
+            ('02:0c:00:00:00:02', {'segment': 'SEG_B'}, True),
+            # dynamic behavior with non existent role
+            ('02:0a:00:00:00:01', {'segment': 'SEG_A', 'role': 'black'}, False),
+        ]
+
+        # process static device info
+        self._process_device_placement(placements[0])
+        self._process_device_behavior(behaviors[1])
+
+        # process dynamic device info
+        self._process_device_placement(placements[1])
+        self._process_device_behavior(behaviors[0])
+
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=1, vlan=200)
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=2, vlan=300)
         self._verify_behavioral_config(expected_config)
 
 

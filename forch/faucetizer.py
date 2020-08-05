@@ -208,12 +208,9 @@ class Faucetizer:
                 if self._has_acl(acl_name):
                     port_cfg['acls_in'] = [acl_name]
                 else:
-                    port_cfg['acls_in'] = []
                     LOGGER.error('No ACL defined for role %s', device_behavior.role)
-            else:
-                port_cfg['acls_in'] = []
             if self._config.tail_acl:
-                port_cfg['acls_in'].append(self._config.tail_acl)
+                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
 
             dva_state = (DVAState.static if mac in self._static_devices.device_mac_behaviors
                          else DVAState.dynamic)

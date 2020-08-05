@@ -11,7 +11,6 @@
     Tunnel-Type = VLAN,
     Tunnel-Medium-Type = IEEE-802,
     Tunnel-Private-Group-Id = "BOS",
-    Tunnel-Assignment-Id = "green",
     Reply-Message = "welcome-infra-ap",
     Session-Timeout = 3600,
     Termination-Action = RADIUS-Request
