@@ -163,10 +163,16 @@ class Faucetizer:
                 if self._config.unauthenticated_vlan:
                     port_map['native_vlan'] = self._config.unauthenticated_vlan
                     self._update_vlan_state(switch, port, DVAState.unauthenticated)
-                if self._config.tail_acl:
-                    port_map['acls_in'] = [self._config.tail_acl]
 
         return behavioral_faucet_config
+
+    def _finalize_host_ports_config(self, behavioral_faucet_config):
+        for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
+            for port, port_map in switch_map.get('interfaces', {}).items():
+                if not self._is_access_port(port_map):
+                    continue
+                if self._config.tail_acl:
+                    port_map.setdefault('acls_in', []).append(self._config.tail_acl)
 
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
@@ -201,7 +207,7 @@ class Faucetizer:
                                mac, device_behavior.segment)
                 continue
 
-            # update port vlan and acls
+            # update port vlan and role-based acls
             port_cfg['native_vlan'] = vid
 
             if device_behavior.role:
@@ -211,14 +217,12 @@ class Faucetizer:
                 else:
                     LOGGER.error('No ACL defined for role %s', device_behavior.role)
 
-            tail_acl = self._config.tail_acl
-            if tail_acl and tail_acl not in port_cfg.get('acls_in', []):
-                port_cfg.setdefault('acls_in', []).append(self._config.tail_acl)
-
             dva_state = (DVAState.static if mac in self._static_devices.device_mac_behaviors
                          else DVAState.dynamic)
             self._update_vlan_state(
                 device_placement.switch, device_placement.port, dva_state)
+
+        self._finalize_host_ports_config(behavioral_faucet_config)
 
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
