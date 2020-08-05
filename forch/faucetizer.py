@@ -167,8 +167,8 @@ class Faucetizer:
         return behavioral_faucet_config
 
     def _finalize_host_ports_config(self, behavioral_faucet_config):
-        for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
-            for port, port_map in switch_map.get('interfaces', {}).items():
+        for switch_map in behavioral_faucet_config.get('dps', {}).values():
+            for port_map in switch_map.get('interfaces', {}).values():
                 if not self._is_access_port(port_map):
                     continue
                 if self._config.tail_acl:
