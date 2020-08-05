@@ -32,7 +32,7 @@ fi
 
 docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num"
 
-cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image $FAUX_ARGS)
+cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS)
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
 
 intf=faux$postfix
