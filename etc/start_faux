@@ -1,0 +1,15 @@
+#!/bin/bash
+
+IFACE=faux-eth0
+
+while ! ip link show $IFACE; do
+    sleep 10
+done
+
+echo Configuring network interface...
+ip addr flush $IFACE
+ip addr add 192.168.1.$FAUX_NUM/16 dev $IFACE
+
+ip addr
+
+tail -f /dev/null

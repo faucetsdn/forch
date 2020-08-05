@@ -53,7 +53,7 @@ docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash o
 done
 
 echo Building faux...
-docker build -t forch/faux -f etc/Dockerfile.faux . | tee -a build/docker_faux.log
+docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
 
 faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
