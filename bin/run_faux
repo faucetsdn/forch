@@ -42,4 +42,8 @@ echo Adding new interface to $pid...
 sudo ip link add $intf type veth peer name faux-eth0 addr $intf_mac netns $pid
 sudo ip link set $intf up
 
+echo Configuring docker container...
+docker exec $CONTAINER ip addr flush faux-eth0
+docker exec $CONTAINER ifconfig faux-eth0 192.168.1.$fnum/16
+
 echo Done with faux device launch.

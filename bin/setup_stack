@@ -76,7 +76,7 @@ echo Connecting faux interfaces
 add_faux corp 1 0
 add_faux t2sw1 1 1
 add_faux t2sw2 1 2
-add_faux t2sw3 1 3
+add_faux t2sw3 1 3 dhcp
 
 if [ -n "$devices" ]; then
     for fnum in {4..44}; do
