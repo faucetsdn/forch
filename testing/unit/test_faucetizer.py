@@ -343,7 +343,7 @@ class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerBehaviorBaseTestCase):
 
         behaviors = [
             # static behavior
-            ('02:0c:00:00:00:02', {'segment': 'SEG_B'}, True),
+            ('02:0a:00:00:00:02', {'segment': 'SEG_B'}, True),
             # dynamic behavior with non existent role
             ('02:0a:00:00:00:01', {'segment': 'SEG_A', 'role': 'black'}, False),
         ]
