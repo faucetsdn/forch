@@ -7,6 +7,7 @@ docker_args=
 container_prefix=forch-faux
 image=forch/faux
 net_opt=--net=none
+port_num=0
 
 cd $ROOT
 
@@ -29,7 +30,7 @@ if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; 
     docker rm -f $CONTAINER
 fi
 
-docker_args="$docker_args -e LOCAL_IF=$realintf"
+docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num"
 
 cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image $FAUX_ARGS)
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
@@ -41,9 +42,5 @@ sudo ip link del $intf 2>/dev/null || true
 echo Adding new interface to $pid...
 sudo ip link add $intf type veth peer name faux-eth0 addr $intf_mac netns $pid
 sudo ip link set $intf up
-
-echo Configuring docker container...
-docker exec $CONTAINER ip addr flush faux-eth0
-docker exec $CONTAINER ifconfig faux-eth0 192.168.1.$fnum/16
 
 echo Done with faux device launch.
