@@ -1,6 +1,10 @@
-name: Faucet Orchestrator integration tests
+name: forch test suite
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 */2 * * *'
 
 jobs:
   test_access:
