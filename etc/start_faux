@@ -18,7 +18,7 @@ IPADDR=192.168.1.$FAUX_NUM
 GATEWAY=192.168.1.0
 
 while ! ip link show $IFACE; do
-    sleep 10
+    sleep 2
 done
 
 echo Configuring network interface...

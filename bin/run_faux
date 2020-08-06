@@ -43,9 +43,4 @@ echo Adding new interface to $pid...
 sudo ip link add $intf type veth peer name faux-eth0 addr $intf_mac netns $pid
 sudo ip link set $intf up
 
-while ! docker exec $CONTAINER ip addr show faux-eth0 | fgrep inet; do
-    echo Waiting for IP address...
-    sleep 10
-done
-
 echo Done with faux device launch.

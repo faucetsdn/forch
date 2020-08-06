@@ -73,6 +73,7 @@ function add_iface {
     br=$1
     pt=$2
     iface=$3
+    echo TAP add_iface $br $pt $iface
     sudo ovs-vsctl add-port $br $iface -- set interface $iface ofport_request=$pt
     sudo ifconfig $iface up
 }
@@ -98,6 +99,10 @@ function add_faux {
     shift 3
     bin/run_faux $fnum $*
     add_iface $switch $port faux-$fnum
+    while ! docker exec forch-faux-$fnum ip addr show faux-eth0 | fgrep inet; do
+        echo Waiting for IP address...
+        sleep 2
+    done
 }
 
 function diagnose_stack {

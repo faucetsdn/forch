@@ -72,18 +72,6 @@ sudo ip link set corp-eth10 master bond
 sudo ip link set corp-eth20 master bond
 add_iface corp 10 bond
 
-echo Connecting faux interfaces
-add_faux corp 1 0 dnsmasq
-add_faux t2sw1 1 1
-add_faux t2sw2 1 2
-add_faux t2sw3 1 3 dhcp
-
-if [ -n "$devices" ]; then
-    for fnum in {4..44}; do
-        add_faux t2sw1 $fnum $fnum
-    done
-fi
-
 echo Starting faucet instances...
 sudo rm -rf inst/
 mkdir -p inst/forch-faucet-corp/faucet
@@ -102,8 +90,17 @@ for index in 1; do
     bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
-echo Letting system settle...
-sleep 10
+echo Connecting faux interfaces
+add_faux corp 1 0 dnsmasq
+add_faux t2sw1 1 1
+add_faux t2sw2 1 2
+add_faux t2sw3 1 3 dhcp
+
+if [ -n "$devices" ]; then
+    for fnum in {4..44}; do
+        add_faux t2sw1 $fnum $fnum
+    done
+fi
 
 echo head of forch-faucet-1/faucet.log:
 head inst/forch-faucet-1/faucet.log
