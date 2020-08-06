@@ -27,7 +27,8 @@ class Faucetizer:
     def __init__(self, orch_config, structural_config_file, segments_to_vlans,
                  behavioral_config_file, reregister_include_file_handlers=None):
         self._static_devices = DevicesState()
-        self._dynamic_devices = DevicesState()
+        self._sequestered_devices = DevicesState()
+        self._operational_devices = DevicesState()
         self._acl_configs = {}
         self._vlan_states = {}
         self._segments_to_vlans = segments_to_vlans
@@ -44,27 +45,32 @@ class Faucetizer:
         self._reregister_include_file_handlers = reregister_include_file_handlers
         self._lock = threading.RLock()
 
-    def process_device_placement(self, eth_src, placement, static=False):
+    def process_device_placement(self, eth_src, placement, event_type):
         """Process device placement"""
         if not placement.switch or not placement.port:
             raise Exception(f'Incomplete placement for {eth_src}: {placement}')
 
-        devices_state = self._static_devices if static else self._dynamic_devices
-        device_type = "static" if static else "dynamic"
+        if event_type == DVAState.static:
+            devices = self._static_devices
+        elif event_type == DVAState.authenticated:
+            devices = self._sequestered_devices
+        elif event_type == DVAState.permitted:
+            devices = self._permitted_devices
+
         eth_src = eth_src.lower()
 
         with self._lock:
-            device_placements = devices_state.device_mac_placements
+            device_placements = devices.device_mac_placements
             if placement.connected:
                 device_placement = device_placements.setdefault(eth_src, DevicePlacement())
                 device_placement.CopyFrom(placement)
                 LOGGER.info(
                     'Received %s placement: %s, %s, %s',
-                    device_type, eth_src, device_placement.switch, device_placement.port)
+                    event_type, eth_src, device_placement.switch, device_placement.port)
             else:
                 removed = device_placements.pop(eth_src, None)
                 if removed:
-                    LOGGER.info('Removed %s placement: %s', device_type, eth_src)
+                    LOGGER.info('Removed %s placement: %s', event_type, eth_src)
 
             self.flush_behavioral_config()
 
