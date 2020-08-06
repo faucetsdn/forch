@@ -14,6 +14,8 @@ add_faux sw1 4 2
 
 sleep 5
 
+echo TAP TAP
+docker exec forch-faux-1 ping -c 5 192.168.1.2
 docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
 
 echo "Setting up Faucet and Forch..."
@@ -29,6 +31,8 @@ fi;
 
 sleep 20
 
+echo TAP TAP
+docker exec forch-faux-1 ping -c 5 192.168.1.2
 docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
 
 validate_radius_varz
