@@ -22,6 +22,7 @@ while ! ip link show $IFACE; do
 done
 
 echo Configuring network interface...
+ip link
 ip link set $IFACE up
 
 if [ -n "${options[dhcp]}" ]; then
