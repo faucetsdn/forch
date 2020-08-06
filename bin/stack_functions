@@ -95,9 +95,7 @@ function add_faux {
     switch=$1
     port=$2
     fnum=$3
-    shift
-    shift
-    shift
+    shift 3
     bin/run_faux $fnum $*
     add_iface $switch $port faux-$fnum
 }
