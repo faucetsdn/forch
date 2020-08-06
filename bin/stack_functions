@@ -401,7 +401,6 @@ function stop_and_cleanup_radius {
 
 function validate_radius_varz {
     echo validating
-    set -x
     timeouts=$(wget 0.0.0.0:8302 -O- | grep radius_query_timeouts_total | \
                    grep -v 'HELP\|TYPE' | awk '{print $2}')
     responses=$(wget 0.0.0.0:8302 -O- | grep radius_query_responses_total | \
