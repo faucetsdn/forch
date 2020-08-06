@@ -2,6 +2,17 @@
 
 echo Running faux $*
 
+declare -A options
+for option in $*; do
+    if [[ $option == *"="* ]]; then
+	k=$(echo $option | cut -d'=' -f1)
+        v=$(echo $option | cut -d'=' -f2)
+        options[$k]=$v
+    else
+        options[$option]=$option
+    fi
+done
+
 IFACE=faux-eth0
 IPADDR=192.168.1.$FAUX_NUM
 GATEWAY=192.168.1.0
@@ -12,11 +23,18 @@ done
 
 echo Configuring network interface...
 ip link set $IFACE up
-ip addr flush $IFACE
-ip addr add $IPADDR/16 dev $IFACE
 
-ip route add $IPADDR/16 via $GATEWAY dev $IFACE
-ip route add default via $GATEWAY
+if [ -n "${options[dhcp]}" ]; then
+    echo Using DHCP...
+    dhclient
+else
+    echo Statically assigning $IPADDR
+    ip addr flush $IFACE
+    ip addr add $IPADDR/16 dev $IFACE
+
+    ip route add $IPADDR/16 via $GATEWAY dev $IFACE
+    ip route add default via $GATEWAY
+fi
 
 ip addr
 ip route
