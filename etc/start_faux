@@ -39,4 +39,11 @@ fi
 ip addr
 ip route
 
+if [ -n "${options[dnsmasq]}" ]; then
+    echo Configuring dnsmasq...
+    echo dhcp-range=192.168.1.3,192.168.1.255 >> /etc/dnsmasq.conf
+    dnsmasq --log-facility=/tmp/dnsmasq.log --log-dhcp
+fi
+
+echo Blocking for all eternity.
 tail -f /dev/null

@@ -73,7 +73,7 @@ sudo ip link set corp-eth20 master bond
 add_iface corp 10 bond
 
 echo Connecting faux interfaces
-add_faux corp 1 0
+add_faux corp 1 0 dnsmasq
 add_faux t2sw1 1 1
 add_faux t2sw2 1 2
 add_faux t2sw3 1 3 dhcp
