@@ -1,5 +1,6 @@
 ## 1.11.0
 ## Forch 0.43
+* Avoid empty acls_in for a port during DVA (#139)
 * Add github workflows for integration tests (#136)
 * Create /etc/faucet/faucetat the end of Forch installation (#135)
 * Expose faucet config warning through API and Varz (#133)
