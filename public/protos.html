@@ -694,6 +694,10 @@
             <ul>
               
                 <li>
+                  <a href="#DVADeviceEventType"><span class="badge">M</span>DVADeviceEventType</a>
+                </li>
+              
+                <li>
                   <a href="#DVAState"><span class="badge">M</span>DVAState</a>
                 </li>
               
@@ -709,6 +713,10 @@
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
+              
+                <li>
+                  <a href="#DVADeviceEventType.Type"><span class="badge">E</span>DVADeviceEventType.Type</a>
+                </li>
               
                 <li>
                   <a href="#DVAState.State"><span class="badge">E</span>DVAState.State</a>
@@ -4680,6 +4688,13 @@ or to host_path API to list path </p></td>
       <p>constants</p>
 
       
+        <h3 id="DVADeviceEventType">DVADeviceEventType</h3>
+        <p>Device Event Type for DVA</p>
+
+        
+
+        
+      
         <h3 id="DVAState">DVAState</h3>
         <p>DVA State</p>
 
@@ -4710,6 +4725,35 @@ or to host_path API to list path </p></td>
       
 
       
+        <h3 id="DVADeviceEventType.Type">DVADeviceEventType.Type</h3>
+        <p>Enumeration of device event types for DVA</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>static</td>
+                <td>0</td>
+                <td><p>static</p></td>
+              </tr>
+            
+              <tr>
+                <td>authenticated</td>
+                <td>1</td>
+                <td><p>authenticated</p></td>
+              </tr>
+            
+              <tr>
+                <td>permitted</td>
+                <td>2</td>
+                <td><p>permitted</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
         <h3 id="DVAState.State">DVAState.State</h3>
         <p>Enumeration of DVA states</p>
         <table class="enum-table">
@@ -4737,9 +4781,15 @@ or to host_path API to list path </p></td>
               </tr>
             
               <tr>
-                <td>dynamic</td>
+                <td>sequestered</td>
                 <td>3</td>
-                <td><p>authenticated</p></td>
+                <td><p>sequestered</p></td>
+              </tr>
+            
+              <tr>
+                <td>operational</td>
+                <td>4</td>
+                <td><p>operational</p></td>
               </tr>
             
           </tbody>
