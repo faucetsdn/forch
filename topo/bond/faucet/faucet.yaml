@@ -7,6 +7,9 @@ dps:
     stack:
       priority: 1
     interfaces:
+      4:
+        description: trunk
+        tagged_vlans: [272]
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}
@@ -231,4 +234,7 @@ version: 2
 vlans:
   171:
     description: Faucet IoT
+    edge_learn_stack_root: true
+  272:
+    description: Orchestrated Testing
     edge_learn_stack_root: true

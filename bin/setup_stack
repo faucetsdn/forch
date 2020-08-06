@@ -102,6 +102,8 @@ for index in 1; do
     bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
+add_iface t1sw1 4 data_fauc_1
+
 echo Letting system settle...
 sleep 10
 
