@@ -19,6 +19,19 @@ class OTConfigTest(IntegrationTestBase):
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.12'))
         self._clean_stack()
 
+    def test_ot_sequester(self):
+        """Test to check if OT trunk sequesters traffic as expected"""
+        self._clean_stack()
+        self._setup_stack()
+        self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
+        config = self._read_faucet_config()
+        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
+        interface['native_vlan'] = 272
+        self._write_faucet_config(config)
+        self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.11'))
+        self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
+        self._clean_stack()
+
 
 if __name__ == '__main__':
     unittest.main()
