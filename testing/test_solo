@@ -15,8 +15,7 @@ add_faux sw1 4 2
 sleep 5
 
 echo TAP TAP
-docker exec forch-faux-1 ip addr
-docker exec forch-faux-1 ip route
+docker logs forch-faux-1
 docker exec forch-faux-1 ping -c 5 192.168.1.2
 docker exec forch-faux-1 ping -c 5 192.168.1.2 2>&1 | grep -oE "[0-9] received" | tee -a $TEST_RESULTS
 
