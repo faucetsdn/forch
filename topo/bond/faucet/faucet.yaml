@@ -234,7 +234,5 @@ version: 2
 vlans:
   171:
     description: Faucet IoT
-    edge_learn_stack_root: true
   272:
     description: Orchestrated Testing
-    edge_learn_stack_root: true

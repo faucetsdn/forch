@@ -28,8 +28,7 @@ class IntegrationTestBase(unittest.TestCase):
     def _run_forch_script(self, script, arglist=[]):
         """Runs scripts from forch base folder"""
         path = os.path.dirname(os.path.abspath(__file__)) + '/../../'
-        command = path + script
-        command = [command] + arglist
+        command = [path + script] + arglist
         return self._run_shell_command(command)
 
     def _setup_stack(self):
@@ -58,12 +57,11 @@ class IntegrationTestBase(unittest.TestCase):
 
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
-            yaml_object = yaml.load(config_file)
+            yaml_object = yaml.load(config_file, yaml.SafeLoader)
         return yaml_object
 
     def _read_faucet_config(self):
-        filename = os.path.dirname(os.path.abspath(__file__)) + \
-            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+        filename = self._get_faucet_config_path()
         return self._read_yaml_from_file(filename)
 
     def _write_yaml_to_file(self, filename, yaml_object):
@@ -71,9 +69,13 @@ class IntegrationTestBase(unittest.TestCase):
             yaml.dump(yaml_object, config_file)
 
     def _write_faucet_config(self, config):
-        filename = os.path.dirname(os.path.abspath(__file__)) + \
-            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+        filename = self._get_faucet_config_path()
         return self._write_yaml_to_file(filename, config)
+
+    def _get_faucet_config_path(self):
+        return os.path.dirname(os.path.abspath(__file__)) + \
+            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+
 
 
 

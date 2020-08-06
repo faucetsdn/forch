@@ -110,7 +110,7 @@ cid=$(docker run -d --privileged --name $CONTAINER \
 
 if [ $IMAGE == "forch/faucet" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
-    data_intf_name=data_fauc_$faucet_id
+    data_intf_name=data_faucet_$faucet_id
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
     sudo ip link set $data_intf_name up
     docker exec $CONTAINER ip link add link data0 name data0.272 type vlan id 272

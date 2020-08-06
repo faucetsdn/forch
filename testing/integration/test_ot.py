@@ -11,7 +11,7 @@ class OTConfigTest(IntegrationTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def notest_stack_connectivity(self):
+    def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
         logger.debug('Running test_stack_connectivity')
         self._clean_stack()
