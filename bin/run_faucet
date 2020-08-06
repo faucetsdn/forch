@@ -114,7 +114,8 @@ if [ $IMAGE == "forch/faucet" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
     sudo ip link set $data_intf_name up
     docker exec $CONTAINER ip link add link data0 name data0.272 type vlan id 272
-    docker exec $CONTAINER ip addr add 192.168.1.1$faucet_id/24 dev data0.272
+    docker exec $CONTAINER ip addr add 192.168.2.$faucet_id/24 dev data0.272
+    docker exec $CONTAINER ip route add 192.168.1.0/24 dev data0.272
     docker exec $CONTAINER ip link set data0 up
     docker exec $CONTAINER ip link set data0.272 up
 fi
