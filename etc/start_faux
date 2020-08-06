@@ -3,15 +3,22 @@
 echo Running faux $*
 
 IFACE=faux-eth0
+IPADDR=192.168.1.$FAUX_NUM
+GATEWAY=192.168.1.0
 
 while ! ip link show $IFACE; do
     sleep 10
 done
 
 echo Configuring network interface...
+ip link set $IFACE up
 ip addr flush $IFACE
-ip addr add 192.168.1.$FAUX_NUM/16 dev $IFACE
+ip addr add $IPADDR/16 dev $IFACE
+
+ip route add $IPADDR/16 via $GATEWAY dev $IFACE
+ip route add default via $GATEWAY
 
 ip addr
+ip route
 
 tail -f /dev/null
