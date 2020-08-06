@@ -4,6 +4,7 @@ import subprocess
 import unittest
 import os
 import sys
+import time
 import yaml
 
 import logging
@@ -36,6 +37,7 @@ class IntegrationTestBase(unittest.TestCase):
                                                 ['local', 'skip-conn-check', 'no_clean'])
         logger.debug('setup stack stdout: \n' + str(out, 'utf-8'))
         logger.debug('setup stack stderr: \n' + str(err, 'utf-8'))
+        time.sleep(15)
         if not code:
             logger.debug('setup_stack finished successfully')
         else:
