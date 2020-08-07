@@ -25,6 +25,9 @@ dps:
       12:
         description: "to t2sw4 port 50"
         stack: {dp: nz-kiwi-t2sw4, port: 50}
+      13:
+        description: "to t2sw5 port 50"
+        stack: {dp: nz-kiwi-t2sw5, port: 50}
       28:
         description: egress
         lacp: 3
@@ -53,6 +56,9 @@ dps:
       12:
         description: "to t2sw4 port 52"
         stack: {dp: nz-kiwi-t2sw4, port: 52}
+      13:
+        description: "to t2sw5 port 50"
+        stack: {dp: nz-kiwi-t2sw5, port: 52}
       28:
         description: egress
         lacp: 3
@@ -68,6 +74,7 @@ dps:
       2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 9"
         stack: {dp: nz-kiwi-t1sw1, port: 9}
@@ -85,6 +92,7 @@ dps:
       2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 10"
         stack: {dp: nz-kiwi-t1sw1, port: 10}
@@ -102,6 +110,7 @@ dps:
       2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 11"
         stack: {dp: nz-kiwi-t1sw1, port: 11}
@@ -119,12 +128,31 @@ dps:
       2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 12"
         stack: {dp: nz-kiwi-t1sw1, port: 12}
       52:
         description: "to t1sw2 port 12"
         stack: {dp: nz-kiwi-t1sw2, port: 12}
+    lldp_beacon: {max_per_interval: 5, send_interval: 5}
+  nz-kiwi-t2sw5:
+    dp_id: 1299
+    faucet_dp_mac: 0e:00:00:00:02:05
+    hardware: Allied-Telesis
+    lacp_timeout: 5
+    interfaces:
+      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      50:
+        description: "to t1sw1 port 13"
+        stack: {dp: nz-kiwi-t1sw1, port: 13}
+      52:
+        description: "to t1sw2 port 13"
+        stack: {dp: nz-kiwi-t1sw2, port: 13}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
 include: [uniform.yaml]
 version: 2

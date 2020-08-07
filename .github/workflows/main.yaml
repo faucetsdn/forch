@@ -121,4 +121,4 @@ jobs:
       - name: build docker
         run: bin/retry_cmd bin/build_docker
       - name: setup stack
-        run: bin/setup_stack devices 4 switches 4 scale
+        run: bin/setup_stack devices 5 switches 5 scale
