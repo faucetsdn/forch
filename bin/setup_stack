@@ -6,6 +6,8 @@ local=
 devices=
 skip_conn_check=
 no_clean=
+faux_dhcp=
+mode=bond
 
 if [ "$1" == "local" ]; then
     local=local
@@ -22,14 +24,17 @@ if [ "$1" == "skip-conn-check" ]; then
     shift
 fi
 
+if [ "$1" == "dhcp" ]; then
+    faux_dhcp=dhcp
+    shift
+fi
+
 if [ "$1" == "no_clean" ]; then
     no_clean=y
     shift
 fi
 
-if [ -z "$1" ]; then
-    mode=bond
-else
+if [ -n "$1" ]; then
     mode=$1
     shift
 fi
@@ -94,7 +99,7 @@ echo Connecting faux interfaces
 add_faux corp 1 0 dnsmasq
 add_faux t2sw1 1 1
 add_faux t2sw2 1 2
-add_faux t2sw3 1 3 dhcp
+add_faux t2sw3 1 3 $faux_dhcp
 
 if [ -n "$devices" ]; then
     for fnum in {4..44}; do
