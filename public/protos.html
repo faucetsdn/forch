@@ -519,6 +519,10 @@
                 </li>
               
                 <li>
+                  <a href="#OrchestrationConfig.OrchestratedTestingConfig"><span class="badge">M</span>OrchestrationConfig.OrchestratedTestingConfig</a>
+                </li>
+              
+                <li>
                   <a href="#OrchestrationConfig.RadiusInfo"><span class="badge">M</span>OrchestrationConfig.RadiusInfo</a>
                 </li>
               
@@ -3390,17 +3394,10 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
-                  <td>testing_segment</td>
-                  <td><a href="#string">string</a></td>
+                  <td>orch_testing_config</td>
+                  <td><a href="#OrchestrationConfig.OrchestratedTestingConfig">OrchestrationConfig.OrchestratedTestingConfig</a></td>
                   <td></td>
-                  <td><p>testing segment. If defined, automatic sequestering is enabled </p></td>
-                </tr>
-              
-                <tr>
-                  <td>testing_vlans</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td>repeated</td>
-                  <td><p>range of testing VLANs, represented in a list of starting and ending VLAN </p></td>
+                  <td><p>orchestrated testing configurations </p></td>
                 </tr>
               
             </tbody>
@@ -3460,6 +3457,44 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>Authentication timeout in seconds </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.OrchestratedTestingConfig">OrchestrationConfig.OrchestratedTestingConfig</h3>
+        <p>encapsulating orchestrated testing configurations</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>testing_segment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>testing segment. If defined, automatic sequestering is enabled </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_vlans</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td>repeated</td>
+                  <td><p>range of testing VLANs, represented in a list of starting and ending VLAN </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_port_identifier</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>identifier of testing port in the port description </p></td>
                 </tr>
               
             </tbody>
