@@ -155,6 +155,8 @@ class Faucetizer:
         return 'access' if len(port_properties) == 0 else 'other'
 
     def _calcuate_available_tesing_vlans(self):
+        if not self._config.orch_testing_config.testing_vlans:
+            return
         starting_vlan = self._config.orch_testing_config.testing_vlans[0]
         ending_vlan = self._config.orch_testing_config.testing_vlans[1] + 1
         all_testing_vlans = set(range(starting_vlan, ending_vlan))
@@ -250,7 +252,7 @@ class Faucetizer:
                                mac, device_placement.switch, device_placement.port)
                 continue
 
-            vid = self._calculate_vlan_id(device_behavior, testing_port_vlans)
+            vid = self._calculate_vlan_id(mac, device_behavior, testing_port_vlans)
             if not vid:
                 continue
             port_cfg['native_vlan'] = vid
