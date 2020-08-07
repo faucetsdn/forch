@@ -117,7 +117,7 @@ if [ $IMAGE == "forch/faucet" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0.272
     docker exec $CONTAINER ip link set data0 up
     docker exec $CONTAINER ip link set data0.272 up
-    docker exec $CONTAINER ip route add 192.168.1.0/24 dev data0.272
+    docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.272
 fi
 
 echo Container $CONTAINER started as $cid
