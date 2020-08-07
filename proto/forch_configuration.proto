@@ -88,11 +88,8 @@ message OrchestrationConfig {
   // authentication configurations
   AuthConfig auth_config = 7;
 
-  // testing segment. If defined, automatic sequestering is enabled
-  string testing_segment = 11;
-
-  // range of testing VLANs, represented in a list of starting and ending VLAN
-  repeated int32 testing_vlans = 12;
+  // orchestrated testing configurations
+  OrchestratedTestingConfig orch_testing_config = 11;
 
   // encapsulating authentication configurations
   message AuthConfig {
@@ -128,6 +125,18 @@ message OrchestrationConfig {
 
     // Port to listen on for RADIUS responses
     int32 source_port = 4;
+  }
+
+  // encapsulating orchestrated testing configurations
+  message OrchestratedTestingConfig {
+    // testing segment. If defined, automatic sequestering is enabled
+    string testing_segment = 11;
+
+    // range of testing VLANs, represented in a list of starting and ending VLAN
+    repeated int32 testing_vlans = 12;
+
+    // identifier of testing port in the port description
+    string testing_port_identifier = 13;
   }
 }
 
