@@ -40,6 +40,8 @@ jobs:
         run: bin/setup_base
       - name: setup faucet
         run: bin/setup_faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
       - name: run test
         run: bin/run_test_set base
 
