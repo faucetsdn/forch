@@ -21,6 +21,9 @@ fi
 
 FAUX_ARGS="$*"
 
+# Check that image exists so docker doesn't pull down random one from dockerhub
+docker inspect $image > /dev/null
+
 CONTAINER=$container_prefix$postfix
 
 echo Launching faux $FAUX_ARGS...
