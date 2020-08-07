@@ -53,6 +53,9 @@ fi
 
 echo Creating $IMAGE instance $CONTAINER on port $ext_ofpt in $INSTDIR
 
+# Check that image exists so docker doesn't pull down random one from dockerhub
+docker inspect $IMAGE > /dev/null
+
 mkdir -p $INSTDIR
 
 if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; then
