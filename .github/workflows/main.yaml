@@ -105,3 +105,20 @@ jobs:
         run: bin/setup_stack local dhcp
       - name: run test
         run: bin/run_test_set stack
+
+  test_scale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack devices 4 switches 4 scale
