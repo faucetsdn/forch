@@ -3,7 +3,6 @@
 ROOT=$(dirname $0)/..
 cd $ROOT
 local=
-devices=
 
 if [ "$1" == "local" ]; then
     local=local
