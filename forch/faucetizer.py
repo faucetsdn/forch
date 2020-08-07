@@ -42,7 +42,7 @@ class Faucetizer:
         self._behavioral_config_file = behavioral_config_file
         self._forch_config_dir = os.path.dirname(self._structural_config_file)
         self._faucet_config_dir = os.path.dirname(self._behavioral_config_file)
-        self._available_testing_vlans = self._calcuate_tesing_vlan_pool()
+        self._available_testing_vlans = None
         self._watched_include_files = []
         self._reregister_include_file_handlers = reregister_include_file_handlers
         self._lock = threading.RLock()
@@ -154,10 +154,12 @@ class Faucetizer:
             property for property in non_access_port_properties if property in port_cfg]
         return 'access' if len(port_properties) == 0 else 'other'
 
-    def _calcuate_tesing_vlan_pool(self):
+    def _calcuate_available_tesing_vlans(self):
         starting_vlan = self._config.orch_testing_config.testing_vlans[0]
         ending_vlan = self._config.orch_testing_config.testing_vlans[1] + 1
-        return set(range(starting_vlan, ending_vlan))
+        all_testing_vlans = set(range(starting_vlan, ending_vlan))
+        used_testing_vlans = set(self._testing_device_vlans.values())
+        self._available_testing_vlans = all_testing_vlans - used_testing_vlans
 
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
@@ -186,7 +188,6 @@ class Faucetizer:
                     port_map['tagged_vlans'] = list(testing_port_vlans)
                 if self._get_port_type(port_map) == 'access' and self._config.tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
-        self._available_testing_vlans = self._calcuate_tesing_vlan_pool() - testing_port_vlans
 
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
@@ -206,7 +207,7 @@ class Faucetizer:
                 testing_port_vlans.add(vid)
             else:
                 LOGGER.error(
-                    'No available testing VLANs. Used %d VLANs',len(self._testing_device_vlans))
+                    'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
@@ -228,6 +229,7 @@ class Faucetizer:
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
+        self._calcuate_available_tesing_vlans()
         testing_port_vlans = set()
 
         # static information of a device should overwrite the corresponding dynamic one
