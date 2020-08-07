@@ -37,11 +37,11 @@ class IntegrationTestBase(unittest.TestCase):
                                                 ['local', 'skip-conn-check', 'no_clean'])
         logger.debug('setup stack stdout: \n' + str(out, 'utf-8'))
         logger.debug('setup stack stderr: \n' + str(err, 'utf-8'))
-        time.sleep(15)
+        time.sleep(30)
         if not code:
-            logger.debug('setup_stack finished successfully')
+            logger.info('setup_stack finished successfully')
         else:
-            logger.debug('setup_stack failed')
+            logger.info('setup_stack failed')
 
     def _clean_stack(self):
         code, out, err = self._run_forch_script('bin/net_clean')

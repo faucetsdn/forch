@@ -73,7 +73,6 @@ function add_iface {
     br=$1
     pt=$2
     iface=$3
-    echo TAP add_iface $br $pt $iface
     sudo ovs-vsctl add-port $br $iface -- set interface $iface ofport_request=$pt
     sudo ifconfig $iface up
 }
