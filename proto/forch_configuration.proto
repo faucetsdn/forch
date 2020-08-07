@@ -88,6 +88,12 @@ message OrchestrationConfig {
   // authentication configurations
   AuthConfig auth_config = 7;
 
+  // testing segment. If defined, automatic sequestering is enabled
+  string testing_segment = 11;
+
+  // range of testing VLANs, represented in a list of starting and ending VLAN
+  repeated int32 testing_vlans = 12;
+
   // encapsulating authentication configurations
   message AuthConfig {
     // Radius configurations

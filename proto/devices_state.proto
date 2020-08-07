@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "forch/proto/shared_constants.proto";
-
 message DevicesState {
   map<string, DevicePlacement> device_mac_placements = 1;
   map<string, DeviceBehavior> device_mac_behaviors = 2;
@@ -21,7 +19,6 @@ message DevicePlacement {
 message DeviceBehavior {
   string segment = 1;
   string role = 2;
-  DVADeviceEventType.Type type = 3;
 }
 
 message SegmentsToVlans {

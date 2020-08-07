@@ -94,25 +94,6 @@ message DVAState {
 }
 
 /*
- * Device Event Type for DVA
- */
-message DVADeviceEventType {
-  /*
-   * Enumeration of device event types for DVA
-   */
-  enum Type {
-    // static
-    static = 0;
-
-    // authenticated
-    authenticated = 1;
-
-    // permitted
-    permitted = 2;
-  }
-}
-
-/*
  * LACP Roles
  */
 message LacpRole {
