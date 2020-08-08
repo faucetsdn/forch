@@ -122,3 +122,5 @@ jobs:
         run: bin/retry_cmd bin/build_docker
       - name: setup stack
         run: bin/setup_stack devices 5 switches 9 scale
+      - name: run test
+        run: bin/run_test_set failscale
