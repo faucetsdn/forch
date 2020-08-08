@@ -26,4 +26,4 @@ results2=$(fgrep icmp_seq $OUT_DIR/failscale2.log | wc -l)
 echo Found $results1 then $results2 results.
 
 # Make sure there is some, but not too much, loss of connectivity.
-echo Results $((results1 == 10)) $((results2 > 10 && results2 < 35)) | tee -a $TEST_RESULTS
+echo Results $((results1 == 10)) $((results2 > 15 && results2 < 35)) | tee -a $TEST_RESULTS
