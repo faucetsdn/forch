@@ -4,25 +4,26 @@ source bin/stack_functions
 
 preamble_setup
 
-# Bring down sw2 to force convergence on sw1
+echo Resetting stack to known state.
 sudo ip link set t1sw1-eth28 up
 sudo ip link set t1sw2-eth28 down
+sleep 5
+sudo ip link set t1sw2-eth28 up
+sleep 25
 
 echo Failover connectivity check | tee -a $TEST_RESULTS
 
-sleep 5
-docker exec forch-faux-1 ping -c 10 192.168.1.0 > $OUT_DIR/ping.log &
-wait
-results1=$(fgrep icmp_seq $OUT_DIR/ping.log | wc -l)
+docker exec forch-faux-1 ping -c 10 192.168.1.0 | tee $OUT_DIR/failscale1.log
 
-docker exec forch-faux-1 ping -c 30 192.168.1.0 > $OUT_DIR/ping.log &
+docker exec forch-faux-1 ping -c 40 192.168.1.0 | tee $OUT_DIR/failscale2.log &
 sleep 5
 sudo ip link set t1sw1-eth28 down
 wait
-results2=$(fgrep icmp_seq $OUT_DIR/ping.log | wc -l)
+
+results1=$(fgrep icmp_seq $OUT_DIR/failscale1.log | wc -l)
+results2=$(fgrep icmp_seq $OUT_DIR/failscale2.log | wc -l)
 
 echo Found $results1 then $results2 results.
 
 # Make sure there is some, but not too much, loss of connectivity.
-echo Results $((results1 == 20)) $((results2 > 10 && results2 < 25)) | tee -a $TEST_RESULTS
-
+echo Results $((results1 == 10)) $((results2 > 10 && results2 < 35)) | tee -a $TEST_RESULTS
