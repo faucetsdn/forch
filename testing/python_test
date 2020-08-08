@@ -1,7 +1,12 @@
 #!/bin/bash -e
 
+if [ $# != 1 ]; then
+    echo $0 [test_dir]
+    false
+fi
+
 ROOT=$(realpath $(dirname $0)/..)
-TEST_DIR=testing/integration
+TEST_DIR=testing/$1
 PYTHONPATH=$ROOT/testing:$ROOT
 
 export PYTHONPATH
