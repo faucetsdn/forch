@@ -13,6 +13,3 @@ testing/test_topology
 
 # Run unit tests
 testing/test_unit
-
-# Run OT tests
-testing/test_ot
