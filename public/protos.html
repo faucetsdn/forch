@@ -519,7 +519,7 @@
                 </li>
               
                 <li>
-                  <a href="#OrchestrationConfig.OrchestratedTestingConfig"><span class="badge">M</span>OrchestrationConfig.OrchestratedTestingConfig</a>
+                  <a href="#OrchestrationConfig.FOTConfig"><span class="badge">M</span>OrchestrationConfig.FOTConfig</a>
                 </li>
               
                 <li>
@@ -3402,8 +3402,8 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
-                  <td>orch_testing_config</td>
-                  <td><a href="#OrchestrationConfig.OrchestratedTestingConfig">OrchestrationConfig.OrchestratedTestingConfig</a></td>
+                  <td>fot_config</td>
+                  <td><a href="#OrchestrationConfig.FOTConfig">OrchestrationConfig.FOTConfig</a></td>
                   <td></td>
                   <td><p>orchestrated testing configurations </p></td>
                 </tr>
@@ -3474,8 +3474,8 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
 
         
       
-        <h3 id="OrchestrationConfig.OrchestratedTestingConfig">OrchestrationConfig.OrchestratedTestingConfig</h3>
-        <p>encapsulating orchestrated testing configurations</p>
+        <h3 id="OrchestrationConfig.FOTConfig">OrchestrationConfig.FOTConfig</h3>
+        <p>encapsulating Faucet Orchestrated Testing configurations</p>
 
         
           <table class="field-table">
@@ -3492,10 +3492,17 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
-                  <td>testing_vlans</td>
+                  <td>testing_vlan_start</td>
                   <td><a href="#int32">int32</a></td>
-                  <td>repeated</td>
-                  <td><p>range of testing VLANs, represented in a list of starting and ending VLAN </p></td>
+                  <td></td>
+                  <td><p>start of testing vlan range </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_vlan_end</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>end of testing vlan range </p></td>
                 </tr>
               
                 <tr>
