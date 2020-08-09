@@ -148,7 +148,7 @@ class Faucetizer:
     def _get_port_type(self, port_cfg):
         testing_port_identifier = (self._config.fot_config.testing_port_identifier or
                                    TESTING_PORT_IDENTIFIER_DEFAULT)
-        if testing_port_identifier in port_cfg.get('description'):
+        if testing_port_identifier in port_cfg.get('description', ""):
             return PortType.testing
         non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
         port_properties = [
