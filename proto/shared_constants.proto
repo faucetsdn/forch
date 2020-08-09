@@ -124,7 +124,7 @@ message LacpRole {
 message PortType {
   enum Type {
     // unkown
-    unkown = 0;
+    unknown = 0;
 
     // access
     access = 1;
