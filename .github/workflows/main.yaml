@@ -1,6 +1,10 @@
-name: Faucet Orchestrator integration tests
+name: forch test suite
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 */2 * * *'
 
 jobs:
   test_access:
@@ -36,6 +40,8 @@ jobs:
         run: bin/setup_base
       - name: setup faucet
         run: bin/setup_faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
       - name: run test
         run: bin/run_test_set base
 
@@ -96,6 +102,23 @@ jobs:
       - name: build docker
         run: bin/retry_cmd bin/build_docker
       - name: setup stack
-        run: bin/setup_stack local
+        run: bin/setup_stack local dhcp
       - name: run test
         run: bin/run_test_set stack
+
+  test_scale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack devices 5 switches 9 scale

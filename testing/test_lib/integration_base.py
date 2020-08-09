@@ -4,6 +4,8 @@ import subprocess
 import unittest
 import os
 import sys
+import time
+import yaml
 
 import logging
 logger = logging.getLogger()
@@ -27,19 +29,17 @@ class IntegrationTestBase(unittest.TestCase):
     def _run_forch_script(self, script, arglist=[]):
         """Runs scripts from forch base folder"""
         path = os.path.dirname(os.path.abspath(__file__)) + '/../../'
-        command = path + script
-        command = ['sudo', command] + arglist
+        command = [path + script] + arglist
         return self._run_shell_command(command)
 
     def _setup_stack(self):
         code, out, err = self._run_forch_script('bin/setup_stack',
                                                 ['local', 'skip-conn-check', 'no_clean'])
-        logger.debug('setup stack stdout: \n' + str(out, 'utf-8'))
-        logger.debug('setup stack stderr: \n' + str(err, 'utf-8'))
-        if not code:
-            logger.debug('setup_stack finished successfully')
-        else:
-            logger.debug('setup_stack failed')
+        time.sleep(15)
+        if code:
+            logger.info('setup_stack stdout: \n' + str(out, 'utf-8'))
+            logger.info('setup_stack stderr: \n' + str(err, 'utf-8'))
+            assert False, 'setup_stack failed'
 
     def _clean_stack(self):
         code, out, err = self._run_forch_script('bin/net_clean')
@@ -54,6 +54,29 @@ class IntegrationTestBase(unittest.TestCase):
         logger.debug(str(out, 'utf-8'))
         logger.debug('Return code: %s\nstderr: %s' % (return_code, str(err, 'utf-8')))
         return not return_code
+
+    def _read_yaml_from_file(self, filename):
+        with open(filename) as config_file:
+            yaml_object = yaml.load(config_file, yaml.SafeLoader)
+        return yaml_object
+
+    def _read_faucet_config(self):
+        filename = self._get_faucet_config_path()
+        return self._read_yaml_from_file(filename)
+
+    def _write_yaml_to_file(self, filename, yaml_object):
+        with open(filename, 'w') as config_file:
+            yaml.dump(yaml_object, config_file)
+
+    def _write_faucet_config(self, config):
+        filename = self._get_faucet_config_path()
+        return self._write_yaml_to_file(filename, config)
+
+    def _get_faucet_config_path(self):
+        return os.path.dirname(os.path.abspath(__file__)) + \
+            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+
+
 
 
 if __name__ == '__main__':

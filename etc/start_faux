@@ -1,0 +1,51 @@
+#!/bin/bash
+
+echo Running faux $*
+
+declare -A options
+for option in $*; do
+    if [[ $option == *"="* ]]; then
+	k=$(echo $option | cut -d'=' -f1)
+        v=$(echo $option | cut -d'=' -f2)
+        options[$k]=$v
+    else
+        options[$option]=$option
+    fi
+done
+
+IFACE=faux-eth0
+IPADDR=192.168.1.$FAUX_NUM
+GATEWAY=192.168.1.0
+
+while ! ip link show $IFACE; do
+    sleep 2
+done
+
+echo Configuring network interface...
+ip link
+ip link set $IFACE up
+
+if [ -n "${options[dhcp]}" ]; then
+    echo Using DHCP...
+    dhclient
+else
+    echo Statically assigning $IPADDR
+    ip addr flush $IFACE
+    ip addr add $IPADDR/16 dev $IFACE
+
+    ip route add $IPADDR/16 via $GATEWAY dev $IFACE
+    ip route add default via $GATEWAY
+fi
+
+ip addr
+ip route
+
+if [ -n "${options[dnsmasq]}" ]; then
+    echo Configuring dnsmasq...
+    echo dhcp-range=192.168.1.10,192.168.1.255 >> /etc/dnsmasq.conf
+    echo dhcp-host=9a:02:57:1e:8f:03,192.168.1.3 >> /etc/dnsmasq.conf
+    dnsmasq --log-facility=/tmp/dnsmasq.log --log-dhcp
+fi
+
+echo Blocking for all eternity.
+tail -f /dev/null
