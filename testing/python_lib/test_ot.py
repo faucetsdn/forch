@@ -2,7 +2,7 @@
 import unittest
 import time
 
-from test_lib.integration_base import IntegrationTestBase, logger
+from integration_base import IntegrationTestBase, logger
 
 
 class OTConfigTest(IntegrationTestBase):

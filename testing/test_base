@@ -7,9 +7,6 @@ preamble_setup
 export OUT_DIR
 export TEST_RESULTS
 
-# These two tests below could be run as their own test shards, if desired.
-testing/test_basics
+testing/test_check
 testing/test_topology
-
-# Run unit tests
-testing/test_unit
+testing/python_test coverage test_faucetizer
