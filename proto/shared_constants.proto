@@ -117,3 +117,19 @@ message LacpRole {
     standby = 3;
   }
 }
+
+/*
+ * Port types
+ */
+message PortType {
+  enum Type {
+    // unkown
+    unkown = 0;
+
+    // access
+    access = 1;
+
+    // testing
+    testing = 2;
+  }
+}
