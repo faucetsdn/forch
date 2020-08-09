@@ -223,7 +223,7 @@ class Faucetizer:
         elif device_behavior.segment == self._config.orch_testing_config.testing_segment:
             dva_state = DVAState.sequestered
         elif device_behavior.segment in self._segments_to_vlans:
-            dva_state = DVAState.authenticated
+            dva_state = DVAState.operational
 
         if dva_state:
             self._update_vlan_state(device_placement.switch, device_placement.port, dva_state)
