@@ -15,6 +15,7 @@ from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.shared_constants_pb2 import DVAState
+from forch.proto.shared_constants_pb2 import PortType
 
 LOGGER = logging.getLogger('faucetizer')
 
@@ -145,23 +146,32 @@ class Faucetizer:
         return base_file_name + INCLUDE_FILE_SUFFIX + ext
 
     def _get_port_type(self, port_cfg):
-        testing_port_identifier = (self._config.orch_testing_config.testing_port_identifier or
+        testing_port_identifier = (self._config.fot_config.testing_port_identifier or
                                    TESTING_PORT_IDENTIFIER_DEFAULT)
         if testing_port_identifier in port_cfg.get('description'):
-            return 'testing'
+            return PortType.testing
         non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
         port_properties = [
             property for property in non_access_port_properties if property in port_cfg]
-        return 'access' if len(port_properties) == 0 else 'other'
+        return PortType.access if len(port_properties) == 0 else PortType.unknown
 
-    def _calcuate_available_tesing_vlans(self):
-        if not self._config.orch_testing_config.testing_vlans:
+    def _calculate_available_tesing_vlans(self):
+        starting_vlan = self._config.fot_config.testing_vlan_start
+        ending_vlan = self._config.fot_config.testing_vlan_end
+
+        if not starting_vlan or not ending_vlan:
             return
-        starting_vlan = self._config.orch_testing_config.testing_vlans[0]
-        ending_vlan = self._config.orch_testing_config.testing_vlans[1] + 1
-        all_testing_vlans = set(range(starting_vlan, ending_vlan))
+
+        all_testing_vlans = set(range(starting_vlan, ending_vlan + 1))
+        operational_vlans = set(self._segments_to_vlans.values())
+
+        if all_testing_vlans & operational_vlans:
+            LOGGER.error(
+                'Testing VLAN range has intersection with operational VLANs: %s',
+                all_testing_vlans & operational_vlans)
+
         used_testing_vlans = set(self._testing_device_vlans.values())
-        self._available_testing_vlans = all_testing_vlans - used_testing_vlans
+        self._available_testing_vlans = all_testing_vlans - operational_vlans - used_testing_vlans
 
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
@@ -174,7 +184,7 @@ class Faucetizer:
 
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
-                if not self._get_port_type(port_map) == 'access':
+                if not self._get_port_type(port_map) == PortType.access:
                     continue
                 if self._config.unauthenticated_vlan:
                     port_map['native_vlan'] = self._config.unauthenticated_vlan
@@ -186,9 +196,9 @@ class Faucetizer:
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():
                 port_type = self._get_port_type(port_map)
-                if port_type == 'testing' and testing_port_vlans:
+                if port_type == PortType.testing and testing_port_vlans:
                     port_map['tagged_vlans'] = list(testing_port_vlans)
-                if self._get_port_type(port_map) == 'access' and self._config.tail_acl:
+                if self._get_port_type(port_map) == PortType.access and self._config.tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
 
     def _has_acl(self, acl_name):
@@ -199,7 +209,7 @@ class Faucetizer:
 
     def _calculate_vlan_id(self, device_mac, device_behavior, testing_port_vlans):
         device_segment = device_behavior.segment
-        testing_segment = self._config.orch_testing_config.testing_segment
+        testing_segment = self._config.fot_config.testing_segment
         vid = None
 
         if testing_segment and device_segment == testing_segment:
@@ -220,7 +230,7 @@ class Faucetizer:
     def _update_device_dva_state(self, device_mac, device_placement, device_behavior):
         if device_mac in self._static_devices.device_mac_behaviors:
             dva_state = DVAState.static
-        elif device_behavior.segment == self._config.orch_testing_config.testing_segment:
+        elif device_behavior.segment == self._config.fot_config.testing_segment:
             dva_state = DVAState.sequestered
         elif device_behavior.segment in self._segments_to_vlans:
             dva_state = DVAState.operational
@@ -231,7 +241,7 @@ class Faucetizer:
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
-        self._calcuate_available_tesing_vlans()
+        self._calculate_available_tesing_vlans()
         testing_port_vlans = set()
 
         # static information of a device should overwrite the corresponding dynamic one

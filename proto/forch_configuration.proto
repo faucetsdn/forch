@@ -89,7 +89,7 @@ message OrchestrationConfig {
   AuthConfig auth_config = 7;
 
   // orchestrated testing configurations
-  OrchestratedTestingConfig orch_testing_config = 11;
+  FOTConfig fot_config = 11;
 
   // encapsulating authentication configurations
   message AuthConfig {
@@ -127,16 +127,19 @@ message OrchestrationConfig {
     int32 source_port = 4;
   }
 
-  // encapsulating orchestrated testing configurations
-  message OrchestratedTestingConfig {
+  // encapsulating Faucet Orchestrated Testing configurations
+  message FOTConfig {
     // testing segment. If defined, automatic sequestering is enabled
     string testing_segment = 11;
 
-    // range of testing VLANs, represented in a list of starting and ending VLAN
-    repeated int32 testing_vlans = 12;
+    // start of testing vlan range
+    int32 testing_vlan_start = 12;
+
+    // end of testing vlan range
+    int32 testing_vlan_end = 13;
 
     // identifier of testing port in the port description
-    string testing_port_identifier = 13;
+    string testing_port_identifier = 14;
   }
 }
 
