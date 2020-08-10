@@ -30,7 +30,8 @@ class IntegrationTestBase(unittest.TestCase):
         return self._reap_process_command(self._run_process_command(command))
 
     def _run_process_command(self, command):
-        return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command_list = command.split() if isinstance(command, str) else command
+        return subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def _reap_process_command(self, process):
         process.wait()
@@ -74,17 +75,22 @@ class IntegrationTestBase(unittest.TestCase):
     def _ping_host_process(self, container, host, count=1):
         logger.debug('Trying to ping %s from %s' % (host, container))
         ping_cmd = 'docker exec %s ping -c %d %s' % (container, count, host)
-        return self._run_process_command(ping_cmd.split())
+        return self._run_process_command(ping_cmd)
 
     def _ping_host_reap(self, process, expected=False):
         return_code, out, err = self._reap_process_command(process)
         unexpected = not expected if return_code else expected
         if unexpected:
-            logger.warning('ping with ' + process.args)
+            logger.warning('ping with %s', str(process.args))
             logger.warning(out)
             logger.warning('Ping return code: %s\nstderr: %s', return_code, err)
         return False if return_code else out.count('icmp_seq')
 
+    def _fail_egress_link(self, alternate=False, restore=False):
+        switch = 't1sw2' if alternate else 't1sw1'
+        command = 'up' if restore else 'down'
+        self._run_command('ip link set %s-eth28 %s' % (switch, command))
+        
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
             yaml_object = yaml.load(config_file, yaml.SafeLoader)

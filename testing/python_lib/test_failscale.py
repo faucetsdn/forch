@@ -13,12 +13,16 @@ class FailScaleConfigTest(IntegrationTestBase):
 
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
-        logger.debug('Running test_stack_connectivity')
+        logger.info('Running test_stack_connectivity')
         self._setup_stack(devices=5, switches=9, mode='scale')
+        time.sleep(15)
         self.assertEqual(10, self._ping_host('forch-faux-1', '192.168.1.0', count=10),
                          'warm-up ping count')
         process = self._ping_host_process('forch-faux-1', '192.168.1.0', count=40)
+        logger.info('Waiting...')
         time.sleep(5)
+        logger.info('Link down')
+        self._fail_egress_link()
         ping_count = self._ping_host_reap(process)
         logger.info('Disruption ping count %s' % ping_count)
 
