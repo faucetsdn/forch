@@ -82,15 +82,17 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         self._process_device_behavior(behaviors[2])
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
-        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
-        self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=1501)
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=1, native_vlan=200, role='red')
+        self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=1501)
         self._update_port_config(expected_config, switch='t1sw1', port=4, tagged_vlans=[272, 1501])
 
         # devices allowed to be operational
         self._process_device_behavior(behaviors[3])
 
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
-        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=1, native_vlan=200, role='red')
         self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=300)
 
 
