@@ -6,7 +6,7 @@ import unittest
 import yaml
 
 from forch.faucetizer import Faucetizer
-from forch.utils import str_proto, dict_proto
+from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
@@ -179,7 +179,7 @@ class FaucetizerTestBase(UnitTestBase):
         self._temp_behavioral_config_file = None
 
     def _initialize_faucetizer(self):
-        forch_config = str_proto(self.FORCH_CONFIG, ForchConfig)
+        forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
 
         self._faucetizer = Faucetizer(
             forch_config.orchestration, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
