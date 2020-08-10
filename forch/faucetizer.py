@@ -174,7 +174,7 @@ class Faucetizer:
         non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
         port_properties = [
             property for property in non_access_port_properties if property in port_cfg]
-        return PortType.access if len(port_properties) == 0 else PortType.unknown
+        return PortType.access if len(port_properties) == 0 else PortType.other
 
     def _calculate_available_tesing_vlans(self):
         if self._config.fot_config.testing_segment:

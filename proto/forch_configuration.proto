@@ -89,7 +89,7 @@ message OrchestrationConfig {
   AuthConfig auth_config = 7;
 
   // orchestrated testing configurations
-  FOTConfig fot_config = 11;
+  FotConfig fot_config = 11;
 
   // encapsulating authentication configurations
   message AuthConfig {
@@ -128,7 +128,7 @@ message OrchestrationConfig {
   }
 
   // encapsulating Faucet Orchestrated Testing configurations
-  message FOTConfig {
+  message FotConfig {
     // testing segment. If defined, automatic sequestering is enabled
     string testing_segment = 11;
 

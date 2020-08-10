@@ -45,7 +45,7 @@ class OTConfigTest(IntegrationTestBase):
                 'testing_segment': 'TESTING',
                 'testing_vlan_start': 1000,
                 'testing_vlan_end': 1999,
-                'testing_port_identifier': 'TESTING'
+                'testing_port_identifier': 'trunk'
             }
         }
         orch_config = dict_proto(orch_config_map, OrchestrationConfig)
