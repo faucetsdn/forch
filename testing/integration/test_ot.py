@@ -1,14 +1,11 @@
 """Integration test base class for Forch"""
-import unittest
+
 import time
-
-from forch.faucetizer import Faucetizer
-from forch.utils import dict_proto
-
-from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
-from forch.proto.forch_configuration_pb2 import OrchestrationConfig
+import unittest
+import yaml
 
 from testing.test_lib.integration_base import IntegrationTestBase, logger
+from testing.test_lib.unit_base import FaucetizerTestBase
 
 
 class OTConfigTest(IntegrationTestBase):
@@ -32,45 +29,69 @@ class OTConfigTest(IntegrationTestBase):
         self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
 
-        self._generate_sequestering_config()
+        config = self._read_faucet_config()
+        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
+        interface['native_vlan'] = 272
+        self._write_faucet_config(config)
         time.sleep(5)
-
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
         self._clean_stack()
 
-    def _generate_sequestering_config(self):
-        orch_config_map = {
-            'fot_config': {
-                'testing_segment': 'TESTING',
-                'testing_vlan_start': 1000,
-                'testing_vlan_end': 1999,
-                'testing_port_identifier': 'trunk'
-            }
-        }
-        orch_config = dict_proto(orch_config_map, OrchestrationConfig)
-        structural_config_file = self._get_faucet_config_path()
-        behivoral_config_file = self._get_faucet_config_path()
-        segments_to_vlans = {'HOST': 272}
 
-        faucetizer = Faucetizer(
-            orch_config, structural_config_file, segments_to_vlans, behivoral_config_file)
-        faucetizer.reload_structural_config()
+class FotFaucetizerTestCase(FaucetizerTestBase):
+    """Faucetizer test"""
 
-        mac = '0A:00:00:00:00:01'
-        device_placement_map = {
-            'switch': 'nz-kiwi-t2sw1',
-            'port': 1,
-            'connected': True
-        }
-        device_behavior_map = {
-            'segment': 'TESTING'
-        }
-        device_placement = dict_proto(device_placement_map, DevicePlacement)
-        device_behavior = dict_proto(device_behavior_map, DeviceBehavior)
+    FORCH_CONFIG = """
+    orchestration:
+      unauthenticated_vlan: 100
+      fot_config:
+        testing_segment: TESTING
+        testing_vlan_start: 1500
+        testing_vlan_end: 1699
+        testing_port_identifier: TESTING        
+    """
 
-        faucetizer.process_device_placement(mac, device_placement)
-        faucetizer.process_device_behavior(mac, device_behavior)
+    def test_device_states(self):
+        """test Faucet behavioral config generation at different devices states"""
+
+        placements = [
+            # mocking static placements
+            ('02:0A:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
+            # devices dynamically learned
+            ('02:0b:00:00:00:02', {'switch': 't2sw2', 'port': 1, 'connected': True}, False),
+        ]
+
+        behaviors = [
+            # mocking static behaviors
+            ('02:0a:00:00:00:01', {'segment': 'SEG_A', 'role': 'red'}, True),
+            # devices to be sequestered
+            ('02:0a:00:00:00:01', {'segment': 'TESTING'}, False),
+            ('02:0B:00:00:00:02', {'segment': 'TESTING'}, False),
+            # devices to be operational
+            ('02:0B:00:00:00:02', {'segment': 'SEG_B'}, False),
+        ]
+
+        # process static device info
+        self._process_device_placement(placements[0])
+        self._process_device_behavior(behaviors[0])
+
+        # devices are learned and sent to sequestering
+        self._process_device_placement(placements[1])
+        self._process_device_behavior(behaviors[1])
+        self._process_device_behavior(behaviors[2])
+
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
+        self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=1501)
+        self._update_port_config(expected_config, switch='t1sw1', port=4, tagged_vlans=[272, 1501])
+
+        # devices allowed to be operational
+        self._process_device_behavior(behaviors[3])
+
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(expected_config, switch='t2sw1', port=1, vlan=200, role='red')
+        self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=300)
 
 
 if __name__ == '__main__':
