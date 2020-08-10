@@ -206,7 +206,7 @@ class Faucetizer:
             for port_map in switch_map.get('interfaces', {}).values():
                 port_type = self._get_port_type(port_map)
                 if port_type == PortType.testing and testing_port_vlans:
-                    port_map['tagged_vlans'] = list(testing_port_vlans)
+                    port_map.setdefault('tagged_vlans', []).extend(testing_port_vlans)
                     testing_port_configured = True
                 if self._get_port_type(port_map) == PortType.access and self._config.tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
