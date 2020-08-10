@@ -22,6 +22,7 @@ class IntegrationTestBase(unittest.TestCase):
 
     def setUp(self):
         self._clean_stack()
+        self._setup_stack()
 
     def tearDown(self):
         self._clean_stack()
