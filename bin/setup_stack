@@ -35,7 +35,7 @@ if [ "$1" == "dhcp" ]; then
     shift
 fi
 
-if [ "$1" == "no_clean" ]; then
+if [ "$1" == "no-clean" ]; then
     no_clean=y
     shift
 fi
