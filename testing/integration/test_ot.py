@@ -40,12 +40,17 @@ class OTConfigTest(IntegrationTestBase):
         self._clean_stack()
 
     def _generate_sequestering_config(self):
-        forch_config = ForchConfig()
-        forch_config.fot_config.testing_segment = "TESTING"
-        forch_config.fot_config.testing_vlan_start = 1000
-        forch_config.fot_config.testing_vlan_end = 1999
-        forch_config.fot_config.testing_port_identifier = "TESTING"
-
+        forch_config_map = {
+            'orchestration': {
+                'fot_config': {
+                    'testing_segment': 'TESTING',
+                    'testing_vlan_start': 1000,
+                    'testing_vlan_end': 1999,
+                    'testing_port_identifier': 'TESTING'
+                }
+            }
+        }
+        forch_config = dict_proto(forch_config_map, ForchConfig)
         structural_config_file = self._get_faucet_config_path()
         behivoral_config_file = self._get_faucet_config_path()
         segments_to_vlans = {'HOST': 272}
