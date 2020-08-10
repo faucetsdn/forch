@@ -17,6 +17,11 @@ logger.addHandler(stream_handler)
 class IntegrationTestBase(unittest.TestCase):
     """Base class for integration tests"""
 
+    STACK_OPTIONS = {
+        'skip-conn-check': True,
+        'no-clean': True
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -27,8 +32,11 @@ class IntegrationTestBase(unittest.TestCase):
     def tearDown(self):
         self._clean_stack()
 
-    def _run_command(self, command):
-        return self._reap_process_command(self._run_process_command(command))
+    def _run_command(self, command, strict=True):
+        code, out, err = self._reap_process_command(self._run_process_command(command))
+        if strict and code:
+            raise Exception('Command execution failed: %s' % str(command))
+        return code, out, err
 
     def _run_process_command(self, command):
         command_list = command.split() if isinstance(command, str) else command
@@ -45,15 +53,18 @@ class IntegrationTestBase(unittest.TestCase):
         command = [path + script] + arglist
         return self._run_command(command)
 
-    def _setup_stack(self, local=True, devices=None, switches=None, check=False, dhcp=False,
-                     clean=False, mode=None):
+    def _setup_stack(self, options=STACK_OPTIONS):
+        logger.debug("STACK_OPTIONS = %s", str(options))
         stack_args = []
-        stack_args.extend(['local'] if local else [])
+        stack_args.extend(['local'] if options.get('local') else [])
+        devices = options.get('devices')
         stack_args.extend(['devices', str(devices)] if devices else [])
+        switches = options.get('devices')
         stack_args.extend(['switches', str(switches)] if devices else [])
-        stack_args.extend(['skip-conn-check'] if not check else [])
-        stack_args.extend(['dhcp'] if dhcp else [])
-        stack_args.extend(['no-clean'] if not clean else [])
+        stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
+        stack_args.extend(['dhcp'] if options.get('dhcp') else [])
+        stack_args.extend(['no-clean'] if options.get('no-clean') else [])
+        mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
         logger.info('setup_stack ' + ' '.join(stack_args))
@@ -63,7 +74,7 @@ class IntegrationTestBase(unittest.TestCase):
             logger.info('setup_stack stderr: \n' + err)
             assert False, 'setup_stack failed'
 
-        time.sleep(15)
+        time.sleep(20)
 
     def _clean_stack(self):
         code, out, err = self._run_forch_script('bin/net_clean')
