@@ -128,7 +128,5 @@ class IntegrationTestBase(unittest.TestCase):
             '/../../inst/forch-faucet-1/faucet/faucet.yaml'
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
