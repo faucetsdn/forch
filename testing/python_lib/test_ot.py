@@ -14,15 +14,12 @@ class OTConfigTest(IntegrationTestBase):
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
         logger.debug('Running test_stack_connectivity')
-        self._clean_stack()
         self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.12'))
-        self._clean_stack()
 
     def test_ot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
-        self._clean_stack()
         self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
 
@@ -33,7 +30,6 @@ class OTConfigTest(IntegrationTestBase):
         time.sleep(5)
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
-        self._clean_stack()
 
 
 if __name__ == '__main__':
