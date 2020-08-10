@@ -2,7 +2,7 @@
 import unittest
 import time
 
-from integration_base import IntegrationTestBase, logger
+from integration_base import IntegrationTestBase
 
 
 class FailScaleConfigTest(IntegrationTestBase):
