@@ -137,5 +137,5 @@ jobs:
         run: bin/setup_faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
-      - name: setup stack
-        run: bin/setup_stack devices 5 switches 9 scale
+      - name: run test
+        run: testing/python_test test_failscale

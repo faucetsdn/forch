@@ -17,6 +17,12 @@ logger.addHandler(stream_handler)
 class IntegrationTestBase(unittest.TestCase):
     """Base class for integration tests"""
 
+    STACK_OPTIONS = {
+        'setup_warmup_sec': 20,
+        'skip-conn-check': True,
+        'no-clean': True
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -27,8 +33,13 @@ class IntegrationTestBase(unittest.TestCase):
     def tearDown(self):
         self._clean_stack()
 
-    def _run_command(self, command):
-        return self._reap_process_command(self._run_process_command(command))
+    def _run_command(self, command, strict=True):
+        code, out, err = self._reap_process_command(self._run_process_command(command))
+        if strict and code:
+            logger.warning('stdout: \n' + out)
+            logger.warning('stderr: \n' + err)
+            raise Exception('Command execution failed: %s' % str(command))
+        return code, out, err
 
     def _run_process_command(self, command):
         command_list = command.split() if isinstance(command, str) else command
@@ -45,15 +56,18 @@ class IntegrationTestBase(unittest.TestCase):
         command = [path + script] + arglist
         return self._run_command(command)
 
-    def _setup_stack(self, local=True, devices=None, switches=None, check=False, dhcp=False,
-                     clean=False, mode=None):
+    def _setup_stack(self, options=STACK_OPTIONS):
+        logger.debug("STACK_OPTIONS = %s", str(options))
         stack_args = []
-        stack_args.extend(['local'] if local else [])
+        stack_args.extend(['local'] if options.get('local') else [])
+        devices = options.get('devices')
         stack_args.extend(['devices', str(devices)] if devices else [])
+        switches = options.get('switches')
         stack_args.extend(['switches', str(switches)] if devices else [])
-        stack_args.extend(['skip-conn-check'] if not check else [])
-        stack_args.extend(['dhcp'] if dhcp else [])
-        stack_args.extend(['no-clean'] if not clean else [])
+        stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
+        stack_args.extend(['dhcp'] if options.get('dhcp') else [])
+        stack_args.extend(['no-clean'] if options.get('no-clean') else [])
+        mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
         logger.info('setup_stack ' + ' '.join(stack_args))
@@ -63,7 +77,7 @@ class IntegrationTestBase(unittest.TestCase):
             logger.info('setup_stack stderr: \n' + err)
             assert False, 'setup_stack failed'
 
-        time.sleep(15)
+        time.sleep(options.get('setup_warmup_sec'))
 
     def _clean_stack(self):
         code, out, err = self._run_forch_script('bin/net_clean')
@@ -90,7 +104,7 @@ class IntegrationTestBase(unittest.TestCase):
     def _fail_egress_link(self, alternate=False, restore=False):
         switch = 't1sw2' if alternate else 't1sw1'
         command = 'up' if restore else 'down'
-        self._run_command('ip link set %s-eth28 %s' % (switch, command))
+        self._run_command('sudo ip link set %s-eth28 %s' % (switch, command))
 
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
@@ -112,8 +126,6 @@ class IntegrationTestBase(unittest.TestCase):
     def _get_faucet_config_path(self):
         return os.path.dirname(os.path.abspath(__file__)) + \
             '/../../inst/forch-faucet-1/faucet/faucet.yaml'
-
-
 
 
 if __name__ == '__main__':
