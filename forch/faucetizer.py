@@ -193,13 +193,18 @@ class Faucetizer:
         return behavioral_faucet_config
 
     def _finalize_host_ports_config(self, behavioral_faucet_config, testing_port_vlans):
+        testing_port_configured = False
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():
                 port_type = self._get_port_type(port_map)
                 if port_type == PortType.testing and testing_port_vlans:
                     port_map['tagged_vlans'] = list(testing_port_vlans)
+                    testing_port_configured = True
                 if self._get_port_type(port_map) == PortType.access and self._config.tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
+
+        if testing_port_vlans and not testing_port_configured:
+            LOGGER.error('No testing port found')
 
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
