@@ -1,0 +1,46 @@
+#!/bin/bash -e
+
+ROOT=$(realpath $(dirname $0)/..)
+PREFIX=
+PYTHON=python3
+EXTARGS=
+coverage=
+
+if [ "$1" == coverage ]; then
+    coverage=y
+    PYTHON=coverage3
+    EXTARGS="run --source $ROOT/forch"
+    shift
+fi
+
+if [ $# != 1 ]; then
+    echo $0 [test_name]
+    false
+fi
+
+TEST_NAME=$1
+shift
+
+TEST_DIR=testing/python_lib
+TEST_SRC=$TEST_NAME.py
+export PYTHONPATH=$ROOT/testing:$ROOT
+
+if [ -z "$VIRTUAL_ENV" -a -f venv/bin/$PYTHON ]; then
+    PYTHON=venv/bin/$PYTHON
+fi
+
+cd $ROOT
+
+if [ -n "$coverage" ]; then
+    $PYTHON erase
+fi
+
+$PYTHON $EXTARGS -m unittest \
+        discover -s $TEST_DIR \
+        -p $TEST_SRC
+
+if [ -n "$coverage" ]; then
+    $PYTHON combine || true
+    $PYTHON report -m
+fi
+
