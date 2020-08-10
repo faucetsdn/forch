@@ -177,8 +177,9 @@ class Faucetizer:
         return PortType.access if len(port_properties) == 0 else PortType.unknown
 
     def _calculate_available_tesing_vlans(self):
-        used_testing_vlans = set(self._testing_device_vlans.values())
-        self._available_testing_vlans = self._all_testing_vlans - used_testing_vlans
+        if self._config.fot_config.testing_segment:
+            used_testing_vlans = set(self._testing_device_vlans.values())
+            self._available_testing_vlans = self._all_testing_vlans - used_testing_vlans
 
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
