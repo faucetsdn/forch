@@ -2,7 +2,13 @@
 import unittest
 import time
 
-from test_lib.integration_base import IntegrationTestBase, logger
+from forch.faucetizer import Faucetizer
+from forch.utils import dict_proto
+
+from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
+from forch.proto.forch_configuration_pb2 import ForchConfig
+
+from testing.test_lib.integration_base import IntegrationTestBase, logger
 
 
 class OTConfigTest(IntegrationTestBase):
@@ -26,14 +32,45 @@ class OTConfigTest(IntegrationTestBase):
         self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
 
-        config = self._read_faucet_config()
-        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
-        interface['native_vlan'] = 272
-        self._write_faucet_config(config)
+        self._generate_sequestering_config()
         time.sleep(5)
+
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
         self._clean_stack()
+
+    def _generate_sequestering_config(self):
+        forch_config = ForchConfig()
+        forch_config.fot_config.testing_segment = "TESTING"
+        forch_config.fot_config.testing_vlan_start = 1000
+        forch_config.fot_config.testing_vlan_end = 1999
+        forch_config.fot_config.testing_port_identifier = "TESTING"
+
+        structural_config_file = self._get_faucet_config_path()
+        behivoral_config_file = self._get_faucet_config_path()
+        segments_to_vlans = {'HOST': 272}
+
+        faucetizer = Faucetizer(
+            forch_config, structural_config_file, segments_to_vlans, behivoral_config_file)
+
+        mac = '0A:00:00:00:00:01'
+        device_placement_map = {
+            'switch': 'nz-kiwi-t2sw1',
+            'port': 1,
+            'connected': True
+        }
+        device_behavior_map = {
+            'segment': 'TESTING'
+        }
+        device_placement = dict_proto(device_placement_map, DevicePlacement)
+        device_behavior = dict_proto(device_behavior_map, DeviceBehavior)
+
+        faucetizer.process_device_placement(mac, device_placement)
+        faucetizer.process_device_behavior(mac, device_behavior)
+
+        # TODO remove
+        config = self._read_faucet_config()
+        print(config)
 
 
 if __name__ == '__main__':
