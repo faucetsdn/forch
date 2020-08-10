@@ -5,7 +5,7 @@ import time
 from integration_base import IntegrationTestBase, logger
 
 
-class OTConfigTest(IntegrationTestBase):
+class FotConfigTest(IntegrationTestBase):
     """Test suite for dynamic config changes"""
 
     def __init__(self, *args, **kwargs):
@@ -18,7 +18,7 @@ class OTConfigTest(IntegrationTestBase):
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.12'))
 
-    def test_ot_sequester(self):
+    def test_fot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
         self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))

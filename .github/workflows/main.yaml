@@ -45,7 +45,7 @@ jobs:
       - name: run test
         run: bin/run_test_set base
 
-  test_ot:
+  test_fot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -60,7 +60,7 @@ jobs:
       - name: build docker
         run: bin/retry_cmd bin/build_docker
       - name: run test
-        run: testing/python_test test_ot
+        run: testing/python_test test_fot
 
   test_reconfig:
     runs-on: ubuntu-latest

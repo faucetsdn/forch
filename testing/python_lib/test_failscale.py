@@ -21,7 +21,7 @@ class FailScaleConfigTest(IntegrationTestBase):
         time.sleep(5)
         ping_count = self._ping_host_reap(process)
         logger.info('Disruption ping count %s' % ping_count)
-        
+
 
 if __name__ == '__main__':
     unittest.main()
