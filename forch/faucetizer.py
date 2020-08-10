@@ -43,10 +43,13 @@ class Faucetizer:
         self._behavioral_config_file = behavioral_config_file
         self._forch_config_dir = os.path.dirname(self._structural_config_file)
         self._faucet_config_dir = os.path.dirname(self._behavioral_config_file)
+        self._all_testing_vlans = None
         self._available_testing_vlans = None
         self._watched_include_files = []
         self._reregister_include_file_handlers = reregister_include_file_handlers
         self._lock = threading.RLock()
+
+        self._validate_and_initialize_config()
 
     def process_device_placement(self, eth_src, placement, static=False):
         """Process device placement"""
@@ -145,6 +148,24 @@ class Faucetizer:
         base_file_name, ext = os.path.splitext(file_name)
         return base_file_name + INCLUDE_FILE_SUFFIX + ext
 
+    def _validate_and_initialize_config(self):
+        if self._config.fot_config.testing_segment:
+            starting_vlan = self._config.fot_config.testing_vlan_start
+            ending_vlan = self._config.fot_config.testing_vlan_end
+            if not starting_vlan or not ending_vlan:
+                raise Exception(
+                    f'Starting or ending testing VLAN missing: {starting_vlan}, {ending_vlan}')
+
+            testing_vlans = set(range(starting_vlan, ending_vlan+1))
+            operational_vlans = set(self._segments_to_vlans.values())
+
+            if testing_vlans & operational_vlans:
+                LOGGER.error(
+                    'Testing VLANs has intersection with operational VLANs: %s',
+                    testing_vlans & operational_vlans)
+
+            self._all_testing_vlans = testing_vlans - operational_vlans
+
     def _get_port_type(self, port_cfg):
         testing_port_identifier = (self._config.fot_config.testing_port_identifier or
                                    TESTING_PORT_IDENTIFIER_DEFAULT)
@@ -156,22 +177,8 @@ class Faucetizer:
         return PortType.access if len(port_properties) == 0 else PortType.unknown
 
     def _calculate_available_tesing_vlans(self):
-        starting_vlan = self._config.fot_config.testing_vlan_start
-        ending_vlan = self._config.fot_config.testing_vlan_end
-
-        if not starting_vlan or not ending_vlan:
-            return
-
-        all_testing_vlans = set(range(starting_vlan, ending_vlan + 1))
-        operational_vlans = set(self._segments_to_vlans.values())
-
-        if all_testing_vlans & operational_vlans:
-            LOGGER.error(
-                'Testing VLAN range has intersection with operational VLANs: %s',
-                all_testing_vlans & operational_vlans)
-
         used_testing_vlans = set(self._testing_device_vlans.values())
-        self._available_testing_vlans = all_testing_vlans - operational_vlans - used_testing_vlans
+        self._available_testing_vlans = self._all_testing_vlans - used_testing_vlans
 
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
