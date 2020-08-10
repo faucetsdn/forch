@@ -14,13 +14,11 @@ class FotConfigTest(IntegrationTestBase):
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
         logger.debug('Running test_stack_connectivity')
-        self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.12'))
 
     def test_fot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
-        self._setup_stack()
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
 
         config = self._read_faucet_config()
