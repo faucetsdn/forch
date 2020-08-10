@@ -93,7 +93,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
         self._update_port_config(
             expected_config, switch='t2sw1', port=1, native_vlan=200, role='red')
-        self._update_port_config(expected_config, switch='t2sw2', port=1, vlan=300)
+        self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
 
 
 if __name__ == '__main__':

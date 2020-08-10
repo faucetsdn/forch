@@ -197,8 +197,8 @@ class FaucetizerTestBase(UnitTestBase):
             behavior_tuple[2])
 
     def _update_port_config(
-            self, behavioral_config, switch, port, native_vlan,
-            role=None, tail_acl=None, tagged_vlans=None):
+            self, behavioral_config, switch, port, native_vlan=None, role=None, tail_acl=None,
+            tagged_vlans=None):
         port_config = behavioral_config['dps'][switch]['interfaces'][port]
         port_config['native_vlan'] = native_vlan
         if role:
