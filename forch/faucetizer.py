@@ -14,8 +14,7 @@ from forch.utils import yaml_proto
 from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
-from forch.proto.shared_constants_pb2 import DVAState
-from forch.proto.shared_constants_pb2 import PortType
+from forch.proto.shared_constants_pb2 import DVAState, PortType
 
 LOGGER = logging.getLogger('faucetizer')
 

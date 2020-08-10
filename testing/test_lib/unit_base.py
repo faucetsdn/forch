@@ -108,7 +108,7 @@ class FaucetizerTestBase(UnitTestBase):
             output_only: true
           4:
             description: TESTING
-            tagged_vlans: [272]                
+            tagged_vlans: [272]
           6:
             stack: {dp: t2sw1, port: 6}
           7:
@@ -166,7 +166,7 @@ class FaucetizerTestBase(UnitTestBase):
         'SEG_C': 400,
         'SEG_X': 1500,
         'SEG_Y': 1600,
-        'SEG_Y': 1700,
+        'SEG_Z': 1700,
     }
 
     SEGMENTS_TO_VLANS = {}

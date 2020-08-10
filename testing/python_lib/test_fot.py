@@ -43,7 +43,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         testing_segment: TESTING
         testing_vlan_start: 1500
         testing_vlan_end: 1699
-        testing_port_identifier: TESTING        
+        testing_port_identifier: TESTING
     """
 
     def test_device_states(self):
