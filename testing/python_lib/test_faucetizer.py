@@ -16,11 +16,13 @@ class FaucetizerTestBase(unittest.TestCase):
 
     ORCH_CONFIG = ''
     FAUCET_STRUCTURAL_CONFIG = ''
+    FAUCET_BEHAVIORAL_CONFIG = ''
     SEGMENTS_TO_VLANS = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._faucetizer = None
+        self._orch_config = None
         self._temp_dir = None
         self._temp_structural_config_file = None
         self._temp_behavioral_config_file = None
@@ -37,10 +39,10 @@ class FaucetizerTestBase(unittest.TestCase):
         shutil.rmtree(self._temp_dir)
 
     def _initialize_faucetizer(self):
-        orch_config = str_proto(self.ORCH_CONFIG, OrchestrationConfig)
+        self._orch_config = str_proto(self.ORCH_CONFIG, OrchestrationConfig)
 
         self._faucetizer = Faucetizer(
-            orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
+            self._orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
             self._temp_behavioral_config_file)
         self._faucetizer.reload_structural_config()
 
@@ -61,6 +63,16 @@ class FaucetizerTestBase(unittest.TestCase):
             port_config['acls_in'] = [f'role_{role}']
         if tail_acl:
             port_config.setdefault('acls_in', []).append(tail_acl)
+
+    def _get_base_behavioral_config(self):
+        base_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        if self._orch_config.unauthenticated_vlan:
+            vlans_config = base_behavioral_config.setdefault('vlans', {})
+            vlans_config[self._orch_config.unauthenticated_vlan] = {
+                'acls_in': [f'uniform_{self._orch_config.unauthenticated_vlan}'],
+                'description:': 'unauthenticated VLAN'
+            }
+        return base_behavioral_config
 
     def _verify_behavioral_config(self, expected_behavioral_config):
         with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
@@ -114,7 +126,7 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
         """test normal faucetize behavior"""
         self._faucetizer.reload_structural_config()
 
-        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        expected_config = self._get_base_behavioral_config()
         self._verify_behavioral_config(expected_config)
 
 
@@ -170,6 +182,10 @@ class FaucetizerBehaviorBaseTestCase(FaucetizerTestBase):
         - rule:
             actions:
               allow: True
+      uniform_100:
+        - rule:
+            actions:
+              allow: False
     """
 
     FAUCET_BEHAVIORAL_CONFIG = """
@@ -228,6 +244,11 @@ class FaucetizerBehaviorBaseTestCase(FaucetizerTestBase):
             cookie: 3
             actions:
               allow: True
+      uniform_100:
+        - rule:
+            cookie: 4
+            actions:
+              allow: False
     """
 
     SEGMENTS_TO_VLANS = {
@@ -296,7 +317,7 @@ class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
         self._process_device_behavior(behaviors[4])
         self._process_device_behavior(behaviors[3])
 
-        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        expected_config = self._get_base_behavioral_config()
         self._update_port_config(
             expected_config, switch='t2sw1', port=1, vlan=200, role='red', tail_acl='tail_acl')
         self._update_port_config(
@@ -311,7 +332,7 @@ class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
         self._process_device_placement(placements[5])
         self._process_device_placement(placements[6])
 
-        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        expected_config = self._get_base_behavioral_config()
         self._update_port_config(
             expected_config, switch='t2sw1', port=1, vlan=200, role='red', tail_acl='tail_acl')
         self._update_port_config(
@@ -356,7 +377,7 @@ class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerBehaviorBaseTestCase):
         self._process_device_placement(placements[1])
         self._process_device_behavior(behaviors[0])
 
-        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        expected_config = self._get_base_behavioral_config()
         self._update_port_config(
             expected_config, switch='t2sw1', port=1, vlan=200)
         self._update_port_config(
