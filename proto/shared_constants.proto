@@ -85,8 +85,11 @@ message DVAState {
     // static
     static = 2;
 
-    // authenticated
-    dynamic = 3;
+    // sequestered
+    sequestered = 3;
+
+    // operational
+    operational = 4;
   }
 }
 
@@ -112,5 +115,24 @@ message LacpRole {
 
     // standby: port is a lacp port that is on standby
     standby = 3;
+  }
+}
+
+/*
+ * Port types
+ */
+message PortType {
+  enum Type {
+    // unkown
+    unknown = 0;
+
+    // access
+    access = 1;
+
+    // testing
+    testing = 2;
+
+    // other
+    other = 3;
   }
 }

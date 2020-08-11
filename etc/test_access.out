@@ -26,9 +26,9 @@ null
 200
 "static"
 "allow DHCP"
-"dynamic"
+"operational"
 300
-"dynamic"
+"operational"
 "deny ICMP"
 0
 @list_hosts dva-vlan-assigned
@@ -36,7 +36,7 @@ null
 "static"
 "allow ICMP"
 300
-"dynamic"
+"operational"
 "Authorized"
 "BOS"
 "yellow"
