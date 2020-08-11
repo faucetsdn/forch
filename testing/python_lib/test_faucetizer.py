@@ -118,13 +118,8 @@ class FaucetizerSimpleTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerBehaviorTestCase(FaucetizerTestBase):
-    """Test Faucetizer's behavior after several iterations of device information processing"""
-
-    ORCH_CONFIG = """
-    unauthenticated_vlan: 100
-    tail_acl: 'tail_acl'
-    """
+class FaucetizerBehaviorBaseTestCase(FaucetizerTestBase):
+    """Base test case to test Faucetizer behavior"""
 
     FAUCET_STRUCTURAL_CONFIG = """
     dps:
@@ -251,6 +246,15 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._faucetizer = None
         self._cleanup_config_files()
 
+
+class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
+    """Test Faucetizer's behavior after several iterations of device information processing"""
+
+    ORCH_CONFIG = """
+    unauthenticated_vlan: 100
+    tail_acl: 'tail_acl'
+    """
+
     def test_devices_learned_and_authenticated(self):
         """devices with different combinations of static and dynamic info"""
         self._faucetizer.reload_structural_config()
@@ -274,7 +278,7 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
             ('02:0c:00:00:00:03', {'segment': 'SEG_C'}, True),
             # devices authenticated
             ('02:0B:00:00:00:02', {'segment': 'SEG_B', 'role': 'green'}, False),
-            ('02:0c:00:00:00:03', {'segment': 'SEG_A', 'role': 'yellow'}, False),
+            ('02:0c:00:00:00:03', {'segment': 'SEG_A', 'role': 'black'}, False),
             ('02:0D:00:00:00:04', {'segment': 'SEG_X', 'role': 'red'}, False)
         ]
 
@@ -319,7 +323,48 @@ class FaucetizerBehaviorTestCase(FaucetizerTestBase):
         self._verify_behavioral_config(expected_config)
 
 
-class FaucetizerNoTailACLDefinitionTestCase(FaucetizerTestBase):
+class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerBehaviorBaseTestCase):
+    """Test Faucetizer's behavior with no tail_acl setting in Forch config"""
+
+    ORCH_CONFIG = """
+    unauthenticated_vlan: 100
+    """
+
+    def test_devices_learned_and_authenticated(self):
+        """devices with different combinations of static and dynamic info"""
+        self._faucetizer.reload_structural_config()
+
+        placements = [
+            # static placement
+            ('02:0A:00:00:00:01', {'switch': 't2sw1', 'port': 1, 'connected': True}, True),
+            # dynamic placement
+            ('02:0a:00:00:00:02', {'switch': 't2sw1', 'port': 2, 'connected': True}, False),
+        ]
+
+        behaviors = [
+            # static behavior
+            ('02:0a:00:00:00:02', {'segment': 'SEG_B'}, True),
+            # dynamic behavior with non existent role
+            ('02:0a:00:00:00:01', {'segment': 'SEG_A', 'role': 'black'}, False),
+        ]
+
+        # process static device info
+        self._process_device_placement(placements[0])
+        self._process_device_behavior(behaviors[1])
+
+        # process dynamic device info
+        self._process_device_placement(placements[1])
+        self._process_device_behavior(behaviors[0])
+
+        expected_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=1, vlan=200)
+        self._update_port_config(
+            expected_config, switch='t2sw1', port=2, vlan=300)
+        self._verify_behavioral_config(expected_config)
+
+
+class FaucetizerMissingTailACLDefinitionTestCase(FaucetizerTestBase):
     """Test case where no ACL is defined for the tail_acl specified in forch.yaml"""
 
     ORCH_CONFIG = """

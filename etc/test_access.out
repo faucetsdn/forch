@@ -13,7 +13,7 @@ Starting access-vlan-assigned test...
 Starting dva-vlan-assigned tests
 @sys_config dva-vlan-assigned
 1
-"role_green"
+"tail_acl"
 300
 "role_yellow"
 @dataplane_state dva-vlan-assigned
@@ -26,9 +26,9 @@ null
 200
 "static"
 "allow DHCP"
-"dynamic"
+"operational"
 300
-"dynamic"
+"operational"
 "deny ICMP"
 0
 @list_hosts dva-vlan-assigned
@@ -36,7 +36,7 @@ null
 "static"
 "allow ICMP"
 300
-"dynamic"
+"operational"
 "Authorized"
 "BOS"
 "yellow"

@@ -95,10 +95,13 @@ function add_faux {
     switch=$1
     port=$2
     fnum=$3
-    bin/run_faux $fnum
-    docker exec forch-faux-$fnum ip addr flush faux-eth0
-    docker exec forch-faux-$fnum ifconfig faux-eth0 192.168.1.$fnum/16
+    shift 3
+    bin/run_faux $fnum $*
     add_iface $switch $port faux-$fnum
+    while ! docker exec forch-faux-$fnum ip addr show faux-eth0 | fgrep inet; do
+        echo Waiting for IP address...
+        sleep 2
+    done
 }
 
 function diagnose_stack {
@@ -397,7 +400,6 @@ function stop_and_cleanup_radius {
 
 function validate_radius_varz {
     echo validating
-    set -x
     timeouts=$(wget 0.0.0.0:8302 -O- | grep radius_query_timeouts_total | \
                    grep -v 'HELP\|TYPE' | awk '{print $2}')
     responses=$(wget 0.0.0.0:8302 -O- | grep radius_query_responses_total | \

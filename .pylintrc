@@ -5,7 +5,7 @@ disable=F0401,R0201,R0902,W0703,I0011,W0403,E1102,R0903,E0611,W0511,W0613
 max-line-length=100
 ignored-classes=
     State, SystemState, CpnState, CpnConfig,
-    FaucetEvent, ProcessState, DataplaneState, SwitchState,
+    FaucetEvent, ProcessState, DataplaneState, SwitchState, PortType,
     BuildingSchema, LacpState, LacpRole, AuthResult, DVAState,
     DevicesState, DevicePlacement, DeviceBehavior, SegmentsToVlans,
     ForchConfig, SiteConfig, OrchestrationConfig, AuthConfig, HttpConfig

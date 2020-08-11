@@ -88,6 +88,9 @@ message OrchestrationConfig {
   // authentication configurations
   AuthConfig auth_config = 7;
 
+  // orchestrated testing configurations
+  FotConfig fot_config = 11;
+
   // encapsulating authentication configurations
   message AuthConfig {
     // Radius configurations
@@ -122,6 +125,21 @@ message OrchestrationConfig {
 
     // Port to listen on for RADIUS responses
     int32 source_port = 4;
+  }
+
+  // encapsulating Faucet Orchestrated Testing configurations
+  message FotConfig {
+    // testing segment. If defined, automatic sequestering is enabled
+    string testing_segment = 11;
+
+    // start of testing vlan range
+    int32 testing_vlan_start = 12;
+
+    // end of testing vlan range
+    int32 testing_vlan_end = 13;
+
+    // identifier of testing port in the port description
+    string testing_port_identifier = 14;
   }
 }
 

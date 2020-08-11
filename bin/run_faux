@@ -7,6 +7,7 @@ docker_args=
 container_prefix=forch-faux
 image=forch/faux
 net_opt=--net=none
+port_num=0
 
 cd $ROOT
 
@@ -20,6 +21,9 @@ fi
 
 FAUX_ARGS="$*"
 
+# Check that image exists so docker doesn't pull down random one from dockerhub
+docker inspect $image > /dev/null
+
 CONTAINER=$container_prefix$postfix
 
 echo Launching faux $FAUX_ARGS...
@@ -29,9 +33,9 @@ if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; 
     docker rm -f $CONTAINER
 fi
 
-docker_args="$docker_args -e LOCAL_IF=$realintf"
+docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num"
 
-cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image $FAUX_ARGS)
+cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS)
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
 
 intf=faux$postfix

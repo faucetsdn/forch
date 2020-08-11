@@ -519,6 +519,10 @@
                 </li>
               
                 <li>
+                  <a href="#OrchestrationConfig.FotConfig"><span class="badge">M</span>OrchestrationConfig.FotConfig</a>
+                </li>
+              
+                <li>
                   <a href="#OrchestrationConfig.RadiusInfo"><span class="badge">M</span>OrchestrationConfig.RadiusInfo</a>
                 </li>
               
@@ -706,6 +710,10 @@
                 </li>
               
                 <li>
+                  <a href="#PortType"><span class="badge">M</span>PortType</a>
+                </li>
+              
+                <li>
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
@@ -720,6 +728,10 @@
               
                 <li>
                   <a href="#LacpState.LacpState"><span class="badge">E</span>LacpState.LacpState</a>
+                </li>
+              
+                <li>
+                  <a href="#PortType.Type"><span class="badge">E</span>PortType.Type</a>
                 </li>
               
                 <li>
@@ -3389,6 +3401,13 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><p>authentication configurations </p></td>
                 </tr>
               
+                <tr>
+                  <td>fot_config</td>
+                  <td><a href="#OrchestrationConfig.FotConfig">OrchestrationConfig.FotConfig</a></td>
+                  <td></td>
+                  <td><p>orchestrated testing configurations </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -3446,6 +3465,51 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>Authentication timeout in seconds </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.FotConfig">OrchestrationConfig.FotConfig</h3>
+        <p>encapsulating Faucet Orchestrated Testing configurations</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>testing_segment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>testing segment. If defined, automatic sequestering is enabled </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_vlan_start</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>start of testing vlan range </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_vlan_end</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>end of testing vlan range </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_port_identifier</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>identifier of testing port in the port description </p></td>
                 </tr>
               
             </tbody>
@@ -4701,6 +4765,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="PortType">PortType</h3>
+        <p>Port types</p>
+
+        
+
+        
+      
         <h3 id="State">State</h3>
         <p>States</p>
 
@@ -4737,9 +4808,15 @@ or to host_path API to list path </p></td>
               </tr>
             
               <tr>
-                <td>dynamic</td>
+                <td>sequestered</td>
                 <td>3</td>
-                <td><p>authenticated</p></td>
+                <td><p>sequestered</p></td>
+              </tr>
+            
+              <tr>
+                <td>operational</td>
+                <td>4</td>
+                <td><p>operational</p></td>
               </tr>
             
           </tbody>
@@ -4822,6 +4899,41 @@ or to host_path API to list path </p></td>
                 <td>noact</td>
                 <td>5</td>
                 <td><p>noact: port is up, but not active</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="PortType.Type">PortType.Type</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>unknown</td>
+                <td>0</td>
+                <td><p>unkown</p></td>
+              </tr>
+            
+              <tr>
+                <td>access</td>
+                <td>1</td>
+                <td><p>access</p></td>
+              </tr>
+            
+              <tr>
+                <td>testing</td>
+                <td>2</td>
+                <td><p>testing</p></td>
+              </tr>
+            
+              <tr>
+                <td>other</td>
+                <td>3</td>
+                <td><p>other</p></td>
               </tr>
             
           </tbody>
