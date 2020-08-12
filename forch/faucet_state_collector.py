@@ -1005,7 +1005,10 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info('lag_state update %s %s %s %s', name, port, lacp_role, lacp_state)
+            LOGGER.info(dir(LacpRole.LacpRole))
+            LOGGER.info('lag_state update %s Port %s Role: %s State: %s',
+                        name, port, LacpRole.LacpRole.Name(int(lacp_role)),
+                        LacpState.LacpState.Name(int(lacp_state)))
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_role = int(lacp_role)  # varz returns float. Need to convert to int
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
@@ -1030,7 +1033,7 @@ class FaucetStateCollector:
             egress_state[EGRESS_CHANGE_COUNT] = change_count
             egress_state[EGRESS_STATE] = state
             egress_state[EGRESS_DETAIL] = egress_detail
-            LOGGER.info('lag_state #%d %s, %s: %s',
+            LOGGER.info('lag_state Change #%d %s, Port %s Egress detail: %s',
                         change_count, name, state, egress_detail)
 
     def _get_egress_state_detail(self, links):
