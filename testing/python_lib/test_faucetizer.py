@@ -70,7 +70,7 @@ class FaucetizerTestBase(unittest.TestCase):
             vlans_config = base_behavioral_config.setdefault('vlans', {})
             vlans_config[self._orch_config.unauthenticated_vlan] = {
                 'acls_in': [f'uniform_{self._orch_config.unauthenticated_vlan}'],
-                'description:': 'unauthenticated VLAN'
+                'description': 'unauthenticated VLAN'
             }
         return base_behavioral_config
 

@@ -257,7 +257,7 @@ class Faucetizer:
             if next((acls for acls in self._acl_configs.values() if vlan_acl in acls), None):
                 vlan_config = {
                     'acls_in': [f'uniform_{self._config.unauthenticated_vlan}'],
-                    'description:': 'unauthenticated VLAN'
+                    'description': 'unauthenticated VLAN'
                 }
                 vlans_config[self._config.unauthenticated_vlan] = vlan_config
             else:
