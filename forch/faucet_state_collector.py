@@ -1005,7 +1005,6 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info(dir(LacpRole.LacpRole))
             LOGGER.info('lag_state update %s Port %s Role: %s State: %s',
                         name, port, LacpRole.LacpRole.Name(int(lacp_role)),
                         LacpState.LacpState.Name(int(lacp_state)))
