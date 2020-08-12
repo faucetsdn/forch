@@ -40,7 +40,7 @@ def show_error(error, path, params):
 
 def run_forchestrator():
     """main function to start forch"""
-    log_level_str = os.getenv('LOG_LEVEL', _LOG_LEVEL_DEFAULT)
+    log_level_str = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
     configure_logging(level=log_level_str)
 
     config = load_config()
