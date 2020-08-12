@@ -1032,8 +1032,8 @@ class FaucetStateCollector:
             egress_state[EGRESS_CHANGE_COUNT] = change_count
             egress_state[EGRESS_STATE] = state
             egress_state[EGRESS_DETAIL] = egress_detail
-            LOGGER.info('lag_state Change #%d %s, Port %s Egress detail: %s',
-                        change_count, name, state, egress_detail)
+            LOGGER.info('lag_state Change #%d %s, State: %s Egress detail: %s',
+                        change_count, name, State.State.Name(state), egress_detail)
 
     def _get_egress_state_detail(self, links):
         state_set = set()
