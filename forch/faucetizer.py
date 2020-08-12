@@ -250,6 +250,23 @@ class Faucetizer:
         if dva_state:
             self._update_vlan_state(device_placement.switch, device_placement.port, dva_state)
 
+    def _update_vlans_config(self, behavioral_faucet_config):
+        vlans_config = behavioral_faucet_config.setdefault('vlans', {})
+        if self._config.unauthenticated_vlan not in vlans_config:
+            vlan_acl = f'uniform_{self._config.unauthenticated_vlan}'
+            if next((acls for acls in self._acl_configs.values() if vlan_acl in acls), None):
+                vlan_config = {
+                    'acls_in': [f'uniform_{self._config.unauthenticated_vlan}'],
+                    'description': 'unauthenticated VLAN'
+                }
+                vlans_config[self._config.unauthenticated_vlan] = vlan_config
+            else:
+                LOGGER.error('VLAN ACL is not defined: %s', vlan_acl)
+        else:
+            LOGGER.warning(
+                'Unauthenticated VLAN is already defined in structural config: %s',
+                self._config.unauthenticated_vlan)
+
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
@@ -292,6 +309,8 @@ class Faucetizer:
 
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
+        if self._config.unauthenticated_vlan:
+            self._update_vlans_config(behavioral_faucet_config)
 
         structural_acls_config = self._acl_configs.get(self._structural_config_file)
         if structural_acls_config:

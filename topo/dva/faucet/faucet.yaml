@@ -22,7 +22,7 @@ dps:
       28:
         description: egress
         lacp: 3
-        tagged_vlans: [100, 200, 300, 400]
+        tagged_vlans: [200, 300, 400]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t1sw2:
     dp_id: 178
@@ -47,7 +47,6 @@ dps:
       28:
         description: egress
         lacp: 3
-        tagged_vlans: [100]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
     dp_id: 147058200627
