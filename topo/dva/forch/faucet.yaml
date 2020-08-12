@@ -22,7 +22,7 @@ dps:
       28:
         description: egress
         lacp: 3
-        tagged_vlans: [100, 200, 300, 400]
+        tagged_vlans: [200, 300, 400]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t1sw2:
     dp_id: 178
@@ -139,9 +139,6 @@ include:
   - role-based-acls.yaml
 version: 2
 vlans:
-  100:
-    acls_in: [uniform_100]
-    description:
   200:
     acls_in: [uniform_200]
     description:
