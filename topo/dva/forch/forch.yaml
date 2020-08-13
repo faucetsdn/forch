@@ -14,6 +14,7 @@ orchestration:
   static_device_placement: placement.yaml
   static_device_behavior: behaviors.yaml
   gauge_config_file: gauge.yaml
+  segments_vlans_file: segments-to-vlans.yaml
   auth_config:
     radius_info:
       server_ip: 172.17.0.5

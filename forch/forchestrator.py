@@ -37,7 +37,8 @@ LOGGER = logging.getLogger('forch')
 
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
-_SEGMENTS_VLAN_DEFAULT = 'segments-to-vlans.yaml'
+_FORCH_CONFIG_DIR_DEFAULT = '/etc/faucet/forch'
+_FAUCET_CONFIG_DIR_DEFAULT = '/etc/faucet/faucet'
 _DEFAULT_PORT = 9019
 _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
@@ -75,7 +76,10 @@ class Forchestrator:
         self._config = config
         self._structural_config_file = None
         self._behavioral_config_file = None
+        self._forch_config_dir = None
+        self._faucet_config_dir = None
         self._gauge_config_file = None
+        self._segments_vlans_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_prom_endpoint = None
@@ -149,6 +153,8 @@ class Forchestrator:
             self._faucetizer.reload_structural_config()
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
+            if self._segments_vlans_file:
+                self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -183,43 +189,61 @@ class Forchestrator:
                                             metrics=self._metrics)
 
     def _process_static_device_placement(self):
-        static_placement_file = self._config.orchestration.static_device_placement
-        if not static_placement_file:
+        placement_file_name = self._config.orchestration.static_device_placement
+        if not placement_file_name:
             return
-        placement_file = os.path.join(
-            os.getenv('FORCH_CONFIG_DIR'), static_placement_file)
-        devices_state = yaml_proto(placement_file, DevicesState)
+        placement_file_path = os.path.join(self._forch_config_dir, placement_file_name)
+        self._reload_static_device_placment(placement_file_path)
+        self._config_file_watcher.register_file_callback(
+            placement_file_path, self._reload_static_device_placment)
+
+    def _reload_static_device_placment(self, file_path):
+        if self._faucetizer:
+            self._faucetizer.clear_static_placements()
+        devices_state = yaml_proto(file_path, DevicesState)
         for eth_src, device_placement in devices_state.device_mac_placements.items():
             self._process_device_placement(eth_src, device_placement, static=True)
 
     def _process_static_device_behavior(self):
-        static_behaviors_file = self._config.orchestration.static_device_behavior
-        if not static_behaviors_file:
+        behaviors_file_name = self._config.orchestration.static_device_behavior
+        if not behaviors_file_name:
             return
-        static_behaviors_path = os.path.join(
-            os.getenv('FORCH_CONFIG_DIR'), static_behaviors_file)
-        devices_state = faucetizer.load_devices_state(static_behaviors_path)
+        behaviors_file_path = os.path.join(self._forch_config_dir, behaviors_file_name)
+        self._reload_static_device_behavior(behaviors_file_path)
+        self._config_file_watcher.register_file_callback(
+            behaviors_file_path, self._reload_static_device_behavior)
+
+    def _reload_static_device_behavior(self, file_path):
+        if self._faucetizer:
+            self._faucetizer.clear_static_behaviors()
+        devices_state = yaml_proto(file_path, DevicesState)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._process_device_behavior(mac, device_behavior, static=True)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
 
+        self._forch_config_dir = os.getenv('FORCH_CONFIG_DIR', _FORCH_CONFIG_DIR_DEFAULT)
+        self._faucet_config_dir = os.getenv('FAUCET_CONFIG_DIR', _FAUCET_CONFIG_DIR_DEFAULT)
+
         behavioral_config_file = (orch_config.behavioral_config_file or
                                   os.getenv('FAUCET_CONFIG_FILE') or
                                   _BEHAVIORAL_CONFIG_DEFAULT)
         self._behavioral_config_file = os.path.join(
-            os.getenv('FAUCET_CONFIG_DIR'), behavioral_config_file)
+            self._faucet_config_dir, behavioral_config_file)
 
         gauge_config_file = orch_config.gauge_config_file
         if gauge_config_file:
-            self._gauge_config_file = os.path.join(
-                os.getenv('FORCH_CONFIG_DIR'), gauge_config_file)
+            self._gauge_config_file = os.path.join(self._forch_config_dir, gauge_config_file)
+
+        segments_vlans_file = orch_config.segments_vlans_file
+        if segments_vlans_file:
+            self._segments_vlans_file = os.path.join(self._forch_config_dir, segments_vlans_file)
 
         structural_config_file = orch_config.structural_config_file
         if structural_config_file:
             self._structural_config_file = os.path.join(
-                os.getenv('FORCH_CONFIG_DIR'), structural_config_file)
+                self._forch_config_dir, structural_config_file)
 
             if not os.path.exists(self._structural_config_file):
                 raise Exception(
@@ -242,14 +266,12 @@ class Forchestrator:
     def _initialize_faucetizer(self):
         orch_config = self._config.orchestration
 
-        segments_vlans_file = orch_config.segments_vlans_file or _SEGMENTS_VLAN_DEFAULT
-        segments_vlans_path = os.path.join(os.getenv('FORCH_CONFIG_DIR'), segments_vlans_file)
-        LOGGER.info('Loading segment to vlan mappings from %s', segments_vlans_path)
-        segments_to_vlans = faucetizer.load_segments_to_vlans(segments_vlans_path)
+        self._config_file_watcher = FileChangeWatcher(
+            os.path.dirname(self._structural_config_file))
 
         self._faucetizer = faucetizer.Faucetizer(
-            orch_config, self._structural_config_file, segments_to_vlans.segments_to_vlans,
-            self._behavioral_config_file, self._reregister_include_file_handlers)
+            orch_config, self._structural_config_file, self._behavioral_config_file,
+            self._reregister_include_file_handlers)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -259,13 +281,15 @@ class Forchestrator:
                 self._faucetizer.flush_behavioral_config(force=True)))
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
-            self._config_file_watcher = FileChangeWatcher(
-                os.path.dirname(self._structural_config_file))
             self._config_file_watcher.register_file_callback(
                 self._structural_config_file, self._faucetizer.reload_structural_config)
             if self._gauge_config_file:
                 self._config_file_watcher.register_file_callback(
                     self._gauge_config_file, self._faucetizer.reload_and_flush_gauge_config)
+
+        if self._segments_vlans_file:
+            self._config_file_watcher.register_file_callback(
+                self._segments_vlans_file, self._faucetizer.reload_segments_to_vlans)
 
     def _initialize_gauge_metrics_scheduler(self, interval_sec):
         get_gauge_metrics = (
