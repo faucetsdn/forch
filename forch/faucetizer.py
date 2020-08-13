@@ -95,14 +95,6 @@ class Faucetizer:
 
             self.flush_behavioral_config()
 
-    def clear_static_placements(self):
-        """Remove all static placements in memory"""
-        self._static_devices.ClearField('device_mac_placements')
-
-    def clear_static_behaviors(self):
-        """Remove all static behaviors in memory"""
-        self._static_devices.ClearField('device_mac_behaviors')
-
     def _process_structural_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
@@ -361,11 +353,19 @@ class Faucetizer:
             new_file_name = self._augment_include_file_name(os.path.split(file_path)[1])
             self.flush_include_config(new_file_name, include_config)
 
-    def reload_segments_vlans_file(self, file_path):
+    def reload_segments_to_vlans(self, file_path):
         """Reload file that contains the mappings from segments to vlans"""
         with open(file_path) as file:
             self._segments_to_vlans = yaml_proto(file_path)
         self.flush_behavioral_config()
+
+    def clear_static_placements(self):
+        """Remove all static placements in memory"""
+        self._static_devices.ClearField('device_mac_placements')
+
+    def clear_static_behaviors(self):
+        """Remove all static behaviors in memory"""
+        self._static_devices.ClearField('device_mac_behaviors')
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""

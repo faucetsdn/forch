@@ -192,7 +192,7 @@ class Forchestrator:
         placement_file_path = os.path.join(self._forch_config_dir, placement_file_name)
         self._reload_static_device_placment(placement_file_path)
         self._config_file_watcher.register_file_callback(
-            placement_file_path, self._reload_static_device_placment())
+            placement_file_path, self._reload_static_device_placment)
 
     def _reload_static_device_placment(self, file_path):
         if self._faucetizer:
@@ -283,9 +283,9 @@ class Forchestrator:
         if orch_config.segments_vlans_file:
             segments_vlans_file_path = os.path.join(
                 self._forch_config_dir, orch_config.segments_vlans_file)
-            self._faucetizer.reload_segments_vlans_file(segments_vlans_file_path)
+            self._faucetizer.reload_segments_to_vlans(segments_vlans_file_path)
             self._config_file_watcher.register_file_callback(
-                segments_vlans_file_path, self._faucetizer.reload_segments_vlans_file)
+                segments_vlans_file_path, self._faucetizer.reload_segments_to_vlans)
 
     def _initialize_gauge_metrics_scheduler(self, interval_sec):
         get_gauge_metrics = (
