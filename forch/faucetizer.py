@@ -32,7 +32,7 @@ class Faucetizer:
         self._testing_device_vlans = {}
         self._acl_configs = {}
         self._vlan_states = {}
-        self._segments_to_vlans = None
+        self._segments_to_vlans = {}
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
         self._behavioral_include = None
@@ -155,15 +155,7 @@ class Faucetizer:
                 raise Exception(
                     f'Starting or ending testing VLAN missing: {starting_vlan}, {ending_vlan}')
 
-            testing_vlans = set(range(starting_vlan, ending_vlan+1))
-            operational_vlans = set(self._segments_to_vlans.values())
-
-            if testing_vlans & operational_vlans:
-                LOGGER.error(
-                    'Testing VLANs has intersection with operational VLANs: %s',
-                    testing_vlans & operational_vlans)
-
-            self._all_testing_vlans = testing_vlans - operational_vlans
+            self._all_testing_vlans = set(range(starting_vlan, ending_vlan+1))
 
     def _get_port_type(self, port_cfg):
         testing_port_identifier = (self._config.fot_config.testing_port_identifier or
@@ -176,9 +168,11 @@ class Faucetizer:
         return PortType.access if len(port_properties) == 0 else PortType.other
 
     def _calculate_available_tesing_vlans(self):
-        if self._config.fot_config.testing_segment:
-            used_testing_vlans = set(self._testing_device_vlans.values())
-            self._available_testing_vlans = self._all_testing_vlans - used_testing_vlans
+        if not self._config.fot_config.testing_segment:
+            return None
+        operational_vlans = set(self._segments_to_vlans.values())
+        used_testing_vlans = set(self._testing_device_vlans.values())
+        return self._all_testing_vlans - operational_vlans - used_testing_vlans
 
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
@@ -219,22 +213,20 @@ class Faucetizer:
                 return True
         return False
 
-    def _calculate_vlan_id(self, device_mac, device_behavior, testing_port_vlans):
-        if not self._segments_to_vlans:
-            raise Exception('No information available for segments to vlans mapping')
-
+    def _calculate_vlan_id(self, device_mac, device_behavior, available_testing_vlans,
+                           testing_port_vlans):
         device_segment = device_behavior.segment
         testing_segment = self._config.fot_config.testing_segment
         vid = None
 
         if testing_segment and device_segment == testing_segment:
-            vid = self._testing_device_vlans.get(device_mac) or self._available_testing_vlans.pop()
-            if vid:
-                self._testing_device_vlans[device_mac] = vid
-                testing_port_vlans.add(vid)
-            else:
+            if device_mac not in self._testing_device_vlans and not available_testing_vlans:
                 LOGGER.error(
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
+            else:
+                vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
+                self._testing_device_vlans[device_mac] = vid
+                testing_port_vlans.add(vid)
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
@@ -274,7 +266,7 @@ class Faucetizer:
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
-        self._calculate_available_tesing_vlans()
+        available_testing_vlans = self._calculate_available_tesing_vlans()
         testing_port_vlans = set()
 
         # static information of a device should overwrite the corresponding dynamic one
@@ -295,7 +287,8 @@ class Faucetizer:
                                mac, device_placement.switch, device_placement.port)
                 continue
 
-            vid = self._calculate_vlan_id(mac, device_behavior, testing_port_vlans)
+            vid = self._calculate_vlan_id(mac, device_behavior, available_testing_vlans,
+                                          testing_port_vlans)
             if not vid:
                 continue
             port_cfg['native_vlan'] = vid
@@ -355,8 +348,14 @@ class Faucetizer:
 
     def reload_segments_to_vlans(self, file_path):
         """Reload file that contains the mappings from segments to vlans"""
-        segments_to_vlans_message = yaml_proto(file_path, SegmentsToVlans)
-        self._segments_to_vlans = segments_to_vlans_message.segments_to_vlans
+        self._segments_to_vlans = yaml_proto(file_path, SegmentsToVlans).segments_to_vlans
+
+        operational_vlans = set(self._segments_to_vlans.values())
+        if self._all_testing_vlans and self._all_testing_vlans & operational_vlans:
+            LOGGER.error(
+                'Testing VLANs has intersection with operational VLANs: %s',
+                self._all_testing_vlans & operational_vlans)
+
         self.flush_behavioral_config()
 
     def clear_static_placements(self):

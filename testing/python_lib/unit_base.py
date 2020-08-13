@@ -186,7 +186,7 @@ class FaucetizerTestBase(UnitTestBase):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
 
         self._faucetizer = Faucetizer(
-            forch_config.orchestration, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
+            forch_config.orchestration, self._temp_structural_config_file,
             self._temp_behavioral_config_file)
         self._faucetizer.reload_structural_config()
         self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
