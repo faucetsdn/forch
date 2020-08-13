@@ -162,11 +162,11 @@ class FaucetizerTestBase(UnitTestBase):
 
     SEGMENTS_TO_VLANS = """
     segments_to_vlans:
-      SEG_A: 200,
-      SEG_B: 300,
-      SEG_C: 400,
-      SEG_X: 1500,
-      SEG_Y: 1600,
+      SEG_A: 200
+      SEG_B: 300
+      SEG_C: 400
+      SEG_X: 1500
+      SEG_Y: 1600
       SEG_Z: 1700
     """
 

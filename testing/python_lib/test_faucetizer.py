@@ -259,8 +259,8 @@ class FaucetizerBehaviorBaseTestCase(FaucetizerTestBase):
 
     SEGMENTS_TO_VLANS = """
     segments_to_vlans:
-      SEG_A: 200,
-      SEG_B: 300,
+      SEG_A: 200
+      SEG_B: 300
       SEG_C: 400
     """
 
