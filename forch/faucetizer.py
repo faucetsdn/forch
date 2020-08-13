@@ -25,14 +25,14 @@ TESTING_PORT_IDENTIFIER_DEFAULT = 'TESTING'
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
-    def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file, reregister_include_file_handlers=None):
+    def __init__(self, orch_config, structural_config_file, behavioral_config_file,
+                 reregister_include_file_handlers=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
         self._testing_device_vlans = {}
         self._acl_configs = {}
         self._vlan_states = {}
-        self._segments_to_vlans = segments_to_vlans
+        self._segments_to_vlans = None
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
         self._behavioral_include = None
@@ -94,6 +94,14 @@ class Faucetizer:
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
             self.flush_behavioral_config()
+
+    def clear_static_placements(self):
+        """Remove all static placements in memory"""
+        self._static_devices.ClearField('device_mac_placements')
+
+    def clear_static_behaviors(self):
+        """Remove all static behaviors in memory"""
+        self._static_devices.ClearField('device_mac_behaviors')
 
     def _process_structural_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
@@ -220,6 +228,9 @@ class Faucetizer:
         return False
 
     def _calculate_vlan_id(self, device_mac, device_behavior, testing_port_vlans):
+        if not self._segments_to_vlans:
+            raise Exception('No information available for segments to vlans mapping')
+
         device_segment = device_behavior.segment
         testing_segment = self._config.fot_config.testing_segment
         vid = None
@@ -237,6 +248,7 @@ class Faucetizer:
         else:
             LOGGER.warning(
                 'Device segment does not have a matching vlan: %s, %s', device_mac, device_segment)
+
         return vid
 
     def _update_device_dva_state(self, device_mac, device_placement, device_behavior):
@@ -348,6 +360,12 @@ class Faucetizer:
 
             new_file_name = self._augment_include_file_name(os.path.split(file_path)[1])
             self.flush_include_config(new_file_name, include_config)
+
+    def reload_segments_vlans_file(self, file_path):
+        """Reload file that contains the mappings from segments to vlans"""
+        with open(file_path) as file:
+            self._segments_to_vlans = yaml_proto(file_path)
+        self.flush_behavioral_config()
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
