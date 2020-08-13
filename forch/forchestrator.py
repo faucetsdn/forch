@@ -79,6 +79,7 @@ class Forchestrator:
         self._forch_config_dir = None
         self._faucet_config_dir = None
         self._gauge_config_file = None
+        self._segments_vlans_file = None
         self._faucet_events = None
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_prom_endpoint = None
@@ -152,6 +153,8 @@ class Forchestrator:
             self._faucetizer.reload_structural_config()
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
+            if self._segments_vlans_file:
+                self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -233,6 +236,10 @@ class Forchestrator:
         if gauge_config_file:
             self._gauge_config_file = os.path.join(self._forch_config_dir, gauge_config_file)
 
+        segments_vlans_file = orch_config.segments_vlans_file
+        if segments_vlans_file:
+            self._segments_vlans_file = os.path.join(self._forch_config_dir, segments_vlans_file)
+
         structural_config_file = orch_config.structural_config_file
         if structural_config_file:
             self._structural_config_file = os.path.join(
@@ -280,12 +287,9 @@ class Forchestrator:
                 self._config_file_watcher.register_file_callback(
                     self._gauge_config_file, self._faucetizer.reload_and_flush_gauge_config)
 
-        if orch_config.segments_vlans_file:
-            segments_vlans_file_path = os.path.join(
-                self._forch_config_dir, orch_config.segments_vlans_file)
-            self._faucetizer.reload_segments_to_vlans(segments_vlans_file_path)
+        if self._segments_vlans_file:
             self._config_file_watcher.register_file_callback(
-                segments_vlans_file_path, self._faucetizer.reload_segments_to_vlans)
+                self._segments_vlans_file, self._faucetizer.reload_segments_to_vlans)
 
     def _initialize_gauge_metrics_scheduler(self, interval_sec):
         get_gauge_metrics = (
