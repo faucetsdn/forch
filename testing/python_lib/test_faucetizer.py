@@ -17,7 +17,7 @@ class FaucetizerTestBase(unittest.TestCase):
     ORCH_CONFIG = ''
     FAUCET_STRUCTURAL_CONFIG = ''
     FAUCET_BEHAVIORAL_CONFIG = ''
-    SEGMENTS_TO_VLANS = {}
+    SEGMENTS_TO_VLANS = ''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,14 +26,19 @@ class FaucetizerTestBase(unittest.TestCase):
         self._temp_dir = None
         self._temp_structural_config_file = None
         self._temp_behavioral_config_file = None
+        self._temp_segments_vlans_file = None
 
     def _setup_config_files(self):
         self._temp_dir = tempfile.mkdtemp()
         _, self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
         _, self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        _, self._temp_segments_vlans_file = tempfile.mkstemp(dir=self._temp_dir)
 
         with open(self._temp_structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
+
+        with open(self._temp_segments_vlans_file, 'w') as segments_vlans_file:
+            segments_vlans_file.write(self.SEGMENTS_TO_VLANS)
 
     def _cleanup_config_files(self):
         shutil.rmtree(self._temp_dir)
@@ -42,9 +47,10 @@ class FaucetizerTestBase(unittest.TestCase):
         self._orch_config = str_proto(self.ORCH_CONFIG, OrchestrationConfig)
 
         self._faucetizer = Faucetizer(
-            self._orch_config, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
+            self._orch_config, self._temp_structural_config_file,
             self._temp_behavioral_config_file)
         self._faucetizer.reload_structural_config()
+        self._faucetizer.reload_segments_to_vlans(self._temp_segments_vlans_file)
 
     def _process_device_placement(self, placement_tuple):
         self._faucetizer.process_device_placement(
@@ -251,11 +257,12 @@ class FaucetizerBehaviorBaseTestCase(FaucetizerTestBase):
               allow: False
     """
 
-    SEGMENTS_TO_VLANS = {
-        'SEG_A': 200,
-        'SEG_B': 300,
-        'SEG_C': 400
-    }
+    SEGMENTS_TO_VLANS = """
+    segments_to_vlans:
+      SEG_A: 200,
+      SEG_B: 300,
+      SEG_C: 400
+    """
 
     def setUp(self):
         """setup fixture for each test method"""
