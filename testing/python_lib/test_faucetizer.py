@@ -32,13 +32,13 @@ class FaucetizerTestBase(unittest.TestCase):
         self._temp_dir = tempfile.mkdtemp()
         _, self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
         _, self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
-        _, self._temp_segments_vlans_file = tempfile.mkstemp(dir=self._temp_dir)
-
         with open(self._temp_structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
 
-        with open(self._temp_segments_vlans_file, 'w') as segments_vlans_file:
-            segments_vlans_file.write(self.SEGMENTS_TO_VLANS)
+        if self.SEGMENTS_TO_VLANS:
+            _, self._temp_segments_vlans_file = tempfile.mkstemp(dir=self._temp_dir)
+            with open(self._temp_segments_vlans_file, 'w') as segments_vlans_file:
+                segments_vlans_file.write(self.SEGMENTS_TO_VLANS)
 
     def _cleanup_config_files(self):
         shutil.rmtree(self._temp_dir)
@@ -50,7 +50,8 @@ class FaucetizerTestBase(unittest.TestCase):
             self._orch_config, self._temp_structural_config_file,
             self._temp_behavioral_config_file)
         self._faucetizer.reload_structural_config()
-        self._faucetizer.reload_segments_to_vlans(self._temp_segments_vlans_file)
+        if self._temp_segments_vlans_file:
+            self._faucetizer.reload_segments_to_vlans(self._temp_segments_vlans_file)
 
     def _process_device_placement(self, placement_tuple):
         self._faucetizer.process_device_placement(
