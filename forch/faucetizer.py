@@ -355,9 +355,8 @@ class Faucetizer:
 
     def reload_segments_to_vlans(self, file_path):
         """Reload file that contains the mappings from segments to vlans"""
-        with open(file_path) as file:
-            segments_to_vlans_message = yaml_proto(file_path, SegmentsToVlans)
-            self._segments_to_vlans = segments_to_vlans_message.segments_to_vlans
+        segments_to_vlans_message = yaml_proto(file_path, SegmentsToVlans)
+        self._segments_to_vlans = segments_to_vlans_message.segments_to_vlans
         self.flush_behavioral_config()
 
     def clear_static_placements(self):
