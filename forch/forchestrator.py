@@ -57,7 +57,8 @@ _TARGET_FAUCET_METRICS = (
     'dp_root_hop_port',
     'faucet_stack_root_dpid',
     'faucet_config_reload_cold',
-    'faucet_config_reload_warm'
+    'faucet_config_reload_warm',
+    'ryu_config'
 )
 
 _TARGET_GAUGE_METRICS = (
@@ -666,6 +667,22 @@ class Forchestrator:
         except Exception as e:
             versions.faucet = f'Cannot get faucet version: {e}'
 
+    def _get_ryu_config(self):
+        metrics = varz_state_collector.retry_get_metrics(
+            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
+        if 'ryu_config' not in metrics or not metrics['ryu_config'].samples:
+            return {
+                'warnings': 'Ryu config is missing'
+            }
+
+        ryu_config = {}
+        for sample in metrics['ryu_config'].samples:
+            param = sample.labels['param']
+            value = sample.value
+            ryu_config[param] = value
+
+        return ryu_config
+
     def cleanup(self):
         """Clean up relevant internal data in all collectors"""
         self._faucet_collector.cleanup()
@@ -724,7 +741,8 @@ class Forchestrator:
             }
             reply = {
                 'faucet': faucet_config_map,
-                'forch': proto_dict(self._config)
+                'forch': proto_dict(self._config),
+                'ryu': self._get_ryu_config()
             }
             if self._faucetizer:
                 reply['faucet']['structural'] = self._faucetizer.get_structural_config()
