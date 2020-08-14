@@ -96,7 +96,8 @@ docker_envs="\
         --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
         --env USERID=$(id -u) \
         --env FAUCET_EVENT_SOCK=$event_sock \
-        --env FAUCET_CONFIG=$faucet_config"
+        --env FAUCET_CONFIG=$faucet_config \
+        --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
 
 docker_volumes+="\
         -v $INSTDIR/faucet:/etc/faucet \
