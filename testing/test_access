@@ -53,8 +53,8 @@ function test_dva {
     api_result=$fout_dir/dataplane_state.json
     echo "@dataplane_state $fdesc" | tee -a $TEST_RESULTS
     jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
-    jq '.vlans."100".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."200".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."400".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."500".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."4096".packet_rate_state' $api_result | tee -a $TEST_RESULTS
 
@@ -86,8 +86,8 @@ function test_forch_varz {
     adesc=varz-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
     metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
-    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="100"' | awk '{print $2}' | tee -a $TEST_RESULTS
     grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="200"' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="400"' | awk '{print $2}' | tee -a $TEST_RESULTS
     grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="500"' | awk '{print $2}' | tee -a $TEST_RESULTS
     grep 'dataplane_packet_rate_state_vlan' <<< $metrics | grep 'vlan="4096"' | awk '{print $2}' | tee -a $TEST_RESULTS
 
