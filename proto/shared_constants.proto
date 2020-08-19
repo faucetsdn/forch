@@ -136,3 +136,8 @@ message PortType {
     other = 3;
   }
 }
+
+/*
+ * Dummy empty message
+ */
+message Empty {}

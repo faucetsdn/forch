@@ -4,11 +4,13 @@
 
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
 /*
  * gRPC service to receive testing results
  */
 service DeviceTestingResult {
-    rpc ReportTestingResult (stream DeviceTestingResult) {}
+    rpc ReportTestingResult (DeviceTestingResult) returns (Empty) {}
 }
 
 /*
