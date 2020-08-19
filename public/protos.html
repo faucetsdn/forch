@@ -408,6 +408,25 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fdevice_testing.proto">forch/proto/device_testing.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#DeviceTestingResult"><span class="badge">M</span>DeviceTestingResult</a>
+                </li>
+              
+              
+              
+              
+                <li>
+                  <a href="#DeviceTesting"><span class="badge">S</span>DeviceTesting</a>
+                </li>
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2ffaucet_event.proto">forch/proto/faucet_event.proto</a>
             <ul>
               
@@ -699,6 +718,10 @@
               
                 <li>
                   <a href="#DVAState"><span class="badge">M</span>DVAState</a>
+                </li>
+              
+                <li>
+                  <a href="#Empty"><span class="badge">M</span>Empty</a>
                 </li>
               
                 <li>
@@ -2318,6 +2341,70 @@
       
 
       
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/device_testing.proto">forch/proto/device_testing.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="DeviceTestingResult">DeviceTestingResult</h3>
+        <p>Device testing result</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>mac</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>passed</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+        <h3 id="DeviceTesting">DeviceTesting</h3>
+        <p>gRPC service to receive testing results</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>ReportTestingResult</td>
+                <td><a href="#DeviceTestingResult">.DeviceTestingResult</a></td>
+                <td><a href="#Empty">.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+
+        
     
       
       <div class="file-heading">
@@ -4746,6 +4833,13 @@ or to host_path API to list path </p></td>
       
         <h3 id="DVAState">DVAState</h3>
         <p>DVA State</p>
+
+        
+
+        
+      
+        <h3 id="Empty">Empty</h3>
+        <p>Dummy empty message</p>
 
         
 
