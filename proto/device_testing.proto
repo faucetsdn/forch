@@ -9,7 +9,7 @@ import "forch/proto/shared_constants.proto";
 /*
  * gRPC service to receive testing results
  */
-service DeviceTestingResult {
+service DeviceTesting {
     rpc ReportTestingResult (DeviceTestingResult) returns (Empty) {}
 }
 
