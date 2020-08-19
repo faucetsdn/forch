@@ -1,0 +1,17 @@
+/*
+ * gRPC service to receive device testing results
+ */
+
+syntax = "proto3";
+
+service DeviceTestingResult {
+    rpc ReportTestingResult (stream DeviceTestingResult) {}
+}
+
+/*
+ * Device testing result
+ */
+message DeviceTestingResult {
+    string mac = 1;
+    bool passed = 2;
+}
