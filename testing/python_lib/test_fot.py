@@ -101,7 +101,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._lock = threading.Lock
+        self._lock = threading.Lock()
         self._received_states = []
 
     def _process_device_testing_state(self, device_testing_state):
@@ -112,17 +112,17 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
     def test_receiving_device_testing_states(self):
         """Test behavior of the behavior when client sends device testing states"""
         expected_testing_states = [
-            {'mac': '00:0X:00:00:00:01', 'testing_state': TestingState.unknown},
-            {'mac': '00:0Y:00:00:00:02', 'testing_state': TestingState.passed},
-            {'mac': '00:0Z:00:00:00:03', 'testing_state': TestingState.testing},
-            {'mac': '00:0A:00:00:00:04', 'testing_state': TestingState.testing},
-            {'mac': '00:0B:00:00:00:05', 'testing_state': TestingState.unknown}
+            {'mac': '00:0X:00:00:00:01', 'testing_state': 'unknown'},
+            {'mac': '00:0Y:00:00:00:02', 'testing_state': 'passed'},
+            {'mac': '00:0Z:00:00:00:03', 'testing_state': 'testing'},
+            {'mac': '00:0A:00:00:00:04', 'testing_state': 'testing'},
+            {'mac': '00:0B:00:00:00:05', 'testing_state': 'unknown'}
         ]
 
         future_responses = []
         for testing_state in expected_testing_states:
             logger.info('Sending device testing state: %s', testing_state)
-            future_response = self._client.ReportTestingResult(
+            future_response = self._client.ReportTestingState.future(
                 dict_proto(testing_state, DeviceTestingState))
             future_responses.append(future_response)
 
@@ -130,6 +130,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
             self.assertEqual(type(future_response.result()), Empty)
 
         print(self._received_states) # TODO remove
+        print(expected_testing_states)  # TODO remove
 
         sorted_received_states = sorted(self._received_states, key=lambda k: k['mac'])
         sorted_expected_states = sorted(expected_testing_states, key=lambda k: k['mac'])
