@@ -100,13 +100,19 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._received_results = []
-        self._on_receive_result = lambda result: self._received_results.append(proto_dict(result,  including_default_value_fields=True))
+        self._on_receive_result = (
+            lambda result: self._received_results.append(
+                proto_dict(result, including_default_value_fields=True))
+        )
 
     def test_receiving_device_testing_results(self):
         """Test server behavior when client sends devie testing results"""
         expected_testing_results = [
             {'mac': '02:0A:00:00:00:01', 'passed': True},
-            {'mac': '02:0B:00:00:00:02', 'passed': False}
+            {'mac': '02:0B:00:00:00:02', 'passed': False},
+            {'mac': '02:0C:00:00:00:03', 'passed': True},
+            {'mac': '02:0D:00:00:00:04', 'passed': False},
+            {'mac': '02:0E:00:00:00:05', 'passed': True}
         ]
 
         for testing_result in expected_testing_results:
