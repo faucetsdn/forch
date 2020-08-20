@@ -17,9 +17,9 @@ class DeviceTestingStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.ReportTestingResult = channel.unary_unary(
-                '/DeviceTesting/ReportTestingResult',
-                request_serializer=forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingResult.SerializeToString,
+        self.ReportTestingState = channel.unary_unary(
+                '/DeviceTesting/ReportTestingState',
+                request_serializer=forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingState.SerializeToString,
                 response_deserializer=forch_dot_proto_dot_shared__constants__pb2.Empty.FromString,
                 )
 
@@ -29,7 +29,7 @@ class DeviceTestingServicer(object):
     gRPC service to receive testing results
     """
 
-    def ReportTestingResult(self, request, context):
+    def ReportTestingState(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -38,9 +38,9 @@ class DeviceTestingServicer(object):
 
 def add_DeviceTestingServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'ReportTestingResult': grpc.unary_unary_rpc_method_handler(
-                    servicer.ReportTestingResult,
-                    request_deserializer=forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingResult.FromString,
+            'ReportTestingState': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReportTestingState,
+                    request_deserializer=forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingState.FromString,
                     response_serializer=forch_dot_proto_dot_shared__constants__pb2.Empty.SerializeToString,
             ),
     }
@@ -56,7 +56,7 @@ class DeviceTesting(object):
     """
 
     @staticmethod
-    def ReportTestingResult(request,
+    def ReportTestingState(request,
             target,
             options=(),
             channel_credentials=None,
@@ -66,8 +66,8 @@ class DeviceTesting(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/DeviceTesting/ReportTestingResult',
-            forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingResult.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/DeviceTesting/ReportTestingState',
+            forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingState.SerializeToString,
             forch_dot_proto_dot_shared__constants__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
