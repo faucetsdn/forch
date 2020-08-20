@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from forch.proto.grpc import device_testing_pb2 as forch_dot_proto_dot_grpc_dot_device__testing__pb2
+from forch.proto import device_testing_state_pb2 as forch_dot_proto_dot_device__testing__state__pb2
 from forch.proto import shared_constants_pb2 as forch_dot_proto_dot_shared__constants__pb2
 
 
@@ -19,7 +19,7 @@ class DeviceTestingStub(object):
         """
         self.ReportTestingState = channel.unary_unary(
                 '/DeviceTesting/ReportTestingState',
-                request_serializer=forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingState.SerializeToString,
+                request_serializer=forch_dot_proto_dot_device__testing__state__pb2.DeviceTestingState.SerializeToString,
                 response_deserializer=forch_dot_proto_dot_shared__constants__pb2.Empty.FromString,
                 )
 
@@ -40,7 +40,7 @@ def add_DeviceTestingServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ReportTestingState': grpc.unary_unary_rpc_method_handler(
                     servicer.ReportTestingState,
-                    request_deserializer=forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingState.FromString,
+                    request_deserializer=forch_dot_proto_dot_device__testing__state__pb2.DeviceTestingState.FromString,
                     response_serializer=forch_dot_proto_dot_shared__constants__pb2.Empty.SerializeToString,
             ),
     }
@@ -67,7 +67,7 @@ class DeviceTesting(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/DeviceTesting/ReportTestingState',
-            forch_dot_proto_dot_grpc_dot_device__testing__pb2.DeviceTestingState.SerializeToString,
+            forch_dot_proto_dot_device__testing__state__pb2.DeviceTestingState.SerializeToString,
             forch_dot_proto_dot_shared__constants__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
