@@ -1,8 +1,9 @@
 """gRPC server to receive device testing result"""
 
 from concurrent import futures
-import grpc
 import logging
+
+import grpc
 
 import forch.proto.grpc.device_testing_pb2_grpc as device_testing_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty
@@ -20,7 +21,9 @@ class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
         super().__init__()
         self._on_receiving_result = on_receiving_result
 
+    # pylint: disable=invalid-name
     def ReportTestingState(self, request, context):
+        """RPC call for client to send device testing state"""
         if not request:
             LOGGER.warning('Received empty request for gRPC ReportTestingResult')
             return Empty()
