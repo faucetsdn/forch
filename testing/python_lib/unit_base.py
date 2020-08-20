@@ -241,7 +241,6 @@ class DeviceTestingServerTestBase(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self._server = None
         self._client = None
-        self._on_receive_result = None
 
     def setUp(self):
         """setup fixture for each test method"""
@@ -250,9 +249,8 @@ class DeviceTestingServerTestBase(unittest.TestCase):
         print('Client initialized')
 
         self._server = DeviceTestingServer(
-            self._on_receive_result, self.SERVER_ADDRESS, self.SERVER_PORT)
+            self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
-        print('Server started')
 
     def tearDown(self):
         """cleanup after each test method finishes"""

@@ -10,13 +10,13 @@ import "forch/proto/shared_constants.proto";
  * gRPC service to receive testing results
  */
 service DeviceTesting {
-    rpc ReportTestingResult (DeviceTestingResult) returns (Empty) {}
+    rpc ReportTestingState (DeviceTestingState) returns (Empty) {}
 }
 
 /*
- * Device testing result
+ * Device testing state
  */
-message DeviceTestingResult {
+message DeviceTestingState {
     string mac = 1;
-    bool passed = 2;
+    TestingState.State testing_state = 2;
 }

@@ -20,15 +20,15 @@ class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
         super().__init__()
         self._on_receiving_result = on_receiving_result
 
-    def ReportTestingResult(self, request, context):
+    def ReportTestingState(self, request, context):
         if not request:
             LOGGER.warning('Received empty request for gRPC ReportTestingResult')
-            return
+            return Empty()
 
         self._on_receiving_result(request)
 
         LOGGER.info(
-            'Received testing result for device %s: passed: %s', request.mac, request.passed)
+            'Received testing state: %s, %s', request.mac, request.state)
 
         return Empty()
 

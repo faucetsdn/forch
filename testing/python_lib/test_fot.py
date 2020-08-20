@@ -1,12 +1,14 @@
 """Integration test base class for Forch"""
 
+import threading
 import time
 import unittest
 import yaml
 
 from forch.utils import dict_proto, proto_dict
 
-from forch.proto.grpc.device_testing_pb2 import DeviceTestingResult
+from forch.proto.grpc.device_testing_pb2 import DeviceTestingState
+from forch.proto.shared_constants_pb2 import TestingState, Empty
 
 from integration_base import IntegrationTestBase, logger
 from unit_base import DeviceTestingServerTestBase, FaucetizerTestBase
@@ -99,30 +101,40 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._received_results = []
-        self._on_receive_result = (
-            lambda result: self._received_results.append(
-                proto_dict(result, including_default_value_fields=True))
-        )
+        self._lock = threading.Lock
+        self._received_states = []
 
-    def test_receiving_device_testing_results(self):
-        """Test behavior of the behavior when client sends device testing results"""
-        expected_testing_results = [
-            {'mac': '00:0X:00:00:00:01', 'passed': True},
-            {'mac': '00:0Y:00:00:00:02', 'passed': False},
-            {'mac': '00:0Z:00:00:00:03', 'passed': True},
-            {'mac': '00:0A:00:00:00:04', 'passed': False},
-            {'mac': '00:0B:00:00:00:05', 'passed': True}
+    def _process_device_testing_state(self, device_testing_state):
+        with self._lock:
+            self._received_states.append(
+                proto_dict(device_testing_state, including_default_value_fields=True))
+
+    def test_receiving_device_testing_states(self):
+        """Test behavior of the behavior when client sends device testing states"""
+        expected_testing_states = [
+            {'mac': '00:0X:00:00:00:01', 'testing_state': TestingState.unknown},
+            {'mac': '00:0Y:00:00:00:02', 'testing_state': TestingState.passed},
+            {'mac': '00:0Z:00:00:00:03', 'testing_state': TestingState.testing},
+            {'mac': '00:0A:00:00:00:04', 'testing_state': TestingState.testing},
+            {'mac': '00:0B:00:00:00:05', 'testing_state': TestingState.unknown}
         ]
 
-        for testing_result in expected_testing_results:
-            logger.info('Sending result: %s', testing_result)
-            self._client.ReportTestingResult(dict_proto(testing_result, DeviceTestingResult))
+        future_responses = []
+        for testing_state in expected_testing_states:
+            logger.info('Sending device testing state: %s', testing_state)
+            future_response = self._client.ReportTestingResult(
+                dict_proto(testing_state, DeviceTestingState))
+            future_responses.append(future_response)
 
-        sorted_receivd_results = sorted(self._received_results, key=lambda k: k['mac'])
-        sorted_expected_results = sorted(expected_testing_results, key=lambda k: k['mac'])
+        for future_response in future_responses:
+            self.assertEqual(type(future_response.result()), Empty)
 
-        self.assertEqual(sorted_receivd_results, sorted_expected_results)
+        print(self._received_states) # TODO remove
+
+        sorted_received_states = sorted(self._received_states, key=lambda k: k['mac'])
+        sorted_expected_states = sorted(expected_testing_states, key=lambda k: k['mac'])
+
+        self.assertEqual(sorted_received_states, sorted_expected_states)
 
 
 if __name__ == '__main__':
