@@ -8,7 +8,7 @@ import yaml
 from forch.utils import dict_proto, proto_dict
 
 from forch.proto.grpc.device_testing_pb2 import DeviceTestingState
-from forch.proto.shared_constants_pb2 import TestingState, Empty
+from forch.proto.shared_constants_pb2 import Empty
 
 from integration_base import IntegrationTestBase, logger
 from unit_base import DeviceTestingServerTestBase, FaucetizerTestBase
