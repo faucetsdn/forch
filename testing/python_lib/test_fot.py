@@ -4,7 +4,9 @@ import time
 import unittest
 import yaml
 
-from forch.utils import dict_proto
+from forch.utils import dict_proto, proto_dict
+
+from forch.proto.grpc.device_testing_pb2 import DeviceTestingResult
 
 from integration_base import IntegrationTestBase, logger
 from unit_base import DeviceTestingServerTestBase, FaucetizerTestBase
@@ -98,7 +100,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._received_results = []
-        self._on_receive_result = lambda result: self._received_results.append(result)
+        self._on_receive_result = lambda result: self._received_results.append(proto_dict(result,  including_default_value_fields=True))
 
     def test_receiving_device_testing_results(self):
         """Test server behavior when client sends devie testing results"""
@@ -109,7 +111,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
 
         for testing_result in expected_testing_results:
             print(f'Sending result: {testing_result}')
-            self._client.ReportTestingResult(dict_proto(expected_testing_results))
+            self._client.ReportTestingResult(dict_proto(testing_result, DeviceTestingResult))
 
         sorted_receivd_results = sorted(self._received_results, key=lambda k: k['mac'])
         sorted_expected_results = sorted(expected_testing_results, key=lambda k: k['mac'])

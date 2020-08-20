@@ -4,7 +4,8 @@ from concurrent import futures
 import grpc
 import logging
 
-import forch.proto.device_testing_pb2_grpc as device_testing_pb2_grpc
+import forch.proto.grpc.device_testing_pb2_grpc as device_testing_pb2_grpc
+from forch.proto.shared_constants_pb2 import Empty
 
 LOGGER = logging.getLogger('cstate')
 ADDRESS_DEFAULT = '0.0.0.0'
@@ -16,6 +17,7 @@ class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
     """gRPC servicer to receive device testing result"""
 
     def __init__(self, on_receiving_result):
+        super().__init__()
         self._on_receiving_result = on_receiving_result
 
     def ReportTestingResult(self, request, context):
@@ -28,6 +30,8 @@ class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
         LOGGER.info(
             'Received testing result for device %s: passed: %s', request.mac, request.passed)
 
+        return Empty()
+
 
 class DeviceTestingServer:
     """Device testing server"""
@@ -36,7 +40,7 @@ class DeviceTestingServer:
         self._server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS_DEFAULT))
 
-        servicer = DeviceTestingServer(on_receiving_result)
+        servicer = DeviceTestingServicer(on_receiving_result)
         device_testing_pb2_grpc.add_DeviceTestingServicer_to_server(servicer, self._server)
 
         server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
@@ -48,4 +52,4 @@ class DeviceTestingServer:
 
     def stop(self):
         """Stop device testing server"""
-        self._server.stop()
+        self._server.stop(grace=None)

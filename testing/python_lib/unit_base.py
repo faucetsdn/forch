@@ -11,8 +11,8 @@ from forch.faucetizer import Faucetizer
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
-from forch.proto.device_testing_pb2_grpc import DeviceTestingStub
 from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.proto.grpc.device_testing_pb2_grpc import DeviceTestingStub
 
 
 class UnitTestBase(unittest.TestCase):

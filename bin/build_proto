@@ -57,9 +57,9 @@ done
     $PYTHON -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. forch/proto/grpc/device_testing.proto
 )
 
-mkdir -p forch/proto/
+mkdir -p forch/proto/grpc
 
 touch forch/proto/__init__.py
 cp build/forch/proto/*.py forch/proto/
-cp build/forch/proto/grpc/*.py forch/proto/
+cp build/forch/proto/grpc/*.py forch/proto/grpc/
 cp build/protos.html public/
