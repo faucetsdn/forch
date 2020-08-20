@@ -129,9 +129,6 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
         for future_response in future_responses:
             self.assertEqual(type(future_response.result()), Empty)
 
-        print(self._received_states) # TODO remove
-        print(expected_testing_states)  # TODO remove
-
         sorted_received_states = sorted(self._received_states, key=lambda k: k['mac'])
         sorted_expected_states = sorted(expected_testing_states, key=lambda k: k['mac'])
 

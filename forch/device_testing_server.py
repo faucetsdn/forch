@@ -7,7 +7,7 @@ import logging
 import forch.proto.grpc.device_testing_pb2_grpc as device_testing_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty
 
-LOGGER = logging.getLogger('cstate')
+LOGGER = logging.getLogger('grpcserver')
 ADDRESS_DEFAULT = '0.0.0.0'
 PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10
@@ -28,7 +28,7 @@ class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
         self._on_receiving_result(request)
 
         LOGGER.info(
-            'Received testing state: %s, %s', request.mac, request.state)
+            'Received testing state: %s, %s', request.mac, request.testing_state)
 
         return Empty()
 
