@@ -7,7 +7,7 @@ import yaml
 
 from forch.utils import dict_proto, proto_dict
 
-from forch.proto.grpc.device_testing_pb2 import DeviceTestingState
+from forch.proto.device_testing_state_pb2 import DeviceTestingState
 from forch.proto.shared_constants_pb2 import Empty
 
 from integration_base import IntegrationTestBase, logger
@@ -114,8 +114,8 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
         expected_testing_states = [
             {'mac': '00:0X:00:00:00:01', 'testing_state': 'unknown'},
             {'mac': '00:0Y:00:00:00:02', 'testing_state': 'passed'},
-            {'mac': '00:0Z:00:00:00:03', 'testing_state': 'testing'},
-            {'mac': '00:0A:00:00:00:04', 'testing_state': 'testing'},
+            {'mac': '00:0Z:00:00:00:03', 'testing_state': 'cleared'},
+            {'mac': '00:0A:00:00:00:04', 'testing_state': 'passed'},
             {'mac': '00:0B:00:00:00:05', 'testing_state': 'unknown'}
         ]
 

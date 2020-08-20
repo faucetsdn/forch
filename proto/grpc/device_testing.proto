@@ -4,6 +4,7 @@
 
 syntax = "proto3";
 
+import "forch/proto/device_testing_state.proto";
 import "forch/proto/shared_constants.proto";
 
 /*
@@ -11,12 +12,4 @@ import "forch/proto/shared_constants.proto";
  */
 service DeviceTesting {
     rpc ReportTestingState (DeviceTestingState) returns (Empty) {}
-}
-
-/*
- * Device testing state
- */
-message DeviceTestingState {
-    string mac = 1;
-    TestingState.State testing_state = 2;
 }

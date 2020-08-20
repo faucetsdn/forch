@@ -145,8 +145,8 @@ message TestingState {
     // unknown
     unknown = 0;
 
-    // testing
-    testing = 1;
+    // cleared
+    cleared = 1;
 
     // passed
     passed = 2;
