@@ -1,14 +1,17 @@
 """Unit test base class for Forch"""
 
+import grpc
 import shutil
 import tempfile
 import unittest
 import yaml
 
+from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
+from forch.proto.device_testing_pb2_grpc import DeviceTestingStub
 from forch.proto.forch_configuration_pb2 import ForchConfig
 
 
@@ -227,3 +230,30 @@ class FaucetizerTestBase(UnitTestBase):
         """cleanup after each test method finishes"""
         self._faucetizer = None
         self._cleanup_config_files()
+
+
+class DeviceTestingServerTestBase(unittest.TestCase):
+    """Base class for device testing server unit test"""
+    SERVER_ADDRESS = '0.0.0.0'
+    SERVER_PORT = 50051
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._server = None
+        self._client = None
+        self._on_receive_result = None
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
+        self._client = DeviceTestingStub(channel)
+        print('Client initialized')
+
+        self._server = DeviceTestingServer(
+            self._on_receive_result, self.SERVER_ADDRESS, self.SERVER_PORT)
+        self._server.start()
+        print('Server started')
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._server.stop()

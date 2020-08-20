@@ -4,8 +4,10 @@ import time
 import unittest
 import yaml
 
+from forch.utils import dict_proto
+
 from integration_base import IntegrationTestBase, logger
-from unit_base import FaucetizerTestBase
+from unit_base import DeviceTestingServerTestBase, FaucetizerTestBase
 
 
 class FotConfigTest(IntegrationTestBase):
@@ -88,6 +90,31 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         self._update_port_config(
             expected_config, switch='t2sw1', port=1, native_vlan=200, role='red')
         self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
+
+
+class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
+    """Device testing server test"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._received_results = []
+        self._on_receive_result = lambda result: self._received_results.append(result)
+
+    def test_receiving_device_testing_results(self):
+        """Test server behavior when client sends devie testing results"""
+        expected_testing_results = [
+            {'mac': '02:0A:00:00:00:01', 'passed': True},
+            {'mac': '02:0B:00:00:00:02', 'passed': False}
+        ]
+
+        for testing_result in expected_testing_results:
+            print(f'Sending result: {testing_result}')
+            self._client.ReportTestingResult(dict_proto(expected_testing_results))
+
+        sorted_receivd_results = sorted(self._received_results, key=lambda k: k['mac'])
+        sorted_expected_results = sorted(expected_testing_results, key=lambda k: k['mac'])
+
+        self.assertEqual(sorted_receivd_results, sorted_expected_results)
 
 
 if __name__ == '__main__':

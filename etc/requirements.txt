@@ -1,6 +1,8 @@
 setuptools
 wheel
 coverage
+grpc
+grpc-tools
 netaddr
 networkx
 pbr>=1.9
