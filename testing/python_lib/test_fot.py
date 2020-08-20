@@ -95,7 +95,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
 
 
 class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
-    """Device testing server test"""
+    """Device testing server test case"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -106,17 +106,17 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
         )
 
     def test_receiving_device_testing_results(self):
-        """Test server behavior when client sends devie testing results"""
+        """Test behavior of the behavior when client sends device testing results"""
         expected_testing_results = [
-            {'mac': '02:0A:00:00:00:01', 'passed': True},
-            {'mac': '02:0B:00:00:00:02', 'passed': False},
-            {'mac': '02:0C:00:00:00:03', 'passed': True},
-            {'mac': '02:0D:00:00:00:04', 'passed': False},
-            {'mac': '02:0E:00:00:00:05', 'passed': True}
+            {'mac': '00:0X:00:00:00:01', 'passed': True},
+            {'mac': '00:0Y:00:00:00:02', 'passed': False},
+            {'mac': '00:0Z:00:00:00:03', 'passed': True},
+            {'mac': '00:0A:00:00:00:04', 'passed': False},
+            {'mac': '00:0B:00:00:00:05', 'passed': True}
         ]
 
         for testing_result in expected_testing_results:
-            print(f'Sending result: {testing_result}')
+            logger.info('Sending result: %s', testing_result)
             self._client.ReportTestingResult(dict_proto(testing_result, DeviceTestingResult))
 
         sorted_receivd_results = sorted(self._received_results, key=lambda k: k['mac'])
