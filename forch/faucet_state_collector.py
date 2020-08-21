@@ -868,6 +868,7 @@ class FaucetStateCollector:
         with self.lock:
             link_list = self.topo_state.get(LINKS_GRAPH)
             dps = self.topo_state.get(TOPOLOGY_DPS)
+            error_detail = ''
 
             if link_list is None or dps is None:
                 return {
@@ -886,6 +887,7 @@ class FaucetStateCollector:
             if src_port:
                 hop['in'] = src_port
 
+            visited_hops = set()
             while hop:
                 next_hop = {}
                 hop_switch = hop['switch']
@@ -911,6 +913,12 @@ class FaucetStateCollector:
                     hop['out'] = self._get_egress_port(hop_switch)
                     path.append(hop)
                     break
+                hop_tuple = tuple(hop.values())
+                if hop_tuple in visited_hops:
+                    hop = None
+                    error_detail = ' Loop in topology.'
+                    break
+                visited_hops.add(hop_tuple)
                 hop = next_hop
 
             if hop:
@@ -918,7 +926,7 @@ class FaucetStateCollector:
 
             return {
                 'path_state': State.broken,
-                'path_state_detail': 'No path to root found'
+                'path_state_detail': 'No path to root found.' + error_detail
             }
 
     def _get_host_path(self, src_mac, dst_mac):
