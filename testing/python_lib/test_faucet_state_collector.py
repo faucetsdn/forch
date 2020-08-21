@@ -23,7 +23,7 @@ class DataplaneStateTestCase(FaucetStateCollectorTestBase):
             }
         }
 
-    def _build_topo_obj(self):
+    def _build_loop_topo_obj(self):
         dps = {
             'sw1': StackTopoChange.StackDp(root_hop_port=1),
             'sw2': StackTopoChange.StackDp(root_hop_port=1),
@@ -40,13 +40,39 @@ class DataplaneStateTestCase(FaucetStateCollectorTestBase):
             'links_graph': links_graph
         }
 
+    def _build_topo_obj(self):
+        dps = {
+            'sw1': StackTopoChange.StackDp(),
+            'sw2': StackTopoChange.StackDp(root_hop_port=1),
+            'sw3': StackTopoChange.StackDp(root_hop_port=1),
+        }
+        links = [
+            self._build_link('sw1', '1', 'sw2', '1'),
+            self._build_link('sw2', '2', 'sw3', '2'),
+            self._build_link('sw3', '1', 'sw1', '2'),
+        ]
+        links_graph = [dict_proto(link, StackTopoChange.StackLink) for link in links]
+        return {
+            'active_root': 'sw1',
+            'dps': dps,
+            'links_graph': links_graph
+        }
+
     def test_topology_loop(self):
         """test faucet_state_collector behavior when faucet sends loop in path to egress topology"""
-        self._faucet_state_collector.topo_state = self._build_topo_obj()
+        self._faucet_state_collector.topo_state = self._build_loop_topo_obj()
         egress_path = self._faucet_state_collector.get_switch_egress_path('sw1')
         self.assertEqual(egress_path['path_state'], 1)
         self.assertEqual(egress_path['path_state_detail'],
                          'No path to root found. Loop in topology.')
+
+    def test_egress_path(self):
+        """test faucet_state_collector behavior when faucet sends loop in path to egress topology"""
+        self._faucet_state_collector.topo_state = self._build_topo_obj()
+        self._faucet_state_collector._get_egress_port = lambda port: 28
+        egress_path = self._faucet_state_collector.get_switch_egress_path('sw3')
+        self.assertEqual(egress_path['path_state'], 5)
+        self.assertEqual(egress_path['path'], [{'switch': 'sw3', 'out': 1}, {'switch': 'sw1', 'in': 2, 'out': 28}])
 
 
 if __name__ == '__main__':

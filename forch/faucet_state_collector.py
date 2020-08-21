@@ -868,7 +868,6 @@ class FaucetStateCollector:
         with self.lock:
             link_list = self.topo_state.get(LINKS_GRAPH)
             dps = self.topo_state.get(TOPOLOGY_DPS)
-            error_detail = ''
 
             if link_list is None or dps is None:
                 return {
@@ -882,44 +881,11 @@ class FaucetStateCollector:
                 }
 
             hop = {'switch': src_switch}
-            path = []
 
             if src_port:
                 hop['in'] = src_port
 
-            visited_hops = set()
-            while hop:
-                next_hop = {}
-                hop_switch = hop['switch']
-                egress_port = dps[hop_switch].root_hop_port
-
-                if egress_port:
-                    hop['out'] = egress_port
-                    for link_map in link_list:
-                        if not link_map:
-                            continue
-                        sw_1, port_1, sw_2, port_2 = \
-                                FaucetStateCollector.get_endpoints_from_link(link_map)
-                        if hop_switch == sw_1 and egress_port == port_1:
-                            next_hop['switch'] = sw_2
-                            next_hop['in'] = port_2
-                            break
-                        if hop_switch == sw_2 and egress_port == port_2:
-                            next_hop['switch'] = sw_1
-                            next_hop['in'] = port_1
-                            break
-                    path.append(hop)
-                elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
-                    hop['out'] = self._get_egress_port(hop_switch)
-                    path.append(hop)
-                    break
-                hop_tuple = tuple(hop.values())
-                if hop_tuple in visited_hops:
-                    hop = None
-                    error_detail = ' Loop in topology.'
-                    break
-                visited_hops.add(hop_tuple)
-                hop = next_hop
+            hop, path, error_detail = self._populate_path(hop, dps, link_list)
 
             if hop:
                 return {'path_state': State.healthy, 'path': path}
@@ -928,6 +894,49 @@ class FaucetStateCollector:
                 'path_state': State.broken,
                 'path_state_detail': 'No path to root found.' + error_detail
             }
+
+    def _populate_path(self, hop, dps, link_list):
+        path = []
+        error_detail = ''
+
+        visited_hops = set()
+        while hop:
+            next_hop = {}
+            hop_switch = hop['switch']
+            egress_port = dps[hop_switch].root_hop_port
+
+            if egress_port:
+                hop['out'] = egress_port
+                self._populate_hop(link_list, hop, next_hop, egress_port)
+                path.append(hop)
+            elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
+                hop['out'] = self._get_egress_port(hop_switch)
+                path.append(hop)
+                break
+            hop_tuple = tuple(hop.values())
+            if hop_tuple in visited_hops:
+                hop = None
+                error_detail = ' Loop in topology.'
+                break
+            visited_hops.add(hop_tuple)
+            hop = next_hop
+        return hop, path, error_detail
+
+    def _populate_hop(self, link_list, hop, next_hop, egress_port):
+        hop_switch = hop['switch']
+        for link_map in link_list:
+            if not link_map:
+                continue
+            sw_1, port_1, sw_2, port_2 = \
+                FaucetStateCollector.get_endpoints_from_link(link_map)
+            if hop_switch == sw_1 and egress_port == port_1:
+                next_hop['switch'] = sw_2
+                next_hop['in'] = port_2
+                break
+            if hop_switch == sw_2 and egress_port == port_2:
+                next_hop['switch'] = sw_1
+                next_hop['in'] = port_1
+                break
 
     def _get_host_path(self, src_mac, dst_mac):
         src_switch, src_port = self._get_access_switch(src_mac)
