@@ -885,20 +885,18 @@ class FaucetStateCollector:
             if src_port:
                 hop['in'] = src_port
 
-            hop, path, error_detail = self._populate_path(hop, dps, link_list)
+            path, error_detail = self._populate_path(hop, dps, link_list)
 
-            if hop:
+            if not error_detail:
                 return {'path_state': State.healthy, 'path': path}
 
             return {
                 'path_state': State.broken,
-                'path_state_detail': 'No path to root found.' + error_detail
+                'path_state_detail': ('No path to root found. ' + error_detail).strip()
             }
 
     def _populate_path(self, hop, dps, link_list):
         path = []
-        error_detail = ''
-
         visited_hops = set()
         while hop:
             next_hop = {}
@@ -912,31 +910,29 @@ class FaucetStateCollector:
             elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
                 hop['out'] = self._get_egress_port(hop_switch)
                 path.append(hop)
-                break
+                return path, ''
             hop_tuple = tuple(hop.values())
             if hop_tuple in visited_hops:
-                hop = None
-                error_detail = ' Loop in topology.'
-                break
+                return path, 'Loop in topology.'
             visited_hops.add(hop_tuple)
             hop = next_hop
-        return hop, path, error_detail
+        return path, 'Root absent in topology.'
 
     def _populate_hop(self, link_list, hop, next_hop, egress_port):
         hop_switch = hop['switch']
         for link_map in link_list:
             if not link_map:
                 continue
-            sw_1, port_1, sw_2, port_2 = \
-                FaucetStateCollector.get_endpoints_from_link(link_map)
+            sw_1, port_1, sw_2, port_2 = (FaucetStateCollector.get_endpoints_from_link
+                                          (link_map))
             if hop_switch == sw_1 and egress_port == port_1:
                 next_hop['switch'] = sw_2
                 next_hop['in'] = port_2
-                break
+                return
             if hop_switch == sw_2 and egress_port == port_2:
                 next_hop['switch'] = sw_1
                 next_hop['in'] = port_1
-                break
+                return
 
     def _get_host_path(self, src_mac, dst_mac):
         src_switch, src_port = self._get_access_switch(src_mac)
