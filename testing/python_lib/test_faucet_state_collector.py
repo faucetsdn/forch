@@ -72,7 +72,8 @@ class DataplaneStateTestCase(FaucetStateCollectorTestBase):
         self._faucet_state_collector._get_egress_port = lambda port: 28
         egress_path = self._faucet_state_collector.get_switch_egress_path('sw3')
         self.assertEqual(egress_path['path_state'], 5)
-        self.assertEqual(egress_path['path'], [{'switch': 'sw3', 'out': 1}, {'switch': 'sw1', 'in': 2, 'out': 28}])
+        self.assertEqual(egress_path['path'],
+                         [{'switch': 'sw3', 'out': 1}, {'switch': 'sw1', 'in': 2, 'out': 28}])
 
 
 if __name__ == '__main__':
