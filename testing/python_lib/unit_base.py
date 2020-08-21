@@ -238,7 +238,6 @@ class FaucetStateCollectorTestBase(UnitTestBase):
       stack_topo_change_coalesce_sec: 15
     """
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._faucet_state_collector = None
