@@ -3,7 +3,7 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-proto_files=`ls proto/*.proto`
+proto_files=`LC_COLLATE=C ls proto/*.proto`
 
 if [ "$1" == check ]; then
     sha1sum $proto_files > build/protos.hash
