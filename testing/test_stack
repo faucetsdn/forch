@@ -73,6 +73,8 @@ test_varz_value faucet_config_warning_count 8302 forch
 echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid
 test_forch -solid
+echo ${!change_counts[@]}
+echo ${change_counts[@]}
 
 echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
