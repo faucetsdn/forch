@@ -280,13 +280,9 @@ function restart_forch {
 declare -A change_counts
 function dq {
     key=$1
-    #json=$2
-    #value=`jq "$key" "$json"`
-    value=$2
-    old=${change_counts[$key]}
-    if [ -z "$old" ]; then
-        old=0
-    fi
+    json=$2
+    old=${change_counts[$key]:-0}
+    value=`jq "$key" "$json"`
     delta=$((value - old))
     change_counts[$key]=$value
     echo $delta
