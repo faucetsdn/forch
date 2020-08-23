@@ -282,12 +282,12 @@ function dq {
     key=$1
     json=$2
     value=`jq "$key" "$json"`
-    if [ -n "${change_counts[$1]}" ]; then
-        change_counts[$key]=$value
-    else
-        change_counts[$key]=$((change_counts[$key] + $value))
+    if [ -z "${change_counts[$1]}" ]; then
+        change_counts[$key]=0
     fi
-    echo ${change_counts[$key]}
+    delta=$((value - change_counts[$key]))
+    change_counts[$key]=$value
+    echo $delta
 }
 
 function fetch_forch {
