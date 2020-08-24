@@ -73,10 +73,6 @@ test_varz_value faucet_config_warning_count 8302 forch
 echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid
 test_forch -solid
-echo TAP TAP
-echo ${!change_counts[@]}
-echo ${change_counts[@]}
-echo TAP TAP
 
 echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
@@ -91,10 +87,6 @@ test_varz_value process_state{process=\"gauge\"} 8080 forch
 test_varz_value process_state{process=\"forch\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 jkdhfgjksdhg
-echo TAP TAP
-echo ${!change_counts[@]}
-echo ${change_counts[@]}
-echo TAP TAP
 
 reset_stack
 sleep 32
