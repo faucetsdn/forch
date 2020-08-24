@@ -285,6 +285,9 @@ function dq {
     value=`jq "$key" "$json"`
     delta=$((value - old))
     change_counts[$key]=$value
+    change_counts[_$key]=$value
+    change_counts[last]=$value
+    change_counts+=([__$key]=$value)
     echo $delta
 }
 
