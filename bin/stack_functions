@@ -274,10 +274,12 @@ function restart_forch {
 
     # Wait for system to warm-up, including background process/cpn checks.
     sleep 20
+
+    unset change_counts
+    declare -g -A change_counts
 }
 
 # Do a delta-query fetch diff for change count totals
-declare -A change_counts
 function dq {
     key=$1
     json=$2
