@@ -285,10 +285,6 @@ function dq {
     value=`jq "$key" "$json"`
     delta=$((value - old))
     change_counts[$key]=$value
-    change_counts[_$key]=$value
-    change_counts[last]=$value
-    change_counts+=([__$key]=$value)
-    echo ${!change_counts[@]} 1>&2
     echo $delta
 }
 
@@ -337,6 +333,9 @@ function test_forch {
     dq .system_state_change_count $api_result | tee -a $TEST_RESULTS
     jq .peer_controller_url $api_result | tee -a $TEST_RESULTS
     jq .system_state $api_result | tee -a $TEST_RESULTS
+    dq .system_state_change_count $api_result
+    change_counts[xyzzy]=100 | tee -a $TEST_RESULTS
+    change_counts[xyzzq]=100
 
     echo @dataplane_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/dataplane_state.json
