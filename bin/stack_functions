@@ -288,6 +288,7 @@ function dq {
     change_counts[_$key]=$value
     change_counts[last]=$value
     change_counts+=([__$key]=$value)
+    echo ${!change_counts[@]} 1>&2
     echo $delta
 }
 
