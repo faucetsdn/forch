@@ -390,18 +390,18 @@ null
 Running forch-restart tests
 @system_state-restart
 "nz-kiwi"
--174
+30
 "http://localhost.n:9020"
 "split"
 @dataplane_state-restart
 "broken"
 "egress: nz-kiwi-t1sw1:28; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
--108
+22
 "active"
 "active"
--19
+2
 @switch_state-restart
--58
+5
 "nz-kiwi-t1sw1"
 9
 28
@@ -409,15 +409,15 @@ Running forch-restart tests
 ""
 "active"
 null
--10
+1
 @cpn_state-restart
--4
+2
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
 "down"
 @process_state-restart
--4
+1
 "healthy"
 "broken"
 ""
