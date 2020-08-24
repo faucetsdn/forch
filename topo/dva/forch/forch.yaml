@@ -14,6 +14,7 @@ orchestration:
   static_device_placement: placement.yaml
   static_device_behavior: behaviors.yaml
   gauge_config_file: gauge.yaml
+  segments_vlans_file: segments-to-vlans.yaml
   auth_config:
     radius_info:
       server_ip: 172.17.0.5
@@ -48,6 +49,6 @@ dataplane_monitoring:
   gauge_metrics_interval_sec: 10
   vlan_pkt_per_sec_thresholds:
     0: 20
-    100: 20
+    400: 20
     500: 1
     4096: 1

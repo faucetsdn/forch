@@ -274,6 +274,21 @@ function restart_forch {
 
     # Wait for system to warm-up, including background process/cpn checks.
     sleep 20
+
+    unset change_counts
+    declare -g -A change_counts
+}
+
+# Do a delta-query fetch diff for change count totals
+function dq {
+    key=$1
+    json=$2
+    outfile=$3
+    value=`jq "$key" "$json"`
+    old=${change_counts[$key]:-0}
+    change_counts[$key]=$value
+    delta=$((value - old))
+    echo $delta | tee -a $outfile
 }
 
 function fetch_forch {
@@ -318,7 +333,7 @@ function test_forch {
     echo @system_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/system_state.json
     jq .site_name $api_result | tee -a $TEST_RESULTS
-    jq .system_state_change_count $api_result | tee -a $TEST_RESULTS
+    dq .system_state_change_count $api_result $TEST_RESULTS
     jq .peer_controller_url $api_result | tee -a $TEST_RESULTS
     jq .system_state $api_result | tee -a $TEST_RESULTS
 
@@ -326,17 +341,17 @@ function test_forch {
     api_result=$fout_dir/dataplane_state.json
     jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
     jq '.dataplane_state_detail' $api_result | tee -a $TEST_RESULTS
-    jq '.dataplane_state_change_count' $api_result | tee -a $TEST_RESULTS
+    dq '.dataplane_state_change_count' $api_result $TEST_RESULTS
     jq '.switch.switches."nz-kiwi-t2sw3".switch_state' $api_result | tee -a $TEST_RESULTS
     jq '.stack.links."nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6".link_state' $api_result | tee -a $TEST_RESULTS
     jq '.egress.egress_state' $api_result | tee -a $TEST_RESULT
     jq '.egress.egress_state_detail' $api_result | tee -a $TEST_RESULT
-    jq '.egress.egress_state_change_count' $api_result | tee -a $TEST_RESULT
+    dq '.egress.egress_state_change_count' $api_result $TEST_RESULTS
     jq '.egress.active_root' $api_result | tee -a $TEST_RESULT
 
     echo @switch_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state1.json
-    jq '.switch_state_change_count' $api_result | tee -a $TEST_RESULTS
+    dq '.switch_state_change_count' $api_result $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path.path[1].switch' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path.path[1].in' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".root_path.path[1].out' $api_result | tee -a $TEST_RESULTS
@@ -346,11 +361,11 @@ function test_forch {
     jq '.switches."nz-kiwi-t1sw2".switch_state' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw2".ports."46".attributes.description' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state3.json
-    jq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result | tee -a $TEST_RESULTS
+    dq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result $TEST_RESULTS
 
     echo @cpn_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/cpn_state.json
-    jq '.cpn_state_change_count' $api_result | tee -a $TEST_RESULTS
+    dq '.cpn_state_change_count' $api_result $TEST_RESULTS
     for node in nz-kiwi-t1sw1 nz-kiwi-t2sw2; do
         jq ".cpn_nodes.\"$node\".attributes.cpn_ip" $api_result | tee -a $TEST_RESULTS
         jq ".cpn_nodes.\"$node\".state" $api_result | tee -a $TEST_RESULTS
@@ -358,7 +373,7 @@ function test_forch {
 
     echo @process_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/process_state.json
-    jq .process_state_change_count $api_result | tee -a $TEST_RESULTS
+    dq .process_state_change_count $api_result $TEST_RESULTS
     jq .processes.faucet.state $api_result | tee -a $TEST_RESULTS
     jq .processes.sleep.state $api_result | tee -a $TEST_RESULTS
     jq .processes.sleep.cmd_line $api_result | tee -a $TEST_RESULTS

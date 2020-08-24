@@ -25,14 +25,14 @@ TESTING_PORT_IDENTIFIER_DEFAULT = 'TESTING'
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
-    def __init__(self, orch_config, structural_config_file, segments_to_vlans,
-                 behavioral_config_file, reregister_include_file_handlers=None):
+    def __init__(self, orch_config, structural_config_file, behavioral_config_file,
+                 reregister_include_file_handlers=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
         self._testing_device_vlans = {}
         self._acl_configs = {}
         self._vlan_states = {}
-        self._segments_to_vlans = segments_to_vlans
+        self._segments_to_vlans = {}
         self._structural_faucet_config = None
         self._behavioral_faucet_config = None
         self._behavioral_include = None
@@ -155,15 +155,7 @@ class Faucetizer:
                 raise Exception(
                     f'Starting or ending testing VLAN missing: {starting_vlan}, {ending_vlan}')
 
-            testing_vlans = set(range(starting_vlan, ending_vlan+1))
-            operational_vlans = set(self._segments_to_vlans.values())
-
-            if testing_vlans & operational_vlans:
-                LOGGER.error(
-                    'Testing VLANs has intersection with operational VLANs: %s',
-                    testing_vlans & operational_vlans)
-
-            self._all_testing_vlans = testing_vlans - operational_vlans
+            self._all_testing_vlans = set(range(starting_vlan, ending_vlan+1))
 
     def _get_port_type(self, port_cfg):
         testing_port_identifier = (self._config.fot_config.testing_port_identifier or
@@ -176,9 +168,11 @@ class Faucetizer:
         return PortType.access if len(port_properties) == 0 else PortType.other
 
     def _calculate_available_tesing_vlans(self):
-        if self._config.fot_config.testing_segment:
-            used_testing_vlans = set(self._testing_device_vlans.values())
-            self._available_testing_vlans = self._all_testing_vlans - used_testing_vlans
+        if not self._config.fot_config.testing_segment:
+            return None
+        operational_vlans = set(self._segments_to_vlans.values())
+        used_testing_vlans = set(self._testing_device_vlans.values())
+        return self._all_testing_vlans - operational_vlans - used_testing_vlans
 
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
@@ -219,24 +213,26 @@ class Faucetizer:
                 return True
         return False
 
-    def _calculate_vlan_id(self, device_mac, device_behavior, testing_port_vlans):
+    def _calculate_vlan_id(self, device_mac, device_behavior, available_testing_vlans,
+                           testing_port_vlans):
         device_segment = device_behavior.segment
         testing_segment = self._config.fot_config.testing_segment
         vid = None
 
         if testing_segment and device_segment == testing_segment:
-            vid = self._testing_device_vlans.get(device_mac) or self._available_testing_vlans.pop()
-            if vid:
-                self._testing_device_vlans[device_mac] = vid
-                testing_port_vlans.add(vid)
-            else:
+            if device_mac not in self._testing_device_vlans and not available_testing_vlans:
                 LOGGER.error(
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
+            else:
+                vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
+                self._testing_device_vlans[device_mac] = vid
+                testing_port_vlans.add(vid)
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
             LOGGER.warning(
                 'Device segment does not have a matching vlan: %s, %s', device_mac, device_segment)
+
         return vid
 
     def _update_device_dva_state(self, device_mac, device_placement, device_behavior):
@@ -250,10 +246,27 @@ class Faucetizer:
         if dva_state:
             self._update_vlan_state(device_placement.switch, device_placement.port, dva_state)
 
+    def _update_vlans_config(self, behavioral_faucet_config):
+        vlans_config = behavioral_faucet_config.setdefault('vlans', {})
+        if self._config.unauthenticated_vlan not in vlans_config:
+            vlan_acl = f'uniform_{self._config.unauthenticated_vlan}'
+            if next((acls for acls in self._acl_configs.values() if vlan_acl in acls), None):
+                vlan_config = {
+                    'acls_in': [f'uniform_{self._config.unauthenticated_vlan}'],
+                    'description': 'unauthenticated VLAN'
+                }
+                vlans_config[self._config.unauthenticated_vlan] = vlan_config
+            else:
+                LOGGER.error('VLAN ACL is not defined: %s', vlan_acl)
+        else:
+            LOGGER.warning(
+                'Unauthenticated VLAN is already defined in structural config: %s',
+                self._config.unauthenticated_vlan)
+
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
-        self._calculate_available_tesing_vlans()
+        available_testing_vlans = self._calculate_available_tesing_vlans()
         testing_port_vlans = set()
 
         # static information of a device should overwrite the corresponding dynamic one
@@ -274,7 +287,8 @@ class Faucetizer:
                                mac, device_placement.switch, device_placement.port)
                 continue
 
-            vid = self._calculate_vlan_id(mac, device_behavior, testing_port_vlans)
+            vid = self._calculate_vlan_id(mac, device_behavior, available_testing_vlans,
+                                          testing_port_vlans)
             if not vid:
                 continue
             port_cfg['native_vlan'] = vid
@@ -292,6 +306,8 @@ class Faucetizer:
 
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
+        if self._config.unauthenticated_vlan:
+            self._update_vlans_config(behavioral_faucet_config)
 
         structural_acls_config = self._acl_configs.get(self._structural_config_file)
         if structural_acls_config:
@@ -329,6 +345,26 @@ class Faucetizer:
 
             new_file_name = self._augment_include_file_name(os.path.split(file_path)[1])
             self.flush_include_config(new_file_name, include_config)
+
+    def reload_segments_to_vlans(self, file_path):
+        """Reload file that contains the mappings from segments to vlans"""
+        self._segments_to_vlans = yaml_proto(file_path, SegmentsToVlans).segments_to_vlans
+
+        operational_vlans = set(self._segments_to_vlans.values())
+        if self._all_testing_vlans and self._all_testing_vlans & operational_vlans:
+            LOGGER.error(
+                'Testing VLANs has intersection with operational VLANs: %s',
+                self._all_testing_vlans & operational_vlans)
+
+        self.flush_behavioral_config()
+
+    def clear_static_placements(self):
+        """Remove all static placements in memory"""
+        self._static_devices.ClearField('device_mac_placements')
+
+    def clear_static_behaviors(self):
+        """Remove all static behaviors in memory"""
+        self._static_devices.ClearField('device_mac_behaviors')
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
@@ -413,19 +449,16 @@ if __name__ == '__main__':
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
     ARGS = parse_args(sys.argv[1:])
 
-    SEGMENTS_VLANS_FILE = os.path.join(FORCH_BASE_DIR, ARGS.segments_vlans)
-    SEGMENTS_TO_VLANS = load_segments_to_vlans(SEGMENTS_VLANS_FILE)
-    LOGGER.info('Loaded %d mappings', len(SEGMENTS_TO_VLANS.segments_to_vlans))
-
     FORCH_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.forch_config)
     ORCH_CONFIG = load_orch_config(FORCH_CONFIG_FILE)
     STRUCTURAL_CONFIG_FILE = os.path.join(FORCH_BASE_DIR, ARGS.config_input)
     BEHAVIORAL_CONFIG_FILE = os.path.join(FAUCET_BASE_DIR, ARGS.output)
+    SEGMENTS_VLANS_FILE = os.path.join(FORCH_BASE_DIR, ARGS.segments_vlans)
 
     FAUCETIZER = Faucetizer(
-        ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, SEGMENTS_TO_VLANS.segments_to_vlans,
-        BEHAVIORAL_CONFIG_FILE)
+        ORCH_CONFIG, STRUCTURAL_CONFIG_FILE, BEHAVIORAL_CONFIG_FILE)
     FAUCETIZER.reload_structural_config()
+    FAUCETIZER.reload_segments_to_vlans(SEGMENTS_VLANS_FILE)
 
     DEVICES_STATE_FILE = os.path.join(FORCH_BASE_DIR, ARGS.state_input)
     DEVICES_STATE = load_devices_state(DEVICES_STATE_FILE)

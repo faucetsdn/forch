@@ -6,6 +6,7 @@ import unittest
 import yaml
 
 from forch.faucetizer import Faucetizer
+from forch.faucet_state_collector import FaucetStateCollector
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
@@ -160,31 +161,36 @@ class FaucetizerTestBase(UnitTestBase):
               allow: True
     """
 
-    SEGMENTS_TO_VLANS = {
-        'SEG_A': 200,
-        'SEG_B': 300,
-        'SEG_C': 400,
-        'SEG_X': 1500,
-        'SEG_Y': 1600,
-        'SEG_Z': 1700,
-    }
-
-    SEGMENTS_TO_VLANS = {}
+    SEGMENTS_TO_VLANS = """
+    segments_to_vlans:
+      SEG_A: 200
+      SEG_B: 300
+      SEG_C: 400
+      SEG_X: 1500
+      SEG_Y: 1600
+      SEG_Z: 1700
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._faucetizer = None
-        self._temp_dir = None
-        self._temp_structural_config_file = None
-        self._temp_behavioral_config_file = None
+        self._segments_vlans_file = None
+
+    def _setup_config_files(self):
+        super()._setup_config_files()
+
+        _, self._segments_vlans_file = tempfile.mkstemp(dir=self._temp_dir)
+        with open(self._segments_vlans_file, 'w') as segments_vlans_file:
+            segments_vlans_file.write(self.SEGMENTS_TO_VLANS)
 
     def _initialize_faucetizer(self):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
 
         self._faucetizer = Faucetizer(
-            forch_config.orchestration, self._temp_structural_config_file, self.SEGMENTS_TO_VLANS,
+            forch_config.orchestration, self._temp_structural_config_file,
             self._temp_behavioral_config_file)
         self._faucetizer.reload_structural_config()
+        self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
     def _process_device_placement(self, placement_tuple):
         self._faucetizer.process_device_placement(
@@ -222,3 +228,29 @@ class FaucetizerTestBase(UnitTestBase):
         """cleanup after each test method finishes"""
         self._faucetizer = None
         self._cleanup_config_files()
+
+
+class FaucetStateCollectorTestBase(UnitTestBase):
+    """Base class for Faucetizer unit tests"""
+
+    FORCH_CONFIG = """
+    event_client:
+      stack_topo_change_coalesce_sec: 15
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._faucet_state_collector = None
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._initialize_state_collector()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._faucet_state_collector = None
+
+    def _initialize_state_collector(self):
+        forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
+        self._faucet_state_collector = FaucetStateCollector(forch_config,
+                                                            is_faucetizer_enabled=False)

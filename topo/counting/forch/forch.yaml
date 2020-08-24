@@ -13,6 +13,7 @@ orchestration:
   tail_acl: tail_acl
   static_device_placement: placement.yaml
   static_device_behavior: behaviors.yaml
+  segments_vlans_file: segments-to-vlans.yaml
 proxy_server:
   targets:
     faucet:

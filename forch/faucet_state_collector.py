@@ -881,45 +881,58 @@ class FaucetStateCollector:
                 }
 
             hop = {'switch': src_switch}
-            path = []
 
             if src_port:
                 hop['in'] = src_port
 
-            while hop:
-                next_hop = {}
-                hop_switch = hop['switch']
-                egress_port = dps[hop_switch].root_hop_port
+            path, error_detail = self._populate_path(hop, dps, link_list)
 
-                if egress_port:
-                    hop['out'] = egress_port
-                    for link_map in link_list:
-                        if not link_map:
-                            continue
-                        sw_1, port_1, sw_2, port_2 = \
-                                FaucetStateCollector.get_endpoints_from_link(link_map)
-                        if hop_switch == sw_1 and egress_port == port_1:
-                            next_hop['switch'] = sw_2
-                            next_hop['in'] = port_2
-                            break
-                        if hop_switch == sw_2 and egress_port == port_2:
-                            next_hop['switch'] = sw_1
-                            next_hop['in'] = port_1
-                            break
-                    path.append(hop)
-                elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
-                    hop['out'] = self._get_egress_port(hop_switch)
-                    path.append(hop)
-                    break
-                hop = next_hop
-
-            if hop:
+            if not error_detail:
                 return {'path_state': State.healthy, 'path': path}
 
             return {
                 'path_state': State.broken,
-                'path_state_detail': 'No path to root found'
+                'path_state_detail': ('No path to root found. ' + error_detail).strip()
             }
+
+    def _populate_path(self, hop, dps, link_list):
+        path = []
+        visited_hops = set()
+        while hop:
+            next_hop = {}
+            hop_switch = hop['switch']
+            egress_port = dps[hop_switch].root_hop_port
+
+            if egress_port:
+                hop['out'] = egress_port
+                self._populate_hop(link_list, hop, next_hop, egress_port)
+                path.append(hop)
+            elif hop_switch == self.topo_state.get(TOPOLOGY_ROOT):
+                hop['out'] = self._get_egress_port(hop_switch)
+                path.append(hop)
+                return path, ''
+            hop_tuple = tuple(hop.values())
+            if hop_tuple in visited_hops:
+                return path, 'Loop in topology.'
+            visited_hops.add(hop_tuple)
+            hop = next_hop
+        return path, 'Root absent in topology.'
+
+    def _populate_hop(self, link_list, hop, next_hop, egress_port):
+        hop_switch = hop['switch']
+        for link_map in link_list:
+            if not link_map:
+                continue
+            sw_1, port_1, sw_2, port_2 = (FaucetStateCollector.get_endpoints_from_link
+                                          (link_map))
+            if hop_switch == sw_1 and egress_port == port_1:
+                next_hop['switch'] = sw_2
+                next_hop['in'] = port_2
+                return
+            if hop_switch == sw_2 and egress_port == port_2:
+                next_hop['switch'] = sw_1
+                next_hop['in'] = port_1
+                return
 
     def _get_host_path(self, src_mac, dst_mac):
         src_switch, src_port = self._get_access_switch(src_mac)
@@ -1005,7 +1018,9 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info('lag_state update %s %s %s %s', name, port, lacp_role, lacp_state)
+            LOGGER.info('lag_state update %s Port %s Role: %s State: %s',
+                        name, port, LacpRole.LacpRole.Name(int(lacp_role)),
+                        LacpState.LacpState.Name(int(lacp_state)))
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_role = int(lacp_role)  # varz returns float. Need to convert to int
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
@@ -1030,8 +1045,8 @@ class FaucetStateCollector:
             egress_state[EGRESS_CHANGE_COUNT] = change_count
             egress_state[EGRESS_STATE] = state
             egress_state[EGRESS_DETAIL] = egress_detail
-            LOGGER.info('lag_state #%d %s, %s: %s',
-                        change_count, name, state, egress_detail)
+            LOGGER.info('lag_state Change #%d %s, State: %s Egress detail: %s',
+                        change_count, name, State.State.Name(state), egress_detail)
 
     def _get_egress_state_detail(self, links):
         state_set = set()
