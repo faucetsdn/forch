@@ -8,4 +8,5 @@ ignored-classes=
     FaucetEvent, ProcessState, DataplaneState, SwitchState, PortType,
     BuildingSchema, LacpState, LacpRole, AuthResult, DVAState,
     DevicesState, DevicePlacement, DeviceBehavior, SegmentsToVlans,
-    ForchConfig, SiteConfig, OrchestrationConfig, AuthConfig, HttpConfig
+    ForchConfig, SiteConfig, OrchestrationConfig, AuthConfig, HttpConfig,
+    DeviceTestingState, TestingState

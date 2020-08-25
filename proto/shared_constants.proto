@@ -123,7 +123,7 @@ message LacpRole {
  */
 message PortType {
   enum Type {
-    // unkown
+    // unknown
     unknown = 0;
 
     // access
@@ -136,3 +136,24 @@ message PortType {
     other = 3;
   }
 }
+
+/*
+ * Testing state of a device
+ */
+message TestingState {
+  enum State {
+    // unknown
+    unknown = 0;
+
+    // cleared
+    cleared = 1;
+
+    // passed
+    passed = 2;
+  }
+}
+
+/*
+ * Dummy empty message
+ */
+message Empty {}

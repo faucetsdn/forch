@@ -365,6 +365,21 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fdevice_testing_state.proto">forch/proto/device_testing_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#DeviceTestingState"><span class="badge">M</span>DeviceTestingState</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2fdevices_state.proto">forch/proto/devices_state.proto</a>
             <ul>
               
@@ -702,6 +717,10 @@
                 </li>
               
                 <li>
+                  <a href="#Empty"><span class="badge">M</span>Empty</a>
+                </li>
+              
+                <li>
                   <a href="#LacpRole"><span class="badge">M</span>LacpRole</a>
                 </li>
               
@@ -715,6 +734,10 @@
               
                 <li>
                   <a href="#State"><span class="badge">M</span>State</a>
+                </li>
+              
+                <li>
+                  <a href="#TestingState"><span class="badge">M</span>TestingState</a>
                 </li>
               
               
@@ -736,6 +759,10 @@
               
                 <li>
                   <a href="#State.State"><span class="badge">E</span>State.State</a>
+                </li>
+              
+                <li>
+                  <a href="#TestingState.State"><span class="badge">E</span>TestingState.State</a>
                 </li>
               
               
@@ -2039,6 +2066,51 @@
                 <tr>
                   <td>value</td>
                   <td><a href="#DataplaneState.VLANState">DataplaneState.VLANState</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/device_testing_state.proto">forch/proto/device_testing_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="DeviceTestingState">DeviceTestingState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>mac</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>testing_state</td>
+                  <td><a href="#TestingState.State">TestingState.State</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -4751,6 +4823,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="Empty">Empty</h3>
+        <p>Dummy empty message</p>
+
+        
+
+        
+      
         <h3 id="LacpRole">LacpRole</h3>
         <p>LACP Roles</p>
 
@@ -4774,6 +4853,13 @@ or to host_path API to list path </p></td>
       
         <h3 id="State">State</h3>
         <p>States</p>
+
+        
+
+        
+      
+        <h3 id="TestingState">TestingState</h3>
+        <p>Testing state of a device</p>
 
         
 
@@ -4915,7 +5001,7 @@ or to host_path API to list path </p></td>
               <tr>
                 <td>unknown</td>
                 <td>0</td>
-                <td><p>unkown</p></td>
+                <td><p>unknown</p></td>
               </tr>
             
               <tr>
@@ -5005,6 +5091,35 @@ or to host_path API to list path </p></td>
                 <td>up</td>
                 <td>9</td>
                 <td><p>up: up but not in function</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="TestingState.State">TestingState.State</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>unknown</td>
+                <td>0</td>
+                <td><p>unknown</p></td>
+              </tr>
+            
+              <tr>
+                <td>cleared</td>
+                <td>1</td>
+                <td><p>cleared</p></td>
+              </tr>
+            
+              <tr>
+                <td>passed</td>
+                <td>2</td>
+                <td><p>passed</p></td>
               </tr>
             
           </tbody>
