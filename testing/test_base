@@ -10,3 +10,4 @@ export TEST_RESULTS
 testing/test_check
 testing/test_topology
 testing/python_test coverage test_faucetizer
+testing/python_test coverage test_faucet_state_collector

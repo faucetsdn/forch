@@ -8,6 +8,7 @@ import yaml
 
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
+from forch.faucet_state_collector import FaucetStateCollector
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
@@ -255,3 +256,29 @@ class DeviceTestingServerTestBase(unittest.TestCase):
     def tearDown(self):
         """cleanup after each test method finishes"""
         self._server.stop()
+
+
+class FaucetStateCollectorTestBase(UnitTestBase):
+    """Base class for Faucetizer unit tests"""
+
+    FORCH_CONFIG = """
+    event_client:
+      stack_topo_change_coalesce_sec: 15
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._faucet_state_collector = None
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._initialize_state_collector()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._faucet_state_collector = None
+
+    def _initialize_state_collector(self):
+        forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
+        self._faucet_state_collector = FaucetStateCollector(forch_config,
+                                                            is_faucetizer_enabled=False)
