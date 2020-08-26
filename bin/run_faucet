@@ -16,6 +16,7 @@ prom_pt=9302
 docker_volumes=
 port_opts=
 local=
+faucet_id=
 
 cd $ROOT
 
@@ -36,6 +37,7 @@ fi
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
     INSTDIR=$INSTDIR/forch-faucet-$1
+    faucet_id=$1
     shift
 fi
 
@@ -50,6 +52,9 @@ if [ -n "$1" ]; then
 fi
 
 echo Creating $IMAGE instance $CONTAINER on port $ext_ofpt in $INSTDIR
+
+# Check that image exists so docker doesn't pull down random one from dockerhub
+docker inspect $IMAGE > /dev/null
 
 mkdir -p $INSTDIR
 
@@ -91,7 +96,8 @@ docker_envs="\
         --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
         --env USERID=$(id -u) \
         --env FAUCET_EVENT_SOCK=$event_sock \
-        --env FAUCET_CONFIG=$faucet_config"
+        --env FAUCET_CONFIG=$faucet_config \
+        --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
 
 docker_volumes+="\
         -v $INSTDIR/faucet:/etc/faucet \
@@ -105,6 +111,18 @@ fi
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
              -p $ext_ofpt:6653 $port_opts $IMAGE)
+
+if [ $IMAGE == "forch/faucet" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
+    pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
+    data_intf_name=data_faucet_$faucet_id
+    sudo ip link add $data_intf_name type veth peer name data0 netns $pid
+    sudo ip link set $data_intf_name up
+    docker exec $CONTAINER ip link add link data0 name data0.272 type vlan id 272
+    docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0.272
+    docker exec $CONTAINER ip link set data0 up
+    docker exec $CONTAINER ip link set data0.272 up
+    docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.272
+fi
 
 echo Container $CONTAINER started as $cid
 

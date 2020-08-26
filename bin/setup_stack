@@ -4,7 +4,11 @@ ROOT=$(dirname $0)/..
 cd $ROOT
 local=
 devices=
+switches=
 skip_conn_check=
+no_clean=
+faux_dhcp=
+mode=bond
 
 if [ "$1" == "local" ]; then
     local=local
@@ -12,8 +16,13 @@ if [ "$1" == "local" ]; then
 fi
 
 if [ "$1" == "devices" ]; then
-    devices=y
-    shift
+    devices=$2
+    shift 2
+fi
+
+if [ "$1" == "switches" ]; then
+    switches=$2
+    shift 2
 fi
 
 if [ "$1" == "skip-conn-check" ]; then
@@ -21,9 +30,17 @@ if [ "$1" == "skip-conn-check" ]; then
     shift
 fi
 
-if [ -z "$1" ]; then
-    mode=bond
-else
+if [ "$1" == "dhcp" ]; then
+    faux_dhcp=dhcp
+    shift
+fi
+
+if [ "$1" == "no-clean" ]; then
+    no_clean=y
+    shift
+fi
+
+if [ -n "$1" ]; then
     mode=$1
     shift
 fi
@@ -32,21 +49,22 @@ source bin/stack_functions
 
 ###########################################################
 
-bin/net_clean
+if [ -z "$no_clean" ]; then
+    bin/net_clean
+fi
 
 echo Configuring mode $mode...
 
 add_br corp  0x111 6683
 add_br t1sw1 177 6001 7001
 add_br t1sw2 178 6001 7001
+add_oeth t1sw1 28 corp-eth10
+add_oeth t1sw2 28 corp-eth20
+add_link t1sw1 6 t1sw2 6
+
 add_br t2sw1 147058200627 6001 7001
 add_br t2sw2 1296 6001 7001
 add_br t2sw3 1297 6001 7001
-
-add_oeth t1sw1 28 corp-eth10
-add_oeth t1sw2 28 corp-eth20
-
-add_link t1sw1 6 t1sw2 6
 
 add_link t1sw1 9 t2sw1 50
 add_link t1sw1 10 t2sw2 50
@@ -56,6 +74,15 @@ add_link t1sw2 9 t2sw1 52
 add_link t1sw2 10 t2sw2 52
 add_link t1sw2 11 t2sw3 52
 
+if [ -n "$switches" ]; then
+    for snum in $(seq 4 $switches); do
+        echo Adding extra switch num $snum
+        add_br t2sw$snum $((1294 + snum)) 6001 7001
+        add_link t1sw1 $((8+snum)) t2sw$snum 50
+        add_link t1sw2 $((8+snum)) t2sw$snum 52
+    done
+fi
+
 sudo ip link del bond || true
 echo Setting up bond interface...
 sudo ip link add bond type bond mode 802.3ad
@@ -63,18 +90,6 @@ sudo ip link set bond up
 sudo ip link set corp-eth10 master bond
 sudo ip link set corp-eth20 master bond
 add_iface corp 10 bond
-
-echo Connecting faux interfaces
-add_faux corp 1 0
-add_faux t2sw1 1 1
-add_faux t2sw2 1 2
-add_faux t2sw3 1 3
-
-if [ -n "$devices" ]; then
-    for fnum in {4..44}; do
-        add_faux t2sw1 $fnum $fnum
-    done
-fi
 
 echo Starting faucet instances...
 sudo rm -rf inst/
@@ -93,6 +108,35 @@ for index in 1; do
     bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
     bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
+
+echo Connecting faux interfaces
+add_faux corp 1 0 dnsmasq
+add_faux t2sw1 1 1
+add_faux t2sw2 1 2
+add_faux t2sw3 1 3 $faux_dhcp
+
+dcount=${devices:-3}
+scount=${switches:-3}
+
+if [ -n "$devices" ]; then
+    for fnum in $(seq 4 $devices); do
+        echo Adding extra device num $fnum
+        add_faux t2sw1 $fnum $fnum
+    done
+else
+    add_iface t1sw1 4 data_faucet_1
+fi
+
+if [ -n "$switches" ]; then
+    for snum in $(seq 4 $switches); do
+        fnum=$((dcount+snum-3))
+        echo Adding switch device num $fnum
+        add_faux t2sw$snum 1 $fnum
+    done
+fi
+
+tdevices=$((dcount + scount - 3))
+echo Working with $tdevices devices.
 
 echo Letting system settle...
 sleep 10
@@ -116,6 +160,13 @@ if [ -z "$skip_conn_check" ]; then
     docker exec forch-faux-1 ping -q -c 1 192.168.1.3
     docker exec forch-faux-2 ping -q -c 1 192.168.1.1
     docker exec forch-faux-3 ping -q -c 1 192.168.1.1
+
+    if [ $tdevices -gt 3 ]; then
+        for device in $(seq 4 $tdevices); do
+            echo Checking forch-faux-$device...
+            docker exec forch-faux-$device ping -q -c 1 192.168.1.0
+        done
+    fi
 fi
 
 echo Done with stack setup mode $mode.

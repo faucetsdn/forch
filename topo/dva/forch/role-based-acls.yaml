@@ -1,5 +1,5 @@
 acls:
-  role_red:
+  role_hello_world.foo.bar#bazqux@quuxquuz123:
     - rule:
         description: allow ICMP
         dl_type: 0x800      # IPv4
