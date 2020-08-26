@@ -304,8 +304,6 @@ class Faucetizer:
 
         self._finalize_host_ports_config(behavioral_faucet_config, testing_port_vlans)
 
-        self._finalize_host_ports_config(behavioral_faucet_config)
-
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
         if self._config.unauthenticated_vlan:

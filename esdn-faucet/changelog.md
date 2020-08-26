@@ -1,3 +1,36 @@
+## 1.12.0
+## Forch 0.44
+* Add loop detection logic and test (#160)
+* Expose ryu config in API (#154)
+* Fix test_access in Forch test suite (#158)
+* Auto reload segemnts, static placements and static behaviors files (#153)
+* Make LACP logs more verbose (#151)
+* Change forch log os env in line with other faucet os envs. (#152)
+* Enable Faucetizer to add VLAN config for unauthenticated VLAN (#150)
+* Test device role that contains different types of symbols (#149)
+* Enable Faucetizer sequester devices into testing VLANs (#143)
+* Add testing/test_failscale for stack failover (#146)
+* Add basic scaling test (#145)
+* Simplify topo bond configuration (#144)
+* Use DHCP for some containers (#140)
+* Remove excess ports from dva tests (#142)
+* Test OT trunks as part of integration tests (#141)
+* Integration tests to setup stack and test connectivity (#138)
+* Avoid empty acls_in for a port during DVA (#139)
+## Faucet 1.9.48
+* Don't send empty apply action instructions
+* Add support for VLANs on a stack that aren't expressed on the root switch
+* Fix LACP role metric was not updated when stack root changes
+* Remove experimental API
+* Export ryu_conf variables to as Prometheus metrics
+* Gauge now clears all variables on config reload (so de-configured DP variables are removed)
+* Update dependencies:
+  * prometheus 2.20.0 [docker]
+  * grafana 7.1.1 [apt, docker]
+  * sphinx 3.1.2 [docs]
+  * pytype 2020.7.30 [tests]
+
+
 ## 1.11.0
 ## Forch 0.43
 * Avoid empty acls_in for a port during DVA (#139)
