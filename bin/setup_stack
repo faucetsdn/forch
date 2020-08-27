@@ -8,6 +8,7 @@ switches=
 skip_conn_check=
 no_clean=
 faux_dhcp=
+fot=
 mode=bond
 
 if [ "$1" == "local" ]; then
@@ -37,6 +38,11 @@ fi
 
 if [ "$1" == "no-clean" ]; then
     no_clean=y
+    shift
+fi
+
+if [ "$1" == "fot" ]; then
+    fot=fot
     shift
 fi
 
@@ -105,7 +111,7 @@ for index in 1; do
     cp -r topo/$mode/forch inst/$controller/
     cp -r topo/$mode/faucet inst/$controller/
     docker kill $controller || true
-    bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+    bin/run_faucet $local $fot $index $((6000 + index)) $((8000 + index))
     bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 

@@ -17,6 +17,7 @@ docker_volumes=
 port_opts=
 local=
 faucet_id=
+fot=
 
 cd $ROOT
 
@@ -31,6 +32,11 @@ if [ "$1" == "gauge" ]; then
     IMAGE=forch/gauge
     PROM_TARGET=9303
     FAUCET_SOCK=
+    shift
+fi
+
+if [ "$1" == "fot" ]; then
+    fot=fot
     shift
 fi
 
@@ -103,16 +109,34 @@ docker_volumes+="\
         -v $INSTDIR/faucet:/etc/faucet \
         -v $INSTDIR:/var/log/faucet"
 
+
 if [ -n "$prom_pt" ]; then
     port_opts="-p $prom_pt:$PROM_TARGET"
     echo $prom_pt > $INSTDIR/PROM_PORT.$PROM_TARGET
 fi
 
+
+forch_port=
+if [ -n "$fot" ]; then
+    forch_port="-p 500$faucet_id:9019"
+    docker_envs+="\
+        --env CONTROLLER_NAME=$CONTAINER \
+        --env PROMETHEUS_PORT=9302 \
+        --env FAUCET_EVENT_SOCK=/var/log/faucet/faucet_event.sock \
+        --env FAUCET_CONFIG_DIR=/etc/faucet \
+        --env FORCH_CONFIG_DIR=/etc/faucet \
+        --env FORCH_LOG_DIR=/var/log/faucet"
+fi
+
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
-             -p $ext_ofpt:6653 $port_opts $IMAGE)
+             -p $ext_ofpt:6653 $forch_port $port_opts $IMAGE)
 
 if [ $IMAGE == "forch/faucet" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
+    if [ -n "$fot" ]; then
+        for file in $INSTDIR/forch/*; do docker cp $file $CONTAINER:/etc/faucet/; done
+        docker exec $CONTAINER /usr/bin/forch &
+    fi
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
     data_intf_name=data_faucet_$faucet_id
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
