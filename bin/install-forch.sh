@@ -14,6 +14,7 @@ ${APK} add -U git ${BUILDDEPS}
 ${PIP3} pip
 ${PIP3} setuptools ${TESTDEPS}
 ${PIP3} -r ${FROOT}/etc/requirements.txt
+git init ${FROOT}
 ${PIP3} ${FROOT}
 
 pip3 uninstall -y ${TESTDEPS} || exit 1

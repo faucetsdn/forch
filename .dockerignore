@@ -1,3 +1,4 @@
 inst/
 dist/
 build/
+.git/

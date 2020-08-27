@@ -73,6 +73,9 @@ docker_args+=--label=FAUCET_HASH=$faucet_ver
 echo Building faucet...
 docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . > build/docker_faucet.log &
 
+echo Building controller...
+docker build -t forch/controller $docker_args -f etc/Dockerfile.controller . > build/docker_controller.log &
+
 echo Waiting for builds to complete.
 wait
 
@@ -82,7 +85,7 @@ tail build/docker_*.log
 
 docker images | fgrep forch/ | fgrep latest
 images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
-if [ $images != 3 ]; then
+if [ $images != 4 ]; then
     echo Did not find expected 3 forch/ images.
     false
 fi

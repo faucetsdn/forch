@@ -106,12 +106,20 @@ sudo modprobe bonding
 bin/run_faucet $local corp 6683
 
 for index in 1; do
-    controller=forch-faucet-$index
+    if [ -n "$fot" ]; then
+        controller=forch-controller-$index
+    else
+        controller=forch-faucet-$index
+    fi
     mkdir -p inst/$controller/
     cp -r topo/$mode/forch inst/$controller/
     cp -r topo/$mode/faucet inst/$controller/
     docker kill $controller || true
-    bin/run_faucet $local $fot $index $((6000 + index)) $((8000 + index))
+    if [ -n "$fot" ]; then
+        bin/run_controller $local $index $((6000 + index)) $((8000 + index))
+    else
+        bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+    fi
     bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
@@ -147,8 +155,13 @@ echo Working with $tdevices devices.
 echo Letting system settle...
 sleep 10
 
-echo head of forch-faucet-1/faucet.log:
-head inst/forch-faucet-1/faucet.log
+if [ -n "$fot" ]; then
+    echo head of forch-controller-1/faucet.log:
+    head inst/forch-controller-1/faucet.log
+else
+    echo head of forch-faucet-1/faucet.log:
+    head inst/forch-faucet-1/faucet.log
+fi
 echo
 
 if [ -z "$skip_conn_check" ]; then
