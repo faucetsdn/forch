@@ -107,14 +107,14 @@ bin/run_faucet $local corp 6683
 
 for index in 1; do
     if [ -n "$fot" ]; then
-        controller=forch-controller-$index
+        container=forch-controller-$index
     else
-        controller=forch-faucet-$index
+        container=forch-faucet-$index
     fi
-    mkdir -p inst/$controller/
-    cp -r topo/$mode/forch inst/$controller/
-    cp -r topo/$mode/faucet inst/$controller/
-    docker kill $controller || true
+    mkdir -p inst/$container/
+    cp -r topo/$mode/forch inst/$container/
+    cp -r topo/$mode/faucet inst/$container/
+    docker kill $container || true
     if [ -n "$fot" ]; then
         bin/run_controller $local $index $((6000 + index)) $((8000 + index)) $((7000 + index)) $((9000 + index))
     else
