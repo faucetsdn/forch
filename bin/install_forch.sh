@@ -17,6 +17,8 @@ ${PIP3} -r ${FROOT}/etc/requirements.txt
 git init ${FROOT}
 ${PIP3} ${FROOT}
 
+cp ${FROOT}/misc/gauge_go /usr/bin/
+
 pip3 uninstall -y ${TESTDEPS} || exit 1
 for i in ${BUILDDEPS} ; do
     ${APK} del "$i" || exit 1

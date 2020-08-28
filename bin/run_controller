@@ -5,13 +5,16 @@ CONTAINER=forch-controller
 INSTDIR=$ROOT/inst
 IMAGE=forch/controller
 PROM_TARGET=9302
+GAUGE_PROM_TARGET=9303
 FAUCET_SOCK=faucet_event.sock
 FAUCET_CONFIG=faucet.yaml
 SYSTEM_CONF=system.conf
 LOCAL_CONFIG=local/$SYSTEM_CONF
 
 ext_ofpt=6653
+gauge_ext_ofpt=6654
 prom_pt=9302
+gauge_prom_pt=9303
 
 docker_volumes=
 port_opts=
@@ -40,6 +43,16 @@ fi
 
 if [ -n "$1" ]; then
     prom_pt=$1
+    shift
+fi
+
+if [ -n "$1" ]; then
+    gauge_ext_ofpt=$1
+    shift
+fi
+
+if [ -n "$1" ]; then
+    gauge_prom_pt=$1
     shift
 fi
 
@@ -89,6 +102,7 @@ docker_envs="\
         --env USERID=$(id -u) \
         --env FAUCET_EVENT_SOCK=$event_sock \
         --env FAUCET_CONFIG=$faucet_config \
+        --env FAUCET_LISTEN_PORT=6653 \
         --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
 
 docker_volumes+="\
@@ -101,8 +115,11 @@ if [ -n "$prom_pt" ]; then
     echo $prom_pt > $INSTDIR/PROM_PORT.$PROM_TARGET
 fi
 
+if [ -n "$gauge_prom_pt" ]; then
+    gauge_port_opts="-p $gauge_prom_pt:$GAUGE_PROM_TARGET"
+    echo $gauge_prom_pt > $INSTDIR/PROM_PORT.$GAUGE_PROM_TARGET
+fi
 
-forch_port=
 forch_port="-p 500$faucet_id:9019"
 docker_envs+="\
     --env CONTROLLER_NAME=$CONTAINER \
@@ -110,14 +127,24 @@ docker_envs+="\
     --env FAUCET_EVENT_SOCK=/var/log/faucet/faucet_event.sock \
     --env FAUCET_CONFIG_DIR=/etc/faucet \
     --env FORCH_CONFIG_DIR=/etc/faucet \
+    --env WSAPI_LISTEN_HOST=localhost \
+    --env WSAPI_LISTEN_PORT=4000 \
+    --env GAUGE_RYU_CONF=/etc/faucet/ryu.conf \
+    --env GAUGE_LISTEN_PORT=6654 \
+    --env GAUGE_CONFIG=/etc/faucet/gauge.yaml \
+    --env GAUGE_LOG=/var/log/faucet/gauge.log \
+    --env GAUGE_EXCEPTION_LOG=/var/log/faucet/gauge_exception.log \
+    --env GAUGE_CONFIG_STAT_RELOAD=1 \
     --env FORCH_LOG_DIR=/var/log/faucet"
 
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
-             -p $ext_ofpt:6653 $forch_port $port_opts $IMAGE)
+             -p $ext_ofpt:6653 $forch_port $port_opts $gauge_port_opts -p $gauge_ext_ofpt:6654 $IMAGE)
 
 if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     for file in $INSTDIR/forch/*; do docker cp $file $CONTAINER:/etc/faucet/; done
+    # docker exec $CONTAINER /usr/bin/gauge --ryu-config-file=${GAUGE_RYU_CONF} --ryu-ofp-tcp-listen-port=${GAUGE_LISTEN_PORT} --ryu-wsapi-host=${WSAPI_LISTEN_HOST} --ryu-wsapi-port=${WSAPI_LISTEN_PORT} --ryu-app=ryu.app.ofctl_rest &
+    docker exec $CONTAINER /usr/bin/gauge_go &
     docker exec $CONTAINER /usr/bin/forch &
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
     data_intf_name=data_faucet_$faucet_id

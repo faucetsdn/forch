@@ -8,7 +8,7 @@ COPY faucet/ /faucet-src/
 COPY . /forch-src/
 
 RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
-RUN /forch-src/bin/install-forch.sh && rm -rf /forch-src/.git
+RUN /forch-src/bin/install_forch.sh && rm -rf /forch-src/.git
 
 # Check for target executable since installer doesn't error out properly.
 RUN which faucet

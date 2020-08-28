@@ -86,7 +86,7 @@ tail build/docker_*.log
 docker images | fgrep forch/ | fgrep latest
 images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
 if [ $images != 4 ]; then
-    echo Did not find expected 3 forch/ images.
+    echo Did not find expected 4 forch/ images.
     false
 fi
 

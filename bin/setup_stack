@@ -116,11 +116,11 @@ for index in 1; do
     cp -r topo/$mode/faucet inst/$controller/
     docker kill $controller || true
     if [ -n "$fot" ]; then
-        bin/run_controller $local $index $((6000 + index)) $((8000 + index))
+        bin/run_controller $local $index $((6000 + index)) $((8000 + index)) $((7000 + index)) $((9000 + index))
     else
         bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+        bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
     fi
-    bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
 done
 
 echo Connecting faux interfaces
