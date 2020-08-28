@@ -1,0 +1,7 @@
+#!/bin/sh -ex
+
+/usr/bin/gauge --ryu-config-file=${GAUGE_RYU_CONF} \
+    --ryu-ofp-tcp-listen-port=${GAUGE_LISTEN_PORT} \
+    --ryu-wsapi-host=${WSAPI_LISTEN_HOST} \
+    --ryu-wsapi-port=${WSAPI_LISTEN_PORT} \
+    --ryu-app=ryu.app.ofctl_rest &
