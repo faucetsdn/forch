@@ -270,17 +270,20 @@ class FaucetStateCollector:
         return int(metrics['faucet_event_id'].samples[0].value)
 
     def _restore_l2_learn_state_from_samples(self, samples):
+        self._cleanup_learned_macs()
+
         timestamp = time.time()
-        learned_ports = 0
+        learned_ports = False
+
         for sample in samples:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, None)
-                learned_ports += 1
+                learned_ports = True
         if not learned_ports:
-            LOGGER.info('No learned ports found.')
+            LOGGER.info('No learned ports restored.')
             return
 
     def _restore_dataplane_state_from_metrics(self, metrics):
@@ -531,9 +534,18 @@ class FaucetStateCollector:
     def cleanup(self):
         """Clean up internal data"""
         with self.lock:
-            self.learned_macs.clear()
-            for switch_data in self.switch_states.values():
-                switch_data.get(LEARNED_MACS, set()).clear()
+            self._cleanup_learned_macs()
+
+    def _cleanup_learned_macs(self):
+        """Clean up leanred macs"""
+        old_learned_macs = copy.deepcopy(self.learned_macs)
+        timestamp = time.time()
+
+        for mac, mac_map in old_learned_macs.items():
+            for switch_name, switch_map in mac_map.get(MAC_LEARNING_SWITCH, {}).items():
+                port = switch_map.get(MAC_LEARNING_PORT)
+                if port:
+                    self.process_port_expire(timestamp, switch_name, port, mac)
 
     def _fill_egress_state(self, target_obj):
         """Return egress state obj"""
