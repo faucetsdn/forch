@@ -1,8 +1,8 @@
 """Module that manages the testing states of the access ports"""
 
 import logging
+import threading
 
-from forch.proto.device_testing_state_pb2 import DeviceTestingState
 from forch.proto.shared_constants_pb2 import TestingState
 
 
@@ -50,7 +50,7 @@ class PortTestingStateMachine:
                 self._mac, self._current_state, testing_state)
             return
 
-        LOGGER.info("Device %s entered %s state", self._mac, self._current_state)
+        LOGGER.info("Device %s entering %s state", self._mac, to_state)
         self._current_state = to_state
         self._handle_current_state()
 
@@ -80,6 +80,7 @@ class PortsTestingStatesManager:
     def __init__(self):
         self._state_machines = {}
         self._static_testing_states = {}
+        self._lock = threading.Lock()
 
     def process_static_testing_state(self, mac, testing_state):
         """Add static testing state for a device"""
@@ -87,19 +88,21 @@ class PortsTestingStatesManager:
 
     def handle_authenticated_device(self, mac):
         """initialize or update the state machine for an authenticated device"""
-        state_machine = self._state_machines.setdefault(
-            mac, PortTestingStateMachine(mac, PortTestingStateMachine.AUTHENTICATED))
-        static_testing_state = self._static_testing_states.get(mac)
-        state_machine.handle_testing_state_event(
-            TestingState.cleared if static_testing_state == TestingState.cleared
-            else TestingState.sequestered)
+        with self._lock:
+            state_machine = self._state_machines.setdefault(
+                mac, PortTestingStateMachine(mac, PortTestingStateMachine.AUTHENTICATED))
+            static_testing_state = self._static_testing_states.get(mac)
+            state_machine.handle_testing_state_event(
+                TestingState.cleared if static_testing_state == TestingState.cleared
+                else TestingState.sequestered)
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
-        state_machine = self._state_machines.get(testing_result.mac)
-        if not state_machine:
-            LOGGER.error(
-                'No state machine defined for device %s before receiving testing result',
-                testing_result.mac)
-            return
-        state_machine.handle_testing_state_event(testing_result.testing_state)
+        with self._lock:
+            state_machine = self._state_machines.get(testing_result.mac)
+            if not state_machine:
+                LOGGER.error(
+                    'No state machine defined for device %s before receiving testing result',
+                    testing_result.mac)
+                return
+            state_machine.handle_testing_state_event(testing_result.testing_state)
