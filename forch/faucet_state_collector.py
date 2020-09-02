@@ -273,7 +273,7 @@ class FaucetStateCollector:
         self._cleanup_learned_macs()
 
         timestamp = time.time()
-        learned_ports = False
+        ports_learned = False
 
         for sample in samples:
             dp_name = sample.labels['dp_name']
@@ -281,8 +281,8 @@ class FaucetStateCollector:
             eth_src = sample.labels['eth_src']
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, None)
-                learned_ports = True
-        if not learned_ports:
+                ports_learned = True
+        if not ports_learned:
             LOGGER.info('No learned ports restored.')
             return
 
