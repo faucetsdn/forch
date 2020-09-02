@@ -8,10 +8,12 @@ import yaml
 from forch.utils import dict_proto, proto_dict
 
 from forch.proto.device_testing_state_pb2 import DeviceTestingState
-from forch.proto.shared_constants_pb2 import Empty
+from forch.proto.shared_constants_pb2 import Empty, TestingState
 
 from integration_base import IntegrationTestBase, logger
-from unit_base import DeviceTestingServerTestBase, FaucetizerTestBase
+from unit_base import (
+    DeviceTestingServerTestBase, FaucetizerTestBase, PortsTestingStateManagerTestBase
+)
 
 
 class FotConfigTest(IntegrationTestBase):
@@ -133,6 +135,52 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
         sorted_expected_states = sorted(expected_testing_states, key=lambda k: k['mac'])
 
         self.assertEqual(sorted_received_states, sorted_expected_states)
+
+
+class FOTPortsTestingStatesTestCase(PortsTestingStateManagerTestBase):
+    """Test access port testing states"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def test_ports_states(self):
+        """Test the testing states with different signals"""
+        cleared_devices = ['00:0X:00:00:00:01', '00:0Y:00:00:00:02']
+        authenticated_devices = ['00:0X:00:00:00:01', '00:0Z:00:00:00:03', '00:0A:00:00:00:04']
+        testing_results = [
+            {'mac': '00:0X:00:00:00:01', 'testing_state': 'failed'},
+            {'mac': '00:0Y:00:00:00:02', 'testing_state': 'passed'},
+            {'mac': '00:0Z:00:00:00:03', 'testing_state': 'failed'},
+            {'mac': '00:0A:00:00:00:04', 'testing_state': 'passed'}
+        ]
+
+        # load static testing states
+        for mac in cleared_devices:
+            self._ports_testing_state_manager.process_static_testing_state(
+                mac, TestingState.cleared)
+
+        # devices are authenticated
+        for mac in authenticated_devices:
+            self._ports_testing_state_manager.handle_authenticated_device(mac)
+
+        expected_states = {
+            '00:0X:00:00:00:01': self.OPERATIONAL,
+            '00:0Z:00:00:00:03': self.SEQUESTERED,
+            '00:0A:00:00:00:04': self.SEQUESTERED
+        }
+        self._verify_ports_testing_states(expected_states)
+
+        # received testing results for devices
+        for testing_result in testing_results:
+            self._ports_testing_state_manager.handle_testing_result(
+                dict_proto(testing_result, DeviceTestingState))
+
+        expected_states = {
+            '00:0X:00:00:00:01': self.OPERATIONAL,
+            '00:0Z:00:00:00:03': self.INFRACTED,
+            '00:0A:00:00:00:04': self.OPERATIONAL
+        }
+        self._verify_ports_testing_states(expected_states)
 
 
 if __name__ == '__main__':

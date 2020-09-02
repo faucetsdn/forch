@@ -145,11 +145,20 @@ message TestingState {
     // unknown
     unknown = 0;
 
-    // cleared
-    cleared = 1;
+    // authenticated
+    authenticated = 1;
 
-    // passed
-    passed = 2;
+    // cleared
+    cleared = 2;
+
+    // sequestered
+    sequestered = 3;
+
+    // passed testing
+    passed = 4;
+
+    // failed testing
+    failed = 5;
   }
 }
 
