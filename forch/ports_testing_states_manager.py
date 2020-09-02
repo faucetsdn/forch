@@ -50,7 +50,10 @@ class PortTestingStateMachine:
                 self._mac, self._current_state, testing_state)
             return
 
-        LOGGER.info("Device %s entering %s state", self._mac, to_state)
+        LOGGER.info(
+            'Device %s is entering %s state from %s state',
+            self._mac, to_state, self._current_state)
+
         self._current_state = to_state
         self._handle_current_state()
 
@@ -64,15 +67,15 @@ class PortTestingStateMachine:
 
     @_register_state_handler(state_name=AUTHENTICATED)
     def _handle_authenticated_state(self):
-        LOGGER.info("Handling authenticated state")
+        LOGGER.info('Handling authenticated state for device %s', self._mac)
 
     @_register_state_handler(state_name=SEQUESTERED)
     def _handle_sequestered_state(self):
-        LOGGER.info("Handling sequestered state")
+        LOGGER.info('Handling sequestered state for device %s', self._mac)
 
     @_register_state_handler(state_name=OPERATIONAL)
     def _handle_operational_state(self):
-        LOGGER.info("Handling operational state")
+        LOGGER.info('Handling operational state for device %s', self._mac)
 
 
 class PortsTestingStatesManager:
