@@ -32,12 +32,12 @@ class PortTestingStateMachine:
         },
         SEQUESTERED: {
             TestingState.passed: OPERATIONAL,
-            TestingState.faild: INFRACTED,
+            TestingState.failed: INFRACTED,
         },
     }
 
     def __init__(self, mac, initial_state):
-        self._mac = None
+        self._mac = mac
         self._current_state = initial_state
 
     def handle_testing_state_event(self, testing_state):
@@ -96,9 +96,10 @@ class PortsTestingStatesManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
-        state_machine = self._static_testing_states.get(testing_result.mac)
+        state_machine = self._state_machines.get(testing_result.mac)
         if not state_machine:
             LOGGER.error(
                 'No state machine defined for device %s before receiving testing result',
                 testing_result.mac)
+            return
         state_machine.handle_testing_state_event(testing_result.testing_state)
