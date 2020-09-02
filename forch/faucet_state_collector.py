@@ -538,14 +538,15 @@ class FaucetStateCollector:
 
     def _cleanup_learned_macs(self):
         """Clean up leanred macs"""
-        old_learned_macs = copy.deepcopy(self.learned_macs)
-        timestamp = time.time()
+        with self._lock:
+            old_learned_macs = copy.deepcopy(self.learned_macs)
+            timestamp = time.time()
 
-        for mac, mac_map in old_learned_macs.items():
-            for switch_name, switch_map in mac_map.get(MAC_LEARNING_SWITCH, {}).items():
-                port = switch_map.get(MAC_LEARNING_PORT)
-                if port:
-                    self.process_port_expire(timestamp, switch_name, port, mac)
+            for mac, mac_map in old_learned_macs.items():
+                for switch_name, switch_map in mac_map.get(MAC_LEARNING_SWITCH, {}).items():
+                    port = switch_map.get(MAC_LEARNING_PORT)
+                    if port:
+                        self.process_port_expire(timestamp, switch_name, port, mac)
 
     def _fill_egress_state(self, target_obj):
         """Return egress state obj"""
