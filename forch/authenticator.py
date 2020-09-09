@@ -1,6 +1,5 @@
 """Module for authenticating devices connecting to a faucet network"""
 
-import logging
 import sys
 import os
 import collections
@@ -11,14 +10,13 @@ import yaml
 from forch.heartbeat_scheduler import HeartbeatScheduler
 import forch.radius_query as radius_query
 from forch.simple_auth_state_machine import AuthStateMachine
-from forch.utils import configure_logging
-from forch.utils import proto_dict, dict_proto, ConfigError
+from forch.utils import get_logger, proto_dict, dict_proto, ConfigError
 from forch.proto.devices_state_pb2 import DevicePlacement
 
 from forch.proto.authentication_pb2 import AuthResult
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
-LOGGER = logging.getLogger('auth')
+LOGGER = get_logger('auth')
 
 HEARTBEAT_INTERVAL_SEC = 3
 
@@ -180,7 +178,6 @@ if __name__ == '__main__':
         sys.stdout.write('auth_callback for %s: access:%s segment:%s role:%s\n'
                          % (src_mac, access, segment, role))
 
-    configure_logging()
     ARGS = parse_args(sys.argv[1:])
     AUTH_CONFIG = dict_proto(
         {

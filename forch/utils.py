@@ -8,6 +8,7 @@ from google.protobuf import json_format, text_format
 
 _LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
+_LOG_LEVEL_DEFAULT = 'INFO'
 
 
 class MessageParseError(Exception):
@@ -18,7 +19,7 @@ class ConfigError(Exception):
     """Error for when config isn't valid."""
 
 
-def get_log_path():
+def _get_log_path():
     """Get path for logging"""
     forch_log_dir = os.getenv('FORCH_LOG_DIR')
     if not forch_log_dir:
@@ -26,12 +27,23 @@ def get_log_path():
     return os.path.join(forch_log_dir, 'forch.log')
 
 
-def configure_logging(level=logging.INFO):
-    """Configure logging with some basic parameters"""
-    logging.basicConfig(filename=get_log_path(),
-                        format=_LOG_FORMAT,
-                        datefmt=_LOG_DATE_FORMAT,
-                        level=level)
+def get_logger(name):
+    """Get a logger"""
+    log_file_path = _get_log_path()
+    if log_file_path:
+        log_handler = logging.FileHandler(log_file_path)
+    else:
+        log_handler = logging.StreamHandler()
+
+    logging_level = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
+    log_handler.setFormatter(logging.Formatter(_LOG_FORMAT, _LOG_DATE_FORMAT))
+    log_handler.setLevel(logging_level)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(logging_level)
+    logger.addHandler(log_handler)
+
+    return logger
 
 
 def yaml_proto(file_name, proto_func):

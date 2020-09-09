@@ -2,13 +2,11 @@
 
 from datetime import datetime
 import functools
-import logging
 import os
 import threading
 import time
 
 from google.protobuf.message import Message
-from forch.proto import faucet_event_pb2 as FaucetEvent
 
 from faucet import config_parser
 
@@ -24,16 +22,16 @@ from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 import forch.varz_state_collector as varz_state_collector
-
-from forch.utils import proto_dict, yaml_proto
+from forch.utils import get_logger, proto_dict, yaml_proto
 
 from forch.__version__ import __version__
 
 from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
+import forch.proto.faucet_event_pb2 as FaucetEvent
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
 
-LOGGER = logging.getLogger('forch')
+LOGGER = get_logger('forch')
 
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'

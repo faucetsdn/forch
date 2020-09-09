@@ -3,18 +3,18 @@
 import copy
 import functools
 import json
-import logging
 import os
 import select
 import socket
 import threading
 import time
 
-from forch.utils import dict_proto
+from forch.utils import dict_proto, get_logger
 
 from forch.proto.faucet_event_pb2 import FaucetEvent, PortChange
 
-LOGGER = logging.getLogger('fevent')
+LOGGER = get_logger('fevent')
+
 
 class FaucetEventClient():
     """A general client interface to the FAUCET event API"""

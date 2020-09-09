@@ -1,13 +1,13 @@
 """Module to expose varz interface"""
 
 import functools
-import logging
 import threading
 from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 
-import forch.http_server
+from forch.http_server import HttpServer
+from forch.utils import get_logger
 
-LOGGER = logging.getLogger('metrics')
+LOGGER = get_logger('metrics')
 DEFAULT_VARZ_PORT = 8302
 
 
@@ -24,7 +24,7 @@ class ForchMetrics():
     def start(self):
         """Start serving varz"""
         self._add_vars()
-        self._http_server = forch.http_server.HttpServer(self._local_port)
+        self._http_server = HttpServer(self._local_port)
         try:
             self._http_server.map_request('', self.get_metrics)
         except Exception as e:
