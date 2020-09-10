@@ -1,7 +1,6 @@
 """gRPC server to receive device testing result"""
 
 from concurrent import futures
-import logging
 
 import grpc
 
