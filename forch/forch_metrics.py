@@ -90,6 +90,15 @@ class ForchMetrics():
             'dataplane_packet_count_vlan', 'number of packets in vlan', Gauge, ['vlan'])
 
         self._add_var(
+            'interval_packet_count', 'number of times host packet count increases', Gauge,
+            ['eth_src', 'rule_description']
+        )
+        self._add_var(
+            'interval_packet_count_last_change', 'last time when host packet count increases',
+            Gauge, ['eth_src', 'rule_description']
+        )
+
+        self._add_var(
             'faucet_config_warning_count', 'Count of Faucet configuration warnings', Gauge)
         self._add_var(
             'faucet_config_warning', 'Faucet configuration warning', Gauge, ['key', 'message'])
