@@ -1,11 +1,13 @@
 """Scrape varz from Faucet and Gauge"""
-import logging
+
 import time
 
 import prometheus_client.parser
 import requests
 
-LOGGER = logging.getLogger('vstate')
+from forch.utils import get_logger
+
+LOGGER = get_logger('vstate')
 
 
 def get_metrics(endpoint, target_metrics):

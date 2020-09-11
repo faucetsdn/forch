@@ -4,28 +4,24 @@
 import copy
 from datetime import datetime
 import json
-import logging
 import time
 import threading
-from threading import RLock
-from forch.proto.faucet_event_pb2 import StackTopoChange
 
 # TODO: Clean up to use State enum
 from forch.constants import \
     STATE_UP, STATE_INITIALIZING, STATE_DOWN, STATE_ACTIVE, STATE_BROKEN
-
-from forch.utils import dict_proto
-
-from forch.proto.shared_constants_pb2 import DVAState, LacpState, State, LacpRole
-from forch.proto.system_state_pb2 import StateSummary
+from forch.utils import dict_proto, get_logger
 
 from forch.proto.dataplane_state_pb2 import DataplaneState
+from forch.proto.devices_state_pb2 import DevicePlacement
+from forch.proto.faucet_event_pb2 import StackTopoChange
 from forch.proto.host_path_pb2 import HostPath
 from forch.proto.list_hosts_pb2 import HostList
+from forch.proto.shared_constants_pb2 import DVAState, LacpState, State, LacpRole
 from forch.proto.switch_state_pb2 import SwitchState
-from forch.proto.devices_state_pb2 import DevicePlacement
+from forch.proto.system_state_pb2 import StateSummary
 
-LOGGER = logging.getLogger('fstate')
+LOGGER = get_logger('fstate')
 
 LACP_TO_LINK_STATE = {
     LacpState.none: STATE_DOWN,
@@ -119,7 +115,7 @@ class FaucetStateCollector:
         self.learned_macs = {}
         self.faucet_config = {}
         self.packet_counts = {}
-        self.lock = RLock()
+        self.lock = threading.RLock()
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False, False)
         self._active_state = State.initializing
@@ -206,7 +202,7 @@ class FaucetStateCollector:
 
         packet_count_metric = get_metrics([VLAN_PACKET_COUNT_METRIC]).get(VLAN_PACKET_COUNT_METRIC)
         if not packet_count_metric:
-            logging.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
+            LOGGER.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
             return
 
         vlan_counts = self._get_packet_counts_from_samples(packet_count_metric.samples)

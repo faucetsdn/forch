@@ -2,7 +2,6 @@
 
 import argparse
 import functools
-import logging
 import os
 import sys
 
@@ -10,14 +9,13 @@ import forch.faucet_event_client
 from forch.forchestrator import Forchestrator
 import forch.http_server
 from forch.proto.forch_configuration_pb2 import ForchConfig
-from forch.utils import configure_logging, yaml_proto
+from forch.utils import get_logger, yaml_proto
 
 from forch.__version__ import __version__
 
-LOGGER = logging.getLogger('main')
-
 _FORCH_CONFIG_DEFAULT = 'forch.yaml'
-_LOG_LEVEL_DEFAULT = 'INFO'
+
+LOGGER = get_logger('main')
 
 
 def load_config():
@@ -40,9 +38,6 @@ def show_error(error, path, params):
 
 def run_forchestrator():
     """main function to start forch"""
-    log_level_str = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
-    configure_logging(level=log_level_str)
-
     config = load_config()
     if not config:
         LOGGER.error('Invalid config, exiting.')
@@ -97,6 +92,7 @@ def main():
         print(f'Forch {__version__}')
         sys.exit()
 
+    LOGGER.info('Starting Forchestrator')
     run_forchestrator()
 
 

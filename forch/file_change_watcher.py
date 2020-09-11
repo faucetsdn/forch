@@ -1,12 +1,13 @@
 """Faucet config file watcher"""
 
 import hashlib
-import logging
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-LOGGER = logging.getLogger('watcher')
+from forch.utils import get_logger
+
+LOGGER = get_logger('watcher')
 
 
 class FileChangeWatcher:
