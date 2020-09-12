@@ -212,7 +212,7 @@ class FaucetStateCollector:
             self._forch_metrics.update_var(
                 'dataplane_packet_rate_state_vlan', rate_state, labels=[vlan_id])
 
-    def _update_acl_count_states(self, packet_count_metrics, metric_name, count_id_name):
+    def _update_acl_count_states(self, packet_count_metrics, metric_name, acl_type):
         """Evaluate packet count change for each ACL rule"""
         if metric_name not in packet_count_metrics:
             logging.warning('No %s metric available', metric_name)
@@ -223,24 +223,25 @@ class FaucetStateCollector:
             if not cookie_num:
                 continue
 
-            switch_name = sample.lables['dp_name']
-            count_id = int(sample.lables[count_id_name] or 0)
+            switch_name = sample.labels['dp_name']
+            count_id = int(sample.labels['in_port' if acl_type == PORT_ACLS else 'vlan'] or 0)
             if not switch_name or not count_id:
                 continue
 
-            switch_map = self.packet_counts.setdefault(VLAN_ACLS, {}).setdefault(switch_name, {})
+            switch_map = self.packet_counts.setdefault(acl_type, {}).setdefault(switch_name, {})
             rule_map = switch_map.setdefault(count_id, {}).setdefault(cookie_num, {})
 
             last_packet_count = rule_map.get(PACKET_COUNT, 0)
             last_interval_count = rule_map.get(INTERVAL_PACKET_COUNT, 0)
             new_packet_count = int(sample.value)
 
+            rule_map[PACKET_COUNT] = new_packet_count
+
             if new_packet_count != last_packet_count:
-                rule_map[PACKET_COUNT] = new_packet_count
                 rule_map[INTERVAL_PACKET_COUNT] = last_interval_count + 1
                 rule_map[INTERVAL_PACKET_COUNT_LAST_CHANGE] = time.time()
 
-                if count_id_name == 'in_port':
+                if acl_type == PORT_ACLS:
                     ports_state = self.switch_states.get(switch_name, {}).get(PORTS, {})
                     mac = ports_state.get(count_id, {}).get(LEARNED_MACS)
                     rule_config = self._get_acl_rule_config(switch_name, count_id, cookie_num)
@@ -249,8 +250,8 @@ class FaucetStateCollector:
                             'interval_packet_count', rule_map[INTERVAL_PACKET_COUNT],
                             [mac, rule_config.get('description')])
                     else:
-                        LOGGER.error(
-                            'Cannot find MAC or rule configuration for switch %s, port %s'
+                        LOGGER.DEBUG(
+                            'No learned MAC or rule configuration for switch %s, port %s '
                             'and cookie %s: %s', switch_name, count_id, cookie_num, mac)
 
     def heartbeat_update_packet_count(self, interval, get_metrics):
@@ -262,8 +263,8 @@ class FaucetStateCollector:
             if self._packet_per_sec_thresholds:
                 self._update_vlan_count_states(metrics, interval)
             if self._is_faucetizer_enabled:
-                self._update_acl_count_states(metrics, PORT_ACL_PACKET_COUNT_METRIC, 'in_port')
-                self._update_acl_count_states(metrics, VLAN_ACL_PACKET_COUNT_METRIC, 'vlan')
+                self._update_acl_count_states(metrics, PORT_ACL_PACKET_COUNT_METRIC, PORT_ACLS)
+                self._update_acl_count_states(metrics, VLAN_ACL_PACKET_COUNT_METRIC, VLAN_ACLS)
 
     def _make_summary(self, state, detail):
         summary = StateSummary()
@@ -546,11 +547,9 @@ class FaucetStateCollector:
         change_count = 0
         last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
 
-        metrics = self._get_gauge_metrics()
-
         for switch_name in self.switch_states:
             arg_port = port if switch_name == switch else None
-            switch_data = self._get_switch(switch_name, arg_port, metrics)
+            switch_data = self._get_switch(switch_name, arg_port)
             switches_data[switch_name] = switch_data
             change_count += switch_data.get(SW_STATE_CHANGE_COUNT, 0)
             last_change = max(last_change, switch_data.get(SW_STATE_LAST_CHANGE, ''))
@@ -816,11 +815,14 @@ class FaucetStateCollector:
                         'No packet counts data available for switch, %s, ACL and rule:'
                         '%s, %s, %s ,%s', count_type, switch_name, count_id, acl_config._id,
                         cookie_num)
+                    continue
 
                 rule_map['packet_count'] = rule_packet_state.get(PACKET_COUNT)
                 rule_map['interval_packet_count'] = rule_packet_state.get(INTERVAL_PACKET_COUNT)
-                rule_map['interval_packet_count_last_change'] = rule_packet_state.get(
-                    INTERVAL_PACKET_COUNT_LAST_CHANGE)
+                timestamp = rule_packet_state.get(INTERVAL_PACKET_COUNT_LAST_CHANGE)
+                if timestamp:
+                    rule_map['interval_packet_count_last_change'] = datetime.fromtimestamp(
+                        timestamp).isoformat()
 
             acls_map_list.append(acl_map)
 
@@ -1389,11 +1391,11 @@ class FaucetStateCollector:
 
     def _get_acl_rule_config(self, switch_name, port_id, cookie_num):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
-        if not dp_config:
+        if not dp_config or not dp_config.ports:
             return None
 
         port_config = dp_config.ports.get(port_id)
-        if not port_config:
+        if not port_config or not port_config.acls_in:
             return None
 
         for acl_config in port_config.acls_in:
