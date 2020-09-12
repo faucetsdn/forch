@@ -231,14 +231,11 @@ class FaucetStateCollector:
             switch_map = self.packet_counts.setdefault(acl_type, {}).setdefault(switch_name, {})
             rule_map = switch_map.setdefault(count_id, {}).setdefault(cookie_num, {})
 
-            last_packet_count = rule_map.get(PACKET_COUNT, 0)
-            last_interval_count = rule_map.get(INTERVAL_PACKET_COUNT, 0)
             new_packet_count = int(sample.value)
+            if new_packet_count != rule_map.get(PACKET_COUNT, 0):
 
-            rule_map[PACKET_COUNT] = new_packet_count
-
-            if new_packet_count != last_packet_count:
-                rule_map[INTERVAL_PACKET_COUNT] = last_interval_count + 1
+                rule_map[PACKET_COUNT] = new_packet_count
+                rule_map[INTERVAL_PACKET_COUNT] = rule_map.get(INTERVAL_PACKET_COUNT, 0) + 1
                 rule_map[INTERVAL_PACKET_COUNT_LAST_CHANGE] = time.time()
 
                 if acl_type == PORT_ACLS:
@@ -250,7 +247,7 @@ class FaucetStateCollector:
                             'interval_packet_count', rule_map[INTERVAL_PACKET_COUNT],
                             [mac, rule_config.get('description')])
                     else:
-                        LOGGER.DEBUG(
+                        LOGGER.debug(
                             'No learned MAC or rule configuration for switch %s, port %s '
                             'and cookie %s: %s', switch_name, count_id, cookie_num, mac)
 
@@ -810,11 +807,10 @@ class FaucetStateCollector:
                 switch_packet_state = self.packet_counts.get(acl_type, {}).get(switch_name, {})
                 rule_packet_state = switch_packet_state.get(count_id, {}).get(cookie_num)
                 if not rule_packet_state:
-                    count_type = 'port' if acl_type == PORT_ACLS else 'vlan'
                     LOGGER.debug(
                         'No packet counts data available for switch, %s, ACL and rule:'
-                        '%s, %s, %s ,%s', count_type, switch_name, count_id, acl_config._id,
-                        cookie_num)
+                        '%s, %s, %s ,%s', 'port' if acl_type == PORT_ACLS else 'vlan',
+                        switch_name, count_id, acl_config._id, cookie_num)
                     continue
 
                 rule_map['packet_count'] = rule_packet_state.get(PACKET_COUNT)
