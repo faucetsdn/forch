@@ -1,4 +1,4 @@
-0af4be6bb4ceaaca9c3ba8cb5990bb927a3bc9ee  proto/acl_state.proto
+0d12616fefe2158ae3817e46d2575e6ad8e940f0  proto/acl_state.proto
 d009be3222bf49d92acb0d8439beb9c05bc225be  proto/authentication.proto
 aab2863d4ab506ff4790df644cfcf8f4f70e97bc  proto/building_schema.proto
 a25e80c06dc7630cf1babf5161feb3e43aa90181  proto/cpn_config.proto

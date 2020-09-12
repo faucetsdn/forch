@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x1b\x66orch/proto/acl_state.proto\"t\n\x08\x41\x43LState\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x05rules\x18\x02 \x03(\x0b\x32\x13.ACLState.RuleState\x1a\x36\n\tRuleState\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x14\n\x0cpacket_count\x18\x03 \x01(\x05\x62\x06proto3'
+  serialized_pb=b'\n\x1b\x66orch/proto/acl_state.proto\"\xbf\x01\n\x08\x41\x43LState\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x05rules\x18\x02 \x03(\x0b\x32\x13.ACLState.RuleState\x1a\x80\x01\n\tRuleState\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x14\n\x0cpacket_count\x18\x03 \x01(\x05\x12\x1d\n\x15interval_packet_count\x18\x04 \x01(\x05\x12)\n!interval_packet_count_last_change\x18\x05 \x01(\tb\x06proto3'
 )
 
 
@@ -45,6 +45,20 @@ _ACLSTATE_RULESTATE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='interval_packet_count', full_name='ACLState.RuleState.interval_packet_count', index=2,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='interval_packet_count_last_change', full_name='ACLState.RuleState.interval_packet_count_last_change', index=3,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -57,8 +71,8 @@ _ACLSTATE_RULESTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=93,
-  serialized_end=147,
+  serialized_start=95,
+  serialized_end=223,
 )
 
 _ACLSTATE = _descriptor.Descriptor(
@@ -94,8 +108,8 @@ _ACLSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31,
-  serialized_end=147,
+  serialized_start=32,
+  serialized_end=223,
 )
 
 _ACLSTATE_RULESTATE.containing_type = _ACLSTATE
