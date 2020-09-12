@@ -57,6 +57,7 @@ function test_dva {
     jq '.vlans."400".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."500".packet_rate_state' $api_result | tee -a $TEST_RESULTS
     jq '.vlans."4096".packet_rate_state' $api_result | tee -a $TEST_RESULTS
+    jq '.vlans."100".acls[0].rules[0].interval_packet_count' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/switch_state.json
     echo "@switch_state $fdesc" | tee -a $TEST_RESULTS
@@ -68,6 +69,7 @@ function test_dva {
     jq '.switches."nz-kiwi-t2sw3".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].interval_packet_count' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/list_hosts.json
     echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
@@ -80,6 +82,7 @@ function test_dva {
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.segment' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.role' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:03".acls[0].rules[0].interval_packet_count' $api_result | tee -a $TEST_RESULTS
 }
 
 function test_forch_varz {
@@ -134,5 +137,6 @@ test_access vlan-assigned
 test_dva vlan-assigned
 test_forch_varz vlan-assigned
 
+# cleanup
 kill $send_pid
 stop_and_cleanup_radius
