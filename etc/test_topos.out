@@ -6,34 +6,50 @@ Radius results 1 0
 Starting counting-initial tests
 "allow ICMP"
 0
+0
 "arp"
+0
 0
 "allow ICMP"
 0
+0
 "arp"
+0
 0
 "allow ICMP"
 0
+0
 "arp"
+0
 0
 "deny ICMP"
 0
+0
 "arp"
+0
 0
 Starting counting-basic tests
 "allow ICMP"
 5
+1
 "arp"
 3
+1
 "allow ICMP"
+0
 0
 "arp"
 6
+1
 "allow ICMP"
 5
+2
 "arp"
+2
 2
 "deny ICMP"
 5
+1
 "arp"
+1
 1
