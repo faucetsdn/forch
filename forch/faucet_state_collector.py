@@ -208,10 +208,12 @@ class FaucetStateCollector:
             self._forch_metrics.update_var(
                 'dataplane_packet_rate_state_vlan', rate_state, labels=[vlan_id])
 
-    def _update_acl_count_states(self, packet_count_metrics, metric_name, acl_type):
+    def _update_acl_count_states(self, packet_count_metrics, acl_type):
         """Evaluate packet count change for each ACL rule"""
+        metric_name = (PORT_ACL_PACKET_COUNT_METRIC if acl_type == PORT_ACLS
+                       else VLAN_ACL_PACKET_COUNT_METRIC)
         if metric_name not in packet_count_metrics:
-            LOGGER.warning('No %s metric available', metric_name)
+            LOGGER.debug('No %s metric available', metric_name)
             return
 
         for sample in packet_count_metrics[metric_name].samples:
@@ -256,8 +258,8 @@ class FaucetStateCollector:
             if self._packet_per_sec_thresholds:
                 self._update_vlan_count_states(metrics, interval)
             if self._is_faucetizer_enabled:
-                self._update_acl_count_states(metrics, PORT_ACL_PACKET_COUNT_METRIC, PORT_ACLS)
-                self._update_acl_count_states(metrics, VLAN_ACL_PACKET_COUNT_METRIC, VLAN_ACLS)
+                self._update_acl_count_states(metrics, PORT_ACLS)
+                self._update_acl_count_states(metrics, VLAN_ACLS)
 
     def _make_summary(self, state, detail):
         summary = StateSummary()
