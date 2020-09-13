@@ -1,16 +1,13 @@
 """Module for managing orchestrator device topologies"""
 
-import logging
 import os
 import sys
 
-from forch.utils import configure_logging
-
-from forch.utils import yaml_proto
+from forch.utils import get_logger, yaml_proto
 
 from forch.proto.building_schema_pb2 import BuildingSchema
 
-LOGGER = logging.getLogger('topology')
+LOGGER = get_logger('topology')
 
 
 def load_devices():
@@ -26,5 +23,4 @@ def load_devices():
 
 
 if __name__ == '__main__':
-    configure_logging()
     load_devices()

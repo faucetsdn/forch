@@ -1,13 +1,13 @@
 """Module for proxy server to aggregate and serve data"""
 
 import functools
-import logging
 import threading
 import requests
 
-import forch.http_server
+from forch.http_server import HttpServer
+from forch.utils import get_logger
 
-LOGGER = logging.getLogger('proxy')
+LOGGER = get_logger('proxy')
 DEFAULT_PROXY_PORT = 8080
 LOCALHOST = '0.0.0.0'
 
@@ -24,7 +24,7 @@ class ForchProxy():
     def start(self):
         """Start proxy server"""
         self._register_pages()
-        self._proxy_server = forch.http_server.HttpServer(self._proxy_port)
+        self._proxy_server = HttpServer(self._proxy_port)
         try:
             self._proxy_server.map_request('', self._get_path_data)
         except Exception as e:

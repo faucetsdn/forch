@@ -2,21 +2,19 @@
 
 import argparse
 import copy
-import logging
 import os
 import sys
 import threading
 import yaml
 
-from forch.utils import configure_logging
-from forch.utils import yaml_proto
+from forch.utils import get_logger, yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.shared_constants_pb2 import DVAState, PortType
 
-LOGGER = logging.getLogger('faucetizer')
+LOGGER = get_logger('faucetizer')
 
 INCLUDE_FILE_SUFFIX = '_augmented'
 TESTING_PORT_IDENTIFIER_DEFAULT = 'TESTING'
@@ -444,7 +442,6 @@ def parse_args(raw_args):
 
 
 if __name__ == '__main__':
-    configure_logging()
     FORCH_BASE_DIR = os.getenv('FORCH_CONFIG_DIR')
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
     ARGS = parse_args(sys.argv[1:])

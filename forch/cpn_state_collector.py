@@ -1,24 +1,20 @@
 """Collecting the state of CPN components"""
 
 from datetime import datetime
-import logging
 import os
 import os.path
 import re
 import threading
+
+from forch.ping_manager import PingManager
+from forch.utils import dict_proto, get_logger, proto_dict, yaml_proto
 
 from forch.proto.cpn_config_pb2 import CpnConfig
 from forch.proto.cpn_state_pb2 import CpnState
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 
-import forch.ping_manager
-
-from forch.utils import yaml_proto
-from forch.utils import proto_dict
-from forch.utils import dict_proto
-
-LOGGER = logging.getLogger('cstate')
+LOGGER = get_logger('cstate')
 
 KEY_NODE_ATTRIBUTES = 'attributes'
 KEY_NODE_PING_RES = 'ping_results'
@@ -37,6 +33,7 @@ PING_SUMMARY_REGEX = {'transmitted': r'\d+(?= packets transmitted)',
                       'received': r'\d+(?= received)',
                       'loss_percentage': r'\d+(?=% packet loss)',
                       'time_ms': r'(?<=time )\d+(?=ms)'}
+
 
 class CPNStateCollector:
     """Processing and storing CPN components states"""
@@ -66,7 +63,7 @@ class CPNStateCollector:
             if not self._hosts_ip:
                 raise Exception('No CPN components defined in file')
 
-            self._ping_manager = forch.ping_manager.PingManager(self._hosts_ip, ping_interval)
+            self._ping_manager = PingManager(self._hosts_ip, ping_interval)
             self._update_cpn_state(current_time, State.initializing, "Initializing")
         except Exception as e:
             LOGGER.error('Could not load config file: %s', e)
