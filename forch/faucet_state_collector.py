@@ -174,7 +174,7 @@ class FaucetStateCollector:
 
     def _update_vlan_count_states(self, packet_count_metrics, interval):
         if VLAN_PACKET_COUNT_METRIC not in packet_count_metrics:
-            logging.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
+            LOGGER.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
             return
 
         vlan_count_metric = packet_count_metrics[VLAN_PACKET_COUNT_METRIC]
@@ -211,7 +211,7 @@ class FaucetStateCollector:
     def _update_acl_count_states(self, packet_count_metrics, metric_name, acl_type):
         """Evaluate packet count change for each ACL rule"""
         if metric_name not in packet_count_metrics:
-            logging.warning('No %s metric available', metric_name)
+            LOGGER.warning('No %s metric available', metric_name)
             return
 
         for sample in packet_count_metrics[metric_name].samples:
