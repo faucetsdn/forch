@@ -30,7 +30,7 @@ function test_counting {
     done
 
     metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
-    grep 'interval_packet_count' <<< $metrics | grep '9a:02:57:1e:8f:01' | grep 'allow ICMP' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'interval_packet_count' <<< $metrics | grep '9a:02:57:1e:8f:01' | grep 'allow ICMP' | awk '{print $3}' | tee -a $TEST_RESULTS
 }
 
 echo Setting up stack and Forch...
@@ -40,9 +40,9 @@ sleep 20
 test_counting initial
 
 echo Generating ARP and ICMP traffic...
-docker exec forch-faux-1 ping -c 5 192.168.1.3 2>&1
-docker exec forch-faux-2 ping -c 5 192.168.1.3 2>&1
-docker exec forch-faux-4 ping -c 5 192.168.1.1 2>&1
+docker exec forch-faux-1 ping -c 3 192.168.1.3 2>&1
+docker exec forch-faux-2 ping -c 3 192.168.1.3 2>&1
+docker exec forch-faux-4 ping -c 3 192.168.1.1 2>&1
 sleep 20
 
 test_counting basic
