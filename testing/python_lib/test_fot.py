@@ -8,11 +8,11 @@ import yaml
 from forch.utils import dict_proto, proto_dict
 
 from forch.proto.device_testing_state_pb2 import DeviceTestingState
-from forch.proto.shared_constants_pb2 import Empty, TestingState
+from forch.proto.shared_constants_pb2 import Empty, PortBehavior
 
 from integration_base import IntegrationTestBase, logger
 from unit_base import (
-    DeviceTestingServerTestBase, FaucetizerTestBase, PortsTestingStateManagerTestBase
+    DeviceTestingServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
 )
 
 
@@ -137,7 +137,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
         self.assertEqual(sorted_received_states, sorted_expected_states)
 
 
-class FOTPortsTestingStatesTestCase(PortsTestingStateManagerTestBase):
+class FotPortStatesTestCase(PortsStateManagerTestBase):
     """Test access port testing states"""
 
     def __init__(self, *args, **kwargs):
@@ -148,31 +148,31 @@ class FOTPortsTestingStatesTestCase(PortsTestingStateManagerTestBase):
         cleared_devices = ['00:0X:00:00:00:01', '00:0Y:00:00:00:02']
         authenticated_devices = ['00:0X:00:00:00:01', '00:0Z:00:00:00:03', '00:0A:00:00:00:04']
         testing_results = [
-            {'mac': '00:0X:00:00:00:01', 'testing_state': 'failed'},
-            {'mac': '00:0Y:00:00:00:02', 'testing_state': 'passed'},
-            {'mac': '00:0Z:00:00:00:03', 'testing_state': 'failed'},
-            {'mac': '00:0A:00:00:00:04', 'testing_state': 'passed'}
+            {'mac': '00:0X:00:00:00:01', 'port_behavior': 'failed'},
+            {'mac': '00:0Y:00:00:00:02', 'port_behavior': 'passed'},
+            {'mac': '00:0Z:00:00:00:03', 'port_behavior': 'failed'},
+            {'mac': '00:0A:00:00:00:04', 'port_behavior': 'passed'}
         ]
 
         # load static testing states
         for mac in cleared_devices:
-            self._ports_testing_state_manager.process_static_testing_state(
-                mac, TestingState.cleared)
+            self._port_state_manager.process_static_port_behavior(
+                mac, PortBehavior.cleared)
 
         # devices are authenticated
         for mac in authenticated_devices:
-            self._ports_testing_state_manager.handle_authenticated_device(mac)
+            self._port_state_manager.handle_authenticated_device(mac)
 
         expected_states = {
             '00:0X:00:00:00:01': self.OPERATIONAL,
             '00:0Z:00:00:00:03': self.SEQUESTERED,
             '00:0A:00:00:00:04': self.SEQUESTERED
         }
-        self._verify_ports_testing_states(expected_states)
+        self._verify_ports_states(expected_states)
 
         # received testing results for devices
         for testing_result in testing_results:
-            self._ports_testing_state_manager.handle_testing_result(
+            self._port_state_manager.handle_testing_result(
                 dict_proto(testing_result, DeviceTestingState))
 
         expected_states = {
@@ -180,7 +180,7 @@ class FOTPortsTestingStatesTestCase(PortsTestingStateManagerTestBase):
             '00:0Z:00:00:00:03': self.INFRACTED,
             '00:0A:00:00:00:04': self.OPERATIONAL
         }
-        self._verify_ports_testing_states(expected_states)
+        self._verify_ports_states(expected_states)
 
 
 if __name__ == '__main__':

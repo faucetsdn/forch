@@ -9,7 +9,7 @@ import yaml
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
-from forch.ports_testing_states_manager import PortsTestingStatesManager
+from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
@@ -285,7 +285,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
                                                             is_faucetizer_enabled=False)
 
 
-class PortsTestingStateManagerTestBase(UnitTestBase):
+class PortsStateManagerTestBase(UnitTestBase):
     """Base class for PortsTestingStateManager"""
 
     AUTHENTICATED = 'authenticated'
@@ -295,10 +295,10 @@ class PortsTestingStateManagerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._ports_testing_state_manager = PortsTestingStatesManager()
+        self._port_state_manager = PortStateManager()
 
-    def _verify_ports_testing_states(self, expected_states):
+    def _verify_ports_states(self, expected_states):
         ports_states = {
             mac: ptsm.get_current_state()
-            for (mac, ptsm) in self._ports_testing_state_manager._state_machines.items()}
+            for (mac, ptsm) in self._port_state_manager._state_machines.items()}
         self.assertEqual(ports_states, expected_states)

@@ -138,10 +138,10 @@ message PortType {
 }
 
 /*
- * Testing state of a device
+ * Port behaviors
  */
-message TestingState {
-  enum State {
+message PortBehavior {
+  enum Behavior {
     // unknown
     unknown = 0;
 

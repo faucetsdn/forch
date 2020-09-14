@@ -3,7 +3,7 @@
 import logging
 import threading
 
-from forch.proto.shared_constants_pb2 import TestingState
+from forch.proto.shared_constants_pb2 import PortBehavior
 
 
 LOGGER = logging.getLogger('portsm')
@@ -17,7 +17,7 @@ def _register_state_handler(state_name):
     return register
 
 
-class PortTestingStateMachine:
+class PortStateMachine:
     """State machine class that manages testing states of an access port"""
 
     AUTHENTICATED = 'authenticated'
@@ -27,12 +27,12 @@ class PortTestingStateMachine:
 
     TRANSITIONS = {
         AUTHENTICATED: {
-            TestingState.cleared: OPERATIONAL,
-            TestingState.sequestered: SEQUESTERED,
+            PortBehavior.cleared: OPERATIONAL,
+            PortBehavior.sequestered: SEQUESTERED,
         },
         SEQUESTERED: {
-            TestingState.passed: OPERATIONAL,
-            TestingState.failed: INFRACTED,
+            PortBehavior.passed: OPERATIONAL,
+            PortBehavior.failed: INFRACTED,
         },
     }
 
@@ -40,21 +40,21 @@ class PortTestingStateMachine:
         self._mac = mac
         self._current_state = initial_state
 
-    def handle_testing_state_event(self, testing_state):
+    def handle_port_behavior(self, port_behavior):
         """Handle testing state event"""
-        to_state = self.TRANSITIONS.get(self._current_state, {}).get(testing_state, {})
+        next_state = self.TRANSITIONS.get(self._current_state, {}).get(port_behavior, {})
 
-        if not to_state:
+        if not next_state:
             LOGGER.warning(
-                'Cannot find next state for device %s in state %s for testing_state %s',
-                self._mac, self._current_state, testing_state)
+                'Cannot find next state for device %s in state %s for port behavior %s',
+                self._mac, self._current_state, port_behavior)
             return
 
         LOGGER.info(
             'Device %s is entering %s state from %s state',
-            self._mac, to_state, self._current_state)
+            self._mac, next_state, self._current_state)
 
-        self._current_state = to_state
+        self._current_state = next_state
         self._handle_current_state()
 
     def get_current_state(self):
@@ -78,26 +78,26 @@ class PortTestingStateMachine:
         LOGGER.info('Handling operational state for device %s', self._mac)
 
 
-class PortsTestingStatesManager:
-    """Manages the testing states of the access ports"""
+class PortStateManager:
+    """Manages the states of the access ports for orchestrated testing"""
     def __init__(self):
         self._state_machines = {}
-        self._static_testing_states = {}
+        self._static_port_behaviors = {}
         self._lock = threading.Lock()
 
-    def process_static_testing_state(self, mac, testing_state):
+    def process_static_port_behavior(self, mac, port_behavior):
         """Add static testing state for a device"""
-        self._static_testing_states[mac] = testing_state
+        self._static_port_behaviors[mac] = port_behavior
 
     def handle_authenticated_device(self, mac):
         """initialize or update the state machine for an authenticated device"""
         with self._lock:
             state_machine = self._state_machines.setdefault(
-                mac, PortTestingStateMachine(mac, PortTestingStateMachine.AUTHENTICATED))
-            static_testing_state = self._static_testing_states.get(mac)
-            state_machine.handle_testing_state_event(
-                TestingState.cleared if static_testing_state == TestingState.cleared
-                else TestingState.sequestered)
+                mac, PortStateMachine(mac, PortStateMachine.AUTHENTICATED))
+            static_port_behavior = self._static_port_behaviors.get(mac)
+            state_machine.handle_port_behavior(
+                PortBehavior.cleared if static_port_behavior == PortBehavior.cleared
+                else PortBehavior.sequestered)
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
@@ -108,4 +108,4 @@ class PortsTestingStatesManager:
                     'No state machine defined for device %s before receiving testing result',
                     testing_result.mac)
                 return
-            state_machine.handle_testing_state_event(testing_result.testing_state)
+            state_machine.handle_port_behavior(testing_result.port_behavior)
