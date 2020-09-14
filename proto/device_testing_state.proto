@@ -8,5 +8,5 @@ import "forch/proto/shared_constants.proto";
 
 message DeviceTestingState {
     string mac = 1;
-    PortBehavior.Behavior testing_state = 2;
+    PortBehavior.Behavior port_behavior = 2;
 }
