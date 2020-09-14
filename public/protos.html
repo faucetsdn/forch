@@ -729,15 +729,15 @@
                 </li>
               
                 <li>
+                  <a href="#PortBehavior"><span class="badge">M</span>PortBehavior</a>
+                </li>
+              
+                <li>
                   <a href="#PortType"><span class="badge">M</span>PortType</a>
                 </li>
               
                 <li>
                   <a href="#State"><span class="badge">M</span>State</a>
-                </li>
-              
-                <li>
-                  <a href="#TestingState"><span class="badge">M</span>TestingState</a>
                 </li>
               
               
@@ -754,15 +754,15 @@
                 </li>
               
                 <li>
+                  <a href="#PortBehavior.Behavior"><span class="badge">E</span>PortBehavior.Behavior</a>
+                </li>
+              
+                <li>
                   <a href="#PortType.Type"><span class="badge">E</span>PortType.Type</a>
                 </li>
               
                 <li>
                   <a href="#State.State"><span class="badge">E</span>State.State</a>
-                </li>
-              
-                <li>
-                  <a href="#TestingState.State"><span class="badge">E</span>TestingState.State</a>
                 </li>
               
               
@@ -2109,8 +2109,8 @@
                 </tr>
               
                 <tr>
-                  <td>testing_state</td>
-                  <td><a href="#TestingState.State">TestingState.State</a></td>
+                  <td>port_behavior</td>
+                  <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -4844,6 +4844,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="PortBehavior">PortBehavior</h3>
+        <p>Port behaviors</p>
+
+        
+
+        
+      
         <h3 id="PortType">PortType</h3>
         <p>Port types</p>
 
@@ -4853,13 +4860,6 @@ or to host_path API to list path </p></td>
       
         <h3 id="State">State</h3>
         <p>States</p>
-
-        
-
-        
-      
-        <h3 id="TestingState">TestingState</h3>
-        <p>Testing state of a device</p>
 
         
 
@@ -4990,6 +4990,53 @@ or to host_path API to list path </p></td>
           </tbody>
         </table>
       
+        <h3 id="PortBehavior.Behavior">PortBehavior.Behavior</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>unknown</td>
+                <td>0</td>
+                <td><p>unknown</p></td>
+              </tr>
+            
+              <tr>
+                <td>authenticated</td>
+                <td>1</td>
+                <td><p>authenticated</p></td>
+              </tr>
+            
+              <tr>
+                <td>cleared</td>
+                <td>2</td>
+                <td><p>cleared</p></td>
+              </tr>
+            
+              <tr>
+                <td>sequestered</td>
+                <td>3</td>
+                <td><p>sequestered</p></td>
+              </tr>
+            
+              <tr>
+                <td>passed</td>
+                <td>4</td>
+                <td><p>passed testing</p></td>
+              </tr>
+            
+              <tr>
+                <td>failed</td>
+                <td>5</td>
+                <td><p>failed testing</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
         <h3 id="PortType.Type">PortType.Type</h3>
         <p></p>
         <table class="enum-table">
@@ -5091,53 +5138,6 @@ or to host_path API to list path </p></td>
                 <td>up</td>
                 <td>9</td>
                 <td><p>up: up but not in function</p></td>
-              </tr>
-            
-          </tbody>
-        </table>
-      
-        <h3 id="TestingState.State">TestingState.State</h3>
-        <p></p>
-        <table class="enum-table">
-          <thead>
-            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
-          </thead>
-          <tbody>
-            
-              <tr>
-                <td>unknown</td>
-                <td>0</td>
-                <td><p>unknown</p></td>
-              </tr>
-            
-              <tr>
-                <td>authenticated</td>
-                <td>1</td>
-                <td><p>authenticated</p></td>
-              </tr>
-            
-              <tr>
-                <td>cleared</td>
-                <td>2</td>
-                <td><p>cleared</p></td>
-              </tr>
-            
-              <tr>
-                <td>sequestered</td>
-                <td>3</td>
-                <td><p>sequestered</p></td>
-              </tr>
-            
-              <tr>
-                <td>passed</td>
-                <td>4</td>
-                <td><p>passed testing</p></td>
-              </tr>
-            
-              <tr>
-                <td>failed</td>
-                <td>5</td>
-                <td><p>failed testing</p></td>
               </tr>
             
           </tbody>
