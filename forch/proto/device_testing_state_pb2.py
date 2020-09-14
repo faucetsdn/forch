@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n&forch/proto/device_testing_state.proto\x1a\"forch/proto/shared_constants.proto\"M\n\x12\x44\x65viceTestingState\x12\x0b\n\x03mac\x18\x01 \x01(\t\x12*\n\rtesting_state\x18\x02 \x01(\x0e\x32\x13.TestingState.Stateb\x06proto3'
+  serialized_pb=b'\n&forch/proto/device_testing_state.proto\x1a\"forch/proto/shared_constants.proto\"P\n\x12\x44\x65viceTestingState\x12\x0b\n\x03mac\x18\x01 \x01(\t\x12-\n\rport_behavior\x18\x02 \x01(\x0e\x32\x16.PortBehavior.Behaviorb\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -41,7 +41,7 @@ _DEVICETESTINGSTATE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='testing_state', full_name='DeviceTestingState.testing_state', index=1,
+      name='port_behavior', full_name='DeviceTestingState.port_behavior', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -60,10 +60,10 @@ _DEVICETESTINGSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=78,
-  serialized_end=155,
+  serialized_end=158,
 )
 
-_DEVICETESTINGSTATE.fields_by_name['testing_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._TESTINGSTATE_STATE
+_DEVICETESTINGSTATE.fields_by_name['port_behavior'].enum_type = forch_dot_proto_dot_shared__constants__pb2._PORTBEHAVIOR_BEHAVIOR
 DESCRIPTOR.message_types_by_name['DeviceTestingState'] = _DEVICETESTINGSTATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

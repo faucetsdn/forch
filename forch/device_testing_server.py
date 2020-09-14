@@ -32,7 +32,7 @@ class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
         self._on_receiving_result(request)
 
         LOGGER.info(
-            'Received testing state: %s, %s', request.mac, request.testing_state)
+            'Received testing state: %s, %s', request.mac, request.port_behavior)
 
         return Empty()
 

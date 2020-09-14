@@ -9,6 +9,7 @@ import yaml
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
@@ -282,3 +283,22 @@ class FaucetStateCollectorTestBase(UnitTestBase):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
         self._faucet_state_collector = FaucetStateCollector(forch_config,
                                                             is_faucetizer_enabled=False)
+
+
+class PortsStateManagerTestBase(UnitTestBase):
+    """Base class for PortsTestingStateManager"""
+
+    AUTHENTICATED = 'authenticated'
+    SEQUESTERED = 'sequestered'
+    OPERATIONAL = 'operational'
+    INFRACTED = 'infracted'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._port_state_manager = PortStateManager()
+
+    def _verify_ports_states(self, expected_states):
+        ports_states = {
+            mac: ptsm.get_current_state()
+            for (mac, ptsm) in self._port_state_manager._state_machines.items()}
+        self.assertEqual(ports_states, expected_states)
