@@ -114,11 +114,11 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
     def test_receiving_device_testing_states(self):
         """Test behavior of the behavior when client sends device testing states"""
         expected_testing_states = [
-            {'mac': '00:0X:00:00:00:01', 'testing_state': 'unknown'},
-            {'mac': '00:0Y:00:00:00:02', 'testing_state': 'passed'},
-            {'mac': '00:0Z:00:00:00:03', 'testing_state': 'cleared'},
-            {'mac': '00:0A:00:00:00:04', 'testing_state': 'passed'},
-            {'mac': '00:0B:00:00:00:05', 'testing_state': 'unknown'}
+            {'mac': '00:0X:00:00:00:01', 'port_behavior': 'unknown'},
+            {'mac': '00:0Y:00:00:00:02', 'port_behavior': 'passed'},
+            {'mac': '00:0Z:00:00:00:03', 'port_behavior': 'cleared'},
+            {'mac': '00:0A:00:00:00:04', 'port_behavior': 'passed'},
+            {'mac': '00:0B:00:00:00:05', 'port_behavior': 'unknown'}
         ]
 
         future_responses = []
