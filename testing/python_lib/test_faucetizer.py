@@ -331,7 +331,7 @@ class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
         self._update_port_config(
             expected_config, switch='t2sw1', port=2, vlan=300, role='green', tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw2', port=1, vlan=400, tail_acl='tail_acl')
+            expected_config, switch='t2sw2', port=1, vlan=200, tail_acl='tail_acl')
         self._update_port_config(
             expected_config, switch='t2sw2', port=2, vlan=100, tail_acl='tail_acl')
         self._verify_behavioral_config(expected_config)
