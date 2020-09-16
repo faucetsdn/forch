@@ -15,12 +15,14 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
+from forch.device_testing_server import DeviceTestingServer
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
 from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
+from forch.port_state_manager import PortStateManager
 import forch.varz_state_collector as varz_state_collector
 from forch.utils import get_logger, proto_dict, yaml_proto
 
@@ -94,6 +96,8 @@ class Forchestrator:
         self._config_file_watcher = None
         self._faucet_state_scheduler = None
         self._gauge_metrics_scheduler = None
+        self._device_testing_server = None
+        self._port_state_manager = None
 
         self._initialized = False
         self._active_state = State.initializing
@@ -155,6 +159,13 @@ class Forchestrator:
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
+        self._port_state_manager = PortStateManager(
+            self._process_device_behavior, self._config.orchestration.fot_config.testing_segment)
+        testing_segment, testing_server_port = self._calculate_fot_config()
+        if testing_segment:
+            self._device_testing_server = DeviceTestingServer(
+                self._port_state_manager.handle_testing_result, testing_server_port)
+
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
         self._process_static_device_behavior()
@@ -213,11 +224,11 @@ class Forchestrator:
             behaviors_file_path, self._reload_static_device_behavior)
 
     def _reload_static_device_behavior(self, file_path):
-        if self._faucetizer:
-            self._faucetizer.clear_static_behaviors()
+        self._port_state_manager.clear_static_device_behaviors()
+
         devices_state = yaml_proto(file_path, DevicesState)
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
-            self._process_device_behavior(mac, device_behavior, static=True)
+            self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
@@ -251,6 +262,12 @@ class Forchestrator:
             return True
 
         return False
+
+    def _calculate_fot_config(self):
+        fot_config = self._config.orchestration.fot_config
+        testing_segment = fot_config.testing_segment
+        testing_server_port = fot_config.testing_server_port
+        return testing_segment, testing_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
@@ -319,14 +336,13 @@ class Forchestrator:
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
         """Function interface of processing device behavior"""
-        if self._faucetizer:
-            self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
+        self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         self._faucet_collector.update_radius_result(mac, access, segment, role)
         device_behavior = DeviceBehavior(segment=segment, role=role)
-        self._process_device_behavior(mac, device_behavior)
+        self._port_state_manager.handle_authenticated_device(mac, device_behavior, static=False)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector

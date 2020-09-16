@@ -18,6 +18,10 @@ LOGGER = get_logger('faucetizer')
 
 INCLUDE_FILE_SUFFIX = '_augmented'
 TESTING_PORT_IDENTIFIER_DEFAULT = 'TESTING'
+BEHAVIOR = 'behavior'
+TYPE = 'type'
+STATIC = 'static'
+DYNAMIC = 'dynamic'
 
 
 class Faucetizer:
@@ -27,6 +31,7 @@ class Faucetizer:
                  reregister_include_file_handlers=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
+        self._device_behaviors = {}
         self._testing_device_vlans = {}
         self._acl_configs = {}
         self._vlan_states = {}
@@ -74,20 +79,20 @@ class Faucetizer:
 
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
-        devices_state = self._static_devices if static else self._dynamic_devices
-        device_type = "static" if static else "dynamic"
         eth_src = eth_src.lower()
+        device_type = STATIC if static else DYNAMIC
 
         with self._lock:
-            device_behaviors = devices_state.device_mac_behaviors
             if behavior.segment:
-                device_behavior = device_behaviors.setdefault(eth_src, DeviceBehavior())
+                behavior_map = self._device_behaviors.setdefault(eth_src, {})
+                behavior_map[TYPE] = device_type
+                device_behavior = behavior_map.setdefault(BEHAVIOR, DeviceBehavior())
                 device_behavior.CopyFrom(behavior)
                 LOGGER.info(
                     'Received %s behavior: %s, %s, %s',
                     device_type, eth_src, device_behavior.segment, device_behavior.role)
             else:
-                removed = device_behaviors.pop(eth_src, None)
+                removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
                     LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
 
@@ -233,8 +238,8 @@ class Faucetizer:
 
         return vid
 
-    def _update_device_dva_state(self, device_mac, device_placement, device_behavior):
-        if device_mac in self._static_devices.device_mac_behaviors:
+    def _update_device_dva_state(self, device_placement, device_behavior, device_type):
+        if device_type == STATIC:
             dva_state = DVAState.static
         elif device_behavior.segment == self._config.fot_config.testing_segment:
             dva_state = DVAState.sequestered
@@ -270,10 +275,10 @@ class Faucetizer:
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
                              **self._static_devices.device_mac_placements}
-        device_behaviors = {**self._dynamic_devices.device_mac_behaviors,
-                            **self._static_devices.device_mac_behaviors}
         for mac, device_placement in device_placements.items():
-            device_behavior = device_behaviors.get(mac)
+            behavior_map = self._device_behaviors.get(mac, {})
+            device_behavior = behavior_map.get(BEHAVIOR)
+            device_type = behavior_map.get(TYPE)
             if not device_behavior:
                 continue
 
@@ -298,7 +303,7 @@ class Faucetizer:
                 else:
                     LOGGER.error('No ACL defined for role %s', device_behavior.role)
 
-            self._update_device_dva_state(mac, device_placement, device_behavior)
+            self._update_device_dva_state(device_placement, device_behavior, device_type)
 
         self._finalize_host_ports_config(behavioral_faucet_config, testing_port_vlans)
 
