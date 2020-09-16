@@ -21,7 +21,7 @@ message DevicePlacement {
 message DeviceBehavior {
   string segment = 1;
   string role = 2;
-  PortBehavior isolation_behavior = 3;
+  PortBehavior.Behavior isolation_behavior = 3;
 }
 
 message SegmentsToVlans {

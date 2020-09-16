@@ -104,9 +104,15 @@ class PortStateManager:
             self._static_port_behaviors[mac] = isolation_behavior
 
         if device_behavior.segment:
-            self.handle_authenticated_device(mac, device_behavior, static=True)
+            self.handle_auth_result(mac, device_behavior, static=True)
 
-    def handle_authenticated_device(self, mac, device_behavior, static=False):
+    def handle_auth_result(self, mac, device_behavior, static=False):
+        if device_behavior.segment:
+            self._handle_authenticated_device(mac, device_behavior, static)
+        else:
+            self._handle_unauthenticated_device(mac)
+
+    def _handle_authenticated_device(self, mac, device_behavior, static=False):
         """Initialize or update the state machine for an authenticated device"""
         with self._lock:
             device_behaviors = (
@@ -119,18 +125,21 @@ class PortStateManager:
             else:
                 port_behavior = PortBehavior.sequestered
 
-            state_machine = self._state_machines.setdefault(
-                mac, PortStateMachine(mac, PortStateMachine.AUTHENTICATED))
+            new_state_machine = PortStateMachine(
+                mac, PortStateMachine.AUTHENTICATED, self._set_port_sequestered,
+                self._set_port_operational)
+            state_machine = self._state_machines.setdefault(mac, new_state_machine)
             state_machine.handle_port_behavior(port_behavior)
 
-    def handle_unauthenticated_device(self, mac):
+    def _handle_unauthenticated_device(self, mac):
         """Handle an unauthenticated device"""
         with self._lock:
-            if mac in self._state_machines:
-                self._state_machines.pop(mac)
+            try:
                 self._dynamic_device_behaviors.pop(mac)
-            else:
-                LOGGER.warning('Port state machine does not exist for device %s', mac)
+                self._state_machines.pop(mac)
+                self._process_device_behavior(mac, DeviceBehavior(), static=False)
+            except KeyError as error:
+                LOGGER.warning('MAC %s does not exist: %s', mac, error)
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
@@ -143,12 +152,12 @@ class PortStateManager:
                 return
             state_machine.handle_port_behavior(testing_result.port_behavior)
 
-    def set_port_sequestered(self, mac):
+    def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
         device_behavior = DeviceBehavior(segment=self._testing_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
 
-    def set_port_operational(self, mac):
+    def _set_port_operational(self, mac):
         """Set port to operation vlan"""
         device_behavior = (
                 self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
