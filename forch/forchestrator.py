@@ -144,6 +144,8 @@ class Forchestrator:
         gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_GAUGE_PROM_PORT_DEFAULT))
         self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
 
+        self._initialize_orchestration()
+
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
             self._config.event_client)
@@ -151,6 +153,26 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
+
+        if str(self._config.proxy_server):
+            self._proxy = ForchProxy(self._config.proxy_server)
+            self._proxy.start()
+
+        self._validate_config_files()
+
+        while True:
+            time.sleep(10)
+            try:
+                self._get_varz_config()
+                break
+            except Exception as e:
+                LOGGER.error('Waiting for varz config: %s', e)
+
+        self._register_handlers()
+        self.start()
+        self._initialized = True
+
+    def _initialize_orchestration(self):
         if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
@@ -171,23 +193,6 @@ class Forchestrator:
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
-        if str(self._config.proxy_server):
-            self._proxy = ForchProxy(self._config.proxy_server)
-            self._proxy.start()
-
-        self._validate_config_files()
-
-        while True:
-            time.sleep(10)
-            try:
-                self._get_varz_config()
-                break
-            except Exception as e:
-                LOGGER.error('Waiting for varz config: %s', e)
-
-        self._register_handlers()
-        self.start()
-        self._initialized = True
 
     def _attempt_authenticator_initialise(self):
         orch_config = self._config.orchestration

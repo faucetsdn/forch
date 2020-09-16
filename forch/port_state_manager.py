@@ -107,6 +107,7 @@ class PortStateManager:
             self.handle_auth_result(mac, device_behavior, static=True)
 
     def handle_auth_result(self, mac, device_behavior, static=False):
+        """Handle authentication result"""
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)
         else:
@@ -160,8 +161,9 @@ class PortStateManager:
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""
         device_behavior = (
-                self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
+            self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
         static = mac in self._static_device_behaviors
+        assert device_behavior
         self._process_device_behavior(mac, device_behavior, static=static)
 
     def clear_static_device_behaviors(self):
