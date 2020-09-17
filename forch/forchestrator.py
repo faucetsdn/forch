@@ -153,7 +153,6 @@ class Forchestrator:
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
-
         if str(self._config.proxy_server):
             self._proxy = ForchProxy(self._config.proxy_server)
             self._proxy.start()
@@ -443,6 +442,8 @@ class Forchestrator:
             self._gauge_metrics_scheduler.start()
         if self._metrics:
             self._metrics.update_var('forch_version', {'version': __version__})
+        if self._device_testing_server:
+            self._device_testing_server.start()
 
     def stop(self):
         """Stop forchestrator components"""
@@ -458,6 +459,8 @@ class Forchestrator:
             self._metrics.stop()
         if self._proxy:
             self._proxy.stop()
+        if self._device_testing_server:
+            self._device_testing_server.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers

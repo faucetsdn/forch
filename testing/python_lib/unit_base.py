@@ -248,7 +248,6 @@ class DeviceTestingServerTestBase(unittest.TestCase):
         """setup fixture for each test method"""
         channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
         self._client = DeviceTestingStub(channel)
-        print('Client initialized')
 
         self._server = DeviceTestingServer(
             self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)

@@ -175,7 +175,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
 
         # devices are authenticated
         for mac, device_behavior_map in authentication_results.items():
-            self._port_state_manager.handle_auth_result(
+            self._port_state_manager.handle_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
 
         expected_states = {
