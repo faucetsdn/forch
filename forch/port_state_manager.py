@@ -104,9 +104,9 @@ class PortStateManager:
             self._static_port_behaviors[mac] = isolation_behavior
 
         if device_behavior.segment:
-            self.handle_auth_result(mac, device_behavior, static=True)
+            self.handle_device_behavior(mac, device_behavior, static=True)
 
-    def handle_auth_result(self, mac, device_behavior, static=False):
+    def handle_device_behavior(self, mac, device_behavior, static=False):
         """Handle authentication result"""
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)

@@ -18,10 +18,10 @@ LOGGER = get_logger('faucetizer')
 
 INCLUDE_FILE_SUFFIX = '_augmented'
 TESTING_PORT_IDENTIFIER_DEFAULT = 'TESTING'
-BEHAVIOR = 'behavior'
-TYPE = 'type'
-STATIC = 'static'
-DYNAMIC = 'dynamic'
+DEVICE_BEHAVIOR = 'device_behavior'
+DEVICE_TYPE = 'device_type'
+STATIC_DEVICE = 'static'
+DYNAMIC_DEVICE = 'dynamic'
 
 
 class Faucetizer:
@@ -80,13 +80,13 @@ class Faucetizer:
     def process_device_behavior(self, eth_src, behavior, static=False):
         """Process device behavior"""
         eth_src = eth_src.lower()
-        device_type = STATIC if static else DYNAMIC
+        device_type = STATIC_DEVICE if static else DYNAMIC_DEVICE
 
         with self._lock:
             if behavior.segment:
                 behavior_map = self._device_behaviors.setdefault(eth_src, {})
-                behavior_map[TYPE] = device_type
-                device_behavior = behavior_map.setdefault(BEHAVIOR, DeviceBehavior())
+                behavior_map[DEVICE_TYPE] = device_type
+                device_behavior = behavior_map.setdefault(DEVICE_BEHAVIOR, DeviceBehavior())
                 device_behavior.CopyFrom(behavior)
                 LOGGER.info(
                     'Received %s behavior: %s, %s, %s',
@@ -239,7 +239,7 @@ class Faucetizer:
         return vid
 
     def _update_device_dva_state(self, device_placement, device_behavior, device_type):
-        if device_type == STATIC:
+        if device_type == STATIC_DEVICE:
             dva_state = DVAState.static
         elif device_behavior.segment == self._config.fot_config.testing_segment:
             dva_state = DVAState.sequestered
@@ -277,8 +277,8 @@ class Faucetizer:
                              **self._static_devices.device_mac_placements}
         for mac, device_placement in device_placements.items():
             behavior_map = self._device_behaviors.get(mac, {})
-            device_behavior = behavior_map.get(BEHAVIOR)
-            device_type = behavior_map.get(TYPE)
+            device_behavior = behavior_map.get(DEVICE_BEHAVIOR)
+            device_type = behavior_map.get(DEVICE_TYPE)
             if not device_behavior:
                 continue
 

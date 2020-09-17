@@ -210,7 +210,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
 
         # devices are unauthenticated
         for mac in unauthenticated_devices:
-            self._port_state_manager.handle_auth_result(mac, DeviceBehavior())
+            self._port_state_manager.handle_device_behavior(mac, DeviceBehavior())
 
         expected_states = {
             '00:0Z:00:00:00:03': self.INFRACTED
