@@ -329,6 +329,7 @@ class Faucetizer:
         new_gauge_file_path = os.path.join(self._faucet_config_dir, gauge_file_name)
         with open(new_gauge_file_path, 'w') as file:
             yaml.dump(gauge_config, file)
+            LOGGER.debug('Wrote Gauge configuration file to %s', new_gauge_file_path)
 
     def reload_include_file(self, file_path):
         """Reload include file"""
