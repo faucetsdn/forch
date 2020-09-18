@@ -11,6 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from forch.proto import shared_constants_pb2 as forch_dot_proto_dot_shared__constants__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -18,8 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x1f\x66orch/proto/devices_state.proto\"\xb4\x02\n\x0c\x44\x65vicesState\x12\x45\n\x15\x64\x65vice_mac_placements\x18\x01 \x03(\x0b\x32&.DevicesState.DeviceMacPlacementsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aL\n\x18\x44\x65viceMacPlacementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"P\n\x06\x44\x65vice\x12#\n\tplacement\x18\x01 \x01(\x0b\x32\x10.DevicePlacement\x12!\n\x08\x62\x65havior\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"/\n\x0e\x44\x65viceBehavior\x12\x0f\n\x07segment\x18\x01 \x01(\t\x12\x0c\n\x04role\x18\x02 \x01(\t\"\x8b\x01\n\x0fSegmentsToVlans\x12@\n\x11segments_to_vlans\x18\x01 \x03(\x0b\x32%.SegmentsToVlans.SegmentsToVlansEntry\x1a\x36\n\x14SegmentsToVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x62\x06proto3'
-)
+  serialized_pb=b'\n\x1f\x66orch/proto/devices_state.proto\x1a\"forch/proto/shared_constants.proto\"\xb4\x02\n\x0c\x44\x65vicesState\x12\x45\n\x15\x64\x65vice_mac_placements\x18\x01 \x03(\x0b\x32&.DevicesState.DeviceMacPlacementsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aL\n\x18\x44\x65viceMacPlacementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"P\n\x06\x44\x65vice\x12#\n\tplacement\x18\x01 \x01(\x0b\x32\x10.DevicePlacement\x12!\n\x08\x62\x65havior\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"c\n\x0e\x44\x65viceBehavior\x12\x0f\n\x07segment\x18\x01 \x01(\t\x12\x0c\n\x04role\x18\x02 \x01(\t\x12\x32\n\x12isolation_behavior\x18\x03 \x01(\x0e\x32\x16.PortBehavior.Behavior\"\x8b\x01\n\x0fSegmentsToVlans\x12@\n\x11segments_to_vlans\x18\x01 \x03(\x0b\x32%.SegmentsToVlans.SegmentsToVlansEntry\x1a\x36\n\x14SegmentsToVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x62\x06proto3'
+  ,
+  dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
 
 
@@ -57,8 +59,8 @@ _DEVICESSTATE_DEVICEMACPLACEMENTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=192,
-  serialized_end=268,
+  serialized_start=228,
+  serialized_end=304,
 )
 
 _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY = _descriptor.Descriptor(
@@ -94,8 +96,8 @@ _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=270,
-  serialized_end=344,
+  serialized_start=306,
+  serialized_end=380,
 )
 
 _DEVICESSTATE = _descriptor.Descriptor(
@@ -131,8 +133,8 @@ _DEVICESSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=36,
-  serialized_end=344,
+  serialized_start=72,
+  serialized_end=380,
 )
 
 
@@ -169,8 +171,8 @@ _DEVICE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=346,
-  serialized_end=426,
+  serialized_start=382,
+  serialized_end=462,
 )
 
 
@@ -214,8 +216,8 @@ _DEVICEPLACEMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=428,
-  serialized_end=494,
+  serialized_start=464,
+  serialized_end=530,
 )
 
 
@@ -240,6 +242,13 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='isolation_behavior', full_name='DeviceBehavior.isolation_behavior', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -252,8 +261,8 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=496,
-  serialized_end=543,
+  serialized_start=532,
+  serialized_end=631,
 )
 
 
@@ -290,8 +299,8 @@ _SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=631,
-  serialized_end=685,
+  serialized_start=719,
+  serialized_end=773,
 )
 
 _SEGMENTSTOVLANS = _descriptor.Descriptor(
@@ -320,8 +329,8 @@ _SEGMENTSTOVLANS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=546,
-  serialized_end=685,
+  serialized_start=634,
+  serialized_end=773,
 )
 
 _DEVICESSTATE_DEVICEMACPLACEMENTSENTRY.fields_by_name['value'].message_type = _DEVICEPLACEMENT
@@ -332,6 +341,7 @@ _DEVICESSTATE.fields_by_name['device_mac_placements'].message_type = _DEVICESSTA
 _DEVICESSTATE.fields_by_name['device_mac_behaviors'].message_type = _DEVICESSTATE_DEVICEMACBEHAVIORSENTRY
 _DEVICE.fields_by_name['placement'].message_type = _DEVICEPLACEMENT
 _DEVICE.fields_by_name['behavior'].message_type = _DEVICEBEHAVIOR
+_DEVICEBEHAVIOR.fields_by_name['isolation_behavior'].enum_type = forch_dot_proto_dot_shared__constants__pb2._PORTBEHAVIOR_BEHAVIOR
 _SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY.containing_type = _SEGMENTSTOVLANS
 _SEGMENTSTOVLANS.fields_by_name['segments_to_vlans'].message_type = _SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY
 DESCRIPTOR.message_types_by_name['DevicesState'] = _DEVICESSTATE

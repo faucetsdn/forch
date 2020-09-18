@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\"c\n\x08\x44VAState\"W\n\x05State\x12\x0b\n\x07initial\x10\x00\x12\x13\n\x0funauthenticated\x10\x01\x12\n\n\x06static\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\x0f\n\x0boperational\x10\x04\"a\n\x08LacpRole\"U\n\x08LacpRole\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x0e\n\nunselected\x10\x01\x12\x0c\n\x08selected\x10\x02\x12\x0b\n\x07standby\x10\x03\"C\n\x08PortType\"7\n\x04Type\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x61\x63\x63\x65ss\x10\x01\x12\x0b\n\x07testing\x10\x02\x12\t\n\x05other\x10\x03\"=\n\x0cTestingState\"-\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\x0b\n\x07\x63leared\x10\x01\x12\n\n\x06passed\x10\x02\"\x07\n\x05\x45mptyb\x06proto3'
+  serialized_pb=b'\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\"c\n\x08\x44VAState\"W\n\x05State\x12\x0b\n\x07initial\x10\x00\x12\x13\n\x0funauthenticated\x10\x01\x12\n\n\x06static\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\x0f\n\x0boperational\x10\x04\"a\n\x08LacpRole\"U\n\x08LacpRole\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x0e\n\nunselected\x10\x01\x12\x0c\n\x08selected\x10\x02\x12\x0b\n\x07standby\x10\x03\"C\n\x08PortType\"7\n\x04Type\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x61\x63\x63\x65ss\x10\x01\x12\x0b\n\x07testing\x10\x02\x12\t\n\x05other\x10\x03\"p\n\x0cPortBehavior\"`\n\x08\x42\x65havior\x12\x0b\n\x07unknown\x10\x00\x12\x11\n\rauthenticated\x10\x01\x12\x0b\n\x07\x63leared\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\n\n\x06passed\x10\x04\x12\n\n\x06\x66\x61iled\x10\x05\"\x07\n\x05\x45mptyb\x06proto3'
 )
 
 
@@ -209,9 +209,9 @@ _PORTTYPE_TYPE = _descriptor.EnumDescriptor(
 )
 _sym_db.RegisterEnumDescriptor(_PORTTYPE_TYPE)
 
-_TESTINGSTATE_STATE = _descriptor.EnumDescriptor(
-  name='State',
-  full_name='TestingState.State',
+_PORTBEHAVIOR_BEHAVIOR = _descriptor.EnumDescriptor(
+  name='Behavior',
+  full_name='PortBehavior.Behavior',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -220,20 +220,32 @@ _TESTINGSTATE_STATE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='cleared', index=1, number=1,
+      name='authenticated', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='passed', index=2, number=2,
+      name='cleared', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='sequestered', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='passed', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='failed', index=5, number=5,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=558,
-  serialized_end=603,
+  serialized_end=654,
 )
-_sym_db.RegisterEnumDescriptor(_TESTINGSTATE_STATE)
+_sym_db.RegisterEnumDescriptor(_PORTBEHAVIOR_BEHAVIOR)
 
 
 _STATE = _descriptor.Descriptor(
@@ -361,9 +373,9 @@ _PORTTYPE = _descriptor.Descriptor(
 )
 
 
-_TESTINGSTATE = _descriptor.Descriptor(
-  name='TestingState',
-  full_name='TestingState',
+_PORTBEHAVIOR = _descriptor.Descriptor(
+  name='PortBehavior',
+  full_name='PortBehavior',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -373,7 +385,7 @@ _TESTINGSTATE = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _TESTINGSTATE_STATE,
+    _PORTBEHAVIOR_BEHAVIOR,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -382,7 +394,7 @@ _TESTINGSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=542,
-  serialized_end=603,
+  serialized_end=654,
 )
 
 
@@ -405,8 +417,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=605,
-  serialized_end=612,
+  serialized_start=656,
+  serialized_end=663,
 )
 
 _STATE_STATE.containing_type = _STATE
@@ -414,13 +426,13 @@ _LACPSTATE_LACPSTATE.containing_type = _LACPSTATE
 _DVASTATE_STATE.containing_type = _DVASTATE
 _LACPROLE_LACPROLE.containing_type = _LACPROLE
 _PORTTYPE_TYPE.containing_type = _PORTTYPE
-_TESTINGSTATE_STATE.containing_type = _TESTINGSTATE
+_PORTBEHAVIOR_BEHAVIOR.containing_type = _PORTBEHAVIOR
 DESCRIPTOR.message_types_by_name['State'] = _STATE
 DESCRIPTOR.message_types_by_name['LacpState'] = _LACPSTATE
 DESCRIPTOR.message_types_by_name['DVAState'] = _DVASTATE
 DESCRIPTOR.message_types_by_name['LacpRole'] = _LACPROLE
 DESCRIPTOR.message_types_by_name['PortType'] = _PORTTYPE
-DESCRIPTOR.message_types_by_name['TestingState'] = _TESTINGSTATE
+DESCRIPTOR.message_types_by_name['PortBehavior'] = _PORTBEHAVIOR
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -459,12 +471,12 @@ PortType = _reflection.GeneratedProtocolMessageType('PortType', (_message.Messag
   })
 _sym_db.RegisterMessage(PortType)
 
-TestingState = _reflection.GeneratedProtocolMessageType('TestingState', (_message.Message,), {
-  'DESCRIPTOR' : _TESTINGSTATE,
+PortBehavior = _reflection.GeneratedProtocolMessageType('PortBehavior', (_message.Message,), {
+  'DESCRIPTOR' : _PORTBEHAVIOR,
   '__module__' : 'forch.proto.shared_constants_pb2'
-  # @@protoc_insertion_point(class_scope:TestingState)
+  # @@protoc_insertion_point(class_scope:PortBehavior)
   })
-_sym_db.RegisterMessage(TestingState)
+_sym_db.RegisterMessage(PortBehavior)
 
 Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), {
   'DESCRIPTOR' : _EMPTY,

@@ -192,13 +192,14 @@ function test_stack {
     mkdir -p $nodes_dir
 
     echo $desc Capturing pcaps for $cap_length seconds...
-    timeout $cap_length $TCPSUDO -eni t1sw1-eth6 -w $t1sw1p6_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni faux-1 -w $t2sw1p1_pcap &
-    timeout $cap_length $TCPSUDO -eni t2sw1-eth50 -w $t2sw1p50_pcap &
-    timeout $cap_length $TCPSUDO -eni t2sw1-eth52 -w $t2sw1p52_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni faux-2 -w $t2sw2p1_pcap &
+    tcpsudo="sudo tcpdump -Z root"
+    timeout $cap_length $tcpsudo -eni t1sw1-eth6 -w $t1sw1p6_pcap &
+    timeout $cap_length $tcpsudo -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
+    timeout $cap_length $tcpsudo -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
+    timeout $cap_length $tcpsudo -Q out -eni faux-1 -w $t2sw1p1_pcap &
+    timeout $cap_length $tcpsudo -eni t2sw1-eth50 -w $t2sw1p50_pcap &
+    timeout $cap_length $tcpsudo -eni t2sw1-eth52 -w $t2sw1p52_pcap &
+    timeout $cap_length $tcpsudo -Q out -eni faux-2 -w $t2sw2p1_pcap &
     sleep 5
 
     echo $desc Simple tests...

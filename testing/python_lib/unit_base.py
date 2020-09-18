@@ -9,6 +9,7 @@ import yaml
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
@@ -247,7 +248,6 @@ class DeviceTestingServerTestBase(unittest.TestCase):
         """setup fixture for each test method"""
         channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
         self._client = DeviceTestingStub(channel)
-        print('Client initialized')
 
         self._server = DeviceTestingServer(
             self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)
@@ -282,3 +282,28 @@ class FaucetStateCollectorTestBase(UnitTestBase):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
         self._faucet_state_collector = FaucetStateCollector(forch_config,
                                                             is_faucetizer_enabled=False)
+
+
+class PortsStateManagerTestBase(UnitTestBase):
+    """Base class for PortsTestingStateManager"""
+
+    AUTHENTICATED = 'authenticated'
+    SEQUESTERED = 'sequestered'
+    OPERATIONAL = 'operational'
+    INFRACTED = 'infracted'
+    TESTING_SEGMENT = 'TESTING'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._port_state_manager = PortStateManager(
+            self._process_device_behavior, self.TESTING_SEGMENT)
+        self._received_device_behaviors = []
+
+    def _verify_ports_states(self, expected_states):
+        ports_states = {
+            mac: ptsm.get_current_state()
+            for (mac, ptsm) in self._port_state_manager._state_machines.items()}
+        self.assertEqual(ports_states, expected_states)
+
+    def _verify_received_device_behaviors(self, expected_device_behaviors):
+        self.assertEqual(self._received_device_behaviors, expected_device_behaviors)
