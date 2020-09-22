@@ -18,9 +18,9 @@ message ACLState {
     int32 packet_count = 3;
 
     // number of times the packet count increases
-    int32 interval_count = 4;
+    int32 interval_change_count = 4;
 
     // timestamp of the last time when packet count changes
-    string interval_count_last_change = 5;
+    string interval_last_change = 5;
   }
 }

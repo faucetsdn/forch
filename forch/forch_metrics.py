@@ -90,11 +90,11 @@ class ForchMetrics():
             'dataplane_packet_count_vlan', 'number of packets in vlan', Gauge, ['vlan'])
 
         self._add_var(
-            'interval_packet_count', 'number of times host packet count increases', Gauge,
+            'interval_change_count', 'number of times host packet count increases', Gauge,
             ['eth_src', 'rule_description']
         )
         self._add_var(
-            'interval_packet_count_last_change', 'last time when host packet count increases',
+            'interval_last_change', 'last time when host packet count increases',
             Gauge, ['eth_src', 'rule_description']
         )
 

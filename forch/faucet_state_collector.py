@@ -104,8 +104,8 @@ PACKET_COUNT = "packet_count"
 PACKET_RATE_STATE = "packet_rate_state"
 PORT_ACLS = 'port_acls'
 VLAN_ACLS = 'vlan_acls'
-INTERVAL_COUNT = 'interval_count'
-INTERVAL_COUNT_LAST_CHANGE = 'interval_count_last_change'
+INTERVAL_CHANGE_COUNT = 'interval_change_count'
+INTERVAL_LAST_CHANGE = 'interval_last_change'
 
 VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 PORT_ACL_PACKET_COUNT_METRIC = 'flow_packet_count_port_acl'
@@ -233,8 +233,8 @@ class FaucetStateCollector:
             if new_packet_count != rule_map.get(PACKET_COUNT, 0):
 
                 rule_map[PACKET_COUNT] = new_packet_count
-                rule_map[INTERVAL_COUNT] = rule_map.get(INTERVAL_COUNT, 0) + 1
-                rule_map[INTERVAL_COUNT_LAST_CHANGE] = time.time()
+                rule_map[INTERVAL_CHANGE_COUNT] = rule_map.get(INTERVAL_CHANGE_COUNT, 0) + 1
+                rule_map[INTERVAL_LAST_CHANGE] = time.time()
 
                 if acl_type == PORT_ACLS:
                     ports_state = self.switch_states.get(switch_name, {}).get(PORTS, {})
@@ -242,7 +242,10 @@ class FaucetStateCollector:
                     rule_config = self._get_acl_rule_config(switch_name, count_id, cookie_num)
                     if mac and rule_config:
                         self._forch_metrics.update_var(
-                            'interval_count', rule_map[INTERVAL_COUNT],
+                            'interval_change_count', rule_map[INTERVAL_CHANGE_COUNT],
+                            [mac, rule_config.get('description')])
+                        self._forch_metrics.update_var(
+                            'interval_last_change', rule_map[INTERVAL_LAST_CHANGE],
                             [mac, rule_config.get('description')])
                     else:
                         LOGGER.debug(
@@ -812,10 +815,10 @@ class FaucetStateCollector:
                     continue
 
                 rule_map['packet_count'] = rule_packet_state.get(PACKET_COUNT)
-                rule_map['interval_count'] = rule_packet_state.get(INTERVAL_COUNT)
-                timestamp = rule_packet_state.get(INTERVAL_COUNT_LAST_CHANGE)
+                rule_map['interval_change_count'] = rule_packet_state.get(INTERVAL_CHANGE_COUNT)
+                timestamp = rule_packet_state.get(INTERVAL_LAST_CHANGE)
                 if timestamp:
-                    rule_map['interval_count_last_change'] = datetime.fromtimestamp(
+                    rule_map['interval_last_change'] = datetime.fromtimestamp(
                         timestamp).isoformat()
 
             acls_map_list.append(acl_map)
