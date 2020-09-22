@@ -104,8 +104,8 @@ PACKET_COUNT = "packet_count"
 PACKET_RATE_STATE = "packet_rate_state"
 PORT_ACLS = 'port_acls'
 VLAN_ACLS = 'vlan_acls'
-INTERVAL_PACKET_COUNT = 'interval_packet_count'
-INTERVAL_PACKET_COUNT_LAST_CHANGE = 'interval_packet_count_last_change'
+INTERVAL_COUNT = 'interval_count'
+INTERVAL_COUNT_LAST_CHANGE = 'interval_count_last_change'
 
 VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 PORT_ACL_PACKET_COUNT_METRIC = 'flow_packet_count_port_acl'
@@ -233,8 +233,8 @@ class FaucetStateCollector:
             if new_packet_count != rule_map.get(PACKET_COUNT, 0):
 
                 rule_map[PACKET_COUNT] = new_packet_count
-                rule_map[INTERVAL_PACKET_COUNT] = rule_map.get(INTERVAL_PACKET_COUNT, 0) + 1
-                rule_map[INTERVAL_PACKET_COUNT_LAST_CHANGE] = time.time()
+                rule_map[INTERVAL_COUNT] = rule_map.get(INTERVAL_COUNT, 0) + 1
+                rule_map[INTERVAL_COUNT_LAST_CHANGE] = time.time()
 
                 if acl_type == PORT_ACLS:
                     ports_state = self.switch_states.get(switch_name, {}).get(PORTS, {})
@@ -242,7 +242,7 @@ class FaucetStateCollector:
                     rule_config = self._get_acl_rule_config(switch_name, count_id, cookie_num)
                     if mac and rule_config:
                         self._forch_metrics.update_var(
-                            'interval_packet_count', rule_map[INTERVAL_PACKET_COUNT],
+                            'interval_count', rule_map[INTERVAL_COUNT],
                             [mac, rule_config.get('description')])
                     else:
                         LOGGER.debug(
@@ -793,7 +793,7 @@ class FaucetStateCollector:
 
             for rule_config in acl_config.rules:
                 cookie_num = rule_config.get('cookie')
-                rule_map = {'description': rule_config.get('description')}
+                rule_map = {'rule_description': rule_config.get('description')}
                 rules_map_list.append(rule_map)
 
                 if not self._is_faucetizer_enabled:
@@ -812,10 +812,10 @@ class FaucetStateCollector:
                     continue
 
                 rule_map['packet_count'] = rule_packet_state.get(PACKET_COUNT)
-                rule_map['interval_packet_count'] = rule_packet_state.get(INTERVAL_PACKET_COUNT)
-                timestamp = rule_packet_state.get(INTERVAL_PACKET_COUNT_LAST_CHANGE)
+                rule_map['interval_count'] = rule_packet_state.get(INTERVAL_COUNT)
+                timestamp = rule_packet_state.get(INTERVAL_COUNT_LAST_CHANGE)
                 if timestamp:
-                    rule_map['interval_packet_count_last_change'] = datetime.fromtimestamp(
+                    rule_map['interval_count_last_change'] = datetime.fromtimestamp(
                         timestamp).isoformat()
 
             acls_map_list.append(acl_map)
