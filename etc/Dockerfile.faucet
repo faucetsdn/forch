@@ -2,10 +2,9 @@
 
 FROM faucet/python3:5.0.1
 
-RUN apk add -q tcpdump iptables sudo
+RUN apk add -q tcpdump iptables sudo linux-headers
 
 COPY faucet/ /faucet-src/
-
 RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
 
 # Check for target executable since installer doesn't error out properly.
