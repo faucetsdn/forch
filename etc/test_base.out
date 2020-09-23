@@ -32,6 +32,7 @@ Starting counting-initial tests
 "arp"
 0
 0
+0
 Starting counting-basic tests
 "allow ICMP"
 5
@@ -55,5 +56,6 @@ Starting counting-basic tests
 5
 1
 "arp"
+1
 1
 1

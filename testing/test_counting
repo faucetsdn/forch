@@ -31,7 +31,8 @@ function test_counting {
     done
 
     metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
-    grep 'interval_change_count' <<< $metrics | grep '9a:02:57:1e:8f:01' | grep 'allow ICMP' | awk '{print $3}' | tee -a $TEST_RESULTS
+    interval_count=$(grep 'interval_change_count' <<< $metrics | grep '9a:02:57:1e:8f:01' | grep 'allow ICMP' | awk '{print $3}')
+    echo $((interval_count > 0)) | tee -a $TEST_RESULTS
 }
 
 echo Setting up stack and Forch...
