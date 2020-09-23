@@ -17,9 +17,9 @@ Starting counting-initial tests
 "arp"
 0
 "allow ICMP"
-2
+0
 "arp"
-1
+0
 "deny ICMP"
 0
 "arp"
@@ -28,7 +28,7 @@ Starting counting-basic tests
 "allow ICMP"
 5
 "arp"
-1
+2
 "allow ICMP"
 0
 "arp"
@@ -36,7 +36,7 @@ Starting counting-basic tests
 "allow ICMP"
 5
 "arp"
-0
+1
 "deny ICMP"
 5
 "arp"
