@@ -29,7 +29,10 @@ function test_counting {
 
 echo Setting up stack and Forch...
 bin/setup_counting local
-sleep 20
+if [ $? != 0 ]; then
+    echo Error setting up counting stack.
+    exit 1
+fi
 
 test_counting initial
 
