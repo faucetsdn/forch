@@ -6,6 +6,9 @@ preamble_setup
 
 export CONTROLLER_NAME=127.0.0.1
 
+unset change_counts
+declare -g -A change_counts
+
 function test_counting {
     fdesc=counting-$1
     fout_dir=$OUT_DIR/$fdesc
@@ -21,7 +24,12 @@ function test_counting {
         for port in 1 2; do
             for acl in 0 1; do
                 jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].description" $api_result | tee -a $TEST_RESULTS
-                jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].packet_count" $api_result | tee -a $TEST_RESULTS
+                value=`jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].packet_count" $api_result`
+                key=$sw$port$acl
+                old=${change_counts[$key]:-0}
+                change_counts[$key]=$value
+                delta=$((value - old))
+                echo $key $old $value $delta | tee -a $TEST_RESULTS
             done
         done
     done

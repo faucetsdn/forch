@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/bash -ex
 
 set -euo pipefail
 
