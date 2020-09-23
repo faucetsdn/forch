@@ -62,18 +62,18 @@ function test_dva {
     echo "@switch_state $fdesc" | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw1".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw1".vlans."100".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw1".vlans."100".acls[0].rules[0].rule_description' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw2".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
+    jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].rule_description' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
 
     api_result=$fout_dir/list_hosts.json
     echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:01".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:01".dva_state' $api_result | tee -a $TEST_RESULTS
-    jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0].rules[0].rule_description' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".dva_state' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.access' $api_result | tee -a $TEST_RESULTS
