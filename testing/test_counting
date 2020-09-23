@@ -32,7 +32,7 @@ function test_counting {
 
     metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
     interval_count=$(grep 'interval_change_count' <<< $metrics | grep '9a:02:57:1e:8f:01' | grep 'allow ICMP' | awk '{print $3}')
-    interval_count_int = ${interval_count%.*}
+    interval_count_int=${interval_count%.*}
     echo $((interval_count_int > 0)) | tee -a $TEST_RESULTS
 }
 
