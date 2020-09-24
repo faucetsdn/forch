@@ -33,7 +33,8 @@ function test_counting {
                 old=${change_counts[$key]:-$value}
                 change_counts[$key]=$value
                 delta=$((value - old))
-                echo $delta | tee -a $TEST_RESULTS
+                zone=$((delta > 0)) + $((delta > 2)) + $((delta > 4)) + $((delta > 6))
+                echo $zone | tee -a $TEST_RESULTS
             done
         done
     done
