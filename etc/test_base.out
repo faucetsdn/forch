@@ -36,7 +36,7 @@ Starting counting-basic tests
 "allow ICMP"
 3
 "arp"
-0
+1
 "deny ICMP"
 3
 "arp"
