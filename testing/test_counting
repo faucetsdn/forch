@@ -6,6 +6,8 @@ preamble_setup
 
 export CONTROLLER_NAME=127.0.0.1
 
+FORCH_VARZ_PORT=8302
+
 function test_counting {
     fdesc=counting-$1
     fout_dir=$OUT_DIR/$fdesc
@@ -20,11 +22,18 @@ function test_counting {
     for sw in 1 2; do
         for port in 1 2; do
             for acl in 0 1; do
-                jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].description" $api_result | tee -a $TEST_RESULTS
+                jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].rule_description" $api_result | tee -a $TEST_RESULTS
                 jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].packet_count" $api_result | tee -a $TEST_RESULTS
+                interval_count=$(jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].interval_change_count" $api_result)
+                echo $((interval_count > 0)) | tee -a $TEST_RESULTS
             done
         done
     done
+
+    metrics=$(wget localhost:$FORCH_VARZ_PORT -O- 2>/dev/null)
+    interval_count=$(grep 'interval_change_count' <<< $metrics | grep '9a:02:57:1e:8f:01' | grep 'allow ICMP' | awk '{print $3}')
+    interval_count_int=${interval_count%.*}
+    echo $((interval_count_int > 0)) | tee -a $TEST_RESULTS
 }
 
 echo Setting up stack and Forch...

@@ -930,7 +930,7 @@
             <tbody>
               
                 <tr>
-                  <td>description</td>
+                  <td>rule_description</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>rule description </p></td>
@@ -941,6 +941,20 @@
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>count of packets hitting the rule </p></td>
+                </tr>
+              
+                <tr>
+                  <td>interval_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>number of times the packet count increases </p></td>
+                </tr>
+              
+                <tr>
+                  <td>interval_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>timestamp of the last time when packet count changes </p></td>
                 </tr>
               
             </tbody>
