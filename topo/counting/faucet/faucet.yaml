@@ -16,16 +16,11 @@ dps:
       10:
         description: "to t2sw2 port 50"
         stack: {dp: nz-kiwi-t2sw2, port: 50}
-      28:
-        description: egress
-        lacp: 3
-        tagged_vlans: [100, 200, 300, 400]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t1sw2:
     dp_id: 178
     faucet_dp_mac: 0e:00:00:00:01:02
     hardware: Generic
-    lacp_timeout: 5
     stack:
       priority: 1
     interfaces:
@@ -38,16 +33,11 @@ dps:
       10:
         description: "to t2sw2 port 52"
         stack: {dp: nz-kiwi-t2sw2, port: 52}
-      28:
-        description: egress
-        lacp: 3
-        tagged_vlans: [100]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
     dp_id: 147058200627
     faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
-    lacp_timeout: 5
     interfaces:
       1: {description: IoT Device, native_vlan: 100, max_hosts: 1}
       2: {description: IoT Device, native_vlan: 100, max_hosts: 1}
@@ -62,7 +52,6 @@ dps:
     dp_id: 1296
     faucet_dp_mac: 0e:00:00:00:02:02
     hardware: Allied-Telesis
-    lacp_timeout: 5
     interfaces:
       1: {description: IoT Device, native_vlan: 100, max_hosts: 1}
       2: {description: IoT Device, native_vlan: 100, max_hosts: 1}
