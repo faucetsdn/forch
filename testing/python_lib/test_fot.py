@@ -11,7 +11,7 @@ from forch.proto.devices_state_pb2 import DeviceBehavior
 from forch.proto.device_testing_state_pb2 import DeviceTestingState
 from forch.proto.shared_constants_pb2 import Empty
 
-from integration_base import IntegrationTestBase, logger
+from integration_base import IntegrationTestBase
 from unit_base import (
     DeviceTestingServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
 )
@@ -25,7 +25,7 @@ class FotConfigTest(IntegrationTestBase):
 
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
-        logger.debug('Running test_stack_connectivity')
+        print('Running test_stack_connectivity')
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.12'))
 
@@ -124,7 +124,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
 
         future_responses = []
         for testing_state in expected_testing_states:
-            logger.info('Sending device testing state: %s', testing_state)
+            print('Sending device testing state: %s', testing_state)
             future_response = self._client.ReportTestingState.future(
                 dict_proto(testing_state, DeviceTestingState))
             future_responses.append(future_response)
@@ -145,7 +145,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         super().__init__(*args, **kwargs)
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
-        logger.info(
+        print(
             'Received device behavior for device %s: %s, %s', mac, device_behavior, static)
         self._received_device_behaviors.append((mac, device_behavior.segment, static))
 
