@@ -12,4 +12,7 @@ RUN which faucet
 
 COPY misc/faucet_go bin/
 
+COPY . /forch-src/
+RUN /forch-src/bin/install_forch.sh && rm -rf /forch-src/.git
+
 CMD ["bin/faucet_go"]

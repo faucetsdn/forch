@@ -1,10 +1,11 @@
 """Module that implements MAB state machine"""""
 
-import logging
 from threading import Lock
 import time
 
-LOGGER = logging.getLogger('mabsm')
+from forch.utils import get_logger
+
+LOGGER = get_logger('mabsm')
 
 
 class AuthStateMachine():

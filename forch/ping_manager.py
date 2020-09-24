@@ -2,13 +2,14 @@
 
 import asyncio
 from asyncio.subprocess import PIPE
-import logging
-import threading
 from collections import namedtuple
+import threading
+
+from forch.utils import get_logger
 
 
 PingResult = namedtuple('PingResult', ['host_name', 'proc_code', 'stdout', 'stderr'])
-LOGGER = logging.getLogger('ping')
+LOGGER = get_logger('ping')
 
 
 class PingManager:

@@ -1,0 +1,12 @@
+/*
+ * Device testing state
+ */
+
+syntax = "proto3";
+
+import "forch/proto/shared_constants.proto";
+
+message DeviceTestingState {
+    string mac = 1;
+    PortBehavior.Behavior port_behavior = 2;
+}

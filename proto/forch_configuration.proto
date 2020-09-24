@@ -130,16 +130,19 @@ message OrchestrationConfig {
   // encapsulating Faucet Orchestrated Testing configurations
   message FotConfig {
     // testing segment. If defined, automatic sequestering is enabled
-    string testing_segment = 11;
+    string testing_segment = 1;
 
     // start of testing vlan range
-    int32 testing_vlan_start = 12;
+    int32 testing_vlan_start = 2;
 
     // end of testing vlan range
-    int32 testing_vlan_end = 13;
+    int32 testing_vlan_end = 3;
 
     // identifier of testing port in the port description
-    string testing_port_identifier = 14;
+    string testing_port_identifier = 4;
+
+    // gRPC port on which the device testing server receives testing result
+    int32 testing_server_port = 5;
   }
 }
 

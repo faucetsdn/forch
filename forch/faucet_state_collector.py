@@ -4,28 +4,24 @@
 import copy
 from datetime import datetime
 import json
-import logging
 import time
 import threading
-from threading import RLock
-from forch.proto.faucet_event_pb2 import StackTopoChange
 
 # TODO: Clean up to use State enum
 from forch.constants import \
     STATE_UP, STATE_INITIALIZING, STATE_DOWN, STATE_ACTIVE, STATE_BROKEN
-
-from forch.utils import dict_proto
-
-from forch.proto.shared_constants_pb2 import DVAState, LacpState, State, LacpRole
-from forch.proto.system_state_pb2 import StateSummary
+from forch.utils import dict_proto, get_logger
 
 from forch.proto.dataplane_state_pb2 import DataplaneState
+from forch.proto.devices_state_pb2 import DevicePlacement
+from forch.proto.faucet_event_pb2 import StackTopoChange
 from forch.proto.host_path_pb2 import HostPath
 from forch.proto.list_hosts_pb2 import HostList
+from forch.proto.shared_constants_pb2 import DVAState, LacpState, State, LacpRole
 from forch.proto.switch_state_pb2 import SwitchState
-from forch.proto.devices_state_pb2 import DevicePlacement
+from forch.proto.system_state_pb2 import StateSummary
 
-LOGGER = logging.getLogger('fstate')
+LOGGER = get_logger('fstate')
 
 LACP_TO_LINK_STATE = {
     LacpState.none: STATE_DOWN,
@@ -119,7 +115,7 @@ class FaucetStateCollector:
         self.learned_macs = {}
         self.faucet_config = {}
         self.packet_counts = {}
-        self.lock = RLock()
+        self.lock = threading.RLock()
         self._lock = threading.Lock()
         self.process_lag_state(time.time(), None, None, False, False)
         self._active_state = State.initializing
@@ -206,7 +202,7 @@ class FaucetStateCollector:
 
         packet_count_metric = get_metrics([VLAN_PACKET_COUNT_METRIC]).get(VLAN_PACKET_COUNT_METRIC)
         if not packet_count_metric:
-            logging.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
+            LOGGER.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
             return
 
         vlan_counts = self._get_packet_counts_from_samples(packet_count_metric.samples)
@@ -270,17 +266,20 @@ class FaucetStateCollector:
         return int(metrics['faucet_event_id'].samples[0].value)
 
     def _restore_l2_learn_state_from_samples(self, samples):
+        self._cleanup_learned_macs()
+
         timestamp = time.time()
-        learned_ports = 0
+        ports_learned = False
+
         for sample in samples:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, None)
-                learned_ports += 1
-        if not learned_ports:
-            LOGGER.info('No learned ports found.')
+                ports_learned = True
+        if not ports_learned:
+            LOGGER.info('No learned ports restored.')
             return
 
     def _restore_dataplane_state_from_metrics(self, metrics):
@@ -531,9 +530,19 @@ class FaucetStateCollector:
     def cleanup(self):
         """Clean up internal data"""
         with self.lock:
-            self.learned_macs.clear()
-            for switch_data in self.switch_states.values():
-                switch_data.get(LEARNED_MACS, set()).clear()
+            self._cleanup_learned_macs()
+
+    def _cleanup_learned_macs(self):
+        """Clean up leanred macs"""
+        with self._lock:
+            old_learned_macs = copy.deepcopy(self.learned_macs)
+            timestamp = time.time()
+
+            for mac, mac_map in old_learned_macs.items():
+                for switch_name, switch_map in mac_map.get(MAC_LEARNING_SWITCH, {}).items():
+                    port = switch_map.get(MAC_LEARNING_PORT)
+                    if port:
+                        self.process_port_expire(timestamp, switch_name, port, mac)
 
     def _fill_egress_state(self, target_obj):
         """Return egress state obj"""

@@ -6,7 +6,6 @@ preamble_setup
 
 export CONTROLLER_NAME=127.0.0.1
 
-TCPSUDO="sudo tcpdump"
 controllers=`sudo ovs-vsctl get-controller t1sw1`
 
 local=

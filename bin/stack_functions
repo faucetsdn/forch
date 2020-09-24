@@ -192,13 +192,14 @@ function test_stack {
     mkdir -p $nodes_dir
 
     echo $desc Capturing pcaps for $cap_length seconds...
-    timeout $cap_length $TCPSUDO -eni t1sw1-eth6 -w $t1sw1p6_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni faux-1 -w $t2sw1p1_pcap &
-    timeout $cap_length $TCPSUDO -eni t2sw1-eth50 -w $t2sw1p50_pcap &
-    timeout $cap_length $TCPSUDO -eni t2sw1-eth52 -w $t2sw1p52_pcap &
-    timeout $cap_length $TCPSUDO -Q out -eni faux-2 -w $t2sw2p1_pcap &
+    tcpsudo="sudo timeout $cap_length tcpdump --immediate-mode -Z root"
+    $tcpsudo -eni t1sw1-eth6 -w $t1sw1p6_pcap &
+    $tcpsudo -Q out -eni t1sw1-eth28 -w $t1sw1p28_pcap &
+    $tcpsudo -Q out -eni t1sw2-eth28 -w $t1sw2p28_pcap &
+    $tcpsudo -Q out -eni faux-1 -w $t2sw1p1_pcap &
+    $tcpsudo -eni t2sw1-eth50 -w $t2sw1p50_pcap &
+    $tcpsudo -eni t2sw1-eth52 -w $t2sw1p52_pcap &
+    $tcpsudo -Q out -eni faux-2 -w $t2sw2p1_pcap &
     sleep 5
 
     echo $desc Simple tests...
@@ -227,18 +228,20 @@ function test_stack {
     sleep $cap_length
     sudo chown -R $USER $desc_dir
 
-    bcount6=$(tcpdump -en -r $t1sw1p6_pcap | wc -l) 2>/dev/null
-    bcount50=$(tcpdump -en -r $t2sw1p50_pcap | wc -l) 2>/dev/null
-    bcount52=$(tcpdump -en -r $t2sw1p52_pcap | wc -l) 2>/dev/null
-    bcount_total=$((bcount50 + bcount52))
-    echo $desc pcap count is $bcount6 $bcount50 $bcount52 $bcount_total
-    echo pcap sane $((bcount6 > 0)) $((bcount6 < 180)) \
-         $((bcount_total > 100)) $((bcount_total < 220)) | tee -a $TEST_RESULTS
+    pcount6a=$(tcpdump -en -r $t1sw1p6_pcap vlan | wc -l) 2>/dev/null
+    pcount6i=$(tcpdump -en -r $t1sw1p6_pcap vlan and icmp | wc -l) 2>/dev/null
+    pcount50=$(tcpdump -en -r $t2sw1p50_pcap vlan | wc -l) 2>/dev/null
+    pcount52=$(tcpdump -en -r $t2sw1p52_pcap vlan | wc -l) 2>/dev/null
+    pcount_total=$((pcount50 + pcount52))
+    echo $desc pcap count is $pcount6a $pcound6i $pcount50 $pcount52 $pcount_total
+    echo pcap sane $((pcount6a > 10)) $((pcount6i > 10)) $((pcount6a < 180)) \
+         $((pcount_total > 90)) $((pcount_total < 180)) | tee -a $TEST_RESULTS
 
     bcount1e=$(tcpdump -en -r $t1sw1p28_pcap ether broadcast| wc -l) 2>/dev/null
     bcount2e=$(tcpdump -en -r $t1sw2p28_pcap ether broadcast| wc -l) 2>/dev/null
     bcount1h=$(tcpdump -en -r $t2sw1p1_pcap ether broadcast | wc -l) 2>/dev/null
     bcount2h=$(tcpdump -en -r $t2sw2p1_pcap ether broadcast | wc -l) 2>/dev/null
+    echo $desc pcap bcount $bcount1e $bcount2e $bcount1h $bcount2h
     echo pcap bcast $(comp $bcount1e 4) $(comp $bcount2e 0) \
          $(comp $bcount1h 4) $(comp $bcount2h 4) | tee -a $TEST_RESULTS
 

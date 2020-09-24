@@ -1,10 +1,11 @@
-"""Handle the RADIUS socket
-"""
+"""Handle the RADIUS socket"""
+
 import socket
-import logging
 from threading import RLock
 
-LOGGER = logging.getLogger('rsocket')
+from forch.utils import get_logger
+
+LOGGER = get_logger('rsocket')
 
 
 class RadiusSocket:
