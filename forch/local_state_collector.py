@@ -1,7 +1,6 @@
 """Collecting the states of the local system"""
 
 from datetime import datetime
-import logging
 import os
 import re
 import signal
@@ -14,11 +13,12 @@ import yaml
 from forch.proto.process_state_pb2 import ProcessState
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
-from forch.utils import dict_proto
+from forch.utils import dict_proto, get_logger
 
-LOGGER = logging.getLogger('lstate')
+LOGGER = get_logger('lstate')
 
 _PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
+
 
 class LocalStateCollector:
     """Storing local system states"""

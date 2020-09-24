@@ -1,14 +1,14 @@
 """Talks and listens to RADIUS. Takes a packet object as input"""
-import logging
+
 import os
 
 from forch.radius import RadiusAttributesList, RadiusAccessRequest, Radius
 from forch.radius_attributes import CallingStationId, MessageAuthenticator, \
         NASPort, CalledStationId, ServiceType, NASPortType
 from forch.radius_socket import RadiusSocket
-from forch.utils import MessageParseError
+from forch.utils import MessageParseError, get_logger
 
-LOGGER = logging.getLogger('rquery')
+LOGGER = get_logger('rquery')
 
 RADIUS_HEADER_LENGTH = 1 + 1 + 2 + 16
 

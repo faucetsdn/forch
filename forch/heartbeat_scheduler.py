@@ -1,9 +1,10 @@
 """Schedule heart beat with functions that have to be called in order"""
 
-import logging
 import threading
 
-LOGGER = logging.getLogger('heartbeat')
+from forch.utils import get_logger
+
+LOGGER = get_logger('heartbeat')
 
 
 class HeartbeatScheduler:

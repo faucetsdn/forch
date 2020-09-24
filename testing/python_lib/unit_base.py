@@ -1,16 +1,20 @@
 """Unit test base class for Forch"""
 
+import grpc
 import shutil
 import tempfile
 import unittest
 import yaml
 
+from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.proto.grpc.device_testing_pb2_grpc import DeviceTestingStub
 
 
 class UnitTestBase(unittest.TestCase):
@@ -230,6 +234,30 @@ class FaucetizerTestBase(UnitTestBase):
         self._cleanup_config_files()
 
 
+class DeviceTestingServerTestBase(unittest.TestCase):
+    """Base class for device testing server unit test"""
+    SERVER_ADDRESS = '0.0.0.0'
+    SERVER_PORT = 50051
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._server = None
+        self._client = None
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
+        self._client = DeviceTestingStub(channel)
+
+        self._server = DeviceTestingServer(
+            self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)
+        self._server.start()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._server.stop()
+
+
 class FaucetStateCollectorTestBase(UnitTestBase):
     """Base class for Faucetizer unit tests"""
 
@@ -254,3 +282,28 @@ class FaucetStateCollectorTestBase(UnitTestBase):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
         self._faucet_state_collector = FaucetStateCollector(forch_config,
                                                             is_faucetizer_enabled=False)
+
+
+class PortsStateManagerTestBase(UnitTestBase):
+    """Base class for PortsTestingStateManager"""
+
+    AUTHENTICATED = 'authenticated'
+    SEQUESTERED = 'sequestered'
+    OPERATIONAL = 'operational'
+    INFRACTED = 'infracted'
+    TESTING_SEGMENT = 'TESTING'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._port_state_manager = PortStateManager(
+            self._process_device_behavior, self.TESTING_SEGMENT)
+        self._received_device_behaviors = []
+
+    def _verify_ports_states(self, expected_states):
+        ports_states = {
+            mac: ptsm.get_current_state()
+            for (mac, ptsm) in self._port_state_manager._state_machines.items()}
+        self.assertEqual(ports_states, expected_states)
+
+    def _verify_received_device_behaviors(self, expected_device_behaviors):
+        self.assertEqual(self._received_device_behaviors, expected_device_behaviors)

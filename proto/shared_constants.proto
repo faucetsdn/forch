@@ -123,7 +123,7 @@ message LacpRole {
  */
 message PortType {
   enum Type {
-    // unkown
+    // unknown
     unknown = 0;
 
     // access
@@ -136,3 +136,33 @@ message PortType {
     other = 3;
   }
 }
+
+/*
+ * Port behaviors
+ */
+message PortBehavior {
+  enum Behavior {
+    // unknown
+    unknown = 0;
+
+    // authenticated
+    authenticated = 1;
+
+    // cleared
+    cleared = 2;
+
+    // sequestered
+    sequestered = 3;
+
+    // passed testing
+    passed = 4;
+
+    // failed testing
+    failed = 5;
+  }
+}
+
+/*
+ * Dummy empty message
+ */
+message Empty {}

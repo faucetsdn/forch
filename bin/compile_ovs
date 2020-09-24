@@ -21,7 +21,7 @@ git clone https://github.com/openvswitch/ovs.git
 
 cd ovs
 
-git checkout v2.12.0
+git checkout v2.13.0
 
 ./boot.sh
 
