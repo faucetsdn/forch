@@ -1,3 +1,21 @@
+## 1.13.0
+## Forch 0.45
+* Consolidate test shards (#175)
+* Improve stack test checking (#174)
+* Connect port state manager to Forch orchestration components (#170)
+* Add logging for gauge config file writting (#173)
+* Fix local test run permissions (#172)
+* Update dependency jsoneditor to v9.1.0 (#171)
+* Add port state manager with port state machine for FOT (#165)
+* Set logging level only for forch modules (#167)
+* Update dependency jsoneditor to v9.0.5 (#155)
+* Cleanup stale placements in faucetizer when restoring learned MACs (#166)
+* Forch, Gauge inside faucet container (#164)
+* Add gRPC interface to receive device testing results (#159)
+## Faucet 1.9.48.2
+* Flush varz and trigger expire event when vlan host caches get cleared
+* WSAPI port changes to allow serving on 8080
+
 ## 1.12.0
 ## Forch 0.44
 * Add loop detection logic and test (#160)
