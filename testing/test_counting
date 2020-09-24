@@ -14,11 +14,15 @@ function test_counting {
     fout_dir=$OUT_DIR/$fdesc
     mkdir -p $fout_dir
 
-    sleep 5
+    # gauge scrapes the switches every 10s
+    sleep 12
 
     echo Starting $fdesc tests | tee -a $TEST_RESULTS
     echo $fout_dir
 
+    echo dump-flows t2sw1
+    sudo ovs-ofctl dump-flows t2sw1 | fgrep table=0
+    echo dump-flows t2sw2
     sudo ovs-ofctl dump-flows t2sw2 | fgrep table=0
     fetch_forch switch_state
 
@@ -63,3 +67,5 @@ docker exec forch-faux-1 ping -c 5 192.168.1.3 2>&1
 test_counting again
 
 sudo kill $(< tcpdump.pid)
+
+sleep 10
