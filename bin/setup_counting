@@ -38,9 +38,6 @@ add_faux t2sw1 2 2
 add_faux t2sw2 1 3
 add_faux t2sw2 2 4
 
-sudo tcpdump -Q in --immediate-mode -Z root -eni faux-3 &
-echo $? > tcpdump.pid
-
 echo Starting faucet instances...
 sudo rm -rf inst/
 controller=forch-faucet-counting
