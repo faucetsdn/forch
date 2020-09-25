@@ -20,9 +20,6 @@ from unit_base import (
 class FotConfigTest(IntegrationTestBase):
     """Test suite for dynamic config changes"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
         print('Running test_stack_connectivity')
@@ -140,9 +137,6 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
 
 class FotPortStatesTestCase(PortsStateManagerTestBase):
     """Test access port testing states"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
         print(

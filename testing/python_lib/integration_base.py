@@ -3,7 +3,6 @@
 import subprocess
 import unittest
 import os
-import sys
 import time
 import yaml
 
@@ -11,14 +10,13 @@ import yaml
 class IntegrationTestBase(unittest.TestCase):
     """Base class for integration tests"""
 
-    STACK_OPTIONS = {
-        'setup_warmup_sec': 20,
-        'skip-conn-check': True,
-        'no-clean': True
-    }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.stack_options = {
+            'setup_warmup_sec': 20,
+            'skip-conn-check': True,
+            'no-clean': True
+        }
 
     def setUp(self):
         self._clean_stack()
@@ -49,8 +47,9 @@ class IntegrationTestBase(unittest.TestCase):
             raise Exception('Command execution failed: %s' % str(command))
         return retcode, out, err
 
-    def _setup_stack(self, options=STACK_OPTIONS):
-        print("STACK_OPTIONS = %s", str(options))
+    def _setup_stack(self):
+        options = self.stack_options
+        print("stack_options = %s", str(options))
         stack_args = []
         stack_args.extend(['local'] if options.get('local') else [])
         devices = options.get('devices')

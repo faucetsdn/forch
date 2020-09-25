@@ -63,13 +63,13 @@ class FaucetizerTestBase(unittest.TestCase):
             behavior_tuple[0], dict_proto(behavior_tuple[1], DeviceBehavior),
             behavior_tuple[2])
 
-    def _update_port_config(self, behavioral_config, switch, port, vlan, role=None, tail_acl=None):
-        port_config = behavioral_config['dps'][switch]['interfaces'][port]
-        port_config['native_vlan'] = vlan
-        if role:
-            port_config['acls_in'] = [f'role_{role}']
-        if tail_acl:
-            port_config.setdefault('acls_in', []).append(tail_acl)
+    def _update_port_config(self, behavioral_config, **kwargs):
+        port_config = behavioral_config['dps'][kwargs['switch']]['interfaces'][kwargs['port']]
+        port_config['native_vlan'] = kwargs.get('vlan')
+        if 'role' in kwargs:
+            port_config['acls_in'] = [f'role_{kwargs["role"]}']
+        if 'tail_acl' in kwargs:
+            port_config.setdefault('acls_in', []).append(kwargs['tail_acl'])
 
     def _get_base_behavioral_config(self):
         base_behavioral_config = yaml.safe_load(self.FAUCET_BEHAVIORAL_CONFIG)

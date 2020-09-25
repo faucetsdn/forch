@@ -1,10 +1,11 @@
 """Unit test base class for Forch"""
 
-import grpc
 import shutil
 import tempfile
 import unittest
 import yaml
+
+import grpc
 
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
@@ -253,6 +254,9 @@ class DeviceTestingServerTestBase(unittest.TestCase):
             self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
 
+    def _process_device_testing_state(self):
+        pass
+
     def tearDown(self):
         """cleanup after each test method finishes"""
         self._server.stop()
@@ -299,7 +303,11 @@ class PortsStateManagerTestBase(UnitTestBase):
             self._process_device_behavior, self.TESTING_SEGMENT)
         self._received_device_behaviors = []
 
+    def _process_device_behavior(self):
+        pass
+
     def _verify_ports_states(self, expected_states):
+        # pylint: disable=protected-access
         ports_states = {
             mac: ptsm.get_current_state()
             for (mac, ptsm) in self._port_state_manager._state_machines.items()}
