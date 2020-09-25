@@ -65,7 +65,7 @@ class FaucetizerTestBase(unittest.TestCase):
 
     def _update_port_config(self, behavioral_config, **kwargs):
         port_config = behavioral_config['dps'][kwargs['switch']]['interfaces'][kwargs['port']]
-        port_config['native_vlan'] = kwargs.get('vlan')
+        port_config['native_vlan'] = kwargs.get('native_vlan')
         if 'role' in kwargs:
             port_config['acls_in'] = [f'role_{kwargs["role"]}']
         if 'tail_acl' in kwargs:
