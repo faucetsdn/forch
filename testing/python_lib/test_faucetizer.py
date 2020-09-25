@@ -327,13 +327,13 @@ class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
 
         expected_config = self._get_base_behavioral_config()
         self._update_port_config(
-            expected_config, switch='t2sw1', port=1, vlan=200, role='red', tail_acl='tail_acl')
+            expected_config, switch='t2sw1', port=1, native_vlan=200, role='red', tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw1', port=2, vlan=300, role='green', tail_acl='tail_acl')
+            expected_config, switch='t2sw1', port=2, native_vlan=300, role='green', tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw2', port=1, vlan=200, tail_acl='tail_acl')
+            expected_config, switch='t2sw2', port=1, native_vlan=200, tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw2', port=2, vlan=100, tail_acl='tail_acl')
+            expected_config, switch='t2sw2', port=2, native_vlan=100, tail_acl='tail_acl')
         self._verify_behavioral_config(expected_config)
 
         # device expired
@@ -342,13 +342,13 @@ class FaucetizerBehaviorTestCase(FaucetizerBehaviorBaseTestCase):
 
         expected_config = self._get_base_behavioral_config()
         self._update_port_config(
-            expected_config, switch='t2sw1', port=1, vlan=200, role='red', tail_acl='tail_acl')
+            expected_config, switch='t2sw1', port=1, native_vlan=200, role='red', tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw1', port=2, vlan=300, role='green', tail_acl='tail_acl')
+            expected_config, switch='t2sw1', port=2, native_vlan=300, role='green', tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw2', port=1, vlan=100, tail_acl='tail_acl')
+            expected_config, switch='t2sw2', port=1, native_vlan=100, tail_acl='tail_acl')
         self._update_port_config(
-            expected_config, switch='t2sw2', port=2, vlan=100, tail_acl='tail_acl')
+            expected_config, switch='t2sw2', port=2, native_vlan=100, tail_acl='tail_acl')
         self._verify_behavioral_config(expected_config)
 
 
@@ -387,9 +387,9 @@ class FaucetizerBehaviorWithoutTailACLTestCase(FaucetizerBehaviorBaseTestCase):
 
         expected_config = self._get_base_behavioral_config()
         self._update_port_config(
-            expected_config, switch='t2sw1', port=1, vlan=200)
+            expected_config, switch='t2sw1', port=1, native_vlan=200)
         self._update_port_config(
-            expected_config, switch='t2sw1', port=2, vlan=300)
+            expected_config, switch='t2sw1', port=2, native_vlan=300)
         self._verify_behavioral_config(expected_config)
 
 
