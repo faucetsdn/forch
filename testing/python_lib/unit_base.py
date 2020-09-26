@@ -1,10 +1,11 @@
 """Unit test base class for Forch"""
 
-import grpc
 import shutil
 import tempfile
 import unittest
 import yaml
+
+import grpc
 
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
@@ -206,17 +207,15 @@ class FaucetizerTestBase(UnitTestBase):
             behavior_tuple[0], dict_proto(behavior_tuple[1], DeviceBehavior),
             behavior_tuple[2])
 
-    def _update_port_config(
-            self, behavioral_config, switch, port, native_vlan=None, role=None, tail_acl=None,
-            tagged_vlans=None):
-        port_config = behavioral_config['dps'][switch]['interfaces'][port]
-        port_config['native_vlan'] = native_vlan
-        if role:
-            port_config['acls_in'] = [f'role_{role}']
-        if tail_acl:
-            port_config.setdefault('acls_in', []).append(tail_acl)
-        if tagged_vlans:
-            port_config['tagged_vlans'] = tagged_vlans
+    def _update_port_config(self, behavioral_config, **kwargs):
+        port_config = behavioral_config['dps'][kwargs['switch']]['interfaces'][kwargs['port']]
+        port_config['native_vlan'] = kwargs.get('native_vlan')
+        if 'role' in kwargs:
+            port_config['acls_in'] = [f'role_{kwargs["role"]}']
+        if 'tail_acl' in kwargs:
+            port_config.setdefault('acls_in', []).append(kwargs['tail_acl'])
+        if 'tagged_vlans' in kwargs:
+            port_config['tagged_vlans'] = kwargs['tagged_vlans']
 
     def _verify_behavioral_config(self, expected_behavioral_config):
         with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
@@ -252,6 +251,9 @@ class DeviceTestingServerTestBase(unittest.TestCase):
         self._server = DeviceTestingServer(
             self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
+
+    def _process_device_testing_state(self):
+        pass
 
     def tearDown(self):
         """cleanup after each test method finishes"""
@@ -299,7 +301,11 @@ class PortsStateManagerTestBase(UnitTestBase):
             self._process_device_behavior, self.TESTING_SEGMENT)
         self._received_device_behaviors = []
 
+    def _process_device_behavior(self):
+        pass
+
     def _verify_ports_states(self, expected_states):
+        # pylint: disable=protected-access
         ports_states = {
             mac: ptsm.get_current_state()
             for (mac, ptsm) in self._port_state_manager._state_machines.items()}
