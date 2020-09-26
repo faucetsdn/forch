@@ -1,5 +1,7 @@
 ## 1.13.0
 ## Forch 0.45
+* Fix debian grpc depenancy (#182)
+* Add grpc dependancy (#180)
 * Consolidate test shards (#175)
 * Improve stack test checking (#174)
 * Connect port state manager to Forch orchestration components (#170)
