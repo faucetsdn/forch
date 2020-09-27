@@ -64,6 +64,7 @@ jobs:
 
   test_reconfig:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -85,6 +86,7 @@ jobs:
 
   test_stack:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -105,7 +107,8 @@ jobs:
         run: bin/run_test_set stack
 
   test_scale:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8

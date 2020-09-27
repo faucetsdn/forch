@@ -34,6 +34,8 @@ function add_br {
     if [ -n "$port" ]; then
         sudo ovs-vsctl set-controller $bname tcp:127.0.0.1:$port $p2cmd
     fi
+
+    sudo ovs-ofctl show $bname
 }
 
 function add_link {
@@ -235,7 +237,7 @@ function test_stack {
     pcount_total=$((pcount50 + pcount52))
     echo $desc pcap count is $pcount6a $pcound6i $pcount50 $pcount52 $pcount_total
     echo pcap sane $((pcount6a > 10)) $((pcount6i > 10)) $((pcount6a < 180)) \
-         $((pcount_total > 90)) $((pcount_total < 180)) | tee -a $TEST_RESULTS
+         $((pcount_total > 80)) $((pcount_total < 160)) | tee -a $TEST_RESULTS
 
     bcount1e=$(tcpdump -en -r $t1sw1p28_pcap ether broadcast| wc -l) 2>/dev/null
     bcount2e=$(tcpdump -en -r $t1sw2p28_pcap ether broadcast| wc -l) 2>/dev/null

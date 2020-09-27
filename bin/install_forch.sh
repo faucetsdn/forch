@@ -1,11 +1,11 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 set -euo pipefail
 
-APK="apk -q"
+APK="apk"
 BUILDDEPS="gcc g++ python3-dev musl-dev parallel yaml-dev"
 TESTDEPS="bitstring pytest wheel virtualenv"
-PIP3="pip3 -q --no-cache-dir install --upgrade"
+PIP3="pip3 --no-cache-dir install --upgrade"
 FROOT="/forch-src"
 
 dir=$(dirname "$0")
