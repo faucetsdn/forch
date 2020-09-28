@@ -123,3 +123,6 @@ jobs:
         run: bin/retry_cmd bin/build_docker
       - name: run test
         run: testing/python_test test_failscale
+      - name: post-run logs
+        if: ${{ always() }}
+        run: bin/dump_logs
