@@ -31,15 +31,16 @@ function test_counting {
     for sw in 1 2; do
         for port in 1 2; do
             for acl in 0 1; do
-                jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].description" $api_result | tee -a $TEST_RESULTS
+                description=`jq -r ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].description" $api_result`
                 value=`jq ".switches.\"nz-kiwi-t2sw$sw\".ports.\"$port\".acls[$acl].rules[0].packet_count" $api_result`
                 key=$sw$port$acl
                 old=${change_counts[$key]:-$value}
                 change_counts[$key]=$value
                 delta=$((value - old))
-                zone=$(((delta > 0) + (delta > 2) + (delta > 4) + (delta > 6)))
                 echo t2sw$sw:$port ACL $acl: $old $value
-                echo $zone | tee -a $TEST_RESULTS
+                # ARP will be between 1-3 hits, while ICMP should be exactly 5
+                tier=$(((delta > 0) + (delta > 3) + (delta > 4) + (delta > 5)))
+                echo $key $tier $description | tee -a $TEST_RESULTS
             done
         done
     done

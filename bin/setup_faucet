@@ -3,11 +3,7 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-if [ -n "$TRAVIS_BRANCH" ]; then
-    GIT_BRANCH=$TRAVIS_BRANCH
-else
-    GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
-fi
+GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
 GIT_REMOTE=`git config branch.$GIT_BRANCH.remote` || true
 if [ -z "$GIT_REMOTE" ]; then
