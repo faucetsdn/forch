@@ -6,7 +6,7 @@ tail -n 100 inst/forch-faucet-1/faucet.log
 echo Dump ovs-vsctl
 sudo ovs-vsctl show 2>&1
 
-switches=`sudo ovs-vsctl show | fgrep Bridge | awk '{print $2} | sort'` 2>&1
+switches=`sudo ovs-vsctl show | fgrep Bridge | awk '{print $2}' | sort` 2>&1
 
 for switch in $switches; do
     echo Dump switch $switch
