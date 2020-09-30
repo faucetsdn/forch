@@ -233,6 +233,8 @@ class Forchestrator:
             behaviors_file_path, self._reload_static_device_behavior)
 
     def _reload_static_device_behavior(self, file_path):
+        self._port_state_manager.clear_static_device_behaviors()
+
         try:
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
@@ -242,8 +244,6 @@ class Forchestrator:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
                 self._should_ignore_auth_result = True
             return
-
-        self._port_state_manager.clear_static_device_behaviors()
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 

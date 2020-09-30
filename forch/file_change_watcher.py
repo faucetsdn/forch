@@ -74,17 +74,19 @@ class FileChangeHandler(FileSystemEventHandler):
     def on_modified(self, event):
         """When file is modified, check if file content has changed"""
         super(FileChangeHandler, self).on_modified(event)
-
-        if event.is_directory:
-            return
-
-        self._file_change_callback(event.src_path)
+        self._handle_file_change(event)
 
     def on_created(self, event):
         """When file is created"""
         super(FileChangeHandler, self).on_created(event)
+        self._handle_file_change(event)
 
+    def on_deleted(self, event):
+        """When file is deleted"""
+        super(FileChangeHandler, self).on_deleted(event)
+        self._handle_file_change(event)
+
+    def _handle_file_change(self, event):
         if event.is_directory:
             return
-
         self._file_change_callback(event.src_path)
