@@ -238,7 +238,7 @@ class Forchestrator:
         try:
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
-            msg = f'Cannot load file {file_path}: {error}'
+            msg = f'DVA disabled: cannot load static behavior file {file_path}'
             LOGGER.error(msg)
             with self._lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
