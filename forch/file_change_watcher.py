@@ -68,8 +68,8 @@ class FileChangeWatcher:
 
 class FileChangeHandler(FileSystemEventHandler):
     """Handles file change event"""
-    def __init__(self, _file_change_callback):
-        self._file_change_callback = _file_change_callback
+    def __init__(self, file_change_callback):
+        self._file_change_callback = file_change_callback
 
     def on_modified(self, event):
         """When file is modified, check if file content has changed"""
