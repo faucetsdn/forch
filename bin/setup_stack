@@ -46,6 +46,11 @@ if [ "$1" == "fot" ]; then
     shift
 fi
 
+if [ "$1" == "dumptcp" ]; then
+    dumptcp=y
+    shift
+fi
+
 if [ -n "$1" ]; then
     mode=$1
     shift
@@ -153,7 +158,7 @@ tdevices=$((dcount + scount - 3))
 echo Working with $tdevices devices.
 
 echo Letting system settle...
-sleep 10
+sleep 30
 
 if [ -n "$fot" ]; then
     echo head of forch-controller-1/faucet.log:
@@ -187,5 +192,27 @@ if [ -z "$skip_conn_check" ]; then
         done
     fi
 fi
+
+rm -rf tcpdump
+function do_tcpdump {
+    sudo tcpdump -U --immediate-mode -Z root -eni $1 -w tcpdump/$1.pcap 2>&1 &
+    echo $! >> tcpdump/tcpdump.pids
+}
+
+if [ -n "$dumptcp" ]; then
+    echo Launching tcpdumps...
+    mkdir tcpdump
+    echo -n > tcpdump/tcpdump.pids
+    do_tcpdump bond
+    for switch in t1sw1 t1sw2; do
+        do_tcpdump $switch-eth6
+        do_tcpdump $switch-eth28
+        for port in 9 10 11 12 13 14 15 16 17 18; do
+            do_tcpdump $switch-eth$port
+        done
+    done
+fi
+
+sleep 2
 
 echo Done with stack setup mode $mode.
