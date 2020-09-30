@@ -574,17 +574,18 @@ class Forchestrator:
                 details.append(field.name)
         if details:
             detail = 'broken subsystems: ' + ', '.join(details)
-        else:
-            detail = 'n/a'
 
         if not self._faucet_events.event_socket_connected:
             has_error = True
-            detail += '. Faucet disconnected.'
+            detail += '. Faucet disconnected'
 
         with self._lock:
             if self._config_errors:
                 has_error = True
-                detail += '. '.join(self._config_errors.values())
+                detail += '. ' + '. '.join(self._config_errors.values())
+
+        if not detail:
+            detail = 'n/a'
 
         if has_error:
             return State.broken, detail
