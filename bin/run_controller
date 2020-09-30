@@ -57,8 +57,6 @@ if [ -n "$1" ]; then
     shift
 fi
 
-source bin/stack_functions
-
 echo Creating $IMAGE instance $CONTAINER on port $ext_ofpt in $INSTDIR
 
 # Check that image exists so docker doesn't pull down random one from dockerhub
@@ -155,24 +153,11 @@ if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     data_intf_name=data_faucet_$faucet_id
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
     sudo ip link set $data_intf_name up
-    #docker exec $CONTAINER ip link add link data0 name data0.171 type vlan id 171
-    #docker exec $CONTAINER ip link add link data0 name data0.272 type vlan id 272
-    #docker exec $CONTAINER ip link add link data0 name data0.373 type vlan id 373
     docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
     docker exec $CONTAINER ip link set data0 up
-    # docker exec $CONTAINER ip link set data0.171 up
-    #docker exec $CONTAINER ip link set data0.272 up
-    #docker exec $CONTAINER ip link set data0.373 up
-    #docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.171
-    #docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.272
-    #docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.373
     docker exec $CONTAINER /usr/share/openvswitch/scripts/ovs-ctl start
     docker cp misc/controller_go $CONTAINER:/usr/bin/controller_go 
     docker exec $CONTAINER /usr/bin/controller_go
-
-    #docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0.171 -- set interface data0.171 ofport_request=2; ifconfig data0.171 up"
-    #docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0.272 -- set interface data0.272 ofport_request=3; ifconfig data0.272 up"
-    #docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0.373 -- set interface data0.373 ofport_request=4; ifconfig data0.373 up"
 fi
 
 echo Container $CONTAINER started as $cid
