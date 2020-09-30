@@ -66,6 +66,7 @@ _TARGET_GAUGE_METRICS = (
     'flow_packet_count_port_acl'
 )
 
+STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -104,10 +105,14 @@ class Forchestrator:
         self._active_state_lock = threading.Lock()
 
         self._should_enable_faucetizer = False
+        self._should_ignore_auth_result = False
 
-        self._config_summary = None
+        self._config_errors = {}
+        self._faucet_config_summary = None
         self._metrics = None
         self._proxy = None
+
+        self._lock = threading.Lock()
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -228,11 +233,22 @@ class Forchestrator:
             behaviors_file_path, self._reload_static_device_behavior)
 
     def _reload_static_device_behavior(self, file_path):
-        self._port_state_manager.clear_static_device_behaviors()
+        try:
+            devices_state = yaml_proto(file_path, DevicesState)
+        except Exception as error:
+            msg = f'Cannot load file {file_path}: {error}'
+            LOGGER.error(msg)
+            with self._lock:
+                self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
+                self._should_ignore_auth_result = True
+            return
 
-        devices_state = yaml_proto(file_path, DevicesState)
+        self._port_state_manager.clear_static_device_behaviors()
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
+
+        with self._lock:
+            self._config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
@@ -345,8 +361,10 @@ class Forchestrator:
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         self._faucet_collector.update_radius_result(mac, access, segment, role)
-        device_behavior = DeviceBehavior(segment=segment, role=role)
-        self._port_state_manager.handle_device_behavior(mac, device_behavior)
+        with self._lock:
+            if not self._should_ignore_auth_result:
+                device_behavior = DeviceBehavior(segment=segment, role=role)
+                self._port_state_manager.handle_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
@@ -511,7 +529,7 @@ class Forchestrator:
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.site.name or 'unknown'
         system_state.controller_name = self._get_controller_name()
-        system_state.config_summary.CopyFrom(self._config_summary)
+        system_state.config_summary.CopyFrom(self._faucet_config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
         return system_state
 
@@ -562,6 +580,11 @@ class Forchestrator:
         if not self._faucet_events.event_socket_connected:
             has_error = True
             detail += '. Faucet disconnected.'
+
+        with self._lock:
+            if self._config_errors:
+                has_error = True
+                detail += '. '.join(self._config_errors.values())
 
         if has_error:
             return State.broken, detail
@@ -636,13 +659,13 @@ class Forchestrator:
             (new_conf_hashes, _, new_dps, top_conf) = config_parser.dp_parser(
                 self._behavioral_config_file, 'fconfig')
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
-            self._config_summary = SystemState.ConfigSummary()
+            self._faucet_config_summary = SystemState.ConfigSummary()
             for file_name, file_hash in new_conf_hashes.items():
                 LOGGER.info('Loaded conf %s as %s', file_name, file_hash)
-                self._config_summary.hashes[file_name] = file_hash
+                self._faucet_config_summary.hashes[file_name] = file_hash
             for warning, message in self._validate_config(top_conf):
                 LOGGER.warning('Config warning %s: %s', warning, message)
-                self._config_summary.warnings[warning] = message
+                self._faucet_config_summary.warnings[warning] = message
             return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
@@ -678,8 +701,8 @@ class Forchestrator:
 
     def _update_config_warning_varz(self):
         self._metrics.update_var(
-            'faucet_config_warning_count', len(self._config_summary.warnings))
-        for warning_key, warning_msg in self._config_summary.warnings.items():
+            'faucet_config_warning_count', len(self._faucet_config_summary.warnings))
+        for warning_key, warning_msg in self._faucet_config_summary.warnings.items():
             self._metrics.update_var('faucet_config_warning', 1, [warning_key, warning_msg])
 
     def _populate_versions(self, versions):
@@ -759,7 +782,7 @@ class Forchestrator:
             _, _, behavioral_config = self._get_faucet_config()
             faucet_config_map = {
                 'behavioral': behavioral_config,
-                'warnings': dict(self._config_summary.warnings)
+                'warnings': dict(self._faucet_config_summary.warnings)
             }
             reply = {
                 'faucet': faucet_config_map,
