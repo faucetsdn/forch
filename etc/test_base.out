@@ -3,3 +3,25 @@ testing/test_base
 RADIUS request for 00:aa:bb:cc:dd:ee
 auth_callback for 00:aa:bb:cc:dd:ee: access:Authorized segment:test role:test
 0
+0 received
+Version from varz matches forch version.
+5 received
+Radius results 1 0
+Starting counting-initial tests
+110 0 allow ICMP
+111 0 arp
+120 0 allow ICMP
+121 0 arp
+210 0 allow ICMP
+211 0 arp
+220 0 deny ICMP
+221 0 arp
+Starting counting-basic tests
+110 3 allow ICMP
+111 1 arp
+120 0 allow ICMP
+121 4 arp
+210 3 allow ICMP
+211 1 arp
+220 3 deny ICMP
+221 1 arp
