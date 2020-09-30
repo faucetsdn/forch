@@ -32,7 +32,6 @@ fi
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
     INSTDIR=$INSTDIR/forch-controller-$1
-    INSTDIR2=$INSTDIR/faucet_br
     faucet_id=$1
     shift
 fi
@@ -107,8 +106,8 @@ docker_envs="\
         --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
 
 docker_volumes+="\
-        -v $INSTDIR2/faucet:/etc/faucet_br \
-        -v $INSTDIR2:/var/log/faucet_br \
+        -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
+        -v $INSTDIR/faucet_br:/var/log/faucet_br \
         -v $INSTDIR/faucet:/etc/faucet \
         -v $INSTDIR:/var/log/faucet"
 
