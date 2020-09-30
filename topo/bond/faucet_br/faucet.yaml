@@ -1,0 +1,32 @@
+dps:
+  br-fot:
+    dp_id: 250
+    faucet_dp_mac: 0e:00:00:00:01:01
+    hardware: Generic
+    lacp_timeout: 5
+    interfaces:
+      1:
+        description: data0
+        tagged_vlans: [171]
+      2:
+        description: data0.171
+      3:
+        description: data0.272
+        acl_in: dhcp_request
+      4:
+        description: data0.373
+version: 2
+vlans:
+  300:
+    description: DHCP bridge
+acls:
+  dhcp_request:
+    - rule:
+      dl_type: 0x800
+      nw_proto: 17
+      udp_src: 68
+      udp_dst: 67
+      actions:
+        output:
+            vlan_vid: 171
+            port: 1

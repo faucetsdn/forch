@@ -32,6 +32,7 @@ fi
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
     INSTDIR=$INSTDIR/forch-controller-$1
+    INSTDIR2=$INSTDIR/faucet_br
     faucet_id=$1
     shift
 fi
@@ -55,6 +56,8 @@ if [ -n "$1" ]; then
     gauge_prom_pt=$1
     shift
 fi
+
+source bin/stack_functions
 
 echo Creating $IMAGE instance $CONTAINER on port $ext_ofpt in $INSTDIR
 
@@ -106,6 +109,8 @@ docker_envs="\
         --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
 
 docker_volumes+="\
+        -v $INSTDIR2/faucet:/etc/faucet_br \
+        -v $INSTDIR2:/var/log/faucet_br \
         -v $INSTDIR/faucet:/etc/faucet \
         -v $INSTDIR:/var/log/faucet"
 
@@ -150,11 +155,38 @@ if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     data_intf_name=data_faucet_$faucet_id
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
     sudo ip link set $data_intf_name up
+    docker exec $CONTAINER ip link add link data0 name data0.171 type vlan id 171
     docker exec $CONTAINER ip link add link data0 name data0.272 type vlan id 272
+    docker exec $CONTAINER ip link add link data0 name data0.373 type vlan id 373
     docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0.272
     docker exec $CONTAINER ip link set data0 up
+    docker exec $CONTAINER ip link set data0.171 up
     docker exec $CONTAINER ip link set data0.272 up
-    docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.272
+    docker exec $CONTAINER ip link set data0.373 up
+    #docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.171
+    #docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.272
+    #docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.373
+    docker exec $CONTAINER /usr/share/openvswitch/scripts/ovs-ctl start
+
+    echo 'Running second faucet service'
+
+    docker exec $CONTAINER bash -c "FAUCET_EXCEPTION_LOG=/var/log/faucet_br/faucet_exception.log \
+        FAUCET_CONFIG_STAT_RELOAD=1 FAUCET_RYU_CONF=/etc/faucet_br/ryu.conf \
+        FAUCET_LISTEN_PORT=3984 FAUCET_PROMETHEUS_PORT=5678 \
+        FAUCET_CONFIG=/etc/faucet_br/faucet.yaml FAUCET_LOG=/var/log/faucet_br/faucet.log \
+        FAUCET_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock WSAPI_LISTEN_PORT=4567 \
+        faucet --ryu-config-file=/etc/faucet_br/ryu.conf --ryu-ofp-tcp-listen-port=3984 &"
+
+    echo Adding fot bridge
+    docker exec $CONTAINER bash -c "sudo ovs-vsctl --if-exists del-br br-fot \
+         -- add-br br-fot \
+         -- set-fail-mode br-fot secure \
+         -- set bridge br-fot other_config:datapath-id=0xfa"
+    docker exec $CONTAINER bash -c "sudo ovs-vsctl set-controller br-fot tcp:127.0.0.1:3984"
+    docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1; ifconfig data0 up"
+    docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0.171 -- set interface data0.171 ofport_request=2; ifconfig data0.171 up"
+    docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0.272 -- set interface data0.272 ofport_request=3; ifconfig data0.272 up"
+    docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0.373 -- set interface data0.373 ofport_request=4; ifconfig data0.373 up"
 fi
 
 echo Container $CONTAINER started as $cid

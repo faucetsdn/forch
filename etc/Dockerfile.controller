@@ -2,7 +2,7 @@
 
 FROM faucet/python3:5.0.1
 
-RUN apk add -q tcpdump iptables sudo linux-headers
+RUN apk add -q tcpdump iptables sudo linux-headers openvswitch
 
 COPY faucet/ /faucet-src/
 COPY . /forch-src/
