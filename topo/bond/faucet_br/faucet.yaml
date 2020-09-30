@@ -7,14 +7,7 @@ dps:
     interfaces:
       1:
         description: data0
-        tagged_vlans: [171]
-      2:
-        description: data0.171
-      3:
-        description: data0.272
-        acl_in: dhcp_request
-      4:
-        description: data0.373
+        tagged_vlans: [272, 171]
 version: 2
 vlans:
   300:
@@ -26,7 +19,8 @@ acls:
       nw_proto: 17
       udp_src: 68
       udp_dst: 67
+      vlan_vid: 272
       actions:
         output:
-            vlan_vid: 171
-            port: 1
+            port: 0xfffffff8     # OFPP_IN_PORT
+            swap_vid: 171

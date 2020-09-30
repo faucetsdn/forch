@@ -1,0 +1,24 @@
+#!/bin/sh -ex
+
+env
+
+# User might already exist if docker restarted.
+echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
+
+sudo -u kronkiteman \
+    FAUCET_EXCEPTION_LOG=/var/log/faucet_br/faucet_exception.log \
+    FAUCET_CONFIG_STAT_RELOAD=1 FAUCET_RYU_CONF=/etc/faucet_br/ryu.conf \
+    FAUCET_LISTEN_PORT=3984 FAUCET_PROMETHEUS_PORT=5678 \
+    FAUCET_CONFIG=/etc/faucet_br/faucet.yaml FAUCET_LOG=/var/log/faucet_br/faucet.log \
+    FAUCET_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock WSAPI_LISTEN_PORT=4567 \
+    faucet --ryu-config-file=/etc/faucet_br/ryu.conf --ryu-ofp-tcp-listen-port=3984 &
+
+echo Adding fot bridge
+ovs-vsctl --if-exists del-br br-fot \
+    -- add-br br-fot \
+    -- set-fail-mode br-fot secure \
+    -- set bridge br-fot other_config:datapath-id=0xfa
+echo Adding fot bridge controller
+ovs-vsctl set-controller br-fot tcp:127.0.0.1:3984
+echo Adding fot bridge port
+ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1; ifconfig data0 up
