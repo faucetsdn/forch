@@ -564,6 +564,7 @@ class Forchestrator:
         has_error = False
         has_warning = False
         details = []
+        detail = ''
         for field, subsystem in summary.ListFields():
             state = subsystem.state
             if state in (State.down, State.broken):
@@ -573,7 +574,7 @@ class Forchestrator:
                 has_warning = True
                 details.append(field.name)
         if details:
-            detail = 'broken subsystems: ' + ', '.join(details)
+            detail += 'broken subsystems: ' + ', '.join(details)
 
         if not self._faucet_events.event_socket_connected:
             has_error = True
