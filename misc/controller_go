@@ -14,11 +14,18 @@ sudo -u kronkiteman \
     faucet --ryu-config-file=/etc/faucet_br/ryu.conf --ryu-ofp-tcp-listen-port=3984 &
 
 echo Adding fot bridge
-ovs-vsctl --if-exists del-br br-fot \
+sudo /usr/share/openvswitch/scripts/ovs-ctl start
+sudo ovs-vsctl --if-exists del-br br-fot \
     -- add-br br-fot \
     -- set-fail-mode br-fot secure \
     -- set bridge br-fot other_config:datapath-id=0xfa
 echo Adding fot bridge controller
-ovs-vsctl set-controller br-fot tcp:127.0.0.1:3984
-echo Adding fot bridge port
-ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1; ifconfig data0 up
+sudo ovs-vsctl set-controller br-fot tcp:127.0.0.1:3984
+/usr/bin/gauge_go &
+/usr/bin/forch &
+sudo -u kronkiteman \
+     FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \
+     FAUCET_EVENT_SOCK_HEARTBEAT=$FAUCET_EVENT_SOCK_HEARTBEAT \
+     FAUCET_CONFIG_STAT_RELOAD=$FAUCET_CONFIG_STAT_RELOAD \
+     FAUCET_CONFIG=$FAUCET_CONFIG \
+     faucet --ryu-config-file=${FAUCET_RYU_CONF} --ryu-ofp-tcp-listen-port=${FAUCET_LISTEN_PORT}

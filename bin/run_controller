@@ -146,17 +146,14 @@ cid=$(docker run -d --privileged --name $CONTAINER \
 if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     for file in $INSTDIR/forch/*; do docker cp $file $CONTAINER:/etc/faucet/; done
     # docker exec $CONTAINER /usr/bin/gauge --ryu-config-file=${GAUGE_RYU_CONF} --ryu-ofp-tcp-listen-port=${GAUGE_LISTEN_PORT} --ryu-wsapi-host=${WSAPI_LISTEN_HOST} --ryu-wsapi-port=${WSAPI_LISTEN_PORT} --ryu-app=ryu.app.ofctl_rest &
-    docker exec $CONTAINER /usr/bin/gauge_go &
-    docker exec $CONTAINER /usr/bin/forch &
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
     data_intf_name=data_faucet_$faucet_id
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
     sudo ip link set $data_intf_name up
     docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
     docker exec $CONTAINER ip link set data0 up
-    docker exec $CONTAINER /usr/share/openvswitch/scripts/ovs-ctl start
-    docker cp misc/controller_go $CONTAINER:/usr/bin/controller_go 
-    docker exec $CONTAINER /usr/bin/controller_go
+    echo Adding fot bridge port
+    docker exec $CONTAINER bash -c "ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1; ifconfig data0 up"
 fi
 
 echo Container $CONTAINER started as $cid
