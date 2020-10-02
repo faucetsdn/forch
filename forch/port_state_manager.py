@@ -96,25 +96,26 @@ class PortStateManager:
         self._dynamic_device_behaviors = {}
         self._process_device_behavior = process_device_behavior
         self._testing_segment = testing_segment
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
 
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
-        isolation_behavior = device_behavior.isolation_behavior
-        if isolation_behavior:
-            self._static_port_behaviors[mac] = isolation_behavior
+        with self._lock:
+            isolation_behavior = device_behavior.isolation_behavior
+            if isolation_behavior:
+                self._static_port_behaviors[mac] = isolation_behavior
 
-        if device_behavior.segment:
-            self.handle_device_behavior(mac, device_behavior, static=True)
+            if device_behavior.segment:
+                self.handle_device_behavior(mac, device_behavior, static=True)
 
     def handle_device_behavior(self, mac, device_behavior, static=False):
         """Handle authentication result"""
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)
         else:
-            self._handle_unauthenticated_device(mac)
+            self._handle_unauthenticated_device(mac, static)
 
-    def _handle_authenticated_device(self, mac, device_behavior, static=False):
+    def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""
         with self._lock:
             device_behaviors = (
@@ -133,13 +134,17 @@ class PortStateManager:
             state_machine = self._state_machines.setdefault(mac, new_state_machine)
             state_machine.handle_port_behavior(port_behavior)
 
-    def _handle_unauthenticated_device(self, mac):
+    def _handle_unauthenticated_device(self, mac, static):
         """Handle an unauthenticated device"""
         with self._lock:
             try:
-                self._dynamic_device_behaviors.pop(mac)
-                self._state_machines.pop(mac)
-                self._process_device_behavior(mac, DeviceBehavior(), static=False)
+                device_behaviors = (
+                    self._static_device_behaviors if static else self._dynamic_device_behaviors)
+                device_behaviors.pop(mac)
+
+                if static or mac not in self._static_device_behaviors:
+                    self._state_machines.pop(mac)
+                    self._process_device_behavior(mac, DeviceBehavior(), static=static)
             except KeyError as error:
                 LOGGER.warning('MAC %s does not exist: %s', mac, error)
 
@@ -169,4 +174,7 @@ class PortStateManager:
 
     def clear_static_device_behaviors(self):
         """Remove all static device behaviors"""
-        self._static_device_behaviors.clear()
+        with self._lock:
+            macs = list(self._static_device_behaviors.keys())
+            for mac in macs:
+                self._handle_unauthenticated_device(mac, static=True)
