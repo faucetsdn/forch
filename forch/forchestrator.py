@@ -238,17 +238,21 @@ class Forchestrator:
         try:
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
-            msg = f'DVA disabled: could not load static behavior file {file_path}'
+            msg = f'Authentication disabled: could not load static behavior file {file_path}'
             LOGGER.error('%s: %s', msg, error)
             with self._lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
                 self._should_ignore_auth_result = True
             return
-        for mac, device_behavior in devices_state.device_mac_behaviors.items():
-            self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
         with self._lock:
             self._config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
+            self._should_ignore_auth_result = False
+
+        LOGGER.info('Authentication resumed')
+
+        for mac, device_behavior in devices_state.device_mac_behaviors.items():
+            self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
@@ -362,7 +366,9 @@ class Forchestrator:
         """Method passed as callback to authenticator to forward auth results"""
         self._faucet_collector.update_radius_result(mac, access, segment, role)
         with self._lock:
-            if not self._should_ignore_auth_result:
+            if self._should_ignore_auth_result:
+                LOGGER.warning('Ingoring authentication result for device %s', mac)
+            else:
                 device_behavior = DeviceBehavior(segment=segment, role=role)
                 self._port_state_manager.handle_device_behavior(mac, device_behavior)
 
