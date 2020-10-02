@@ -121,7 +121,7 @@ class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
 
         future_responses = []
         for testing_state in expected_testing_states:
-            print('Sending device testing state: %s', testing_state)
+            print(f'Sending device testing state: {testing_state}')
             future_response = self._client.ReportTestingState.future(
                 dict_proto(testing_state, DeviceTestingState))
             future_responses.append(future_response)
@@ -139,8 +139,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
     """Test access port testing states"""
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
-        print(
-            'Received device behavior for device %s: %s, %s', mac, device_behavior, static)
+        print(f'Received device behavior for device {mac}: {device_behavior}, {static}')
         self._received_device_behaviors.append((mac, device_behavior.segment, static))
 
     def test_ports_states(self):
@@ -179,13 +178,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_device_behaviors = [
+        expected_received_device_behaviors = [
             ('00:0X:00:00:00:01', 'SEG_A', True),
             ('00:0X:00:00:00:01', 'SEG_A', True),
             ('00:0Z:00:00:00:03', 'TESTING', False),
             ('00:0A:00:00:00:04', 'TESTING', False)
         ]
-        self._verify_received_device_behaviors(expected_device_behaviors)
+        self._verify_received_device_behaviors(expected_received_device_behaviors)
 
         # received testing results for devices
         for testing_result in testing_results:
@@ -199,23 +198,22 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
-        self._verify_received_device_behaviors(expected_device_behaviors)
+        expected_received_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
+        self._verify_received_device_behaviors(expected_received_device_behaviors)
 
         # devices are unauthenticated
         for mac in unauthenticated_devices:
             self._port_state_manager.handle_device_behavior(mac, DeviceBehavior())
 
         expected_states = {
+            '00:0X:00:00:00:01': self.OPERATIONAL,
             '00:0Z:00:00:00:03': self.INFRACTED
         }
         self._verify_ports_states(expected_states)
 
-        expected_device_behaviors.extend([
-            ('00:0X:00:00:00:01', '', False),
-            ('00:0A:00:00:00:04', '', False)
-        ])
-        self._verify_received_device_behaviors(expected_device_behaviors)
+        expected_received_device_behaviors.extend([('00:0A:00:00:00:04', '', False)])
+        self._verify_received_device_behaviors(expected_received_device_behaviors)
+
 
 if __name__ == '__main__':
     unittest.main()
