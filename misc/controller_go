@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/sh
 
 env
 
@@ -28,4 +28,14 @@ sudo -u kronkiteman \
      FAUCET_EVENT_SOCK_HEARTBEAT=$FAUCET_EVENT_SOCK_HEARTBEAT \
      FAUCET_CONFIG_STAT_RELOAD=$FAUCET_CONFIG_STAT_RELOAD \
      FAUCET_CONFIG=$FAUCET_CONFIG \
-     faucet --ryu-config-file=${FAUCET_RYU_CONF} --ryu-ofp-tcp-listen-port=${FAUCET_LISTEN_PORT}
+     faucet --ryu-config-file=${FAUCET_RYU_CONF} --ryu-ofp-tcp-listen-port=${FAUCET_LISTEN_PORT} &
+
+while ! ip link show data0; do
+    sleep 2
+done
+
+echo Adding fot bridge port
+sudo ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1
+ifconfig data0 up
+
+tail -f /dev/null
