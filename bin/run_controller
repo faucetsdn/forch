@@ -106,6 +106,8 @@ docker_envs="\
         --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
 
 docker_volumes+="\
+        -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
+        -v $INSTDIR/faucet_br:/var/log/faucet_br \
         -v $INSTDIR/faucet:/etc/faucet \
         -v $INSTDIR:/var/log/faucet"
 
@@ -144,17 +146,12 @@ cid=$(docker run -d --privileged --name $CONTAINER \
 if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     for file in $INSTDIR/forch/*; do docker cp $file $CONTAINER:/etc/faucet/; done
     # docker exec $CONTAINER /usr/bin/gauge --ryu-config-file=${GAUGE_RYU_CONF} --ryu-ofp-tcp-listen-port=${GAUGE_LISTEN_PORT} --ryu-wsapi-host=${WSAPI_LISTEN_HOST} --ryu-wsapi-port=${WSAPI_LISTEN_PORT} --ryu-app=ryu.app.ofctl_rest &
-    docker exec $CONTAINER /usr/bin/gauge_go &
-    docker exec $CONTAINER /usr/bin/forch &
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
     data_intf_name=data_faucet_$faucet_id
     sudo ip link add $data_intf_name type veth peer name data0 netns $pid
     sudo ip link set $data_intf_name up
-    docker exec $CONTAINER ip link add link data0 name data0.272 type vlan id 272
-    docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0.272
+    docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
     docker exec $CONTAINER ip link set data0 up
-    docker exec $CONTAINER ip link set data0.272 up
-    docker exec $CONTAINER ip route add 192.168.0.0/16 dev data0.272
 fi
 
 echo Container $CONTAINER started as $cid
