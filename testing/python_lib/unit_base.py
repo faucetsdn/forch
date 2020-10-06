@@ -249,10 +249,10 @@ class DeviceReportServerTestBase(unittest.TestCase):
         self._client = DeviceReportStub(channel)
 
         self._server = DeviceReportServer(
-            self._process_device_testing_result, self.SERVER_ADDRESS, self.SERVER_PORT)
+            self._process_devices_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
 
-    def _process_device_testing_result(self):
+    def _process_devices_state(self):
         pass
 
     def tearDown(self):

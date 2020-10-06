@@ -95,7 +95,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
 
 
-class FotDeviceTestingServerTestCase(DeviceReportServerTestBase):
+class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
     """Device testing server test case"""
 
     def __init__(self, *args, **kwargs):
@@ -130,7 +130,7 @@ class FotDeviceTestingServerTestCase(DeviceReportServerTestBase):
         for mac_device_event in expected_mac_device_events:
             print(f'Sending devices state: {mac_device_event}')
             future_response = self._client.ReportDevicesState.future(
-                self._encapsulate_mac_device_event(mac_device_event[0], mac_device_event[1]))
+                self._encapsulate_mac_device_event(*mac_device_event))
             future_responses.append(future_response)
 
         for future_response in future_responses:
@@ -204,7 +204,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         # received testing results for devices
         for testing_result in testing_results:
             self._port_state_manager.handle_testing_result(
-                self._encapsulate_testing_result(testing_result))
+                self._encapsulate_testing_result(*testing_result))
 
         expected_states = {
             '00:0X:00:00:00:01': self.OPERATIONAL,
