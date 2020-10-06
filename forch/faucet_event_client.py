@@ -118,7 +118,8 @@ class FaucetEventClient():
         if event_id != self._last_event_id:
             LOGGER.error(
                 'Out-of-sequence event id. Last: %d, received: %d' % self._last_event_id, event_id)
-            self._metrics.inc_var('faucet_event_out_of_sequence_count')
+            if self._forch_metrics:
+                self._forch_metrics.inc_var('faucet_event_out_of_sequence_count')
             self._last_event_id = event_id + 1
         return True
 
