@@ -111,7 +111,7 @@ class FotDeviceTestingServerTestCase(DeviceReportServerTestBase):
     def _encapsulate_mac_device_event(self, mac, device_event):
         devices_state_map = {
             'device_mac_behaviors': {
-                mac: DeviceBehavior(device_event=device_event)
+                mac: {'device_event': device_event}
             }
         }
         return dict_proto(devices_state_map, DevicesState)
@@ -152,7 +152,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
     def _encapsulate_testing_result(self, mac, device_event):
         devices_state_map = {
             'device_mac_behaviors': {
-                mac: DeviceBehavior(device_event=device_event)
+                mac: {'device_event': device_event}
             }
         }
         return dict_proto(devices_state_map, DevicesState)
