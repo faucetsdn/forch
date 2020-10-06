@@ -129,7 +129,7 @@ class FotDeviceTestingServerTestCase(DeviceReportServerTestBase):
         future_responses = []
         for mac_device_event in expected_mac_device_events:
             print(f'Sending devices state: {mac_device_event}')
-            future_response = self._client.ReportTestingState.future(
+            future_response = self._client.ReportDevicesState.future(
                 self._encapsulate_mac_device_event(mac_device_event[0], mac_device_event[1]))
             future_responses.append(future_response)
 
@@ -160,8 +160,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
     def test_ports_states(self):
         """Test the testing states with different signals"""
         static_device_behaviors = {
-            '00:0X:00:00:00:01': {'segment': 'SEG_A', 'isolation_behavior': 'cleared'},
-            '00:0Y:00:00:00:02': {'isolation_behavior': 'cleared'}
+            '00:0X:00:00:00:01': {'segment': 'SEG_A', 'device_event': 'cleared'},
+            '00:0Y:00:00:00:02': {'device_event': 'cleared'}
         }
         authentication_results = {
             '00:0X:00:00:00:01': {'segment': 'SEG_X'},
