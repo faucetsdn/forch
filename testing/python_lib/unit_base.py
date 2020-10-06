@@ -15,7 +15,7 @@ from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
-from forch.proto.grpc.devices_state_pb2_grpc import DevicesStatetub
+from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 
 
 class UnitTestBase(unittest.TestCase):
@@ -233,7 +233,7 @@ class FaucetizerTestBase(UnitTestBase):
         self._cleanup_config_files()
 
 
-class DevicesStateServerTestBase(unittest.TestCase):
+class DeviceReportServerTestBase(unittest.TestCase):
     """Base class for DevicesStateServer unit test"""
     SERVER_ADDRESS = '0.0.0.0'
     SERVER_PORT = 50051
@@ -246,7 +246,7 @@ class DevicesStateServerTestBase(unittest.TestCase):
     def setUp(self):
         """setup fixture for each test method"""
         channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
-        self._client = DevicesStateStub(channel)
+        self._client = DeviceReportStub(channel)
 
         self._server = DevicesStateServer(
             self._process_device_testing_result, self.SERVER_ADDRESS, self.SERVER_PORT)

@@ -12,7 +12,7 @@ from forch.proto.shared_constants_pb2 import Empty
 
 from integration_base import IntegrationTestBase
 from unit_base import (
-    DevicesStateServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
+    DeviceReportServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
 )
 
 
@@ -95,7 +95,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
 
 
-class FotDeviceTestingServerTestCase(DevicesStateServerTestBase):
+class FotDeviceTestingServerTestCase(DeviceReportServerTestBase):
     """Device testing server test case"""
 
     def __init__(self, *args, **kwargs):
