@@ -5,15 +5,14 @@ import time
 import unittest
 import yaml
 
-from forch.utils import dict_proto, proto_dict
+from forch.utils import dict_proto
 
-from forch.proto.devices_state_pb2 import DeviceBehavior
-from forch.proto.device_testing_state_pb2 import DeviceTestingState
+from forch.proto.devices_state_pb2 import DeviceBehavior, DevicesState
 from forch.proto.shared_constants_pb2 import Empty
 
 from integration_base import IntegrationTestBase
 from unit_base import (
-    DeviceTestingServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
+    DevicesStateServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
 )
 
 
@@ -96,41 +95,49 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
 
 
-class FotDeviceTestingServerTestCase(DeviceTestingServerTestBase):
+class FotDeviceTestingServerTestCase(DevicesStateServerTestBase):
     """Device testing server test case"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._lock = threading.Lock()
-        self._received_states = []
+        self._received_device_events = []
 
-    def _process_device_testing_state(self, device_testing_state):
+    def _process_devices_state(self, devices_state):
         with self._lock:
-            self._received_states.append(
-                proto_dict(device_testing_state, including_default_value_fields=True))
+            for mac, device_behavior in devices_state.device_mac_behaviors:
+                self._received_device_events.append((mac, device_behavior.device_event))
 
-    def test_receiving_device_testing_states(self):
+    def _encapsulate_mac_device_event(self, mac, device_event):
+        devices_state_map = {
+            'device_mac_behaviors': {
+                mac: DeviceBehavior(device_event=device_event)
+            }
+        }
+        return dict_proto(devices_state_map, DevicesState)
+
+    def test_receiving_devices_states(self):
         """Test behavior of the behavior when client sends device testing states"""
-        expected_testing_states = [
-            {'mac': '00:0X:00:00:00:01', 'port_behavior': 'unknown'},
-            {'mac': '00:0Y:00:00:00:02', 'port_behavior': 'passed'},
-            {'mac': '00:0Z:00:00:00:03', 'port_behavior': 'cleared'},
-            {'mac': '00:0A:00:00:00:04', 'port_behavior': 'passed'},
-            {'mac': '00:0B:00:00:00:05', 'port_behavior': 'unknown'}
+        expected_mac_device_events = [
+            ('00:0X:00:00:00:01', 'unknown'),
+            ('00:0Y:00:00:00:02', 'passed'),
+            ('00:0Z:00:00:00:03', 'cleared'),
+            ('00:0A:00:00:00:04', 'passed'),
+            ('00:0B:00:00:00:05', 'unknown')
         ]
 
         future_responses = []
-        for testing_state in expected_testing_states:
-            print(f'Sending device testing state: {testing_state}')
+        for mac_device_event in expected_mac_device_events:
+            print(f'Sending devices state: {mac_device_event}')
             future_response = self._client.ReportTestingState.future(
-                dict_proto(testing_state, DeviceTestingState))
+                self._encapsulate_mac_device_event(mac_device_event[0], mac_device_event[1]))
             future_responses.append(future_response)
 
         for future_response in future_responses:
             self.assertEqual(type(future_response.result()), Empty)
 
-        sorted_received_states = sorted(self._received_states, key=lambda k: k['mac'])
-        sorted_expected_states = sorted(expected_testing_states, key=lambda k: k['mac'])
+        sorted_received_states = sorted(self._received_device_events)
+        sorted_expected_states = sorted(expected_mac_device_events)
 
         self.assertEqual(sorted_received_states, sorted_expected_states)
 
@@ -141,6 +148,14 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
     def _process_device_behavior(self, mac, device_behavior, static=False):
         print(f'Received device behavior for device {mac}: {device_behavior}, {static}')
         self._received_device_behaviors.append((mac, device_behavior.segment, static))
+
+    def _encapsulate_testing_result(self, mac, device_event):
+        devices_state_map = {
+            'device_mac_behaviors': {
+                mac: DeviceBehavior(device_event=device_event)
+            }
+        }
+        return dict_proto(devices_state_map, DevicesState)
 
     def test_ports_states(self):
         """Test the testing states with different signals"""
@@ -154,10 +169,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0A:00:00:00:04': {'segment': 'SEG_D'}
         }
         testing_results = [
-            {'mac': '00:0X:00:00:00:01', 'port_behavior': 'failed'},
-            {'mac': '00:0Y:00:00:00:02', 'port_behavior': 'passed'},
-            {'mac': '00:0Z:00:00:00:03', 'port_behavior': 'failed'},
-            {'mac': '00:0A:00:00:00:04', 'port_behavior': 'passed'}
+            ('00:0X:00:00:00:01', 'failed'),
+            ('00:0Y:00:00:00:02', 'passed'),
+            ('00:0Z:00:00:00:03', 'failed'),
+            ('00:0A:00:00:00:04', 'passed')
         ]
         unauthenticated_devices = ['00:0X:00:00:00:01', '00:0A:00:00:00:04']
 
@@ -189,7 +204,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         # received testing results for devices
         for testing_result in testing_results:
             self._port_state_manager.handle_testing_result(
-                dict_proto(testing_result, DeviceTestingState))
+                self._encapsulate_testing_result(testing_result))
 
         expected_states = {
             '00:0X:00:00:00:01': self.OPERATIONAL,

@@ -15,7 +15,7 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.device_testing_server import DeviceTestingServer
+from forch.devices_state_server import DevicesStateServer
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
@@ -189,7 +189,7 @@ class Forchestrator:
             self._process_device_behavior, self._config.orchestration.fot_config.testing_segment)
         testing_segment, testing_server_port = self._calculate_fot_config()
         if testing_segment:
-            self._device_testing_server = DeviceTestingServer(
+            self._device_testing_server = DevicesStateServer(
                 self._port_state_manager.handle_testing_result, testing_server_port)
 
         self._attempt_authenticator_initialise()

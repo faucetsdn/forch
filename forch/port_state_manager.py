@@ -4,7 +4,7 @@ import threading
 
 from forch.utils import get_logger
 
-from forch.proto.shared_constants_pb2 import PortBehavior
+from forch.proto.shared_constants_pb2 import DeviceEvent
 from forch.proto.devices_state_pb2 import DeviceBehavior
 
 
@@ -29,15 +29,15 @@ class PortStateMachine:
 
     TRANSITIONS = {
         AUTHENTICATED: {
-            PortBehavior.cleared: OPERATIONAL,
-            PortBehavior.sequestered: SEQUESTERED,
+            DeviceEvent.cleared: OPERATIONAL,
+            DeviceEvent.sequestered: SEQUESTERED,
         },
         SEQUESTERED: {
-            PortBehavior.passed: OPERATIONAL,
-            PortBehavior.failed: INFRACTED,
+            DeviceEvent.passed: OPERATIONAL,
+            DeviceEvent.failed: INFRACTED,
         },
         OPERATIONAL: {
-            PortBehavior.cleared: OPERATIONAL,
+            DeviceEvent.cleared: OPERATIONAL,
         },
     }
 
@@ -47,14 +47,14 @@ class PortStateMachine:
         self._sequester_state_callback = sequester_state_callback
         self._operational_state_callback = operational_state_callback
 
-    def handle_port_behavior(self, port_behavior):
+    def handle_device_event(self, device_event):
         """Handle testing state event"""
-        next_state = self.TRANSITIONS.get(self._current_state, {}).get(port_behavior, {})
+        next_state = self.TRANSITIONS.get(self._current_state, {}).get(device_event, {})
 
         if not next_state:
             LOGGER.warning(
-                'Cannot find next state for device %s in state %s for port behavior %s',
-                self._mac, self._current_state, port_behavior)
+                'Cannot find next state for device %s in state %s for device event %s',
+                self._mac, self._current_state, device_event)
             return
 
         LOGGER.info(
@@ -91,7 +91,7 @@ class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
     def __init__(self, process_device_behavior, testing_segment=None):
         self._state_machines = {}
-        self._static_port_behaviors = {}
+        self._static_device_events = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
         self._process_device_behavior = process_device_behavior
@@ -101,9 +101,9 @@ class PortStateManager:
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
         with self._lock:
-            isolation_behavior = device_behavior.isolation_behavior
-            if isolation_behavior:
-                self._static_port_behaviors[mac] = isolation_behavior
+            static_device_event = device_behavior.device_event
+            if static_device_event:
+                self._static_device_events[mac] = static_device_event
 
             if device_behavior.segment:
                 self.handle_device_behavior(mac, device_behavior, static=True)
@@ -122,17 +122,17 @@ class PortStateManager:
                 self._static_device_behaviors if static else self._dynamic_device_behaviors)
             device_behaviors.setdefault(mac, DeviceBehavior()).CopyFrom(device_behavior)
 
-            static_port_behavior = self._static_port_behaviors.get(mac)
-            if not self._testing_segment or static_port_behavior == PortBehavior.cleared:
-                port_behavior = PortBehavior.cleared
+            static_device_event = self._static_device_events.get(mac)
+            if not self._testing_segment or static_device_event == DeviceEvent.cleared:
+                device_event = DeviceEvent.cleared
             else:
-                port_behavior = PortBehavior.sequestered
+                device_event = DeviceEvent.sequestered
 
             new_state_machine = PortStateMachine(
                 mac, PortStateMachine.AUTHENTICATED, self._set_port_sequestered,
                 self._set_port_operational)
             state_machine = self._state_machines.setdefault(mac, new_state_machine)
-            state_machine.handle_port_behavior(port_behavior)
+            state_machine.handle_device_event(device_event)
 
     def _handle_unauthenticated_device(self, mac, static):
         """Handle an unauthenticated device"""
@@ -150,14 +150,17 @@ class PortStateManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
+        for mac, device_behavior in testing_result:
+            self._handle_device_event(mac, device_behavior.device_event)
+
+    def _handle_device_event(self, mac, device_event):
         with self._lock:
-            state_machine = self._state_machines.get(testing_result.mac)
+            state_machine = self._state_machines.get(mac)
             if not state_machine:
                 LOGGER.error(
-                    'No state machine defined for device %s before receiving testing result',
-                    testing_result.mac)
+                    'No state machine defined for device %s before receiving testing result', mac)
                 return
-            state_machine.handle_port_behavior(testing_result.port_behavior)
+            state_machine.handle_device_event(device_event)
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
