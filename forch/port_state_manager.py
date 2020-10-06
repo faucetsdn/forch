@@ -150,7 +150,7 @@ class PortStateManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
-        for mac, device_behavior in testing_result:
+        for mac, device_behavior in testing_result.device_mac_behaviors.items():
             self._handle_device_event(mac, device_behavior.device_event)
 
     def _handle_device_event(self, mac, device_event):

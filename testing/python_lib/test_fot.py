@@ -105,7 +105,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
 
     def _process_devices_state(self, devices_state):
         with self._lock:
-            for mac, device_behavior in devices_state.device_mac_behaviors:
+            for mac, device_behavior in devices_state.device_mac_behaviors.items():
                 self._received_device_events.append((mac, device_behavior.device_event))
 
     def _encapsulate_mac_device_event(self, mac, device_event):
