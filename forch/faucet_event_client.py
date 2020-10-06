@@ -115,7 +115,9 @@ class FaucetEventClient():
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
-            raise Exception('Out-of-sequence event id #%d' % event_id)
+            LOGGER.error(
+                'Out-of-sequence event id. Last: %d, received: %d' % self._last_event_id, event_id)
+            self._last_event_id = event_id + 1
         return True
 
     def _handle_port_change_debounce(self, event, target_event):
