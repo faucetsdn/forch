@@ -162,7 +162,7 @@ class Faucetizer:
 
     def _get_port_type(self, port_cfg):
         sequester_port_description = (self._config.sequester_config.port_description or
-                                   SEQUESTER_PORT_DESCRIPTION_DEFAULT)
+                                      SEQUESTER_PORT_DESCRIPTION_DEFAULT)
         if sequester_port_description in port_cfg.get('description', ""):
             return PortType.testing
         non_access_port_properties = ['stack', 'lacp', 'output_only', 'tagged_vlans']
