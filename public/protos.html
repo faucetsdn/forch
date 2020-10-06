@@ -365,27 +365,8 @@
         
           
           <li>
-            <a href="#forch%2fproto%2fdevice_testing_state.proto">forch/proto/device_testing_state.proto</a>
-            <ul>
-              
-                <li>
-                  <a href="#DeviceTestingState"><span class="badge">M</span>DeviceTestingState</a>
-                </li>
-              
-              
-              
-              
-            </ul>
-          </li>
-        
-          
-          <li>
             <a href="#forch%2fproto%2fdevices_state.proto">forch/proto/devices_state.proto</a>
             <ul>
-              
-                <li>
-                  <a href="#Device"><span class="badge">M</span>Device</a>
-                </li>
               
                 <li>
                   <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
@@ -717,6 +698,10 @@
                 </li>
               
                 <li>
+                  <a href="#DeviceEvent"><span class="badge">M</span>DeviceEvent</a>
+                </li>
+              
+                <li>
                   <a href="#Empty"><span class="badge">M</span>Empty</a>
                 </li>
               
@@ -726,10 +711,6 @@
               
                 <li>
                   <a href="#LacpState"><span class="badge">M</span>LacpState</a>
-                </li>
-              
-                <li>
-                  <a href="#PortBehavior"><span class="badge">M</span>PortBehavior</a>
                 </li>
               
                 <li>
@@ -746,15 +727,15 @@
                 </li>
               
                 <li>
+                  <a href="#DeviceEvent.Event"><span class="badge">E</span>DeviceEvent.Event</a>
+                </li>
+              
+                <li>
                   <a href="#LacpRole.LacpRole"><span class="badge">E</span>LacpRole.LacpRole</a>
                 </li>
               
                 <li>
                   <a href="#LacpState.LacpState"><span class="badge">E</span>LacpState.LacpState</a>
-                </li>
-              
-                <li>
-                  <a href="#PortBehavior.Behavior"><span class="badge">E</span>PortBehavior.Behavior</a>
                 </li>
               
                 <li>
@@ -2086,86 +2067,10 @@
     
       
       <div class="file-heading">
-        <h2 id="forch/proto/device_testing_state.proto">forch/proto/device_testing_state.proto</h2><a href="#title">Top</a>
-      </div>
-      <p></p>
-
-      
-        <h3 id="DeviceTestingState">DeviceTestingState</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>mac</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>port_behavior</td>
-                  <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-
-      
-
-      
-
-      
-    
-      
-      <div class="file-heading">
         <h2 id="forch/proto/devices_state.proto">forch/proto/devices_state.proto</h2><a href="#title">Top</a>
       </div>
       <p></p>
 
-      
-        <h3 id="Device">Device</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>placement</td>
-                  <td><a href="#DevicePlacement">DevicePlacement</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>behavior</td>
-                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
       
         <h3 id="DeviceBehavior">DeviceBehavior</h3>
         <p></p>
@@ -2192,8 +2097,8 @@
                 </tr>
               
                 <tr>
-                  <td>isolation_behavior</td>
-                  <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
+                  <td>device_event</td>
+                  <td><a href="#DeviceEvent.Event">DeviceEvent.Event</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -4837,6 +4742,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="DeviceEvent">DeviceEvent</h3>
+        <p>Port behaviors</p>
+
+        
+
+        
+      
         <h3 id="Empty">Empty</h3>
         <p>Dummy empty message</p>
 
@@ -4853,13 +4765,6 @@ or to host_path API to list path </p></td>
       
         <h3 id="LacpState">LacpState</h3>
         <p>LACP States</p>
-
-        
-
-        
-      
-        <h3 id="PortBehavior">PortBehavior</h3>
-        <p>Port behaviors</p>
 
         
 
@@ -4917,6 +4822,53 @@ or to host_path API to list path </p></td>
                 <td>operational</td>
                 <td>4</td>
                 <td><p>operational</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="DeviceEvent.Event">DeviceEvent.Event</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>unknown</td>
+                <td>0</td>
+                <td><p>unknown</p></td>
+              </tr>
+            
+              <tr>
+                <td>authenticated</td>
+                <td>1</td>
+                <td><p>authenticated</p></td>
+              </tr>
+            
+              <tr>
+                <td>cleared</td>
+                <td>2</td>
+                <td><p>cleared</p></td>
+              </tr>
+            
+              <tr>
+                <td>sequestered</td>
+                <td>3</td>
+                <td><p>sequestered</p></td>
+              </tr>
+            
+              <tr>
+                <td>passed</td>
+                <td>4</td>
+                <td><p>passed testing</p></td>
+              </tr>
+            
+              <tr>
+                <td>failed</td>
+                <td>5</td>
+                <td><p>failed testing</p></td>
               </tr>
             
           </tbody>
@@ -4999,53 +4951,6 @@ or to host_path API to list path </p></td>
                 <td>noact</td>
                 <td>5</td>
                 <td><p>noact: port is up, but not active</p></td>
-              </tr>
-            
-          </tbody>
-        </table>
-      
-        <h3 id="PortBehavior.Behavior">PortBehavior.Behavior</h3>
-        <p></p>
-        <table class="enum-table">
-          <thead>
-            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
-          </thead>
-          <tbody>
-            
-              <tr>
-                <td>unknown</td>
-                <td>0</td>
-                <td><p>unknown</p></td>
-              </tr>
-            
-              <tr>
-                <td>authenticated</td>
-                <td>1</td>
-                <td><p>authenticated</p></td>
-              </tr>
-            
-              <tr>
-                <td>cleared</td>
-                <td>2</td>
-                <td><p>cleared</p></td>
-              </tr>
-            
-              <tr>
-                <td>sequestered</td>
-                <td>3</td>
-                <td><p>sequestered</p></td>
-              </tr>
-            
-              <tr>
-                <td>passed</td>
-                <td>4</td>
-                <td><p>passed testing</p></td>
-              </tr>
-            
-              <tr>
-                <td>failed</td>
-                <td>5</td>
-                <td><p>failed testing</p></td>
               </tr>
             
           </tbody>
