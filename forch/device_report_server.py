@@ -9,7 +9,7 @@ from forch.utils import get_logger
 import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty
 
-LOGGER = get_logger('dtserver')
+LOGGER = get_logger('drserver')
 ADDRESS_DEFAULT = '0.0.0.0'
 PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10

@@ -5,7 +5,7 @@ import time
 import unittest
 import yaml
 
-from forch.utils import dict_proto
+from forch.utils import dict_proto, proto_dict
 
 from forch.proto.devices_state_pb2 import DeviceBehavior, DevicesState
 from forch.proto.shared_constants_pb2 import Empty
@@ -104,9 +104,10 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
         self._received_device_events = []
 
     def _process_devices_state(self, devices_state):
+        devices_state_map = proto_dict(devices_state, including_default_value_fields=True)
         with self._lock:
-            for mac, device_behavior in devices_state.device_mac_behaviors.items():
-                self._received_device_events.append((mac, device_behavior.device_event))
+            for mac, device_behavior in devices_state_map['device_mac_behaviors'].items():
+                self._received_device_events.append((mac, device_behavior['device_event']))
 
     def _encapsulate_mac_device_event(self, mac, device_event):
         devices_state_map = {
