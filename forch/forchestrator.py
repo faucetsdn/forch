@@ -153,7 +153,7 @@ class Forchestrator:
 
         LOGGER.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
-            self._config.event_client)
+            self._config.event_client, self._metrics)
         self._local_collector.initialize()
         self._cpn_collector.initialize()
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())

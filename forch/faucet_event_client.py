@@ -22,7 +22,7 @@ class FaucetEventClient():
     FAUCET_RETRIES = 10
     _PORT_DEBOUNCE_SEC = 5
 
-    def __init__(self, config):
+    def __init__(self, config, forch_metrics):
         self.config = config
         self.sock = None
         self.buffer = None
@@ -33,6 +33,7 @@ class FaucetEventClient():
         self._port_timers = {}
         self.event_socket_connected = False
         self._last_event_id = None
+        self._forch_metrics = forch_metrics
 
     def connect(self):
         """Make connection to sock to receive events"""
@@ -117,6 +118,7 @@ class FaucetEventClient():
         if event_id != self._last_event_id:
             LOGGER.error(
                 'Out-of-sequence event id. Last: %d, received: %d' % self._last_event_id, event_id)
+            self._metrics.inc_var('faucet_event_out_of_sequence_count')
             self._last_event_id = event_id + 1
         return True
 
