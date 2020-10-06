@@ -7,7 +7,7 @@ import yaml
 
 import grpc
 
-from forch.devices_state_server import DevicesStateServer
+from forch.device_report_server import DeviceReportServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.port_state_manager import PortStateManager
@@ -248,7 +248,7 @@ class DeviceReportServerTestBase(unittest.TestCase):
         channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
         self._client = DeviceReportStub(channel)
 
-        self._server = DevicesStateServer(
+        self._server = DeviceReportServer(
             self._process_device_testing_result, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
 

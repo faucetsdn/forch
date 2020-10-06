@@ -6,7 +6,7 @@ import grpc
 
 from forch.utils import get_logger
 
-import forch.proto.grpc.devices_state_pb2_grpc as devices_state_pb2_grpc
+import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty
 
 LOGGER = get_logger('dtserver')
@@ -15,7 +15,7 @@ PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10
 
 
-class DevicesStateServicer(devices_state_pb2_grpc.DevicesStateServicer):
+class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     """gRPC servicer to receive devices state"""
 
     def __init__(self, on_receiving_result):
@@ -37,15 +37,15 @@ class DevicesStateServicer(devices_state_pb2_grpc.DevicesStateServicer):
         return Empty()
 
 
-class DevicesStateServer:
+class DeviceReportServer:
     """Devices state server"""
 
     def __init__(self, on_receiving_result, address=None, port=None, max_workers=None):
         self._server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS_DEFAULT))
 
-        servicer = DevicesStateServicer(on_receiving_result)
-        devices_state_pb2_grpc.add_DevicesStateServicer_to_server(servicer, self._server)
+        servicer = DeviceReportServicer(on_receiving_result)
+        device_report_pb2_grpc.add_DeviceReportServicer_to_server(servicer, self._server)
 
         server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
         self._server.add_insecure_port(server_address_port)
