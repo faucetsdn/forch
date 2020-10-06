@@ -9,4 +9,4 @@ ignored-classes=
     BuildingSchema, LacpState, LacpRole, AuthResult, DVAState,
     DevicesState, DevicePlacement, DeviceBehavior, SegmentsToVlans,
     ForchConfig, SiteConfig, OrchestrationConfig, AuthConfig, HttpConfig,
-    DeviceTestingState, PortBehavior
+    DeviceEvent
