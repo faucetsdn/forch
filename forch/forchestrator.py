@@ -186,11 +186,11 @@ class Forchestrator:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self._config.orchestration.fot_config.testing_segment)
-        testing_segment, testing_server_port = self._calculate_fot_config()
-        if testing_segment:
+            self._process_device_behavior, self._config.orchestration.sequester_config.segment)
+        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+        if sequester_segment:
             self._device_report_server = DeviceReportServer(
-                self._port_state_manager.handle_testing_result, testing_server_port)
+                self._port_state_manager.handle_testing_result, grpc_server_port)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -287,11 +287,11 @@ class Forchestrator:
 
         return False
 
-    def _calculate_fot_config(self):
-        fot_config = self._config.orchestration.fot_config
-        testing_segment = fot_config.testing_segment
-        testing_server_port = fot_config.testing_server_port
-        return testing_segment, testing_server_port
+    def _calculate_sequester_config(self):
+        sequester_config = self._config.orchestration.sequester_config
+        segment = sequester_config.segment
+        grpc_server_port = sequester_config.grpc_server_port
+        return segment, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):

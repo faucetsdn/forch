@@ -44,11 +44,11 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
     FORCH_CONFIG = """
     orchestration:
       unauthenticated_vlan: 100
-      fot_config:
-        testing_segment: TESTING
-        testing_vlan_start: 1500
-        testing_vlan_end: 1699
-        testing_port_identifier: TESTING
+      sequester_config:
+        segment: TESTING
+        vlan_start: 1500
+        vlan_end: 1699
+        port_description: TESTING
     """
 
     def test_device_states(self):
@@ -96,7 +96,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
 
 
 class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
-    """Device testing server test case"""
+    """Device report server test case"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -118,7 +118,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
         return dict_proto(devices_state_map, DevicesState)
 
     def test_receiving_devices_states(self):
-        """Test behavior of the behavior when client sends device testing states"""
+        """Test behavior of the behavior when client sends devices states"""
         expected_mac_device_events = [
             ('00:0X:00:00:00:01', 'unknown'),
             ('00:0Y:00:00:00:02', 'passed'),
@@ -144,7 +144,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
 
 
 class FotPortStatesTestCase(PortsStateManagerTestBase):
-    """Test access port testing states"""
+    """Test access port states"""
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
         print(f'Received device behavior for device {mac}: {device_behavior}, {static}')
@@ -159,7 +159,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         return dict_proto(devices_state_map, DevicesState)
 
     def test_ports_states(self):
-        """Test the testing states with different signals"""
+        """Test the port states with different signals"""
         static_device_behaviors = {
             '00:0X:00:00:00:01': {'segment': 'SEG_A', 'device_event': 'cleared'},
             '00:0Y:00:00:00:02': {'device_event': 'cleared'}

@@ -287,18 +287,18 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 
 
 class PortsStateManagerTestBase(UnitTestBase):
-    """Base class for PortsTestingStateManager"""
+    """Base class for PortsStateManager"""
 
     AUTHENTICATED = 'authenticated'
     SEQUESTERED = 'sequestered'
     OPERATIONAL = 'operational'
     INFRACTED = 'infracted'
-    TESTING_SEGMENT = 'TESTING'
+    SEQUESTER_SEGMENT = 'TESTING'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self.TESTING_SEGMENT)
+            self._process_device_behavior, self.SEQUESTER_SEGMENT)
         self._received_device_behaviors = []
 
     def _process_device_behavior(self):
