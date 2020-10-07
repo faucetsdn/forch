@@ -120,7 +120,7 @@ message SwitchState {
     int32 port = 1;
 
     // Learned IP addresses for this MAC
-    repeated string ip_addresses = 2;
+    repeated string mac_ips = 2;
 
     // Learning timestamp
     string timestamp = 3;

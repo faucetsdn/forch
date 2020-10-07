@@ -105,8 +105,8 @@ test_forch -twod
 
 echo %%% steady state ip address check | tee -a $TEST_RESULTS
 api_result=$OUT_DIR/forch-twod/host_path2.json
-jq .src_ip $api_result | tee -a $TEST_RESULTS
-jq .dst_ip $api_result | tee -a $TEST_RESULTS
+jq ".src_ip[0]" $api_result | tee -a $TEST_RESULTS
+jq ".dst_ip[0]" $api_result | tee -a $TEST_RESULTS
 
 echo %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl set-controller t2sw3 $controllers

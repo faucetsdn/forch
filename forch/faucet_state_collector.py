@@ -694,7 +694,7 @@ class FaucetStateCollector:
                 raise Exception('Unknown port type %s' % port_type)
 
             mac_map = switch_learned_mac_map.setdefault(mac, {})
-            mac_map["ip_addresses"] = list(mac_states.get(MAC_LEARNING_IP, []))
+            mac_map["mac_ips"] = list(mac_states.get(MAC_LEARNING_IP, []))
             mac_map["port"] = learned_port
             mac_map["timestamp"] = learned_switch.get(MAC_LEARNING_TS, None)
 
