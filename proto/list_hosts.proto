@@ -31,7 +31,7 @@ message HostList {
         int32 port = 2;
 
         // host IPs
-        repeated string host_ip = 3;
+        repeated string host_ips = 3;
 
         // VLAN
         int32 vlan = 4;
