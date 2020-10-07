@@ -365,27 +365,8 @@
         
           
           <li>
-            <a href="#forch%2fproto%2fdevice_testing_state.proto">forch/proto/device_testing_state.proto</a>
-            <ul>
-              
-                <li>
-                  <a href="#DeviceTestingState"><span class="badge">M</span>DeviceTestingState</a>
-                </li>
-              
-              
-              
-              
-            </ul>
-          </li>
-        
-          
-          <li>
             <a href="#forch%2fproto%2fdevices_state.proto">forch/proto/devices_state.proto</a>
             <ul>
-              
-                <li>
-                  <a href="#Device"><span class="badge">M</span>Device</a>
-                </li>
               
                 <li>
                   <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
@@ -534,11 +515,11 @@
                 </li>
               
                 <li>
-                  <a href="#OrchestrationConfig.FotConfig"><span class="badge">M</span>OrchestrationConfig.FotConfig</a>
+                  <a href="#OrchestrationConfig.RadiusInfo"><span class="badge">M</span>OrchestrationConfig.RadiusInfo</a>
                 </li>
               
                 <li>
-                  <a href="#OrchestrationConfig.RadiusInfo"><span class="badge">M</span>OrchestrationConfig.RadiusInfo</a>
+                  <a href="#OrchestrationConfig.SequesterConfig"><span class="badge">M</span>OrchestrationConfig.SequesterConfig</a>
                 </li>
               
                 <li>
@@ -2086,86 +2067,10 @@
     
       
       <div class="file-heading">
-        <h2 id="forch/proto/device_testing_state.proto">forch/proto/device_testing_state.proto</h2><a href="#title">Top</a>
-      </div>
-      <p></p>
-
-      
-        <h3 id="DeviceTestingState">DeviceTestingState</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>mac</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>port_behavior</td>
-                  <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-
-      
-
-      
-
-      
-    
-      
-      <div class="file-heading">
         <h2 id="forch/proto/devices_state.proto">forch/proto/devices_state.proto</h2><a href="#title">Top</a>
       </div>
       <p></p>
 
-      
-        <h3 id="Device">Device</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>placement</td>
-                  <td><a href="#DevicePlacement">DevicePlacement</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>behavior</td>
-                  <td><a href="#DeviceBehavior">DeviceBehavior</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
       
         <h3 id="DeviceBehavior">DeviceBehavior</h3>
         <p></p>
@@ -2192,7 +2097,7 @@
                 </tr>
               
                 <tr>
-                  <td>isolation_behavior</td>
+                  <td>port_behavior</td>
                   <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
                   <td></td>
                   <td><p> </p></td>
@@ -3481,10 +3386,10 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
-                  <td>fot_config</td>
-                  <td><a href="#OrchestrationConfig.FotConfig">OrchestrationConfig.FotConfig</a></td>
+                  <td>sequester_config</td>
+                  <td><a href="#OrchestrationConfig.SequesterConfig">OrchestrationConfig.SequesterConfig</a></td>
                   <td></td>
-                  <td><p>orchestrated testing configurations </p></td>
+                  <td><p>device sequestration configurations </p></td>
                 </tr>
               
             </tbody>
@@ -3553,58 +3458,6 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
 
         
       
-        <h3 id="OrchestrationConfig.FotConfig">OrchestrationConfig.FotConfig</h3>
-        <p>encapsulating Faucet Orchestrated Testing configurations</p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>testing_segment</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>testing segment. If defined, automatic sequestering is enabled </p></td>
-                </tr>
-              
-                <tr>
-                  <td>testing_vlan_start</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>start of testing vlan range </p></td>
-                </tr>
-              
-                <tr>
-                  <td>testing_vlan_end</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>end of testing vlan range </p></td>
-                </tr>
-              
-                <tr>
-                  <td>testing_port_identifier</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>identifier of testing port in the port description </p></td>
-                </tr>
-              
-                <tr>
-                  <td>testing_server_port</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>gRPC port on which the device testing server receives testing result </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
         <h3 id="OrchestrationConfig.RadiusInfo">OrchestrationConfig.RadiusInfo</h3>
         <p>encapsulating Radius configurations</p>
 
@@ -3641,6 +3494,58 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p>Port to listen on for RADIUS responses </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.SequesterConfig">OrchestrationConfig.SequesterConfig</h3>
+        <p>encapsulating device sequestration configurations</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>segment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>segment. If defined, automatic sequestering is enabled </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vlan_start</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>start of vlan range </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vlan_end</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>end of vlan range </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port_description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>identifier of testing host port in the port description </p></td>
+                </tr>
+              
+                <tr>
+                  <td>grpc_server_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>port on which the grpc server receives testing result </p></td>
                 </tr>
               
             </tbody>

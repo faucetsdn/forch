@@ -15,7 +15,7 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.device_testing_server import DeviceTestingServer
+from forch.device_report_server import DeviceReportServer
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
@@ -97,7 +97,7 @@ class Forchestrator:
         self._config_file_watcher = None
         self._faucet_state_scheduler = None
         self._gauge_metrics_scheduler = None
-        self._device_testing_server = None
+        self._device_report_server = None
         self._port_state_manager = None
 
         self._initialized = False
@@ -186,11 +186,11 @@ class Forchestrator:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self._config.orchestration.fot_config.testing_segment)
-        testing_segment, testing_server_port = self._calculate_fot_config()
-        if testing_segment:
-            self._device_testing_server = DeviceTestingServer(
-                self._port_state_manager.handle_testing_result, testing_server_port)
+            self._process_device_behavior, self._config.orchestration.sequester_config.segment)
+        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+        if sequester_segment:
+            self._device_report_server = DeviceReportServer(
+                self._port_state_manager.handle_testing_result, grpc_server_port)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -287,11 +287,11 @@ class Forchestrator:
 
         return False
 
-    def _calculate_fot_config(self):
-        fot_config = self._config.orchestration.fot_config
-        testing_segment = fot_config.testing_segment
-        testing_server_port = fot_config.testing_server_port
-        return testing_segment, testing_server_port
+    def _calculate_sequester_config(self):
+        sequester_config = self._config.orchestration.sequester_config
+        segment = sequester_config.segment
+        grpc_server_port = sequester_config.grpc_server_port
+        return segment, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
@@ -466,8 +466,8 @@ class Forchestrator:
             self._gauge_metrics_scheduler.start()
         if self._metrics:
             self._metrics.update_var('forch_version', {'version': __version__})
-        if self._device_testing_server:
-            self._device_testing_server.start()
+        if self._device_report_server:
+            self._device_report_server.start()
 
     def stop(self):
         """Stop forchestrator components"""
@@ -483,8 +483,8 @@ class Forchestrator:
             self._metrics.stop()
         if self._proxy:
             self._proxy.stop()
-        if self._device_testing_server:
-            self._device_testing_server.stop()
+        if self._device_report_server:
+            self._device_report_server.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
