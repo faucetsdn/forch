@@ -62,6 +62,7 @@ class IntegrationTestBase(unittest.TestCase):
         stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
         stack_args.extend(['dhcp'] if options.get('dhcp') else [])
         stack_args.extend(['no-clean'] if options.get('no-clean') else [])
+        stack_args.extend(['fot'] if options.get('fot') else [])
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
@@ -118,8 +119,12 @@ class IntegrationTestBase(unittest.TestCase):
         return self._write_yaml_to_file(filename, config)
 
     def _get_faucet_config_path(self):
-        return os.path.dirname(os.path.abspath(__file__)) + \
-            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+        if self.stack_options.get('fot'):
+            return os.path.dirname(os.path.abspath(__file__)) + \
+                '/../../inst/forch-controller-1/faucet/faucet.yaml'
+        else:
+            return os.path.dirname(os.path.abspath(__file__)) + \
+                '/../../inst/forch-faucet-1/faucet/faucet.yaml'
 
 
 if __name__ == '__main__':

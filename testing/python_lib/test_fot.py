@@ -215,5 +215,46 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         self._verify_received_device_behaviors(expected_received_device_behaviors)
 
 
+class FotContainerTest(IntegrationTestBase):
+    """Test suite for dynamic config changes"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stack_options['fot'] = True
+        self.stack_options['local'] = True
+
+    def tearDown(self):
+        pass
+
+    def test_dhcp_reflection(self):
+        """Test to check DHCP reflection when on test VLAN"""
+        config = self._read_faucet_config()
+        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
+        interface['native_vlan'] = 272
+        self._write_faucet_config(config)
+        time.sleep(5)
+        _, out, _ = \
+            self._run_cmd('docker exec forch-faux-1 ip addr show dev faux-eth0', capture=True)
+        output = out.split() or []
+        if output:
+            ip = output[output.index('inet') + 1]
+        print(ip)
+        self._run_cmd('docker exec forch-faux-1 umount /etc/resolv.conf')
+        self._run_cmd('docker exec forch-faux-1 dhclient -r')
+        self._run_cmd('docker exec forch-faux-1 ip addr flush dev faux-eth0')
+        _, out, _ = \
+            self._run_cmd('docker exec forch-faux-1 ip addr show dev faux-eth0', capture=True)
+        output = out.split() or []
+        if output:
+            ip = output[output.index('inet') + 1]
+        print(ip)
+        self._run_cmd('docker exec forch-faux-1 dhclient')
+        _, out, _ = \
+            self._run_cmd('docker exec forch-faux-1 ip addr show dev faux-eth0', capture=True)
+        if output:
+            output = out.split() or []
+        ip = output[output.index('inet') + 1]
+        print(ip)
+
 if __name__ == '__main__':
     unittest.main()
