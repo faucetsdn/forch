@@ -30,8 +30,8 @@ message HostList {
         // port host connected to
         int32 port = 2;
 
-        // host IP
-        string host_ip = 3;
+        // host IPs
+        repeated string host_ip = 3;
 
         // VLAN
         int32 vlan = 4;

@@ -119,8 +119,8 @@ message SwitchState {
     // Port number on this switch
     int32 port = 1;
 
-    // Learned IP address for this MAC
-    string ip_address = 2;
+    // Learned IP addresses for this MAC
+    repeated string ip_address = 2;
 
     // Learning timestamp
     string timestamp = 3;
