@@ -16,7 +16,7 @@ message DevicePlacement {
 message DeviceBehavior {
   string segment = 1;
   string role = 2;
-  DeviceEvent.Event device_event = 3;
+  PortBehavior.Behavior port_behavior = 3;
 }
 
 message SegmentsToVlans {

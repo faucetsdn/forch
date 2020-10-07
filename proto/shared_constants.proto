@@ -140,8 +140,8 @@ message PortType {
 /*
  * Port behaviors
  */
-message DeviceEvent {
-  enum Event {
+message PortBehavior {
+  enum Behavior {
     // unknown
     unknown = 0;
 
