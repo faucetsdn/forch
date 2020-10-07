@@ -1087,7 +1087,8 @@ class FaucetStateCollector:
         """process port learn event"""
         with self.lock:
             mac_entry = self.learned_macs.setdefault(mac, {})
-            mac_entry.setdefault(MAC_LEARNING_IP, set()).add(ip_addr)
+            if ip_addr:
+                mac_entry.setdefault(MAC_LEARNING_IP, set()).add(ip_addr)
 
             mac_switches = mac_entry.setdefault(MAC_LEARNING_SWITCH, {})
             learning_switch = mac_switches.setdefault(name, {})
@@ -1329,7 +1330,7 @@ class FaucetStateCollector:
             mac_deets = host_macs.setdefault(mac, {})
             mac_deets['switch'] = switch
             mac_deets['port'] = port
-            mac_deets['host_ip'] = list(mac_state.get(MAC_LEARNING_IP, []))
+            mac_deets['host_ips'] = list(mac_state.get(MAC_LEARNING_IP, []))
 
             metrics = self._get_gauge_metrics()
             self._fill_port_behavior(switch, port, mac_deets, metrics)
