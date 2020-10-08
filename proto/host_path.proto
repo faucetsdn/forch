@@ -9,11 +9,11 @@ import "forch/proto/path_node.proto";
  * Host path
  */
 message HostPath {
-    // IP address of source host
-    string src_ip = 1;
+    // IP addresses of source host
+    repeated string src_ips = 1;
 
-    // IP address of destination host
-    string dst_ip = 2;
+    // IP addresses of destination host
+    repeated string dst_ips = 2;
 
     // Path consists of a list of switches with in and out ports
     repeated PathNode path= 3;

@@ -209,7 +209,7 @@ null
 3
 %%% steady state ip address check
 "192.168.1.1"
-""
+null
 %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down
 Starting stack-broken test...
 (UNKNOWN) [192.168.1.1] 23 (telnet) : Connection timed out
