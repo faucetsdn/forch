@@ -224,9 +224,6 @@ class FotContainerTest(IntegrationTestBase):
         self.stack_options['fot'] = True
         self.stack_options['local'] = True
 
-    def tearDown(self):
-        pass
-
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
         def dhclient_method(container=None):
