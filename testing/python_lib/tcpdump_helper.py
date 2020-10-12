@@ -8,6 +8,7 @@ import re
 
 import logging
 
+
 class TcpdumpHelper:
     """Run tcpdump on interface, then a list of functions, and return tcpdump's parsed output."""
 
