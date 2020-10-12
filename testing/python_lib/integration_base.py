@@ -128,11 +128,12 @@ class IntegrationTestBase(unittest.TestCase):
         return self._write_yaml_to_file(filename, config)
 
     def _get_faucet_config_path(self):
+        config_file = '/../../inst/%s/faucet/faucet.yaml'
         if self.stack_options.get('fot'):
             return os.path.dirname(os.path.abspath(__file__)) + \
-                ('/../../inst/%s/faucet/faucet.yaml' % ('forch-controller-1'))
+                (config_file % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
-            ('/../../inst/%s/faucet/faucet.yaml' % ('forch-faucet-1'))
+            (config_file % ('forch-faucet-1'))
 
 
 if __name__ == '__main__':
