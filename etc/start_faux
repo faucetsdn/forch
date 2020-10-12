@@ -2,6 +2,8 @@
 
 echo Running faux $*
 
+umount /etc/resolv.conf
+
 declare -A options
 for option in $*; do
     if [[ $option == *"="* ]]; then

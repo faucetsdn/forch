@@ -1,5 +1,6 @@
 """Integration test base class for Forch"""
 
+import re
 import threading
 import time
 import unittest
@@ -228,33 +229,25 @@ class FotContainerTest(IntegrationTestBase):
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
+        def dhclient_method(container=None):
+            def run_dhclient():
+                try:
+                    print(container)
+                    #self._run_cmd('umount /etc/resolv.conf || true', docker_container=container)
+                    self._run_cmd('dhclient -r', docker_container=container)
+                    self._run_cmd('dhclient', docker_container=container)
+                except Exception as e:
+                    print(e)
+            return run_dhclient
         config = self._read_faucet_config()
+        tcpdump_text = self.tcpdump_helper('faux-eth0','port 67 or port 68', packets=10, funcs=[dhclient_method('forch-faux-1')], timeout=10, docker_host='forch-faux-1')
+        self.assertTrue(re.search("DHCP.*Reply",tcpdump_text))
         interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
         interface['native_vlan'] = 272
         self._write_faucet_config(config)
         time.sleep(5)
-        _, out, _ = \
-            self._run_cmd('docker exec forch-faux-1 ip addr show dev faux-eth0', capture=True)
-        output = out.split() or []
-        if output:
-            ip = output[output.index('inet') + 1]
-        print(ip)
-        self._run_cmd('docker exec forch-faux-1 umount /etc/resolv.conf')
-        self._run_cmd('docker exec forch-faux-1 dhclient -r')
-        self._run_cmd('docker exec forch-faux-1 ip addr flush dev faux-eth0')
-        _, out, _ = \
-            self._run_cmd('docker exec forch-faux-1 ip addr show dev faux-eth0', capture=True)
-        output = out.split() or []
-        if output:
-            ip = output[output.index('inet') + 1]
-        print(ip)
-        self._run_cmd('docker exec forch-faux-1 dhclient')
-        _, out, _ = \
-            self._run_cmd('docker exec forch-faux-1 ip addr show dev faux-eth0', capture=True)
-        if output:
-            output = out.split() or []
-        ip = output[output.index('inet') + 1]
-        print(ip)
+        tcpdump_text = self.tcpdump_helper('faux-eth0','port 67 or port 68', packets=10, funcs=[dhclient_method('forch-faux-1')], timeout=10, docker_host='forch-faux-1')
+        self.assertTrue(re.search("DHCP.*Reply",tcpdump_text))
 
 if __name__ == '__main__':
     unittest.main()

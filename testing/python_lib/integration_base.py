@@ -6,6 +6,8 @@ import os
 import time
 import yaml
 
+from tcpdump_helper import TcpdumpHelper
+
 
 class IntegrationTestBase(unittest.TestCase):
     """Base class for integration tests"""
@@ -39,8 +41,9 @@ class IntegrationTestBase(unittest.TestCase):
         strerr = str(stderr, 'utf-8') if stderr else None
         return process.returncode, strout, strerr
 
-    def _run_cmd(self, cmd, arglist=None, strict=True, capture=False):
-        command = ([cmd] + arglist) if arglist else cmd
+    def _run_cmd(self, cmd, arglist=None, strict=True, capture=False, docker_container=None):
+        command = ("docker exec %s " % docker_container) if docker_container else ""
+        command = command.split() + ([cmd] + arglist) if arglist else command + cmd
         retcode, out, err = self._reap_process_command(
             self._run_process_command(command, capture=capture))
         if strict and retcode:
@@ -49,6 +52,10 @@ class IntegrationTestBase(unittest.TestCase):
                 print('stderr: \n' + err)
             raise Exception('Command execution failed: %s' % str(command))
         return retcode, out, err
+
+    @staticmethod
+    def tcpdump_helper(*args, **kwargs):
+        return TcpdumpHelper(*args, **kwargs).execute()
 
     def _setup_stack(self):
         options = self.stack_options
