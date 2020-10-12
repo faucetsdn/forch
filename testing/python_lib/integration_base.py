@@ -41,7 +41,8 @@ class IntegrationTestBase(unittest.TestCase):
         strerr = str(stderr, 'utf-8') if stderr else None
         return process.returncode, strout, strerr
 
-    def _run_cmd(self, cmd, arglist=None, strict=True, capture=False, docker_container=None): # pylint: disable=too-many-arguments
+    def _run_cmd(self, cmd, arglist=None, strict=True,
+                 capture=False, docker_container=None):  # pylint: disable=too-many-arguments
         command = ("docker exec %s " % docker_container) if docker_container else ""
         command = command.split() + ([cmd] + arglist) if arglist else command + cmd
         retcode, out, err = self._reap_process_command(
