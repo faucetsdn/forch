@@ -2,7 +2,7 @@
 
 echo Running faux $*
 
-umount /etc/resolv.conf
+umount /etc/resolv.conf # Necessary to run dhclient in docker containers
 
 declare -A options
 for option in $*; do

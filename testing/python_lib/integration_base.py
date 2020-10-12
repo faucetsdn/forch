@@ -41,7 +41,7 @@ class IntegrationTestBase(unittest.TestCase):
         strerr = str(stderr, 'utf-8') if stderr else None
         return process.returncode, strout, strerr
 
-    def _run_cmd(self, cmd, arglist=None, strict=True, capture=False, docker_container=None):
+    def _run_cmd(self, cmd, arglist=None, strict=True, capture=False, docker_container=None): # pylint: disable=too-many-arguments
         command = ("docker exec %s " % docker_container) if docker_container else ""
         command = command.split() + ([cmd] + arglist) if arglist else command + cmd
         retcode, out, err = self._reap_process_command(
@@ -55,6 +55,7 @@ class IntegrationTestBase(unittest.TestCase):
 
     @staticmethod
     def tcpdump_helper(*args, **kwargs):
+        """Return running TcpdumpHelper instance"""
         return TcpdumpHelper(*args, **kwargs).execute()
 
     def _setup_stack(self):
@@ -128,10 +129,9 @@ class IntegrationTestBase(unittest.TestCase):
     def _get_faucet_config_path(self):
         if self.stack_options.get('fot'):
             return os.path.dirname(os.path.abspath(__file__)) + \
-                '/../../inst/forch-controller-1/faucet/faucet.yaml'
-        else:
-            return os.path.dirname(os.path.abspath(__file__)) + \
-                '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+                ('/../../inst/%s/faucet/faucet.yaml' % ('forch-controller-1'))
+        return os.path.dirname(os.path.abspath(__file__)) + \
+            ('/../../inst/%s/faucet/faucet.yaml' % ('forch-faucet-1'))
 
 
 if __name__ == '__main__':

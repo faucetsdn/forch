@@ -23,7 +23,7 @@ class TcpdumpHelper:
     def __init__(self, intf_name, tcpdump_filter=None, funcs=None, docker_host=None,
                  vflags='-v', timeout=10, packets=2, root_intf=False,
                  pcap_out=None, blocking=True):
-        self.DEVNULL = open(os.devnull, 'wb')
+        self.devnull = open(os.devnull, 'wb')
         self.intf_name = intf_name
         self.funcs = funcs
         if root_intf:
@@ -49,21 +49,19 @@ class TcpdumpHelper:
         logging.debug(pipe_cmd)
         self.pipe = subprocess.Popen(
             pipe_cmd,
-            stdin=self.DEVNULL,
+            stdin=self.devnull,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             close_fds=True,
             shell=False)
 
         if self.stream():
-            logging.debug('tcpdump_helper stream fd %s %s' % (
-                self.stream().fileno(), self.intf_name))
-
+            logging.debug('tcpdump_helper stream fd %s %s', self.stream().fileno(), self.intf_name)
         self.readbuf = ''
         self.set_blocking(blocking)
 
     def __del__(self):
-        self.DEVNULL.close()
+        self.devnull.close()
 
     def stream(self):
         """Return pipe's STDOUT, or None."""
@@ -90,7 +88,7 @@ class TcpdumpHelper:
                 line = self.next_line()
                 if not line:
                     break
-                logging.debug('tcpdump_helper fd %d line "%s"' % (self.stream().fileno(), line))
+                logging.debug('tcpdump_helper fd %d line "%s"', self.stream().fileno(), line)
                 tcpdump_txt += line.strip()
         return tcpdump_txt
 
@@ -100,7 +98,7 @@ class TcpdumpHelper:
             return -1
 
         try:
-            logging.debug('tcpdump_helper terminate fd %s' % self.stream().fileno())
+            logging.debug('tcpdump_helper terminate fd %s', self.stream().fileno())
             self.pipe.terminate()
             result = self.pipe.wait()
             if result == 124:
@@ -110,8 +108,7 @@ class TcpdumpHelper:
             self.pipe = None
             return result
         except EnvironmentError as err:
-            logging.error('Error closing tcpdump_helper fd %d: %s' % (
-                self.pipe.stdout.fileno(), err))
+            logging.error('Error closing tcpdump_helper fd %d: %s', self.pipe.stdout.fileno(), err)
             return -2
 
     def readline(self):

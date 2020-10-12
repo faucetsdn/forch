@@ -235,16 +235,16 @@ class FotContainerTest(IntegrationTestBase):
                     print(e)
             return run_dhclient
         config = self._read_faucet_config()
-        tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68',
-                                           packets=10, funcs=[dhclient_method('forch-faux-1')],
+        tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68', packets=10,
+                                           funcs=[dhclient_method(container='forch-faux-1')],
                                            timeout=10, docker_host='forch-faux-1')
         self.assertTrue(re.search("DHCP.*Reply", tcpdump_text))
         interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
         interface['native_vlan'] = 272
         self._write_faucet_config(config)
         time.sleep(5)
-        tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68',
-                                           packets=10, funcs=[dhclient_method('forch-faux-1')],
+        tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68', packets=10,
+                                           funcs=[dhclient_method(container='forch-faux-1')],
                                            timeout=10, docker_host='forch-faux-1')
         self.assertTrue(re.search("DHCP.*Reply", tcpdump_text))
 
