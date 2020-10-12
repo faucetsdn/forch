@@ -27,7 +27,7 @@ class FailScaleConfigTest(IntegrationTestBase):
         try:
             ping_count = self._ping_host_reap(process, output=True)
             # Check that at least some flow was disrupted, but not too much.
-            self.assertTrue(10 < ping_count < 38, 'disrupted ping count %s' % ping_count)
+            self.assertTrue(10 < ping_count < 39, 'disrupted ping count %s' % ping_count)
         except Exception as e:
             self._run_cmd('bin/dump_logs')
             raise e
