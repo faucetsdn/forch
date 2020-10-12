@@ -8,36 +8,20 @@ Version from varz matches forch version.
 5 received
 Radius results 1 0
 Starting counting-initial tests
-"allow ICMP"
-0
-"arp"
-0
-"allow ICMP"
-0
-"arp"
-0
-"allow ICMP"
-0
-"arp"
-0
-"deny ICMP"
-0
-"arp"
-0
+110 0 allow ICMP
+111 0 arp
+120 0 allow ICMP
+121 0 arp
+210 0 allow ICMP
+211 0 arp
+220 0 deny ICMP
+221 0 arp
 Starting counting-basic tests
-"allow ICMP"
-5
-"arp"
-3
-"allow ICMP"
-0
-"arp"
-6
-"allow ICMP"
-5
-"arp"
-2
-"deny ICMP"
-5
-"arp"
-1
+110 3 allow ICMP
+111 1 arp
+120 0 allow ICMP
+121 4 arp
+210 3 allow ICMP
+211 1 arp
+220 3 deny ICMP
+221 1 arp

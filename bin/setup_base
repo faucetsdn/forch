@@ -12,7 +12,7 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 sudo apt-get update
 
 sudo apt-get install openvswitch-switch protobuf-compiler \
-     python3-venv python3-dev jq docker-ce
+     python3-venv python3-dev jq docker-ce net-tools
 
 if [ -z "$VIRTUAL_ENV" ]; then
     python3 -m venv venv
@@ -42,7 +42,7 @@ else
     go_zip=go$GO_VERSION.linux-amd64.tar.gz
     rm -rf build/go build/$go_zip
     mkdir -p build
-    (cd build; wget https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz)
+    (cd build; wget -q https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz)
     (cd build; tar -xzf go$GO_VERSION.linux-amd64.tar.gz)
     sudo cp -a build/go /usr/local
     sudo chown root:root -R /usr/local/go

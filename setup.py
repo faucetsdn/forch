@@ -39,6 +39,7 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
+        'grpcio',
         'pbr>=1.9',
         'prometheus_client',
         'protobuf',

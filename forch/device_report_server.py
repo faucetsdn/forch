@@ -1,4 +1,4 @@
-"""gRPC server to receive device testing result"""
+"""gRPC server to receive devices state"""
 
 from concurrent import futures
 
@@ -6,54 +6,54 @@ import grpc
 
 from forch.utils import get_logger
 
-import forch.proto.grpc.device_testing_pb2_grpc as device_testing_pb2_grpc
+import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty
 
-LOGGER = get_logger('dtserver')
+LOGGER = get_logger('drserver')
 ADDRESS_DEFAULT = '0.0.0.0'
 PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10
 
 
-class DeviceTestingServicer(device_testing_pb2_grpc.DeviceTestingServicer):
-    """gRPC servicer to receive device testing result"""
+class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
+    """gRPC servicer to receive devices state"""
 
     def __init__(self, on_receiving_result):
         super().__init__()
         self._on_receiving_result = on_receiving_result
 
     # pylint: disable=invalid-name
-    def ReportTestingState(self, request, context):
-        """RPC call for client to send device testing state"""
+    def ReportDevicesState(self, request, context):
+        """RPC call for client to send devices state"""
         if not request:
-            LOGGER.warning('Received empty request for gRPC ReportTestingResult')
+            LOGGER.warning('Received empty request in gRPC ReportDevicesState')
             return Empty()
 
         LOGGER.info(
-            'Received testing state: %s, %s', request.mac, request.port_behavior)
+            'Received DevicesState of %d devices', len(request.device_mac_behaviors))
 
         self._on_receiving_result(request)
 
         return Empty()
 
 
-class DeviceTestingServer:
-    """Device testing server"""
+class DeviceReportServer:
+    """Devices state server"""
 
     def __init__(self, on_receiving_result, address=None, port=None, max_workers=None):
         self._server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS_DEFAULT))
 
-        servicer = DeviceTestingServicer(on_receiving_result)
-        device_testing_pb2_grpc.add_DeviceTestingServicer_to_server(servicer, self._server)
+        servicer = DeviceReportServicer(on_receiving_result)
+        device_report_pb2_grpc.add_DeviceReportServicer_to_server(servicer, self._server)
 
         server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
         self._server.add_insecure_port(server_address_port)
 
     def start(self):
-        """Start device testing server"""
+        """Start the server"""
         self._server.start()
 
     def stop(self):
-        """Stop device testing server"""
+        """Stop the server"""
         self._server.stop(grace=None)

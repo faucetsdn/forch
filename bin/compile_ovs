@@ -21,11 +21,11 @@ git clone https://github.com/openvswitch/ovs.git
 
 cd ovs
 
-git checkout v2.13.0
+git checkout v2.14.0
 
-./boot.sh
+./boot.sh 2>&1 > compile_ovs.log
 
-./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc 2>&1 >> compile_ovs.log
 
 make
 
