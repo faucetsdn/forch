@@ -58,7 +58,7 @@ jobs:
       - name: setup faucet
         run: bin/setup_faucet
       - name: build docker
-        run: bin/retry_cmd bin/build_docker
+        run: bin/retry_cmd bin/build_docker controller
       - name: run test
         run: testing/python_test test_fot
 
