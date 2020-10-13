@@ -7,6 +7,8 @@ import socket
 import threading
 import unittest
 
+from faucet.conf import InvalidConfigError
+
 from unit_base import ForchestratorTestBase
 
 
@@ -33,6 +35,8 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
             event_bytes = bytes('\n'.join((json.dumps(event, default=str), '')).encode('UTF-8'))
             connection.sendall(event_bytes)
 
+        connection.recv(16)
+
     def _setup_event_server(self):
         assert self._temp_socket_file
         event_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -49,8 +53,23 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
 
     def test_out_of_sequence(self):
         """Test Forch behavior in case of out-of-sequence event"""
-        self._forchestrator.main_loop()
-        pass
+        try:
+            self._forchestrator._faucet_events_connect()
+        except Exception as error:
+            print(f'Ignoring expected exception during restoring states: {error}')
+
+        self._forchestrator._faucet_events.set_event_horizon(100)
+        restore_states_called= False
+
+        try:
+            self._forchestrator.main_loop()
+        except InvalidConfigError as error:
+            print(f'Expected error during restoring states: {error}')
+            restore_states_called = True
+
+        self.assertTrue(restore_states_called)
+        self.assertEqual(self._forchestrator._faucet_events._last_event_id, 102)
+
 
 if __name__ == '__main__':
     unittest.main()
