@@ -7,7 +7,7 @@ import yaml
 
 import grpc
 
-from forch.device_testing_server import DeviceTestingServer
+from forch.device_report_server import DeviceReportServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.port_state_manager import PortStateManager
@@ -15,7 +15,7 @@ from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
-from forch.proto.grpc.device_testing_pb2_grpc import DeviceTestingStub
+from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 
 
 class UnitTestBase(unittest.TestCase):
@@ -233,8 +233,8 @@ class FaucetizerTestBase(UnitTestBase):
         self._cleanup_config_files()
 
 
-class DeviceTestingServerTestBase(unittest.TestCase):
-    """Base class for device testing server unit test"""
+class DeviceReportServerTestBase(unittest.TestCase):
+    """Base class for DevicesStateServer unit test"""
     SERVER_ADDRESS = '0.0.0.0'
     SERVER_PORT = 50051
 
@@ -246,13 +246,13 @@ class DeviceTestingServerTestBase(unittest.TestCase):
     def setUp(self):
         """setup fixture for each test method"""
         channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
-        self._client = DeviceTestingStub(channel)
+        self._client = DeviceReportStub(channel)
 
-        self._server = DeviceTestingServer(
-            self._process_device_testing_state, self.SERVER_ADDRESS, self.SERVER_PORT)
+        self._server = DeviceReportServer(
+            self._process_devices_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
 
-    def _process_device_testing_state(self):
+    def _process_devices_state(self):
         pass
 
     def tearDown(self):
@@ -287,18 +287,18 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 
 
 class PortsStateManagerTestBase(UnitTestBase):
-    """Base class for PortsTestingStateManager"""
+    """Base class for PortsStateManager"""
 
     AUTHENTICATED = 'authenticated'
     SEQUESTERED = 'sequestered'
     OPERATIONAL = 'operational'
     INFRACTED = 'infracted'
-    TESTING_SEGMENT = 'TESTING'
+    SEQUESTER_SEGMENT = 'TESTING'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self.TESTING_SEGMENT)
+            self._process_device_behavior, self.SEQUESTER_SEGMENT)
         self._received_device_behaviors = []
 
     def _process_device_behavior(self):

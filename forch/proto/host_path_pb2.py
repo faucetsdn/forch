@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x1b\x66orch/proto/host_path.proto\x1a\x1b\x66orch/proto/path_node.proto\"]\n\x08HostPath\x12\x0e\n\x06src_ip\x18\x01 \x01(\t\x12\x0e\n\x06\x64st_ip\x18\x02 \x01(\t\x12\x17\n\x04path\x18\x03 \x03(\x0b\x32\t.PathNode\x12\x18\n\x10system_state_url\x18\x04 \x01(\tb\x06proto3'
+  serialized_pb=b'\n\x1b\x66orch/proto/host_path.proto\x1a\x1b\x66orch/proto/path_node.proto\"_\n\x08HostPath\x12\x0f\n\x07src_ips\x18\x01 \x03(\t\x12\x0f\n\x07\x64st_ips\x18\x02 \x03(\t\x12\x17\n\x04path\x18\x03 \x03(\x0b\x32\t.PathNode\x12\x18\n\x10system_state_url\x18\x04 \x01(\tb\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_path__node__pb2.DESCRIPTOR,])
 
@@ -34,16 +34,16 @@ _HOSTPATH = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='src_ip', full_name='HostPath.src_ip', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='src_ips', full_name='HostPath.src_ips', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='dst_ip', full_name='HostPath.dst_ip', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='dst_ips', full_name='HostPath.dst_ips', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -74,7 +74,7 @@ _HOSTPATH = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=60,
-  serialized_end=153,
+  serialized_end=155,
 )
 
 _HOSTPATH.fields_by_name['path'].message_type = forch_dot_proto_dot_path__node__pb2._PATHNODE

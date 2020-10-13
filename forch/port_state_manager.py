@@ -48,7 +48,7 @@ class PortStateMachine:
         self._operational_state_callback = operational_state_callback
 
     def handle_port_behavior(self, port_behavior):
-        """Handle testing state event"""
+        """Handle port behavior"""
         next_state = self.TRANSITIONS.get(self._current_state, {}).get(port_behavior, {})
 
         if not next_state:
@@ -101,9 +101,9 @@ class PortStateManager:
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
         with self._lock:
-            isolation_behavior = device_behavior.isolation_behavior
-            if isolation_behavior:
-                self._static_port_behaviors[mac] = isolation_behavior
+            static_port_behavior = device_behavior.port_behavior
+            if static_port_behavior:
+                self._static_port_behaviors[mac] = static_port_behavior
 
             if device_behavior.segment:
                 self.handle_device_behavior(mac, device_behavior, static=True)
@@ -150,14 +150,17 @@ class PortStateManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
+        for mac, device_behavior in testing_result.device_mac_behaviors.items():
+            self._handle_port_behavior(mac, device_behavior.port_behavior)
+
+    def _handle_port_behavior(self, mac, port_behavior):
         with self._lock:
-            state_machine = self._state_machines.get(testing_result.mac)
+            state_machine = self._state_machines.get(mac)
             if not state_machine:
                 LOGGER.error(
-                    'No state machine defined for device %s before receiving testing result',
-                    testing_result.mac)
+                    'No state machine defined for device %s before receiving testing result', mac)
                 return
-            state_machine.handle_port_behavior(testing_result.port_behavior)
+            state_machine.handle_port_behavior(port_behavior)
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""

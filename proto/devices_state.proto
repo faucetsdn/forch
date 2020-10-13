@@ -7,11 +7,6 @@ message DevicesState {
   map<string, DeviceBehavior> device_mac_behaviors = 2;
 }
 
-message Device {
-  DevicePlacement placement = 1;
-  DeviceBehavior behavior = 2;
-}
-
 message DevicePlacement {
   string switch = 1;
   int32 port = 2;
@@ -21,7 +16,7 @@ message DevicePlacement {
 message DeviceBehavior {
   string segment = 1;
   string role = 2;
-  PortBehavior.Behavior isolation_behavior = 3;
+  PortBehavior.Behavior port_behavior = 3;
 }
 
 message SegmentsToVlans {

@@ -81,7 +81,7 @@ class ForchMetrics():
         self._add_var('process_state', 'Current process state', Gauge, labels=['process'])
 
         learned_l2_port_help_text = 'learned port of l2 entries'
-        learned_l2_port_labels = ['dp_name', 'eth_src', 'vid', 'ip']
+        learned_l2_port_labels = ['dp_name', 'eth_src', 'vid']
         self._add_var('learned_l2_port', learned_l2_port_help_text, Gauge, learned_l2_port_labels)
 
         self._add_var(
