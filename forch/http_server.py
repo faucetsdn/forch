@@ -83,7 +83,7 @@ class HttpServer():
         self._port = port
         self._host = '0.0.0.0'
         self._thread = None
-        self._content_type=content_type
+        self._content_type = content_type
 
     def start_server(self):
         """Start serving thread"""
