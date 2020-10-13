@@ -51,6 +51,7 @@ rm faucet/faucet/python_test.py
 
 # Initial state is slightly broken with one egress link down.
 sudo ip link set t1sw2-eth28 down
+sleep 10
 
 curl -s http://localhost:8001 > $OUT_DIR/faucet_varz.txt
 fgrep 'port_lacp_state{' $OUT_DIR/faucet_varz.txt | sort | tee -a $TEST_RESULTS
