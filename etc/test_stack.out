@@ -1,7 +1,7 @@
 testing/test_stack
 supercalifragilisticexpialidocious
 port_lacp_state{dp_id="0xb1",dp_name="nz-kiwi-t1sw1",port="28",port_description="egress"} 3.0
-port_lacp_state{dp_id="0xb2",dp_name="nz-kiwi-t1sw2",port="28",port_description="egress"} 0.0
+port_lacp_state{dp_id="0xb2",dp_name="nz-kiwi-t1sw2",port="28",port_description="egress"} 5.0
 "0e:00:00:00:02:03"
 "faucet_dp_mac for DPs are not identical"
 3
