@@ -1,5 +1,6 @@
 """Unit test base class for Forch"""
 
+import os
 import shutil
 import tempfile
 import unittest
@@ -30,17 +31,34 @@ class UnitTestBase(unittest.TestCase):
         self._temp_dir = None
         self._temp_structural_config_file = None
         self._temp_behavioral_config_file = None
+        self._temp_forch_config_file = None
 
     def _setup_config_files(self):
         self._temp_dir = tempfile.mkdtemp()
         _, self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
         _, self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        _, self._temp_forch_config_file = tempfile.mkstemp(dir=self._temp_dir)
 
         with open(self._temp_structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
 
+        with open(self._temp_forch_config_file, 'w') as forch_config_file:
+            forch_config_file.write(self.FORCH_CONFIG)
+
     def _cleanup_config_files(self):
         shutil.rmtree(self._temp_dir)
+
+
+class ForchestratorTestBase(UnitTestBase):
+    """Base class for Forchestrator unit tests"""
+
+    def _setup_env(self):
+        os.environ["FORCH_CONFIG_DIR"] = self._temp_dir
+        os.environ["FORCH_CONFIG_DIR"] = os.path.basename(self._temp_forch_config_file)
+        os.environ["FAUCET_CONFIG_DIR"] = self._temp_dir
+        os.environ["FAUCET_CONFIG_FILE"] = os.path.basename(self._temp_behavioral_config_file)
+
+
 
 
 class FaucetizerTestBase(UnitTestBase):

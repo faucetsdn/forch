@@ -9,7 +9,7 @@ import socket
 import threading
 import time
 
-from forch.utils import dict_proto, get_logger
+from forch.utils import dict_proto, get_logger, FaucetEventOrderError
 
 from forch.proto.faucet_event_pb2 import FaucetEvent, PortChange
 
@@ -22,7 +22,7 @@ class FaucetEventClient():
     FAUCET_RETRIES = 10
     _PORT_DEBOUNCE_SEC = 5
 
-    def __init__(self, config, forch_metrics):
+    def __init__(self, config):
         self.config = config
         self.sock = None
         self.buffer = None
@@ -33,7 +33,6 @@ class FaucetEventClient():
         self._port_timers = {}
         self.event_socket_connected = False
         self._last_event_id = None
-        self._forch_metrics = forch_metrics
 
     def connect(self):
         """Make connection to sock to receive events"""
@@ -116,11 +115,7 @@ class FaucetEventClient():
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
-            LOGGER.error(
-                'Out-of-sequence event id. Last: %d, received: %d' % self._last_event_id, event_id)
-            if self._forch_metrics:
-                self._forch_metrics.inc_var('faucet_event_out_of_sequence_count')
-            self._last_event_id = event_id + 1
+            raise FaucetEventOrderError('Out-of-sequence event id #%d' % event_id)
         return True
 
     def _handle_port_change_debounce(self, event, target_event):
