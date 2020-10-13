@@ -59,7 +59,7 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
             print(f'Ignoring expected exception during restoring states: {error}')
 
         self._forchestrator._faucet_events.set_event_horizon(100)
-        restore_states_called= False
+        restore_states_called = False
 
         try:
             self._forchestrator.main_loop()
