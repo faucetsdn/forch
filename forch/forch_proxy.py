@@ -24,7 +24,7 @@ class ForchProxy():
     def start(self):
         """Start proxy server"""
         self._register_pages()
-        self._proxy_server = HttpServer(self._proxy_port)
+        self._proxy_server = HttpServer(self._proxy_port, content_type='text/plain')
         try:
             self._proxy_server.map_request('', self._get_path_data)
         except Exception as e:
