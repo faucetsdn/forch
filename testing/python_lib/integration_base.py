@@ -41,7 +41,7 @@ class IntegrationTestBase(unittest.TestCase):
         strerr = str(stderr, 'utf-8') if stderr else None
         return process.returncode, strout, strerr
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def _run_cmd(self, cmd, arglist=None, strict=True,
                  capture=False, docker_container=None):
         command = ("docker exec %s " % docker_container) if docker_container else ""
@@ -129,12 +129,12 @@ class IntegrationTestBase(unittest.TestCase):
         return self._write_yaml_to_file(filename, config)
 
     def _get_faucet_config_path(self):
-        config_file = '/../../inst/%s/faucet/faucet.yaml'
+        config_file_format = '/../../inst/%s/faucet/faucet.yaml'
         if self.stack_options.get('fot'):
             return os.path.dirname(os.path.abspath(__file__)) + \
-                (config_file % ('forch-controller-1'))
+                (config_file_format % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
-            (config_file % ('forch-faucet-1'))
+            (config_file_format % ('forch-faucet-1'))
 
 
 if __name__ == '__main__':
