@@ -18,12 +18,11 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         self._lock = threading.Lock()
         self._event_server_thread = None
         self._forchestrator_thread = None
-        self._event_server_connection = None
 
     def _handle_connection(self, event_socket):
         event_socket.listen(1)
         print('Waiting for incoming connection')
-        self._connection, _ = event_socket.accept()
+        connection, _ = event_socket.accept()
 
         events = [
             {'version': 1, 'time': 123.0, 'event_id': 101},
@@ -32,14 +31,16 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         for event in events:
             print(f'Sending event: {event}')
             event_bytes = bytes('\n'.join((json.dumps(event, default=str), '')).encode('UTF-8'))
-            self._event_server_connection.sendall(event_bytes)
+            connection.sendall(event_bytes)
 
     def _setup_event_server(self):
         assert self._temp_socket_file
         event_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        print(f'Binding socket on {self._temp_socket_file}')
         event_socket.bind(self._temp_socket_file)
         handle_connection = functools.partial(self._handle_connection, event_socket)
         self._event_server_thread = threading.Thread(target=handle_connection, daemon=True)
+        self._event_server_thread.start()
 
     def setUp(self, *args, **kwargs):
         super().setUp(*args, **kwargs)
