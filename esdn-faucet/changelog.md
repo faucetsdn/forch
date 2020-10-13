@@ -1,3 +1,10 @@
+## 1.14.0
+## Force 0.46.x
+* Update NOAH APIs to show a list of IPs for a host (#190)
+* Display error and disable authentication when static behavior file is missing (#185)
+## Faucet 1.9.50.x
+* Stack root migration optimizations
+
 ## 1.13.0
 ## Forch 0.45
 * Fix debian grpc depenancy (#182)
