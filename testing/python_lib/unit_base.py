@@ -8,7 +8,6 @@ import yaml
 
 import grpc
 
-from forch.__main__ import load_config
 from forch.device_testing_server import DeviceTestingServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
@@ -56,6 +55,11 @@ class UnitTestBase(unittest.TestCase):
 class ForchestratorTestBase(UnitTestBase):
     """Base class for Forchestrator unit tests"""
 
+    FORCH_CONFIG = """
+    site:
+      name: nz-kiwi
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._forchestrator = None
@@ -69,8 +73,9 @@ class ForchestratorTestBase(UnitTestBase):
         os.environ["FAUCET_EVENT_SOCK"] = self._temp_socket_file
 
     def _initialize_forchestrator(self):
-        config = load_config()
-        self._forchestrator = Forchestrator(config)
+        forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
+        self._forchestrator = Forchestrator(forch_config)
+        self._forchestrator.initialize()
 
     def setUp(self):
         """setup fixture for each test method"""

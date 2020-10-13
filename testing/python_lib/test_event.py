@@ -22,9 +22,17 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
 
     def _handle_connection(self, event_socket):
         event_socket.listen(1)
-        while True:
-            print('Waiting for incoming connection')
-            self._connection, _ = event_socket.accept()
+        print('Waiting for incoming connection')
+        self._connection, _ = event_socket.accept()
+
+        events = [
+            {'version': 1, 'time': 123.0, 'event_id': 101},
+            {'version': 1, 'time': 124.0, 'event_id': 200},
+        ]
+        for event in events:
+            print(f'Sending event: {event}')
+            event_bytes = bytes('\n'.join((json.dumps(event, default=str), '')).encode('UTF-8'))
+            self._event_server_connection.sendall(event_bytes)
 
     def _setup_event_server(self):
         assert self._temp_socket_file
@@ -34,17 +42,14 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         self._event_server_thread = threading.Thread(target=handle_connection, daemon=True)
 
     def setUp(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().setUp(*args, **kwargs)
+        os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
 
     def test_out_of_sequence(self):
-        events = [
-            {'version': 1, 'time': 123.0, 'event_id': 101},
-            {'version': 1, 'time': 124.0, 'event_id': 200},
-        ]
-        for event in events:
-            event_bytes = bytes('\n'.join((json.dumps(event, default=str), '')).encode('UTF-8'))
-            self._event_server_connection.sendall(event_bytes)
+        """Test Forch behavior in case of out-of-sequence event"""
+        self._forchestrator.main_loop()
+        pass
 
 if __name__ == '__main__':
     unittest.main()
