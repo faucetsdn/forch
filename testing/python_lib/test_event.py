@@ -51,7 +51,7 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         try:
             super().setUp(*args, **kwargs)
         except MetricsFetchingError as error:
-            print(f'Expected error during Forchestrator initialization: %s', error)
+            print(f'Expected error during Forchestrator initialization: {error}')
         os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
 

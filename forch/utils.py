@@ -24,7 +24,7 @@ class FaucetEventOrderError(Exception):
 
 
 class MetricsFetchingError(Exception):
-    """Failure of fetching varzs"""
+    """Failure of fetching target metrics"""
 
 
 def _get_log_path():
