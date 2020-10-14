@@ -7,7 +7,6 @@ import socket
 import threading
 import unittest
 
-from faucet.conf import InvalidConfigError
 from forch.utils import VarzFetchingError
 
 from unit_base import ForchestratorTestBase

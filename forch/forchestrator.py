@@ -24,7 +24,8 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.port_state_manager import PortStateManager
 import forch.varz_state_collector as varz_state_collector
-from forch.utils import get_logger, proto_dict, yaml_proto, FaucetEventOrderError, FaucetVarzError
+from forch.utils import (
+    get_logger, proto_dict, yaml_proto, FaucetEventOrderError, VarzFetchingError)
 
 from forch.__version__ import __version__
 
@@ -175,7 +176,7 @@ class Forchestrator:
                 varz_retry -= 1
 
         if varz_retry == 0:
-            raise FaucetVarzError('Could not get Faucet varz')
+            raise VarzFetchingError('Could not get Faucet varz')
 
         self._register_handlers()
         self.start()
