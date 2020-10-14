@@ -7,7 +7,7 @@ import socket
 import threading
 import unittest
 
-from forch.utils import VarzFetchingError
+from forch.utils import MetricsFetchingError
 
 from unit_base import ForchestratorTestBase
 
@@ -50,7 +50,7 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         """Set up env and event server"""
         try:
             super().setUp(*args, **kwargs)
-        except VarzFetchingError as error:
+        except MetricsFetchingError as error:
             print(f'Expected error during Forchestrator initialization: %s', error)
         os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
@@ -64,7 +64,7 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
 
         try:
             self._forchestrator.main_loop()
-        except VarzFetchingError as error:
+        except MetricsFetchingError as error:
             # Forchestrator.restore_states() will raise VarzFetchingError as Faucet prometheus
             # client is not enabled, and thus this error implies restore_states() is called.
             print(f'Expected error during restoring states: {error}')

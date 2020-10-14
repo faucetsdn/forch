@@ -23,7 +23,7 @@ class FaucetEventOrderError(Exception):
     """Error for when Faucet event is out of sequence"""
 
 
-class VarzFetchingError(Exception):
+class MetricsFetchingError(Exception):
     """Failure of fetching varzs"""
 
 
