@@ -5,6 +5,7 @@ source bin/stack_functions
 preamble_setup
 
 export CONTROLLER_NAME=127.0.0.1
+export STABILIZE_SEC=32
 
 controllers=`sudo ovs-vsctl get-controller t1sw1`
 
@@ -80,7 +81,7 @@ sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip addr add 240.0.0.2/24 dev lo
 sudo ip addr add 240.0.0.253/24 dev lo
 sleep 50.3231 &
-sleep 32
+sleep $STABILIZE_SEC
 test_forch -healthy
 test_varz_value process_state{process=\"faucet\"} 8302
 test_varz_value process_state{process=\"gauge\"} 8080 forch
@@ -101,7 +102,7 @@ echo %%% t1sw1-eth10 down | tee -a $TEST_RESULTS
 sudo ip link set t1sw2-eth10 down
 test_stack -twod
 sleep 50.3231 &
-sleep 32
+sleep $STABILIZE_SEC
 test_forch -twod
 
 echo %%% steady state ip address check | tee -a $TEST_RESULTS
@@ -133,11 +134,14 @@ test_forch -restored
 echo %%% reset stack | tee -a $TEST_RESULTS
 restart_ovs
 reset_stack
+sudo ip link set t2sw3-eth50 down
+sudo ip link set t2sw3-eth52 down
+sleep $STABILIZE_SEC
 test_forch -reset
 
 echo %%% restarting Forch | tee -a $TEST_RESULTS
 restart_forch
-sleep 32
+sleep $STABILIZE_SEC
 test_forch -restart
 
 echo Killing forch...
