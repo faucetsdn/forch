@@ -46,11 +46,14 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         self._event_server_thread = threading.Thread(target=handle_connection, daemon=True)
         self._event_server_thread.start()
 
+    # pylint: disable=invalid-name
     def setUp(self, *args, **kwargs):
+        """Set up env and event server"""
         super().setUp(*args, **kwargs)
         os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
 
+    # pylint: disable=protected-access
     def test_out_of_sequence(self):
         """Test Forch behavior in case of out-of-sequence event"""
         try:
