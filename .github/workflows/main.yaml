@@ -86,7 +86,7 @@ jobs:
 
   test_stack:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
