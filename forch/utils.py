@@ -23,6 +23,10 @@ class FaucetEventOrderError(Exception):
     """Error for when Faucet event is out of sequence"""
 
 
+class FaucetVarzError(Exception):
+    """Failure of fetching Faucet varz"""
+
+
 def _get_log_path():
     """Get path for logging"""
     forch_log_dir = os.getenv('FORCH_LOG_DIR')

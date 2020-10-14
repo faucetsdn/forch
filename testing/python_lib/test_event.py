@@ -8,6 +8,7 @@ import threading
 import unittest
 
 from faucet.conf import InvalidConfigError
+from forch.utils import FaucetVarzError
 
 from unit_base import ForchestratorTestBase
 
@@ -48,7 +49,10 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
     # pylint: disable=invalid-name
     def setUp(self, *args, **kwargs):
         """Set up env and event server"""
-        super().setUp(*args, **kwargs)
+        try:
+            super().setUp(*args, **kwargs)
+        except FaucetVarzError as error:
+            print(f'Expected error during Forchestrator initialization: %s', error)
         os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
 
