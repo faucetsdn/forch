@@ -67,6 +67,9 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         try:
             self._forchestrator.main_loop()
         except InvalidConfigError as error:
+            # Forchestrator.restore_states() will raise InvalidConfigError as the config file is
+            # actually empty. In the other words, if this error is raised, it implies
+            # restore_states() is called.
             print(f'Expected error during restoring states: {error}')
             restore_states_called = True
 

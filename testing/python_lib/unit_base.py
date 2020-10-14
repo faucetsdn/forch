@@ -58,6 +58,8 @@ class ForchestratorTestBase(UnitTestBase):
     FORCH_CONFIG = """
     site:
       name: nz-kiwi
+    varz_interface:
+      varz_port: 60000
     """
 
     def __init__(self, *args, **kwargs):
