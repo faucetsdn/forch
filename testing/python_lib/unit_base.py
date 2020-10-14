@@ -364,3 +364,28 @@ class PortsStateManagerTestBase(UnitTestBase):
 
     def _verify_received_device_behaviors(self, expected_device_behaviors):
         self.assertEqual(self._received_device_behaviors, expected_device_behaviors)
+
+
+class ForchestratorTestBase(UnitTestBase):
+    """Base class for Forchestrator unit tests"""
+
+    FORCH_CONFIG = """
+    event_client:
+      stack_topo_change_coalesce_sec: 15
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._forchestrator = None
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._initialize_forchestrator()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._forchestrator = None
+
+    def _initialize_forchestrator(self):
+        forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
+        self._forchestrator = Forchestrator(forch_config)

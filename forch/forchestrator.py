@@ -708,7 +708,9 @@ class Forchestrator:
                 is_egress = 1 if 'lacp' in if_obj else 0
                 is_stack = 1 if 'stack' in if_obj else 0
                 is_access = 1 if 'native_vlan' in if_obj else 0
-                if (is_egress + is_stack + is_access) != 1:
+                is_trunk = 1 if if_obj['description'] == 'trunk' else 0
+                is_mirror = 1 if if_obj['description'] == 'mirror' else 0
+                if (is_egress + is_stack + is_access + is_trunk + is_mirror) != 1:
                     warnings.append((if_key, 'misconfigured interface config: %d %d %d' %
                                      (is_egress, is_stack, is_access)))
                 if 'loop_protect_external' in if_obj:
