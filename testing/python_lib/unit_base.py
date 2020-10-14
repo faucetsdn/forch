@@ -1,5 +1,6 @@
 """Unit test base class for Forch"""
 
+import os
 import shutil
 import tempfile
 import unittest
@@ -10,6 +11,7 @@ import grpc
 from forch.device_report_server import DeviceReportServer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
+from forch.forchestrator import Forchestrator
 from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
@@ -30,17 +32,66 @@ class UnitTestBase(unittest.TestCase):
         self._temp_dir = None
         self._temp_structural_config_file = None
         self._temp_behavioral_config_file = None
+        self._temp_forch_config_file = None
+        self._temp_socket_file = None
 
     def _setup_config_files(self):
         self._temp_dir = tempfile.mkdtemp()
         _, self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
         _, self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        _, self._temp_forch_config_file = tempfile.mkstemp(dir=self._temp_dir)
+        self._temp_socket_file = os.path.join(self._temp_dir, 'faucet_event.sock')
 
         with open(self._temp_structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
 
+        with open(self._temp_forch_config_file, 'w') as forch_config_file:
+            forch_config_file.write(self.FORCH_CONFIG)
+
     def _cleanup_config_files(self):
         shutil.rmtree(self._temp_dir)
+
+
+class ForchestratorTestBase(UnitTestBase):
+    """Base class for Forchestrator unit tests"""
+
+    FORCH_CONFIG = """
+    site:
+      name: nz-kiwi
+    varz_interface:
+      varz_port: 60000
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._forchestrator = None
+
+    def _setup_env(self):
+        assert self._temp_dir
+        os.environ['FORCH_CONFIG_DIR'] = self._temp_dir
+        os.environ['FORCH_CONFIG_FILE'] = os.path.basename(self._temp_forch_config_file)
+        os.environ['FAUCET_CONFIG_DIR'] = self._temp_dir
+        os.environ['FAUCET_CONFIG_FILE'] = os.path.basename(self._temp_behavioral_config_file)
+        os.environ['FAUCET_EVENT_SOCK'] = self._temp_socket_file
+        os.environ['CONTROLLER_NAME'] = 'ctr1'
+
+    def _initialize_forchestrator(self):
+        forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
+        self._forchestrator = Forchestrator(forch_config)
+        try:
+            self._forchestrator.initialize()
+        except ConnectionRefusedError:
+            print('Ignoring connection error during Forchestrator initialization')
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._setup_config_files()
+        self._setup_env()
+        self._initialize_forchestrator()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._cleanup_config_files()
 
 
 class FaucetizerTestBase(UnitTestBase):

@@ -19,6 +19,14 @@ class ConfigError(Exception):
     """Error for when config isn't valid."""
 
 
+class FaucetEventOrderError(Exception):
+    """Error for when Faucet event is out of sequence"""
+
+
+class MetricsFetchingError(Exception):
+    """Failure of fetching target metrics"""
+
+
 def _get_log_path():
     """Get path for logging"""
     forch_log_dir = os.getenv('FORCH_LOG_DIR')

@@ -5,7 +5,7 @@ import time
 import prometheus_client.parser
 import requests
 
-from forch.utils import get_logger
+from forch.utils import get_logger, MetricsFetchingError
 
 LOGGER = get_logger('vstate')
 
@@ -37,4 +37,4 @@ def retry_get_metrics(endpoint, target_metrics, retries=3):
         except Exception as e:
             LOGGER.warning("Cannot retrieve prometheus metrics: %s, retry: %d", e, retry)
             time.sleep(1)
-    raise Exception(f"Cannot retrieve prometheus metrics after {retries} retries")
+    raise MetricsFetchingError(f"Cannot retrieve prometheus metrics after {retries} retries")
