@@ -164,13 +164,17 @@ class Forchestrator:
 
         self._validate_config_files()
 
-        while True:
+        varz_retry = 10
+        while varz_retry > 0:
             time.sleep(10)
             try:
                 self._get_varz_config()
                 break
             except Exception as e:
                 LOGGER.error('Waiting for varz config: %s', e)
+                varz_retry -= 1
+
+        assert varz_retry > 0, 'Could not get Faucet varz'
 
         self._register_handlers()
         self.start()
