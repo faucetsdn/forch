@@ -73,6 +73,8 @@ echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid
 test_forch -solid
 
+reset_stack
+
 echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip addr add 240.0.0.2/24 dev lo
@@ -85,8 +87,6 @@ test_varz_value process_state{process=\"gauge\"} 8080 forch
 test_varz_value process_state{process=\"forch\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 jkdhfgjksdhg
-
-reset_stack
 
 echo %%% t2sw3 down, cpn nz-kiwi-ctl1 up, t1sw1-eth9 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl del-controller t2sw3
