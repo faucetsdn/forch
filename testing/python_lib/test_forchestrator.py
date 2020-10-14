@@ -48,5 +48,6 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
         faucet_config = yaml.safe_load(faucet_config_str)
         self.assertFalse(self._forchestrator._validate_config(faucet_config))
 
+
 if __name__ == '__main__':
     unittest.main()
