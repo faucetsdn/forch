@@ -167,7 +167,7 @@ Done with stack-twod test.
 Running forch-twod tests
 @system_state-twod
 "nz-kiwi"
-56
+54
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-twod
@@ -188,7 +188,7 @@ Running forch-twod tests
 null
 1
 @cpn_state-twod
-2
+0
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
@@ -346,13 +346,13 @@ null
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-29
+38
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1:28; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-18
+27
 "active"
 "active"
 3
