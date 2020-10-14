@@ -19,7 +19,6 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         super().__init__(*args, **kwargs)
         self._lock = threading.Lock()
         self._event_server_thread = None
-        self._forchestrator_thread = None
 
     def _handle_connection(self, event_socket):
         event_socket.listen(1)
