@@ -8,7 +8,7 @@ from unit_base import ForchestratorTestBase
 class ForchestratorUnitTestCase(ForchestratorTestBase):
     """Test cases for dataplane state"""
 
-    #pylint: disable=protected-access
+    # pylint: disable=protected-access
     def test_faucet_config_validation(self):
         """Test validation for faucet config"""
         print(self._forchestrator)
@@ -47,8 +47,6 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
             lldp_beacon: {max_per_interval: 5, send_interval: 5}"""
         faucet_config = yaml.safe_load(faucet_config_str)
         self.assertFalse(self._forchestrator._validate_config(faucet_config))
-
-
 
 if __name__ == '__main__':
     unittest.main()
