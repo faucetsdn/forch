@@ -3,6 +3,7 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
+ALL_IMAGES="faux faucet gauge $*"
 FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
 FAUCET_HASH=$(cd faucet; git rev-list -n 1 $FAUCET_VERSION)
 DOCKER_IMAGE_LIST=etc/docker_images.txt
@@ -67,7 +68,7 @@ echo Labelling images with faucet version $faucet_ver
 
 docker_args+=--label=FAUCET_HASH=$faucet_ver
 
-for image in faux faucet controller gauge; do
+for image in $ALL_IMAGES; do
     echo Building $image, output in build/docker_$image.log
     docker build -t forch/$image $docker_args -f etc/Dockerfile.$image . > build/docker_$image.log
     tail build/docker_$image.log
@@ -75,8 +76,10 @@ done
 
 docker images | fgrep forch/ | fgrep latest
 images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
-if [ $images != 4 ]; then
-    echo Did not find expected 4 forch/ images.
+expected=`echo $ALL_IMAGES | wc -w`
+if [ $images != $expected ]; then
+    echo Did not find expected $expected forch/ images.
+    docker images
     false
 fi
 
