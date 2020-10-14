@@ -23,8 +23,8 @@ class FaucetEventOrderError(Exception):
     """Error for when Faucet event is out of sequence"""
 
 
-class FaucetVarzError(Exception):
-    """Failure of fetching Faucet varz"""
+class VarzFetchingError(Exception):
+    """Failure of fetching varzs"""
 
 
 def _get_log_path():

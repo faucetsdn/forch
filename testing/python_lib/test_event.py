@@ -8,7 +8,7 @@ import threading
 import unittest
 
 from faucet.conf import InvalidConfigError
-from forch.utils import FaucetVarzError
+from forch.utils import VarzFetchingError
 
 from unit_base import ForchestratorTestBase
 
@@ -51,7 +51,7 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
         """Set up env and event server"""
         try:
             super().setUp(*args, **kwargs)
-        except FaucetVarzError as error:
+        except VarzFetchingError as error:
             print(f'Expected error during Forchestrator initialization: %s', error)
         os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
@@ -59,20 +59,15 @@ class FaucetEventOrderTestCase(ForchestratorTestBase):
     # pylint: disable=protected-access
     def test_out_of_sequence(self):
         """Test Forch behavior in case of out-of-sequence event"""
-        try:
-            self._forchestrator._faucet_events_connect()
-        except Exception as error:
-            print(f'Ignoring expected exception during restoring states: {error}')
-
+        self._forchestrator._faucet_events_connect()
         self._forchestrator._faucet_events.set_event_horizon(100)
         restore_states_called = False
 
         try:
             self._forchestrator.main_loop()
-        except InvalidConfigError as error:
-            # Forchestrator.restore_states() will raise InvalidConfigError as the config file is
-            # actually empty. In the other words, if this error is raised, it implies
-            # restore_states() is called.
+        except VarzFetchingError as error:
+            # Forchestrator.restore_states() will raise VarzFetchingError as Faucet prometheus
+            # client is not enabled, and thus this error implies restore_states() is called.
             print(f'Expected error during restoring states: {error}')
             restore_states_called = True
 
