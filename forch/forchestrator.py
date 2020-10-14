@@ -110,7 +110,7 @@ class Forchestrator:
         self._config_errors = {}
         self._faucet_config_summary = None
         self._metrics = None
-        self._proxy = None
+        self._varz_proxy = None
 
         self._lock = threading.Lock()
 
@@ -159,8 +159,8 @@ class Forchestrator:
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
         if str(self._config.proxy_server):
-            self._proxy = ForchProxy(self._config.proxy_server)
-            self._proxy.start()
+            self._varz_proxy = ForchProxy(self._config.proxy_server, content_type='text/plain')
+            self._varz_proxy.start()
 
         self._validate_config_files()
 
@@ -481,8 +481,8 @@ class Forchestrator:
             self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
-        if self._proxy:
-            self._proxy.stop()
+        if self._varz_proxy:
+            self._varz_proxy.stop()
         if self._device_report_server:
             self._device_report_server.stop()
 

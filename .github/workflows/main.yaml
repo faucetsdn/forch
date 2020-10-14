@@ -58,7 +58,7 @@ jobs:
       - name: setup faucet
         run: bin/setup_faucet
       - name: build docker
-        run: bin/retry_cmd bin/build_docker
+        run: bin/retry_cmd bin/build_docker controller
       - name: run test
         run: testing/python_test test_fot
 
@@ -86,7 +86,7 @@ jobs:
 
   test_stack:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -111,7 +111,7 @@ jobs:
 
   test_scale:
     runs-on: ubuntu-20.04
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8

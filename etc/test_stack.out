@@ -142,6 +142,8 @@ forch-faux-3: ping -c 10 192.168.1.0 0
 forch-faux-3: ping -c 10 192.168.1.1 0
 forch-faux-3: ping -c 10 192.168.1.2 0
 Done with stack-linkd test.
+port_lacp_state{dp_id="0xb1",dp_name="nz-kiwi-t1sw1",port="28",port_description="egress"} 3.0
+port_lacp_state{dp_id="0xb2",dp_name="nz-kiwi-t1sw2",port="28",port_description="egress"} 5.0
 %%% t1sw1-eth10 down
 Starting stack-twod test...
 (UNKNOWN) [192.168.1.1] 23 (telnet) : Connection timed out
@@ -165,7 +167,7 @@ Done with stack-twod test.
 Running forch-twod tests
 @system_state-twod
 "nz-kiwi"
-56
+54
 "http://localhost.n:9020"
 "broken"
 @dataplane_state-twod
@@ -186,7 +188,7 @@ Running forch-twod tests
 null
 1
 @cpn_state-twod
-2
+0
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
@@ -344,13 +346,13 @@ null
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-29
+38
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1:28; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-18
+27
 "active"
 "active"
 3
