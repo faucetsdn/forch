@@ -1122,7 +1122,7 @@ class FaucetStateCollector:
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
                     devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                    self._placement_callback(mac, devices_placement)
+                    self._placement_callback(mac, devices_placement, expired_vlan=expired_vlan)
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port, expire=True)
