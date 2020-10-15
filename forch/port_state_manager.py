@@ -135,7 +135,7 @@ class PortStateManager:
             return
 
         if not expired_vlan or device_behavior.segment == expired_vlan:
-            self._process_device_placement(mac, DevicePlacement(), static=False)
+            self._process_device_placement(mac, device_placement, static=False)
             if dynamic_behavior:
                 self._process_device_behavior(mac, DeviceBehavior(), static=False)
         else:
