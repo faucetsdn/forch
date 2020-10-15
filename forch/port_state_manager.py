@@ -5,7 +5,7 @@ import threading
 from forch.utils import get_logger
 
 from forch.proto.shared_constants_pb2 import PortBehavior
-from forch.proto.devices_state_pb2 import DeviceBehavior
+from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement
 
 
 LOGGER = get_logger('portsm')
@@ -89,12 +89,15 @@ class PortStateMachine:
 
 class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
-    def __init__(self, process_device_behavior, testing_segment=None):
+    def __init__(self, process_device_placement, process_device_behavior, testing_segment=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
-        self._process_device_behavior = process_device_behavior
+        self._process_device_placement = (
+            lambda *args: process_device_placement(*args) if process_device_placement else None)
+        self._process_device_behavior = (
+            lambda *args: process_device_behavior(*args) if process_device_behavior else None)
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
 
@@ -114,6 +117,27 @@ class PortStateManager:
             self._handle_authenticated_device(mac, device_behavior, static)
         else:
             self._handle_unauthenticated_device(mac, static)
+
+    def handle_device_placement(self, mac, device_placement, static=False, expired_vlan=None):
+        """Handle a learning or expired VLAN for a device"""
+        if not expired_vlan:
+            # if device is learned
+            self._process_device_placement(mac, device_placement, static=static)
+            return
+
+        # if device vlan is expired
+        static_behavior = self._static_device_behaviors.get(mac)
+        dynamic_behavior = self._dynamic_device_behaviors.get(mac)
+        device_behavior = static_behavior or dynamic_behavior
+
+        if not device_behavior:
+            LOGGER.warning('Device behavior does not exist for mac: %s', mac)
+            return
+
+        if device_behavior.segment == expired_vlan:
+            self._process_device_placement(mac, DevicePlacement(), static=False)
+        if not static_behavior:
+            self._process_device_behavior(mac, DeviceBehavior(), static=False)
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""

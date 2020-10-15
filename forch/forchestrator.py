@@ -186,13 +186,22 @@ class Forchestrator:
         if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
+
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
+            process_device_placement = self._faucetizer.process_device_placement
+            process_device_behavior = self._faucetizer.process_device_behavior
+        else:
+            process_device_placement = None
+            process_device_behavior = None
+
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self._config.orchestration.sequester_config.segment)
+            process_device_placement, process_device_behavior,
+            self._config.orchestration.sequester_config.segment)
+
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
             self._device_report_server = DeviceReportServer(
@@ -357,16 +366,13 @@ class Forchestrator:
         """If forch is initialized or not"""
         return self._initialized
 
-    def _process_device_placement(self, eth_src, device_placement, static=False):
+    def _process_device_placement(self, eth_src, device_placement, static=False, expired_vlan=None):
         """Call device placement API for faucetizer/authenticator"""
-        if self._faucetizer:
-            self._faucetizer.process_device_placement(eth_src, device_placement, static=static)
+        self._port_state_manager.handle_device_placement(
+            eth_src, device_placement, static, expired_vlan)
+
         if self._authenticator:
             self._authenticator.process_device_placement(eth_src, device_placement)
-
-    def _process_device_behavior(self, mac, device_behavior, static=False):
-        """Function interface of processing device behavior"""
-        self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
