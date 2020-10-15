@@ -131,13 +131,16 @@ class PortStateManager:
         device_behavior = static_behavior or dynamic_behavior
 
         if not device_behavior:
-            LOGGER.warning('Device behavior does not exist for mac: %s', mac)
+            LOGGER.info('Device behavior does not exist for device %s', mac)
             return
 
         if not expired_vlan or device_behavior.segment == expired_vlan:
             self._process_device_placement(mac, DevicePlacement(), static=False)
             if dynamic_behavior:
                 self._process_device_behavior(mac, DeviceBehavior(), static=False)
+        else:
+            LOGGER.info(
+                'Ignoring vlan expiration for device %s with expired vlan %d', mac, expired_vlan)
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""
