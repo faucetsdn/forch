@@ -470,7 +470,7 @@ class Forchestrator:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
         except Exception as e:
-            LOGGER.error("Exception: %s", e)
+            LOGGER.error("Exception found in main loop: %s", e)
             raise
 
     def start(self):

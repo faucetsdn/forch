@@ -95,9 +95,9 @@ class PortStateManager:
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
         self._process_device_placement = (
-            lambda *args: process_device_placement(*args) if process_device_placement else None)
+            lambda *args, **kwargs: process_device_placement(*args, **kwargs) if process_device_placement else None)
         self._process_device_behavior = (
-            lambda *args: process_device_behavior(*args) if process_device_behavior else None)
+            lambda *args, **kwargs: process_device_behavior(*args, **kwargs) if process_device_behavior else None)
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
 
