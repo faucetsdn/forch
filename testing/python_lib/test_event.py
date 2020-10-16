@@ -9,10 +9,10 @@ import unittest
 
 from forch.utils import MetricsFetchingError
 
-from unit_base import ForchestratorTestBase
+from unit_base import ForchestratorEventTestBase
 
 
-class FaucetEventOrderTestCase(ForchestratorTestBase):
+class FaucetEventOrderTestCase(ForchestratorEventTestBase):
     """Faucet event order test case"""
 
     def __init__(self, *args, **kwargs):

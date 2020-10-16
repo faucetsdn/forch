@@ -52,7 +52,7 @@ class UnitTestBase(unittest.TestCase):
         shutil.rmtree(self._temp_dir)
 
 
-class ForchestratorTestBase(UnitTestBase):
+class ForchestratorEventTestBase(UnitTestBase):
     """Base class for Forchestrator unit tests"""
 
     FORCH_CONFIG = """
@@ -349,11 +349,19 @@ class PortsStateManagerTestBase(UnitTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self.SEQUESTER_SEGMENT)
+            self._process_device_placement, self._process_device_behavior,
+            self._get_vlan_from_segment, self.SEQUESTER_SEGMENT)
+        self._received_device_placements = []
         self._received_device_behaviors = []
+
+    def _process_device_placement(self):
+        pass
 
     def _process_device_behavior(self):
         pass
+
+    def _get_vlan_from_segment(self, vlan):
+        return
 
     def _verify_ports_states(self, expected_states):
         # pylint: disable=protected-access
@@ -361,6 +369,9 @@ class PortsStateManagerTestBase(UnitTestBase):
             mac: ptsm.get_current_state()
             for (mac, ptsm) in self._port_state_manager._state_machines.items()}
         self.assertEqual(ports_states, expected_states)
+
+    def _verify_received_device_placements(self, expected_device_placements):
+        self.assertEqual(self._received_device_placements, expected_device_placements)
 
     def _verify_received_device_behaviors(self, expected_device_behaviors):
         self.assertEqual(self._received_device_behaviors, expected_device_behaviors)
