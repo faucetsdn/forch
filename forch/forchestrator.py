@@ -194,12 +194,14 @@ class Forchestrator:
 
             process_device_placement = self._faucetizer.process_device_placement
             process_device_behavior = self._faucetizer.process_device_behavior
+            get_vlan_from_segment = self._faucetizer.get_vlan_from_segment
         else:
             process_device_placement = None
             process_device_behavior = None
+            get_vlan_from_segment = None
 
         self._port_state_manager = PortStateManager(
-            process_device_placement, process_device_behavior,
+            process_device_placement, process_device_behavior, get_vlan_from_segment,
             self._config.orchestration.sequester_config.segment)
 
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
