@@ -206,7 +206,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_states = {
             '00:0X:00:00:00:01': self.OPERATIONAL,
             '00:0Z:00:00:00:03': self.SEQUESTERED,
-            '00:0A:00:00:00:04': self.SEQUESTERED
+            '00:0A:00:00:00:04': self.SEQUESTERED,
+            '00:0B:00:00:00:05': self.SEQUESTERED
         }
         self._verify_ports_states(expected_states)
 
@@ -214,7 +215,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             ('00:0X:00:00:00:01', 'SEG_A', True),
             ('00:0X:00:00:00:01', 'SEG_A', True),
             ('00:0Z:00:00:00:03', 'TESTING', False),
-            ('00:0A:00:00:00:04', 'TESTING', False)
+            ('00:0A:00:00:00:04', 'TESTING', False),
+            ('00:0B:00:00:00:05', 'TESTING', False)
         ]
         self._verify_received_device_behaviors(expected_received_device_behaviors)
 
@@ -226,7 +228,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_states = {
             '00:0X:00:00:00:01': self.OPERATIONAL,
             '00:0Z:00:00:00:03': self.INFRACTED,
-            '00:0A:00:00:00:04': self.OPERATIONAL
+            '00:0A:00:00:00:04': self.OPERATIONAL,
+            '00:0B:00:00:00:05': self.SEQUESTERED
         }
         self._verify_ports_states(expected_states)
 
@@ -239,7 +242,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
 
         expected_states = {
             '00:0X:00:00:00:01': self.OPERATIONAL,
-            '00:0Z:00:00:00:03': self.INFRACTED
+            '00:0Z:00:00:00:03': self.INFRACTED,
+            '00:0B:00:00:00:05': self.SEQUESTERED
         }
         self._verify_ports_states(expected_states)
 
