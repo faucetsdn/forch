@@ -52,7 +52,7 @@ class UnitTestBase(unittest.TestCase):
         shutil.rmtree(self._temp_dir)
 
 
-class ForchestratorTestBase(UnitTestBase):
+class ForchestratorEventTestBase(UnitTestBase):
     """Base class for Forchestrator unit tests"""
 
     FORCH_CONFIG = """
