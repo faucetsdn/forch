@@ -5,7 +5,7 @@ import threading
 from forch.utils import get_logger
 
 from forch.proto.shared_constants_pb2 import PortBehavior
-from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement
+from forch.proto.devices_state_pb2 import DeviceBehavior
 
 
 LOGGER = get_logger('portsm')
