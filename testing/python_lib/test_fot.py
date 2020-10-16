@@ -189,7 +189,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         ]
         unauthenticated_devices = ['00:0X:00:00:00:01', '00:0A:00:00:00:04']
         expired_device_vlans = [
-            ('00:0A:00:00:00:05', 600),
+            ('00:0B:00:00:00:05', 600),
             ('00:0B:00:00:00:05', 500),
         ]
 
