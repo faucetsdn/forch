@@ -370,10 +370,10 @@ class Forchestrator:
 
     def _process_device_placement(self, eth_src, device_placement, static=False, expired_vlan=None):
         """Call device placement API for faucetizer/authenticator"""
-        self._port_state_manager.handle_device_placement(
+        propagate_placement = self._port_state_manager.handle_device_placement(
             eth_src, device_placement, static, expired_vlan)
 
-        if self._authenticator:
+        if self._authenticator and propagate_placement:
             self._authenticator.process_device_placement(eth_src, device_placement)
 
     def handle_auth_result(self, mac, access, segment, role):
