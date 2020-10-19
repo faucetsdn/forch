@@ -131,18 +131,14 @@ reset_stack
 
 # TODO: Make this switch roots without explicitly bringing the egress link down.
 sudo ip link set t1sw1-eth28 down
-docker exec forch-faux-2 sh -c "arp -d 192.168.1.0; ping -c 1 192.168.1.0"
 sleep $STABILIZE_SEC
 sudo ip link set t1sw1-eth6 down
 sudo ip link set t1sw1-eth9 down
 sudo ip link set t1sw1-eth10 down
 sudo ip link set t1sw1-eth11 down
-docker exec forch-faux-2 sh -c "arp -d 192.168.1.0; ping -c 1 192.168.1.0"
 sleep $STABILIZE_SEC
 sudo ip link set t1sw1-eth28 up
-docker exec forch-faux-2 sh -c "arp -d 192.168.1.0; ping -c 1 192.168.1.0"
 sleep $STABILIZE_SEC
-docker exec forch-faux-2 sh -c "arp -d 192.168.1.0; ping -c 1 192.168.1.0"
 
 test_stack -orphaned
 test_forch -orphaned

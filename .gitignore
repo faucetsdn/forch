@@ -3,7 +3,6 @@
 /test_out/
 /protoc-gen-doc/
 /ovs/
-/tcpdump/
 
 # package build files
 
