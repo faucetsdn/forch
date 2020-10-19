@@ -3,6 +3,10 @@
 # Utility functions for working with stack setup and testing.
 #
 
+export CONTROLLER_NAME=127.0.0.1
+export STABILIZE_SEC=32
+export CONTROLLER_IDS=`sudo ovs-vsctl get-controller t1sw1`
+
 function preamble_setup {
     if [ -z "$TEST_RESULTS" ]; then
         TEST_SCRIPT=${0##*/}
@@ -129,7 +133,12 @@ function dump_flows {
 }
 
 function reset_stack {
-    sudo ovs-vsctl set-controller t2sw3 $controllers
+    if [ -z "$CONTROLLER_IDS" ]; then
+        echo No controller ids defined, no reset for you.
+        return
+    fi
+
+    sudo ovs-vsctl set-controller t2sw3 $CONTROLLER_IDS
     sudo ip addr del 240.0.0.253/24 dev lo
     sudo ip addr del 240.0.0.1/24 dev lo
     sudo ip addr del 240.0.0.2/24 dev lo
@@ -148,9 +157,9 @@ function reset_stack {
 
     # Force egress to be t1sw1
     sudo ip link set t1sw2-eth28 down
-    sleep 10
+    sleep $STABILIZE_SEC
     sudo ip link set t1sw2-eth28 up
-    sleep 10
+    sleep $STABILIZE_SEC
 
     diagnose_stack
 }
@@ -178,7 +187,7 @@ function restart_ovs {
     sudo /etc/init.d/openvswitch-switch restart
 
     echo $desc Waiting for network stability...
-    sleep 30
+    sleep $STABILIZE_SEC
 }
 
 function test_stack {
@@ -290,7 +299,7 @@ function restart_forch {
     bin/forch --base $base 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
-    sleep 20
+    sleep $STABILIZE_SEC
 
     unset change_counts
     declare -g -A change_counts

@@ -4,11 +4,6 @@ source bin/stack_functions
 
 preamble_setup
 
-export CONTROLLER_NAME=127.0.0.1
-export STABILIZE_SEC=32
-
-controllers=`sudo ovs-vsctl get-controller t1sw1`
-
 local=
 if [ "$1" == local ]; then
     local=y
@@ -111,7 +106,7 @@ jq '.src_ips[0]' $api_result | tee -a $TEST_RESULTS
 jq '.dst_ips[0]' $api_result | tee -a $TEST_RESULTS
 
 echo %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down | tee -a $TEST_RESULTS
-sudo ovs-vsctl set-controller t2sw3 $controllers
+sudo ovs-vsctl set-controller t2sw3 $CONTROLLER_IDS
 sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip link set t1sw2-eth28 down
 sudo ip link set t1sw1-eth6 down
@@ -130,6 +125,23 @@ add_link t1sw1 11 t2sw3 52
 add_link t1sw2 11 t2sw3 50
 test_stack -restored
 test_forch -restored
+
+echo %%% orphaned t1sw1 | tee -a $TEST_RESULTS
+reset_stack
+
+# TODO: Make this switch roots without explicitly bringing the egress link down.
+sudo ip link set t1sw1-eth28 down
+sleep $STABILIZE_SEC
+sudo ip link set t1sw1-eth6 down
+sudo ip link set t1sw1-eth9 down
+sudo ip link set t1sw1-eth10 down
+sudo ip link set t1sw1-eth11 down
+sleep $STABILIZE_SEC
+sudo ip link set t1sw1-eth28 up
+sleep $STABILIZE_SEC
+
+test_stack -orphaned
+test_forch -orphaned
 
 echo %%% reset stack | tee -a $TEST_RESULTS
 restart_ovs
