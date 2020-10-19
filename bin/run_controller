@@ -147,9 +147,9 @@ if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
     for file in $INSTDIR/forch/*; do docker cp $file $CONTAINER:/etc/faucet/; done
     # docker exec $CONTAINER /usr/bin/gauge --ryu-config-file=${GAUGE_RYU_CONF} --ryu-ofp-tcp-listen-port=${GAUGE_LISTEN_PORT} --ryu-wsapi-host=${WSAPI_LISTEN_HOST} --ryu-wsapi-port=${WSAPI_LISTEN_PORT} --ryu-app=ryu.app.ofctl_rest &
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
-    data_intf_name=data_faucet_$faucet_id
-    sudo ip link add $data_intf_name type veth peer name data0 netns $pid
-    sudo ip link set $data_intf_name up
+    tap_intf_name=controller_tap_$faucet_id
+    sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
+    sudo ip link set $tap_intf_name up
     docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
     docker exec $CONTAINER ip link set data0 up
 fi

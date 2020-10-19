@@ -124,6 +124,7 @@ for index in 1; do
         mkdir -p inst/$container/faucet_br/faucet
         cp -r topo/$mode/faucet_br/* inst/$container/faucet_br/faucet/
         bin/run_controller $local $index $((6000 + index)) $((8000 + index)) $((7000 + index)) $((9000 + index))
+        add_iface t1sw1 4 controller_tap_1
     else
         bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
         bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
@@ -144,8 +145,6 @@ if [ -n "$devices" ]; then
         echo Adding extra device num $fnum
         add_faux t2sw1 $fnum $fnum
     done
-else
-    add_iface t1sw1 4 data_faucet_1
 fi
 
 if [ -n "$switches" ]; then
