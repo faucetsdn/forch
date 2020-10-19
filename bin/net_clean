@@ -1,14 +1,5 @@
 #!/bin/bash
 
-echo Cleaning docker images...
-for image in forch/faucet forch/faux forch/gauge; do
-    echo Cleaning docker image $image...
-    images=$(docker ps --filter ancestor=$image -q)
-    if [ -n "$images" ]; then
-        docker kill $images > /dev/null
-    fi
-done
-
 echo Killing any old instances of forch...
 pids=`ps ax | 
     fgrep forch | 
@@ -17,6 +8,15 @@ pids=`ps ax |
     fgrep -v net_clean | 
     awk '{print $1}'`
 sudo kill $pids || true
+
+echo Cleaning docker images...
+for image in forch/faucet forch/faux forch/gauge forch/controller; do
+    echo Cleaning docker image $image...
+    images=$(docker ps --filter ancestor=$image -q)
+    if [ -n "$images" ]; then
+        docker kill $images > /dev/null
+    fi
+done
 
 echo Cleaning docker containers...
 containers=`docker ps --format '{{.Names}}'`
