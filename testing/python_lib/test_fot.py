@@ -280,7 +280,7 @@ class FotContainerTest(IntegrationTestBase):
         vlan_text = self.tcpdump_helper('data0', 'vlan 272 and port 67', packets=10,
                                         funcs=[dhclient_method(container='forch-faux-1')],
                                         timeout=10, docker_host='forch-controller-1')
-        self.assertEqual(on_vlan, re.search("DHCP.*Reply", vlan_text))
+        self.assertEqual(on_vlan, bool(re.search("DHCP.*Reply", vlan_text)))
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
