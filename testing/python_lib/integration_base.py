@@ -62,7 +62,7 @@ class IntegrationTestBase(unittest.TestCase):
 
     def _setup_stack(self):
         options = self.stack_options
-        print("stack_options = %s", str(options))
+        print("stack_options = %s" % str(options))
         stack_args = []
         stack_args.extend(['local'] if options.get('local') else [])
         devices = options.get('devices')
