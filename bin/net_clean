@@ -1,13 +1,7 @@
 #!/bin/bash
 
 echo Killing any old instances of forch...
-pids=`ps ax | 
-    fgrep forch | 
-    fgrep -v fgrep | 
-    fgrep -v grep | 
-    fgrep -v net_clean | 
-    awk '{print $1}'`
-sudo kill $pids || true
+pids=`ps ax | fgrep forch | fgrep bash` | xargs -r kill $pids
 
 echo Cleaning docker images...
 for image in forch/faucet forch/faux forch/gauge forch/controller; do
