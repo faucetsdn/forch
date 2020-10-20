@@ -36,8 +36,10 @@ sudo /etc/init.d/openvswitch-switch restart
 echo Cleaning veth...
 veths=`ip link | fgrep @| sed 's/@.*//' | awk '{ print $2 }'`
 for veth in $veths; do
-    echo Deleting veth $veth
-    sudo ip link del $veth
+    if [ -d /sys/class/net/$veth ]; then
+        echo Deleting veth $veth
+        sudo ip link del $veth
+    fi
 done
 
 echo Cleaning netnses...

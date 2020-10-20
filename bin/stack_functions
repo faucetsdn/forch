@@ -51,8 +51,8 @@ function add_link {
     iface_b=$br_b-eth$pt_b
 
     echo Adding $iface_a linked $iface_b
-    sudo ip link del $iface_a || true
-    sudo ip link del $iface_b || true
+    sudo ip link del $iface_a 2> /dev/null || true
+    sudo ip link del $iface_b 2> /dev/null || true
     sudo ip link add $iface_a type veth peer name $iface_b
     sudo ifconfig $iface_a up
     sudo ifconfig $iface_b up
@@ -89,8 +89,8 @@ function add_oeth {
     iface_b=$3
 
     echo Adding $iface_a linked to $iface_b
-    sudo ip link del $iface_a || true
-    sudo ip link del $iface_b || true
+    sudo ip link del $iface_a 2> /dev/null || true
+    sudo ip link del $iface_b 2> /dev/null || true
     sudo ip link add $iface_a type veth peer name $iface_b
     sudo ifconfig $iface_a up
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
