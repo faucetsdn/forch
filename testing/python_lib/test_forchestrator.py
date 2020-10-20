@@ -2,7 +2,13 @@
 
 import unittest
 import yaml
+from unittest.mock import Mock
 from unit_base import ForchestratorTestBase
+from forch.authenticator import Authenticator
+from forch.port_state_manager import PortStateManager
+from forch.utils import dict_proto
+from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
+from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 
 class ForchestratorUnitTestCase(ForchestratorTestBase):
@@ -11,7 +17,6 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
     # pylint: disable=protected-access
     def test_faucet_config_validation(self):
         """Test validation for faucet config"""
-        print(self._forchestrator)
         faucet_config_str = """
         dps:
           nz-kiwi-t1sw1:
@@ -47,6 +52,57 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
             lldp_beacon: {max_per_interval: 5, send_interval: 5}"""
         faucet_config = yaml.safe_load(faucet_config_str)
         self.assertFalse(self._forchestrator._validate_config(faucet_config))
+
+
+class ForchestratorAuthTestCase(ForchestratorTestBase):
+    """Test case for forchestrator functionality with authenticator"""
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._initialize_forchestrator()
+        AUTH_CONFIG = dict_proto(
+            {
+                'radius_info': {
+                    'server_ip': '0.0.0.0',
+                    'server_port': 9999,
+                    'source_port': 9999,
+                    'radius_secret_helper':  f'echo radius_secret'
+                }
+            },
+            OrchestrationConfig.AuthConfig
+        )
+
+        def handle_auth_result(src_mac, access, segment, role):
+            print('Got session result for %s: access: %s segment: %s role: %s' % (src_mac, access, segment, role))
+            device_behavior = DeviceBehavior(segment=segment, role=role)
+            self._forchestrator._port_state_manager.handle_device_behavior(src_mac, device_behavior)
+
+        def get_vlan_from_segment(segment):
+            if segment == 'ACCEPT':
+                return 100
+            return 999
+
+        self._forchestrator._authenticator = Authenticator(AUTH_CONFIG, handle_auth_result, radius_query_object=Mock())
+        self._forchestrator._port_state_manager = PortStateManager(Mock(), Mock(), get_vlan_from_segment, 'SEQUESTER')
+
+    def _get_auth_sm_state(self, mac):
+        mac_sm = self._forchestrator._authenticator.sessions.get(mac)
+        if mac_sm:
+            return mac_sm.get_state()
+        return None
+
+    def test_auth_learn(self):
+        """Test to validate MAC authentication status"""
+        device_placement = DevicePlacement(switch='switch', port=1, connected=True)
+        self._forchestrator._process_device_placement('00:11:22:33:44:55', device_placement)
+        self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), 'RADIUS Request')
+        self._forchestrator._authenticator.process_radius_result('00:11:22:33:44:55', 'ACCEPT', 'ACCEPT', None)
+        self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), 'Authorized')
+        device_placement = DevicePlacement(switch='switch', port=1, connected=False)
+        self._forchestrator._process_device_placement('00:11:22:33:44:55', device_placement, expired_vlan=200)
+        self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), 'Authorized')
+        self._forchestrator._process_device_placement('00:11:22:33:44:55', device_placement, expired_vlan=100)
+        self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), None)
 
 
 if __name__ == '__main__':
