@@ -58,6 +58,7 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
 class ForchestratorAuthTestCase(ForchestratorTestBase):
     """Test case for forchestrator functionality with authenticator"""
 
+    # pylint: disable=invalid-name
     def setUp(self):
         """setup fixture for each test method"""
         self._initialize_forchestrator()
