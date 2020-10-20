@@ -1,13 +1,7 @@
 #!/bin/bash
 
 echo Killing any old instances of forch...
-pids=`ps ax | 
-    fgrep forch | 
-    fgrep -v fgrep | 
-    fgrep -v grep | 
-    fgrep -v net_clean | 
-    awk '{print $1}'`
-sudo kill $pids || true
+pids=`ps ax | fgrep forch | fgrep bash` | xargs -r kill $pids
 
 echo Cleaning docker images...
 for image in forch/faucet forch/faux forch/gauge forch/controller; do
@@ -42,8 +36,10 @@ sudo /etc/init.d/openvswitch-switch restart
 echo Cleaning veth...
 veths=`ip link | fgrep @| sed 's/@.*//' | awk '{ print $2 }'`
 for veth in $veths; do
-    echo Deleting veth $veth
-    sudo ip link del $veth
+    if [ -d /sys/class/net/$veth ]; then
+        echo Deleting veth $veth
+        sudo ip link del $veth
+    fi
 done
 
 echo Cleaning netnses...
