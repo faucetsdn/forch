@@ -247,22 +247,24 @@ class FotContainerTest(IntegrationTestBase):
         self.stack_options['fot'] = True
         self.stack_options['local'] = True
 
-    def test_fot_sequester(self):
-        """Test to check if OT trunk sequesters traffic as expected"""
-        self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
-        self.assertFalse(self._ping_host('forch-faux-1', '192.168.2.1'))
-
+    def _sequester_device(self):
         config = self._read_faucet_config()
         interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
         interface['native_vlan'] = 272
         self._write_faucet_config(config)
         time.sleep(5)
 
-        self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
-        self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1', output=True))
+    def test_fot_sequester(self):
+        """Test to check if OT trunk sequesters traffic as expected"""
+        self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
+        self.assertFalse(self._ping_host('forch-faux-1', '192.168.2.1'))
 
-    def test_dhcp_reflection(self):
-        """Test to check DHCP reflection when on test VLAN"""
+        self._sequester_device()
+
+        self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
+        self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1'))
+
+    def _internal_dhcp(self, on_vlan):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
@@ -271,19 +273,21 @@ class FotContainerTest(IntegrationTestBase):
                 except Exception as e:
                     print(e)
             return run_dhclient
-        config = self._read_faucet_config()
         tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68', packets=10,
                                            funcs=[dhclient_method(container='forch-faux-1')],
                                            timeout=10, docker_host='forch-faux-1')
         self.assertTrue(re.search("DHCP.*Reply", tcpdump_text))
-        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
-        interface['native_vlan'] = 272
-        self._write_faucet_config(config)
-        time.sleep(5)
-        tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68', packets=10,
+        vlan_text = self.tcpdump_helper('cntrl_tap_1', 'vlan 272 and port 67', packets=10,
                                            funcs=[dhclient_method(container='forch-faux-1')],
                                            timeout=10, docker_host='forch-faux-1')
-        self.assertTrue(re.search("DHCP.*Reply", tcpdump_text))
+        self.assertEqual(on_vlan, re.search("DHCP.*Reply", vlan_text))
+
+    def test_dhcp_reflection(self):
+        """Test to check DHCP reflection when on test VLAN"""
+        self._internal_dhcp(False)
+        self._sequester_device()
+        self._internal_dhcp(True)
+
 
 if __name__ == '__main__':
     unittest.main()
