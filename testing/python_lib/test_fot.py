@@ -270,7 +270,6 @@ class FotContainerTest(FotSequesterTest):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stack_options['fot'] = True
-        self.stack_options['local'] = True
 
     def _internal_dhcp(self, on_vlan):
         def dhclient_method(container=None):
