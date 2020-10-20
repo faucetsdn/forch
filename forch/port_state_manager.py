@@ -139,8 +139,6 @@ class PortStateManager:
                 self._get_vlan_from_segment(device_behavior.segment) == expired_vlan):
             self._process_device_placement(mac, device_placement, static=False)
             return True
-        LOGGER.info(
-            'Ignoring vlan expiration for device %s with expired vlan %d', mac, expired_vlan)
         return False
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
