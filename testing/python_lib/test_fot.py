@@ -239,13 +239,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         self._verify_received_device_placements(expired_received_device_placements)
 
 
-class FotContainerTest(IntegrationTestBase):
-    """Test suite for dynamic config changes"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.stack_options['fot'] = True
-        self.stack_options['local'] = True
+class FotSequesterTest(IntegrationTestBase):
+    """Base class for sequestering integration tests"""
 
     def _sequester_device(self):
         config = self._read_faucet_config()
@@ -253,6 +248,10 @@ class FotContainerTest(IntegrationTestBase):
         interface['native_vlan'] = 272
         self._write_faucet_config(config)
         time.sleep(5)
+
+
+class FotConfigTest(FotSequesterTest):
+    """Simple config change tests for fot"""
 
     def test_fot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
@@ -263,6 +262,15 @@ class FotContainerTest(IntegrationTestBase):
 
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1'))
+
+
+class FotContainerTest(FotSequesterTest):
+    """Test suite for dynamic config changes"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stack_options['fot'] = True
+        self.stack_options['local'] = True
 
     def _internal_dhcp(self, on_vlan):
         def dhclient_method(container=None):
