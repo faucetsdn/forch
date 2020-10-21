@@ -45,6 +45,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 opts[pair[0]] = pair[1]
             message = str(self._context.get_data(self.headers.get('Host'), parsed.path[1:], opts))
             self.send_response(http.HTTPStatus.OK)
+            if self._context.content_type:
+                self.send_header('Content-type', self._context.content_type)
             self.end_headers()
             self.wfile.write(message.encode())
         except HttpException as http_exception:
@@ -73,7 +75,7 @@ class HttpServer():
 
     _DEFAULT_FILE = 'index.html'
 
-    def __init__(self, port, config=None):
+    def __init__(self, port, config=None, content_type=None):
         self._config = config
         self._paths = {}
         self._server = None
@@ -81,6 +83,7 @@ class HttpServer():
         self._port = port
         self._host = '0.0.0.0'
         self._thread = None
+        self.content_type = content_type
 
     def start_server(self):
         """Start serving thread"""

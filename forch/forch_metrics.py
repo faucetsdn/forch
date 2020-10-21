@@ -81,7 +81,7 @@ class ForchMetrics():
         self._add_var('process_state', 'Current process state', Gauge, labels=['process'])
 
         learned_l2_port_help_text = 'learned port of l2 entries'
-        learned_l2_port_labels = ['dp_name', 'eth_src', 'vid', 'ip']
+        learned_l2_port_labels = ['dp_name', 'eth_src', 'vid']
         self._add_var('learned_l2_port', learned_l2_port_help_text, Gauge, learned_l2_port_labels)
 
         self._add_var(
@@ -93,6 +93,10 @@ class ForchMetrics():
             'faucet_config_warning_count', 'Count of Faucet configuration warnings', Gauge)
         self._add_var(
             'faucet_config_warning', 'Faucet configuration warning', Gauge, ['key', 'message'])
+
+        self._add_var(
+            'faucet_event_out_of_sequence_count',
+            'Number of times Faucet event becomes out of sequence', Counter)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""

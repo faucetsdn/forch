@@ -3,6 +3,7 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
+ALL_IMAGES="faux faucet gauge $*"
 FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
 FAUCET_HASH=$(cd faucet; git rev-list -n 1 $FAUCET_VERSION)
 DOCKER_IMAGE_LIST=etc/docker_images.txt
@@ -52,9 +53,6 @@ docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash o
     docker rmi -f $image:$tag
 done
 
-echo Building faux...
-docker build -t forch/faux -f etc/Dockerfile.faux . > build/docker_faux.log &
-
 faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
     echo Local faucet version not as expected, attempting conversion...
@@ -66,27 +64,22 @@ if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
     fi
 fi
 
-echo Labelling faucet image with faucet version $faucet_ver
+echo Labelling images with faucet version $faucet_ver
 
 docker_args+=--label=FAUCET_HASH=$faucet_ver
 
-echo Building faucet...
-docker build -t forch/faucet $docker_args -f etc/Dockerfile.faucet . > build/docker_faucet.log &
-
-echo Building controller...
-docker build -t forch/controller $docker_args -f etc/Dockerfile.controller . > build/docker_controller.log &
-
-echo Waiting for builds to complete.
-wait
-
-docker build -t forch/gauge $docker_args -f etc/Dockerfile.gauge . > build/docker_gauge.log
-
-tail build/docker_*.log
+for image in $ALL_IMAGES; do
+    echo Building $image, output in build/docker_$image.log
+    docker build -t forch/$image $docker_args -f etc/Dockerfile.$image . > build/docker_$image.log
+    tail build/docker_$image.log
+done
 
 docker images | fgrep forch/ | fgrep latest
 images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
-if [ $images != 4 ]; then
-    echo Did not find expected 4 forch/ images.
+expected=`echo $ALL_IMAGES | wc -w`
+if [ $images != $expected ]; then
+    echo Did not find expected $expected forch/ images.
+    docker images
     false
 fi
 

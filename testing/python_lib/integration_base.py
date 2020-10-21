@@ -3,28 +3,24 @@
 import subprocess
 import unittest
 import os
-import sys
 import time
 import yaml
 
-import logging
-logger = logging.getLogger()
-logger.level = logging.INFO
-stream_handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(stream_handler)
+from tcpdump_helper import TcpdumpHelper
 
 
 class IntegrationTestBase(unittest.TestCase):
     """Base class for integration tests"""
 
-    STACK_OPTIONS = {
-        'setup_warmup_sec': 20,
-        'skip-conn-check': True,
-        'no-clean': True
-    }
+    TEN_MIN_SEC = 10 * 60
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.stack_options = {
+            'setup_warmup_sec': 20,
+            'skip-conn-check': True,
+            'no-clean': True
+        }
 
     def setUp(self):
         self._clean_stack()
@@ -33,31 +29,40 @@ class IntegrationTestBase(unittest.TestCase):
     def tearDown(self):
         self._clean_stack()
 
-    def _run_command(self, command, strict=True):
-        code, out, err = self._reap_process_command(self._run_process_command(command))
-        if strict and code:
-            logger.warning('stdout: \n' + out)
-            logger.warning('stderr: \n' + err)
-            raise Exception('Command execution failed: %s' % str(command))
-        return code, out, err
-
-    def _run_process_command(self, command):
+    def _run_process_command(self, command, capture=False):
         command_list = command.split() if isinstance(command, str) else command
-        return subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pipeout = subprocess.PIPE if capture else None
+        return subprocess.Popen(command_list, stdout=pipeout, stderr=pipeout)
 
     def _reap_process_command(self, process):
-        process.wait()
+        process.wait(timeout=self.TEN_MIN_SEC)
         stdout, stderr = process.communicate()
-        return process.returncode, str(stdout, 'utf-8'), str(stderr, 'utf-8')
+        strout = str(stdout, 'utf-8') if stdout else None
+        strerr = str(stderr, 'utf-8') if stderr else None
+        return process.returncode, strout, strerr
 
-    def _run_forch_script(self, script, arglist=[]):
-        """Runs scripts from forch base folder"""
-        path = os.path.dirname(os.path.abspath(__file__)) + '/../../'
-        command = [path + script] + arglist
-        return self._run_command(command)
+    # pylint: disable=too-many-arguments
+    def _run_cmd(self, cmd, arglist=None, strict=True,
+                 capture=False, docker_container=None):
+        command = ("docker exec %s " % docker_container) if docker_container else ""
+        command = command.split() + ([cmd] + arglist) if arglist else command + cmd
+        retcode, out, err = self._reap_process_command(
+            self._run_process_command(command, capture=capture))
+        if strict and retcode:
+            if capture:
+                print('stdout: \n' + out)
+                print('stderr: \n' + err)
+            raise Exception('Command execution failed: %s' % str(command))
+        return retcode, out, err
 
-    def _setup_stack(self, options=STACK_OPTIONS):
-        logger.debug("STACK_OPTIONS = %s", str(options))
+    @staticmethod
+    def tcpdump_helper(*args, **kwargs):
+        """Return running TcpdumpHelper instance"""
+        return TcpdumpHelper(*args, **kwargs).execute()
+
+    def _setup_stack(self):
+        options = self.stack_options
+        print("stack_options = %s" % str(options))
         stack_args = []
         stack_args.extend(['local'] if options.get('local') else [])
         devices = options.get('devices')
@@ -67,44 +72,44 @@ class IntegrationTestBase(unittest.TestCase):
         stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
         stack_args.extend(['dhcp'] if options.get('dhcp') else [])
         stack_args.extend(['no-clean'] if options.get('no-clean') else [])
+        stack_args.extend(['fot'] if options.get('fot') else [])
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
-        logger.info('setup_stack ' + ' '.join(stack_args))
-        code, out, err = self._run_forch_script('bin/setup_stack', stack_args)
-        if code:
-            logger.info('setup_stack stdout: \n' + out)
-            logger.info('setup_stack stderr: \n' + err)
-            assert False, 'setup_stack failed'
-
-        time.sleep(options.get('setup_warmup_sec'))
+        print('setup_stack ' + ' '.join(stack_args))
+        self._run_cmd('bin/setup_stack', stack_args)
+        setup_warmup_sec = options.get('setup_warmup_sec')
+        print('waiting %s...' % setup_warmup_sec)
+        time.sleep(setup_warmup_sec)
 
     def _clean_stack(self):
-        code, out, err = self._run_forch_script('bin/net_clean')
-        logger.debug('clean stack stdout: \n' + out)
-        logger.debug('clean stack stderr: \n' + err)
+        self._run_cmd('bin/net_clean')
 
-    def _ping_host(self, *args, **kwargs):
-        return self._ping_host_reap(self._ping_host_process(*args, **kwargs))
+    def _ping_host(self, container, host, count=1, output=False):
+        return self._ping_host_reap(
+            self._ping_host_process(container, host, count=count),
+            output=output)
 
     def _ping_host_process(self, container, host, count=1):
-        logger.debug('Trying to ping %s from %s' % (host, container))
+        print('ping %s from %s' % (host, container))
+        self._run_cmd('date -u')
         ping_cmd = 'docker exec %s ping -c %d %s' % (container, count, host)
-        return self._run_process_command(ping_cmd)
+        return self._run_process_command(ping_cmd, capture=True)
 
-    def _ping_host_reap(self, process, expected=False):
+    def _ping_host_reap(self, process, expected=False, output=False):
         return_code, out, err = self._reap_process_command(process)
         unexpected = not expected if return_code else expected
-        if unexpected:
-            logger.warning('ping with %s', str(process.args))
-            logger.warning(out)
-            logger.warning('Ping return code: %s\nstderr: %s', return_code, err)
-        return False if return_code else out.count('icmp_seq')
+        if unexpected or output:
+            print('ping with %s' % str(process.args))
+            print(out)
+            print('Ping return code: %d' % return_code)
+            print('stderr: %s' % err)
+        return False if return_code else out.count('time=')
 
     def _fail_egress_link(self, alternate=False, restore=False):
         switch = 't1sw2' if alternate else 't1sw1'
         command = 'up' if restore else 'down'
-        self._run_command('sudo ip link set %s-eth28 %s' % (switch, command))
+        self._run_cmd('sudo ip link set %s-eth28 %s' % (switch, command))
 
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
@@ -124,8 +129,12 @@ class IntegrationTestBase(unittest.TestCase):
         return self._write_yaml_to_file(filename, config)
 
     def _get_faucet_config_path(self):
+        config_file_format = '/../../inst/%s/faucet/faucet.yaml'
+        if self.stack_options.get('fot'):
+            return os.path.dirname(os.path.abspath(__file__)) + \
+                (config_file_format % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
-            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+            (config_file_format % ('forch-faucet-1'))
 
 
 if __name__ == '__main__':

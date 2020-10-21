@@ -8,8 +8,8 @@ dps:
       priority: 1
     interfaces:
       4:
-        description: trunk
-        tagged_vlans: [272]
+        description: tap
+        tagged_vlans: [171, 272]
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}

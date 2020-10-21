@@ -69,6 +69,7 @@ class DataplaneStateTestCase(FaucetStateCollectorTestBase):
     def test_egress_path(self):
         """test faucet_state_collector behavior when faucet sends loop in path to egress topology"""
         self._faucet_state_collector.topo_state = self._build_topo_obj()
+        # pylint: disable=protected-access
         self._faucet_state_collector._get_egress_port = lambda port: 28
         egress_path = self._faucet_state_collector.get_switch_egress_path('sw3')
         self.assertEqual(egress_path['path_state'], 5)

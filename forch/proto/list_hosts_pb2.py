@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x1c\x66orch/proto/list_hosts.proto\x1a\x1b\x66orch/proto/acl_state.proto\x1a\"forch/proto/shared_constants.proto\"\x96\x04\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\xc0\x01\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x0f\n\x07host_ip\x18\x03 \x01(\t\x12\x0c\n\x04vlan\x18\x04 \x01(\x05\x12\"\n\tdva_state\x18\x05 \x01(\x0e\x32\x0f.DVAState.State\x12\x17\n\x04\x61\x63ls\x18\x06 \x03(\x0b\x32\t.ACLState\x12\x0b\n\x03url\x18\x07 \x01(\t\x12-\n\rradius_result\x18\x08 \x01(\x0b\x32\x16.HostList.RadiusResult\x1a=\n\x0cRadiusResult\x12\x0e\n\x06\x61\x63\x63\x65ss\x18\x01 \x01(\t\x12\x0f\n\x07segment\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\tb\x06proto3'
+  serialized_pb=b'\n\x1c\x66orch/proto/list_hosts.proto\x1a\x1b\x66orch/proto/acl_state.proto\x1a\"forch/proto/shared_constants.proto\"\x97\x04\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\xc1\x01\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x10\n\x08host_ips\x18\x03 \x03(\t\x12\x0c\n\x04vlan\x18\x04 \x01(\x05\x12\"\n\tdva_state\x18\x05 \x01(\x0e\x32\x0f.DVAState.State\x12\x17\n\x04\x61\x63ls\x18\x06 \x03(\x0b\x32\t.ACLState\x12\x0b\n\x03url\x18\x07 \x01(\t\x12-\n\rradius_result\x18\x08 \x01(\x0b\x32\x16.HostList.RadiusResult\x1a=\n\x0cRadiusResult\x12\x0e\n\x06\x61\x63\x63\x65ss\x18\x01 \x01(\t\x12\x0f\n\x07segment\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\tb\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_acl__state__pb2.DESCRIPTOR,forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -123,9 +123,9 @@ _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='host_ip', full_name='HostList.HostData.host_ip', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='host_ips', full_name='HostList.HostData.host_ips', index=2,
+      number=3, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -177,7 +177,7 @@ _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=377,
-  serialized_end=569,
+  serialized_end=570,
 )
 
 _HOSTLIST_RADIUSRESULT = _descriptor.Descriptor(
@@ -220,8 +220,8 @@ _HOSTLIST_RADIUSRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=571,
-  serialized_end=632,
+  serialized_start=572,
+  serialized_end=633,
 )
 
 _HOSTLIST = _descriptor.Descriptor(
@@ -272,7 +272,7 @@ _HOSTLIST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=98,
-  serialized_end=632,
+  serialized_end=633,
 )
 
 _HOSTLIST_ETHSRCSENTRY.fields_by_name['value'].message_type = _HOSTLIST_HOSTDATA

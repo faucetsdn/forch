@@ -58,12 +58,13 @@ jobs:
       - name: setup faucet
         run: bin/setup_faucet
       - name: build docker
-        run: bin/retry_cmd bin/build_docker
+        run: bin/retry_cmd bin/build_docker controller
       - name: run test
         run: testing/python_test test_fot
 
   test_reconfig:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -85,6 +86,7 @@ jobs:
 
   test_stack:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -100,12 +102,16 @@ jobs:
       - name: build docker
         run: bin/retry_cmd bin/build_docker
       - name: setup stack
-        run: bin/setup_stack local dhcp
+        run: bin/setup_stack local dhcp dumptcp
       - name: run test
         run: bin/run_test_set stack
+      - name: post-run logs
+        if: ${{ always() }}
+        run: bin/dump_logs full
 
   test_scale:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -120,3 +126,6 @@ jobs:
         run: bin/retry_cmd bin/build_docker
       - name: run test
         run: testing/python_test test_failscale
+      - name: post-run logs
+        if: ${{ always() }}
+        run: bin/dump_logs full

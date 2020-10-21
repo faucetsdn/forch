@@ -15,16 +15,17 @@ LOCALHOST = '0.0.0.0'
 class ForchProxy():
     """Class that implements the module that creates a proxy server"""
 
-    def __init__(self, proxy_config):
+    def __init__(self, proxy_config, content_type=None):
         self._proxy_config = proxy_config
         self._proxy_port = self._proxy_config.proxy_port or DEFAULT_PROXY_PORT
         self._pages = {}
         self._proxy_server = None
+        self._content_type = content_type
 
     def start(self):
         """Start proxy server"""
         self._register_pages()
-        self._proxy_server = HttpServer(self._proxy_port)
+        self._proxy_server = HttpServer(self._proxy_port, content_type=self._content_type)
         try:
             self._proxy_server.map_request('', self._get_path_data)
         except Exception as e:

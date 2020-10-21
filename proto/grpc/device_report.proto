@@ -4,12 +4,12 @@
 
 syntax = "proto3";
 
-import "forch/proto/device_testing_state.proto";
+import "forch/proto/devices_state.proto";
 import "forch/proto/shared_constants.proto";
 
 /*
  * gRPC service to receive testing results
  */
-service DeviceTesting {
-    rpc ReportTestingState (DeviceTestingState) returns (Empty) {}
+service DeviceReport {
+    rpc ReportDevicesState (DevicesState) returns (Empty) {}
 }

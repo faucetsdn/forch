@@ -102,7 +102,10 @@ class Authenticator:
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
-        LOGGER.info("Received RADIUS result: %s for src_mac: %s", code, src_mac)
+        LOGGER.info(
+            "Received RADIUS result for src_mac %s: %s, %s, %s",
+            src_mac, code, segment, role)
+
         if self._metrics:
             self._metrics.inc_var('radius_query_responses')
         if code == radius_query.INVALID_RESP:

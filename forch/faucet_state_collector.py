@@ -694,7 +694,7 @@ class FaucetStateCollector:
                 raise Exception('Unknown port type %s' % port_type)
 
             mac_map = switch_learned_mac_map.setdefault(mac, {})
-            mac_map["ip_address"] = mac_states.get(MAC_LEARNING_IP, None)
+            mac_map["mac_ips"] = list(mac_states.get(MAC_LEARNING_IP, []))
             mac_map["port"] = learned_port
             mac_map["timestamp"] = learned_switch.get(MAC_LEARNING_TS, None)
 
@@ -866,7 +866,7 @@ class FaucetStateCollector:
         egress_path = egress_path_state.get('path')
         if egress_path:
             return dict_proto({
-                'src_ip': self.learned_macs.get(src_mac, {}).get(MAC_LEARNING_IP),
+                'src_ips': list(self.learned_macs.get(src_mac, {}).get(MAC_LEARNING_IP, [])),
                 'path': egress_path
             }, HostPath)
         return self._make_summary(
@@ -990,8 +990,8 @@ class FaucetStateCollector:
             return self.get_active_egress_path(src_mac)
 
         res = {
-            'src_ip': self.learned_macs[src_mac].get(MAC_LEARNING_IP),
-            'dst_ip': self.learned_macs[dst_mac].get(MAC_LEARNING_IP),
+            'src_ips': list(self.learned_macs[src_mac].get(MAC_LEARNING_IP, [])),
+            'dst_ips': list(self.learned_macs[dst_mac].get(MAC_LEARNING_IP, [])),
             'path': self._get_host_path(src_mac, dst_mac)
         }
 
@@ -1087,7 +1087,8 @@ class FaucetStateCollector:
         """process port learn event"""
         with self.lock:
             mac_entry = self.learned_macs.setdefault(mac, {})
-            mac_entry[MAC_LEARNING_IP] = ip_addr
+            if ip_addr:
+                mac_entry.setdefault(MAC_LEARNING_IP, set()).add(ip_addr)
 
             mac_switches = mac_entry.setdefault(MAC_LEARNING_SWITCH, {})
             learning_switch = mac_switches.setdefault(name, {})
@@ -1112,7 +1113,7 @@ class FaucetStateCollector:
                     self._update_learned_macs_metric(mac, name, port)
 
     @_dump_states
-    def process_port_expire(self, timestamp, name, port, mac):
+    def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
         """process port expire event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
@@ -1121,7 +1122,7 @@ class FaucetStateCollector:
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
                     devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                    self._placement_callback(mac, devices_placement)
+                    self._placement_callback(mac, devices_placement, expired_vlan=expired_vlan)
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port, expire=True)
@@ -1267,12 +1268,11 @@ class FaucetStateCollector:
         self._fill_port_behavior(switch_name, port, port_map)
         vlan = port_map.get('vlan', 0)
 
-        ip_addr = self.learned_macs[mac].get(MAC_LEARNING_IP) or ""
         port = 0 if expire else port
 
         self._forch_metrics.update_var(
             'learned_l2_port', port,
-            labels=[switch_name, mac, vlan, ip_addr])
+            labels=[switch_name, mac, vlan])
 
     @staticmethod
     def get_endpoints_from_link(link_map):
@@ -1330,7 +1330,7 @@ class FaucetStateCollector:
             mac_deets = host_macs.setdefault(mac, {})
             mac_deets['switch'] = switch
             mac_deets['port'] = port
-            mac_deets['host_ip'] = mac_state.get(MAC_LEARNING_IP)
+            mac_deets['host_ips'] = list(mac_state.get(MAC_LEARNING_IP, []))
 
             metrics = self._get_gauge_metrics()
             self._fill_port_behavior(switch, port, mac_deets, metrics)

@@ -206,4 +206,7 @@ message L2Expire {
 
   // eth src MAC
   string eth_src = 5;
+
+  // vlan id
+  int32 vid = 6;
 }

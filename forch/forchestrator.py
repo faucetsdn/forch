@@ -15,7 +15,7 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.device_testing_server import DeviceTestingServer
+from forch.device_report_server import DeviceReportServer
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics
@@ -24,7 +24,8 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.port_state_manager import PortStateManager
 import forch.varz_state_collector as varz_state_collector
-from forch.utils import get_logger, proto_dict, yaml_proto
+from forch.utils import (
+    get_logger, proto_dict, yaml_proto, FaucetEventOrderError, MetricsFetchingError)
 
 from forch.__version__ import __version__
 
@@ -66,6 +67,7 @@ _TARGET_GAUGE_METRICS = (
     'flow_packet_count_port_acl'
 )
 
+STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 class Forchestrator:
     """Main class encompassing faucet orchestrator components for dynamically
@@ -96,7 +98,7 @@ class Forchestrator:
         self._config_file_watcher = None
         self._faucet_state_scheduler = None
         self._gauge_metrics_scheduler = None
-        self._device_testing_server = None
+        self._device_report_server = None
         self._port_state_manager = None
 
         self._initialized = False
@@ -104,10 +106,14 @@ class Forchestrator:
         self._active_state_lock = threading.Lock()
 
         self._should_enable_faucetizer = False
+        self._should_ignore_auth_result = False
 
-        self._config_summary = None
+        self._config_errors = {}
+        self._faucet_config_summary = None
         self._metrics = None
-        self._proxy = None
+        self._varz_proxy = None
+
+        self._lock = threading.Lock()
 
     def initialize(self):
         """Initialize forchestrator instance"""
@@ -154,18 +160,23 @@ class Forchestrator:
         LOGGER.info('Using peer controller %s', self._get_peer_controller_url())
 
         if str(self._config.proxy_server):
-            self._proxy = ForchProxy(self._config.proxy_server)
-            self._proxy.start()
+            self._varz_proxy = ForchProxy(self._config.proxy_server, content_type='text/plain')
+            self._varz_proxy.start()
 
         self._validate_config_files()
 
-        while True:
+        varz_retry = 10
+        while varz_retry > 0:
             time.sleep(10)
             try:
                 self._get_varz_config()
                 break
             except Exception as e:
                 LOGGER.error('Waiting for varz config: %s', e)
+                varz_retry -= 1
+
+        if varz_retry == 0:
+            raise MetricsFetchingError('Could not get Faucet varz metrics')
 
         self._register_handlers()
         self.start()
@@ -175,17 +186,28 @@ class Forchestrator:
         if self._should_enable_faucetizer:
             self._initialize_faucetizer()
             self._faucetizer.reload_structural_config()
+
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
+            process_device_placement = self._faucetizer.process_device_placement
+            process_device_behavior = self._faucetizer.process_device_behavior
+            get_vlan_from_segment = self._faucetizer.get_vlan_from_segment
+        else:
+            process_device_placement = None
+            process_device_behavior = None
+            get_vlan_from_segment = None
+
         self._port_state_manager = PortStateManager(
-            self._process_device_behavior, self._config.orchestration.fot_config.testing_segment)
-        testing_segment, testing_server_port = self._calculate_fot_config()
-        if testing_segment:
-            self._device_testing_server = DeviceTestingServer(
-                self._port_state_manager.handle_testing_result, testing_server_port)
+            process_device_placement, process_device_behavior, get_vlan_from_segment,
+            self._config.orchestration.sequester_config.segment)
+
+        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+        if sequester_segment:
+            self._device_report_server = DeviceReportServer(
+                self._port_state_manager.handle_testing_result, grpc_server_port)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -230,7 +252,22 @@ class Forchestrator:
     def _reload_static_device_behavior(self, file_path):
         self._port_state_manager.clear_static_device_behaviors()
 
-        devices_state = yaml_proto(file_path, DevicesState)
+        try:
+            devices_state = yaml_proto(file_path, DevicesState)
+        except Exception as error:
+            msg = f'Authentication disabled: could not load static behavior file {file_path}'
+            LOGGER.error('%s: %s', msg, error)
+            with self._lock:
+                self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
+                self._should_ignore_auth_result = True
+            return
+
+        with self._lock:
+            self._config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
+            self._should_ignore_auth_result = False
+
+        LOGGER.info('Authentication resumed')
+
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
@@ -267,11 +304,11 @@ class Forchestrator:
 
         return False
 
-    def _calculate_fot_config(self):
-        fot_config = self._config.orchestration.fot_config
-        testing_segment = fot_config.testing_segment
-        testing_server_port = fot_config.testing_server_port
-        return testing_segment, testing_server_port
+    def _calculate_sequester_config(self):
+        sequester_config = self._config.orchestration.sequester_config
+        segment = sequester_config.segment
+        grpc_server_port = sequester_config.grpc_server_port
+        return segment, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
@@ -331,22 +368,26 @@ class Forchestrator:
         """If forch is initialized or not"""
         return self._initialized
 
-    def _process_device_placement(self, eth_src, device_placement, static=False):
+    def _process_device_placement(self, eth_src, device_placement, static=False, expired_vlan=None):
         """Call device placement API for faucetizer/authenticator"""
-        if self._faucetizer:
-            self._faucetizer.process_device_placement(eth_src, device_placement, static=static)
-        if self._authenticator:
-            self._authenticator.process_device_placement(eth_src, device_placement)
+        propagate_placement = self._port_state_manager.handle_device_placement(
+            eth_src, device_placement, static, expired_vlan)
 
-    def _process_device_behavior(self, mac, device_behavior, static=False):
-        """Function interface of processing device behavior"""
-        self._faucetizer.process_device_behavior(mac, device_behavior, static=static)
+        if self._authenticator and propagate_placement:
+            self._authenticator.process_device_placement(eth_src, device_placement)
+        else:
+            LOGGER.info(
+                'Ignored vlan expiration for device %s with expired vlan %d', eth_src, expired_vlan)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         self._faucet_collector.update_radius_result(mac, access, segment, role)
-        device_behavior = DeviceBehavior(segment=segment, role=role)
-        self._port_state_manager.handle_device_behavior(mac, device_behavior)
+        with self._lock:
+            if self._should_ignore_auth_result:
+                LOGGER.warning('Ingoring authentication result for device %s', mac)
+            else:
+                device_behavior = DeviceBehavior(segment=segment, role=role)
+                self._port_state_manager.handle_device_behavior(mac, device_behavior)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
@@ -363,7 +404,7 @@ class Forchestrator:
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
-                event.timestamp, event.dp_name, event.port_no, event.eth_src)),
+                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
         ])
 
     def _get_varz_config(self):
@@ -422,12 +463,19 @@ class Forchestrator:
             while self._faucet_events:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
-                self._faucet_events.next_event(blocking=True)
+
+                try:
+                    self._faucet_events.next_event(blocking=True)
+                except FaucetEventOrderError as e:
+                    LOGGER.error("Faucet event order error: %s", e)
+                    if self._metrics:
+                        self._metrics.inc_var('faucet_event_out_of_sequence_count')
+                    self._restore_states()
         except KeyboardInterrupt:
             LOGGER.info('Keyboard interrupt. Exiting.')
             self._faucet_events.disconnect()
         except Exception as e:
-            LOGGER.error("Exception: %s", e)
+            LOGGER.error("Exception found in main loop: %s", e)
             raise
 
     def start(self):
@@ -442,8 +490,8 @@ class Forchestrator:
             self._gauge_metrics_scheduler.start()
         if self._metrics:
             self._metrics.update_var('forch_version', {'version': __version__})
-        if self._device_testing_server:
-            self._device_testing_server.start()
+        if self._device_report_server:
+            self._device_report_server.start()
 
     def stop(self):
         """Stop forchestrator components"""
@@ -457,10 +505,10 @@ class Forchestrator:
             self._config_file_watcher.stop()
         if self._metrics:
             self._metrics.stop()
-        if self._proxy:
-            self._proxy.stop()
-        if self._device_testing_server:
-            self._device_testing_server.stop()
+        if self._varz_proxy:
+            self._varz_proxy.stop()
+        if self._device_report_server:
+            self._device_report_server.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
@@ -511,7 +559,7 @@ class Forchestrator:
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.site.name or 'unknown'
         system_state.controller_name = self._get_controller_name()
-        system_state.config_summary.CopyFrom(self._config_summary)
+        system_state.config_summary.CopyFrom(self._faucet_config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
         return system_state
 
@@ -546,6 +594,7 @@ class Forchestrator:
         has_error = False
         has_warning = False
         details = []
+        detail = ''
         for field, subsystem in summary.ListFields():
             state = subsystem.state
             if state in (State.down, State.broken):
@@ -555,13 +604,19 @@ class Forchestrator:
                 has_warning = True
                 details.append(field.name)
         if details:
-            detail = 'broken subsystems: ' + ', '.join(details)
-        else:
-            detail = 'n/a'
+            detail += 'broken subsystems: ' + ', '.join(details)
 
         if not self._faucet_events.event_socket_connected:
             has_error = True
-            detail += '. Faucet disconnected.'
+            detail += '. Faucet disconnected'
+
+        with self._lock:
+            if self._config_errors:
+                has_error = True
+                detail += '. ' + '. '.join(self._config_errors.values())
+
+        if not detail:
+            detail = 'n/a'
 
         if has_error:
             return State.broken, detail
@@ -636,13 +691,13 @@ class Forchestrator:
             (new_conf_hashes, _, new_dps, top_conf) = config_parser.dp_parser(
                 self._behavioral_config_file, 'fconfig')
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
-            self._config_summary = SystemState.ConfigSummary()
+            self._faucet_config_summary = SystemState.ConfigSummary()
             for file_name, file_hash in new_conf_hashes.items():
                 LOGGER.info('Loaded conf %s as %s', file_name, file_hash)
-                self._config_summary.hashes[file_name] = file_hash
+                self._faucet_config_summary.hashes[file_name] = file_hash
             for warning, message in self._validate_config(top_conf):
                 LOGGER.warning('Config warning %s: %s', warning, message)
-                self._config_summary.warnings[warning] = message
+                self._faucet_config_summary.warnings[warning] = message
             return config_hash_info, new_dps, top_conf
         except Exception as e:
             LOGGER.error('Cannot read faucet config: %s', e)
@@ -664,9 +719,11 @@ class Forchestrator:
                 is_egress = 1 if 'lacp' in if_obj else 0
                 is_stack = 1 if 'stack' in if_obj else 0
                 is_access = 1 if 'native_vlan' in if_obj else 0
-                if (is_egress + is_stack + is_access) != 1:
-                    warnings.append((if_key, 'misconfigured interface config: %d %d %d' %
-                                     (is_egress, is_stack, is_access)))
+                is_tap = 1 if if_obj['description'] == 'tap' else 0
+                is_mirror = 1 if if_obj['description'] == 'mirror' else 0
+                if (is_egress + is_stack + is_access + is_tap + is_mirror) != 1:
+                    warnings.append((if_key, 'misconfigured interface config: %d %d %d %d %d' %
+                                     (is_egress, is_stack, is_access, is_tap, is_mirror)))
                 if 'loop_protect_external' in if_obj:
                     warnings.append((if_key, 'deprecated loop_protect_external'))
                 if is_access and 'max_hosts' not in if_obj:
@@ -678,8 +735,8 @@ class Forchestrator:
 
     def _update_config_warning_varz(self):
         self._metrics.update_var(
-            'faucet_config_warning_count', len(self._config_summary.warnings))
-        for warning_key, warning_msg in self._config_summary.warnings.items():
+            'faucet_config_warning_count', len(self._faucet_config_summary.warnings))
+        for warning_key, warning_msg in self._faucet_config_summary.warnings.items():
             self._metrics.update_var('faucet_config_warning', 1, [warning_key, warning_msg])
 
     def _populate_versions(self, versions):
@@ -759,7 +816,7 @@ class Forchestrator:
             _, _, behavioral_config = self._get_faucet_config()
             faucet_config_map = {
                 'behavioral': behavioral_config,
-                'warnings': dict(self._config_summary.warnings)
+                'warnings': dict(self._faucet_config_summary.warnings)
             }
             reply = {
                 'faucet': faucet_config_map,

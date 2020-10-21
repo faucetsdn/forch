@@ -22,9 +22,6 @@ add_br t1sw2 178 6001 7001
 add_br t2sw1 147058200627 6001 7001
 add_br t2sw2 1296 6001 7001
 
-add_oeth t1sw1 28 corp-eth10
-add_oeth t1sw2 28 corp-eth20
-
 add_link t1sw1 6 t1sw2 6
 
 add_link t1sw1 9 t2sw1 50
@@ -50,9 +47,6 @@ docker kill $controller || true
 bin/run_faucet $local counting 6001 8001
 bin/run_faucet $local gauge counting 7001 9001
 
-echo Letting system settle...
-sleep 10
-
 echo head of forch-faucet-counting/faucet.log:
 head inst/forch-faucet-counting/faucet.log
 echo
@@ -60,3 +54,9 @@ echo
 # start Forch to generate faucet.yaml
 echo Starting Forch...
 restart_forch counting
+
+echo Letting system settle...
+sleep 40
+
+# Sanity check
+docker exec forch-faux-1 ping -c 5 192.168.1.3

@@ -9,7 +9,7 @@ import socket
 import threading
 import time
 
-from forch.utils import dict_proto, get_logger
+from forch.utils import dict_proto, get_logger, FaucetEventOrderError
 
 from forch.proto.faucet_event_pb2 import FaucetEvent, PortChange
 
@@ -115,7 +115,7 @@ class FaucetEventClient():
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
-            raise Exception('Out-of-sequence event id #%d' % event_id)
+            raise FaucetEventOrderError('Out-of-sequence event id #%d' % event_id)
         return True
 
     def _handle_port_change_debounce(self, event, target_event):

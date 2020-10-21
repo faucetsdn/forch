@@ -2,7 +2,7 @@
 
 FROM faucet/python3:5.0.1
 
-RUN apk add -q tcpdump iptables sudo linux-headers
+RUN apk add -q tcpdump iptables sudo linux-headers openvswitch libstdc++ coreutils
 
 COPY faucet/ /faucet-src/
 RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
@@ -10,9 +10,9 @@ RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
 # Check for target executable since installer doesn't error out properly.
 RUN which faucet
 
-COPY misc/faucet_go bin/
+COPY misc/controller_go bin/
 
 COPY . /forch-src/
 RUN /forch-src/bin/install_forch.sh && rm -rf /forch-src/.git
 
-CMD ["bin/faucet_go"]
+CMD ["bin/controller_go"]
