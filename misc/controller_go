@@ -12,6 +12,13 @@ sudo -u kronkiteman \
     FAUCET_CONFIG=/etc/faucet_br/faucet.yaml FAUCET_LOG=/var/log/faucet_br/faucet.log \
     FAUCET_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock WSAPI_LISTEN_PORT=4567 \
     faucet --ryu-config-file=/etc/faucet_br/ryu.conf --ryu-ofp-tcp-listen-port=3984 &
+sudo -u kronkiteman \
+     FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \
+     FAUCET_EVENT_SOCK_HEARTBEAT=$FAUCET_EVENT_SOCK_HEARTBEAT \
+     FAUCET_CONFIG_STAT_RELOAD=$FAUCET_CONFIG_STAT_RELOAD \
+     FAUCET_CONFIG=$FAUCET_CONFIG \
+     faucet --ryu-config-file=${FAUCET_RYU_CONF} --ryu-ofp-tcp-listen-port=${FAUCET_LISTEN_PORT} &
+
 
 echo Adding fot bridge
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
@@ -23,13 +30,6 @@ echo Adding fot bridge controller
 sudo ovs-vsctl set-controller br-fot tcp:127.0.0.1:3984
 /usr/bin/gauge_go &
 /usr/bin/forch &
-sudo -u kronkiteman \
-     FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \
-     FAUCET_EVENT_SOCK_HEARTBEAT=$FAUCET_EVENT_SOCK_HEARTBEAT \
-     FAUCET_CONFIG_STAT_RELOAD=$FAUCET_CONFIG_STAT_RELOAD \
-     FAUCET_CONFIG=$FAUCET_CONFIG \
-     faucet --ryu-config-file=${FAUCET_RYU_CONF} --ryu-ofp-tcp-listen-port=${FAUCET_LISTEN_PORT} &
-
 while ! ip link show data0; do
     sleep 2
 done

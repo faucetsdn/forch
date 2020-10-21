@@ -1113,7 +1113,7 @@ class FaucetStateCollector:
                     self._update_learned_macs_metric(mac, name, port)
 
     @_dump_states
-    def process_port_expire(self, timestamp, name, port, mac):
+    def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
         """process port expire event"""
         with self.lock:
             LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
@@ -1122,7 +1122,7 @@ class FaucetStateCollector:
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
                     devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                    self._placement_callback(mac, devices_placement)
+                    self._placement_callback(mac, devices_placement, expired_vlan=expired_vlan)
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port, expire=True)

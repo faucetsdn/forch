@@ -4,10 +4,6 @@ source bin/stack_functions
 
 preamble_setup
 
-export CONTROLLER_NAME=127.0.0.1
-
-controllers=`sudo ovs-vsctl get-controller t1sw1`
-
 local=
 if [ "$1" == local ]; then
     local=y
@@ -44,14 +40,14 @@ reset_system
 
 reset_stack
 
-# Set link down to force LAG to be on t1sw1
-sudo ip link set t1sw2-eth28 down
-sleep 10
-
 # Test that the 'local' mode of faucet is working properly.
 echo 'print("supercalifragilisticexpialidocious")' > faucet/faucet/python_test.py
 docker exec forch-faucet-1 python -m faucet.python_test 2>&1 | tee -a $TEST_RESULTS
 rm faucet/faucet/python_test.py
+
+# Initial state is slightly broken with one egress link down.
+sudo ip link set t1sw2-eth28 down
+sleep 10
 
 curl -s http://localhost:8001 > $OUT_DIR/faucet_varz.txt
 fgrep 'port_lacp_state{' $OUT_DIR/faucet_varz.txt | sort | tee -a $TEST_RESULTS
@@ -73,13 +69,14 @@ echo %%% initial solid state | tee -a $TEST_RESULTS
 test_stack -solid
 test_forch -solid
 
+reset_stack
+
 echo %%% healthy state | tee -a $TEST_RESULTS
 sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip addr add 240.0.0.2/24 dev lo
 sudo ip addr add 240.0.0.253/24 dev lo
-sudo ip link set t1sw2-eth28 up
 sleep 50.3231 &
-sleep 32
+sleep $STABILIZE_SEC
 test_forch -healthy
 test_varz_value process_state{process=\"faucet\"} 8302
 test_varz_value process_state{process=\"gauge\"} 8080 forch
@@ -87,20 +84,20 @@ test_varz_value process_state{process=\"forch\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 forch
 test_varz_value process_state{process=\"sleep\"} 8080 jkdhfgjksdhg
 
-reset_stack
-sleep 32
-
 echo %%% t2sw3 down, cpn nz-kiwi-ctl1 up, t1sw1-eth9 down | tee -a $TEST_RESULTS
 sudo ovs-vsctl del-controller t2sw3
 sudo ip addr add 240.0.0.253/24 dev lo
 sudo ip link set t1sw1-eth9 down
 test_stack -linkd
 
+curl -s http://localhost:8001 > $OUT_DIR/faucet_varz.txt
+fgrep 'port_lacp_state{' $OUT_DIR/faucet_varz.txt | sort | tee -a $TEST_RESULTS
+
 echo %%% t1sw1-eth10 down | tee -a $TEST_RESULTS
 sudo ip link set t1sw2-eth10 down
 test_stack -twod
 sleep 50.3231 &
-sleep 32
+sleep $STABILIZE_SEC
 test_forch -twod
 
 echo %%% steady state ip address check | tee -a $TEST_RESULTS
@@ -109,7 +106,7 @@ jq '.src_ips[0]' $api_result | tee -a $TEST_RESULTS
 jq '.dst_ips[0]' $api_result | tee -a $TEST_RESULTS
 
 echo %%% t2sw3 up, cpn nz-kiwi-t2sw2 up, t1sw1-eth6 down, t1sw1-eth11 down | tee -a $TEST_RESULTS
-sudo ovs-vsctl set-controller t2sw3 $controllers
+sudo ovs-vsctl set-controller t2sw3 $CONTROLLER_IDS
 sudo ip addr add 240.0.0.1/24 dev lo
 sudo ip link set t1sw2-eth28 down
 sudo ip link set t1sw1-eth6 down
@@ -129,15 +126,34 @@ add_link t1sw2 11 t2sw3 50
 test_stack -restored
 test_forch -restored
 
+echo %%% orphaned t1sw1 | tee -a $TEST_RESULTS
+reset_stack
+
+# TODO: Make this switch roots without explicitly bringing the egress link down.
+sudo ip link set t1sw1-eth28 down
+sleep $STABILIZE_SEC
+sudo ip link set t1sw1-eth6 down
+sudo ip link set t1sw1-eth9 down
+sudo ip link set t1sw1-eth10 down
+sudo ip link set t1sw1-eth11 down
+sleep $STABILIZE_SEC
+sudo ip link set t1sw1-eth28 up
+sleep $STABILIZE_SEC
+
+test_stack -orphaned
+test_forch -orphaned
+
 echo %%% reset stack | tee -a $TEST_RESULTS
 restart_ovs
 reset_stack
-sleep 32
+sudo ip link set t2sw3-eth50 down
+sudo ip link set t2sw3-eth52 down
+sleep $STABILIZE_SEC
 test_forch -reset
 
 echo %%% restarting Forch | tee -a $TEST_RESULTS
 restart_forch
-sleep 32
+sleep $STABILIZE_SEC
 test_forch -restart
 
 echo Killing forch...

@@ -396,6 +396,10 @@ class Faucetizer:
         with self._lock:
             return self._vlan_states.get(switch, {}).get(port)
 
+    def get_vlan_from_segment(self, segment):
+        """Get VLAN id from segment"""
+        return self._segments_to_vlans.get(segment)
+
 
 def load_devices_state(file):
     """Load devices state file"""

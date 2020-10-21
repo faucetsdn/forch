@@ -94,6 +94,10 @@ class ForchMetrics():
         self._add_var(
             'faucet_config_warning', 'Faucet configuration warning', Gauge, ['key', 'message'])
 
+        self._add_var(
+            'faucet_event_out_of_sequence_count',
+            'Number of times Faucet event becomes out of sequence', Counter)
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')

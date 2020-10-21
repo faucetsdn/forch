@@ -6,6 +6,8 @@ import os
 import time
 import yaml
 
+from tcpdump_helper import TcpdumpHelper
+
 
 class IntegrationTestBase(unittest.TestCase):
     """Base class for integration tests"""
@@ -39,8 +41,11 @@ class IntegrationTestBase(unittest.TestCase):
         strerr = str(stderr, 'utf-8') if stderr else None
         return process.returncode, strout, strerr
 
-    def _run_cmd(self, cmd, arglist=None, strict=True, capture=False):
-        command = ([cmd] + arglist) if arglist else cmd
+    # pylint: disable=too-many-arguments
+    def _run_cmd(self, cmd, arglist=None, strict=True,
+                 capture=False, docker_container=None):
+        command = ("docker exec %s " % docker_container) if docker_container else ""
+        command = command.split() + ([cmd] + arglist) if arglist else command + cmd
         retcode, out, err = self._reap_process_command(
             self._run_process_command(command, capture=capture))
         if strict and retcode:
@@ -50,9 +55,14 @@ class IntegrationTestBase(unittest.TestCase):
             raise Exception('Command execution failed: %s' % str(command))
         return retcode, out, err
 
+    @staticmethod
+    def tcpdump_helper(*args, **kwargs):
+        """Return running TcpdumpHelper instance"""
+        return TcpdumpHelper(*args, **kwargs).execute()
+
     def _setup_stack(self):
         options = self.stack_options
-        print("stack_options = %s", str(options))
+        print("stack_options = %s" % str(options))
         stack_args = []
         stack_args.extend(['local'] if options.get('local') else [])
         devices = options.get('devices')
@@ -62,6 +72,7 @@ class IntegrationTestBase(unittest.TestCase):
         stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
         stack_args.extend(['dhcp'] if options.get('dhcp') else [])
         stack_args.extend(['no-clean'] if options.get('no-clean') else [])
+        stack_args.extend(['fot'] if options.get('fot') else [])
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
@@ -118,8 +129,12 @@ class IntegrationTestBase(unittest.TestCase):
         return self._write_yaml_to_file(filename, config)
 
     def _get_faucet_config_path(self):
+        config_file_format = '/../../inst/%s/faucet/faucet.yaml'
+        if self.stack_options.get('fot'):
+            return os.path.dirname(os.path.abspath(__file__)) + \
+                (config_file_format % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
-            '/../../inst/forch-faucet-1/faucet/faucet.yaml'
+            (config_file_format % ('forch-faucet-1'))
 
 
 if __name__ == '__main__':

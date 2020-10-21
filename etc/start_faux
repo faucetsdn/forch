@@ -2,6 +2,9 @@
 
 echo Running faux $*
 
+# Necessary to run dhclient in docker containers
+umount /etc/resolv.conf 
+
 declare -A options
 for option in $*; do
     if [[ $option == *"="* ]]; then

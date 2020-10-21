@@ -3,6 +3,10 @@
 # Utility functions for working with stack setup and testing.
 #
 
+export CONTROLLER_NAME=127.0.0.1
+export STABILIZE_SEC=32
+export CONTROLLER_IDS=`sudo ovs-vsctl get-controller t1sw1`
+
 function preamble_setup {
     if [ -z "$TEST_RESULTS" ]; then
         TEST_SCRIPT=${0##*/}
@@ -12,6 +16,7 @@ function preamble_setup {
 
         echo $0 > $TEST_RESULTS
     fi
+    echo Logging test results to $TEST_RESULTS
 }
 
 function add_br {
@@ -34,8 +39,6 @@ function add_br {
     if [ -n "$port" ]; then
         sudo ovs-vsctl set-controller $bname tcp:127.0.0.1:$port $p2cmd
     fi
-
-    sudo ovs-ofctl show $bname
 }
 
 function add_link {
@@ -48,8 +51,8 @@ function add_link {
     iface_b=$br_b-eth$pt_b
 
     echo Adding $iface_a linked $iface_b
-    sudo ip link del $iface_a || true
-    sudo ip link del $iface_b || true
+    sudo ip link del $iface_a 2> /dev/null || true
+    sudo ip link del $iface_b 2> /dev/null || true
     sudo ip link add $iface_a type veth peer name $iface_b
     sudo ifconfig $iface_a up
     sudo ifconfig $iface_b up
@@ -86,8 +89,8 @@ function add_oeth {
     iface_b=$3
 
     echo Adding $iface_a linked to $iface_b
-    sudo ip link del $iface_a || true
-    sudo ip link del $iface_b || true
+    sudo ip link del $iface_a 2> /dev/null || true
+    sudo ip link del $iface_b 2> /dev/null || true
     sudo ip link add $iface_a type veth peer name $iface_b
     sudo ifconfig $iface_a up
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
@@ -130,17 +133,33 @@ function dump_flows {
 }
 
 function reset_stack {
-    sudo ovs-vsctl set-controller t2sw3 $controllers
+    if [ -z "$CONTROLLER_IDS" ]; then
+        echo No controller ids defined, no reset for you.
+        return
+    fi
+
+    sudo ovs-vsctl set-controller t2sw3 $CONTROLLER_IDS
     sudo ip addr del 240.0.0.253/24 dev lo
     sudo ip addr del 240.0.0.1/24 dev lo
     sudo ip addr del 240.0.0.2/24 dev lo
+    del_link t1sw1 11 t2sw3 52
+    del_link t1sw2 11 t2sw3 50
+    add_link t1sw1 11 t2sw3 50
+    add_link t1sw2 11 t2sw3 52
     sudo ip link set t1sw1-eth6 up
     sudo ip link set t1sw1-eth9 up
     sudo ip link set t1sw1-eth10 up
     sudo ip link set t1sw1-eth11 up
+    sudo ip link set t1sw2-eth9 up
     sudo ip link set t1sw2-eth10 up
+    sudo ip link set t1sw2-eth11 up
     sudo ip link set t1sw1-eth28 up
+
+    # Force egress to be t1sw1
+    sudo ip link set t1sw2-eth28 down
+    sleep $STABILIZE_SEC
     sudo ip link set t1sw2-eth28 up
+    sleep $STABILIZE_SEC
 
     diagnose_stack
 }
@@ -168,7 +187,7 @@ function restart_ovs {
     sudo /etc/init.d/openvswitch-switch restart
 
     echo $desc Waiting for network stability...
-    sleep 30
+    sleep $STABILIZE_SEC
 }
 
 function test_stack {
@@ -260,7 +279,9 @@ function test_stack {
 
 function restart_forch {
     echo Killing any old instances of forch...
-    kill `ps ax | fgrep forch | fgrep -v fgrep | awk '{print $1}'` || true
+    ps ax | fgrep -- '-m forch' | fgrep -v fgrep || true
+    kill `ps ax | fgrep -- '-m forch' | fgrep -v fgrep | awk '{print $1}'` || true
+    ps ax | fgrep $forch_log | fgrep -v fgrep || true
     kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'` || true
 
     rm -f $forch_log
@@ -278,7 +299,7 @@ function restart_forch {
     bin/forch --base $base 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
-    sleep 20
+    sleep $STABILIZE_SEC
 
     unset change_counts
     declare -g -A change_counts
