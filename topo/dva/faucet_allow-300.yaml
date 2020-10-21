@@ -75,7 +75,7 @@ dps:
     stack:
       priority: 1
   nz-kiwi-t2sw1:
-    dp_id: 147058200627
+    dp_id: 1295
     faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
     interfaces:
