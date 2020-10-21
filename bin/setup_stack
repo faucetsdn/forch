@@ -69,8 +69,8 @@ echo Configuring mode $mode...
 add_br corp  0x111 6683
 add_br t1sw1 177 6001 7001
 add_br t1sw2 178 6001 7001
-add_oeth t1sw1 28 corp-eth10
-add_oeth t1sw2 28 corp-eth20
+add_oeth t1sw1 1 corp-eth10
+add_oeth t1sw2 1 corp-eth20
 add_link t1sw1 6 t1sw2 6
 
 add_br t2sw1 147058200627 6001 7001
@@ -207,7 +207,7 @@ if [ -n "$dumptcp" ]; then
     do_tcpdump bond
     for switch in t1sw1 t1sw2; do
         do_tcpdump $switch-eth6
-        do_tcpdump $switch-eth28
+        do_tcpdump $switch-eth1
         for port in 9 10 11 12 13 14 15 16 17 18; do
             do_tcpdump $switch-eth$port
         done

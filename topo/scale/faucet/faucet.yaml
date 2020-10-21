@@ -40,7 +40,7 @@ dps:
       17:
         description: "to t2sw9 port 50"
         stack: {dp: nz-kiwi-t2sw9, port: 50}
-      28:
+      1:
         description: egress
         lacp: 3
         tagged_vlans: [171]
@@ -83,7 +83,7 @@ dps:
       17:
         description: "to t2sw9 port 52"
         stack: {dp: nz-kiwi-t2sw9, port: 52}
-      28:
+      1:
         description: egress
         lacp: 3
         tagged_vlans: [171]

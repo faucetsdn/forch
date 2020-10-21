@@ -19,7 +19,7 @@ dps:
       11:
         description: "to t2sw3 port 50"
         stack: {dp: nz-kiwi-t2sw3, port: 50}
-      28:
+      1:
         description: egress
         lacp: 3
         tagged_vlans: [200, 300, 400]
@@ -44,7 +44,7 @@ dps:
       11:
         description: "to t2sw3 port 52"
         stack: {dp: nz-kiwi-t2sw3, port: 52}
-      28:
+      1:
         description: egress
         lacp: 3
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
