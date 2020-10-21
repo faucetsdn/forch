@@ -1,5 +1,9 @@
 ## 1.14.0
-## Force 0.46.x
+## Forch 0.46.x
+* Bypass Authenticator for VLAN expiry (#196)
+* Ignore L2_EXPIRE event for stale VLAN (#195)
+* Do not raise exception in case of out-of-sequence Faucet event (#187)
+* Change Content-Type in response headers for varz page (#191)
 * Update NOAH APIs to show a list of IPs for a host (#190)
 * Display error and disable authentication when static behavior file is missing (#185)
 ## Faucet 1.9.50.x
