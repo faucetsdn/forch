@@ -3,6 +3,13 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
+if [ $# != 1 ]; then
+    echo $0 target
+    false
+fi
+TARGET=$1
+shift
+
 GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
 GIT_REMOTE=`git config branch.$GIT_BRANCH.remote` || true
@@ -14,11 +21,11 @@ else
 fi
 
 echo Build branch $GIT_BRANCH from $GIT_REMOTE at $GIT_URL
-GIT_PEER=`echo $GIT_URL | sed s/forch/faucet/`
-echo Auto-generated faucet git repo $GIT_PEER
+GIT_PEER=`echo $GIT_URL | sed s/forch/$TARGET/`
+echo Auto-generated $TARGET git repo $GIT_PEER
 
-FAUCET_REPO=$GIT_PEER
-FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
+TARGET_REPO=$GIT_PEER
+TARGET_VERSION=$(cat etc/${TARGET^^}_VERSION)
 
 if [ -z "$VIRTUAL_ENV" ]; then
     python3 -m venv venv
@@ -26,13 +33,13 @@ if [ -z "$VIRTUAL_ENV" ]; then
 fi
 
 SITE_PACKAGES_PATH=$(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')
-rm -f $SITE_PACKAGES_PATH/faucet
-ln -s $ROOT/faucet/faucet $SITE_PACKAGES_PATH/faucet
+rm -f $SITE_PACKAGES_PATH/$TARGET
+ln -s $ROOT/$TARGET/$TARGET $SITE_PACKAGES_PATH/$TARGET
 
-if [ -d faucet ]; then
-    echo Dir faucet/ already exists. Not cloning.
+if [ -d $TARGET ]; then
+    echo Dir $TARGET/ already exists. Not cloning.
 else
-    echo Cloning faucet locally...
-    git clone $FAUCET_REPO faucet
-    (cd faucet; git checkout $FAUCET_VERSION)
+    echo Cloning $TARGET locally...
+    git clone $TARGET_REPO $TARGET
+    (cd $TARGET; git checkout $TARGET_VERSION)
 fi
