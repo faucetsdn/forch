@@ -46,8 +46,9 @@ if [ "$1" == pull ]; then
     exit 0
 fi
 
-if [ "$1" == clean ]; then
+if [ "$1" == noclean ]; then
     shift
+else
     rm -f $DOCKER_IMAGE_LIST
     docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash other; do
         echo Purging image $image:$tag
