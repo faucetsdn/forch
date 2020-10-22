@@ -3,7 +3,7 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-PVERSION=3.8.5
+PVERSION=3.8
 GO_VERSION=1.13.3
 
 sudo apt-get update
