@@ -29,6 +29,6 @@ COPY . forch/
 RUN bin/install_forch && rm -rf forch/.git
 
 COPY daq/ daq/
-RUN daq/bin/setup_docker && rm -rf daq/.git
+RUN daq/bin/setup_dev && rm -rf daq/.git
 
 CMD ["bin/controller_go"]
