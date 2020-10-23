@@ -3,7 +3,6 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
-ALL_IMAGES="faux faucet gauge $*"
 FAUCET_VERSION=$(cat etc/FAUCET_VERSION)
 FAUCET_HASH=$(cd faucet; git rev-list -n 1 $FAUCET_VERSION)
 DOCKER_IMAGE_LIST=etc/docker_images.txt
@@ -47,11 +46,17 @@ if [ "$1" == pull ]; then
     exit 0
 fi
 
-rm -f $DOCKER_IMAGE_LIST
-docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash other; do
-    echo Purging image $image:$tag
-    docker rmi -f $image:$tag
-done
+if [ "$1" == noclean ]; then
+    shift
+else
+    rm -f $DOCKER_IMAGE_LIST
+    docker images | sort | fgrep forch/ | fgrep latest | while read image tag hash other; do
+        echo Purging image $image:$tag
+        docker rmi -f $image:$tag
+    done
+fi
+
+ALL_IMAGES="$* faux faucet gauge"
 
 faucet_ver=$(cd faucet; git rev-list -n 1 `git describe --dirty`)
 if [ "$faucet_ver" != "$FAUCET_HASH" ]; then
@@ -79,7 +84,6 @@ images=$(docker images | fgrep forch/ | fgrep latest | wc -l)
 expected=`echo $ALL_IMAGES | wc -w`
 if [ $images != $expected ]; then
     echo Did not find expected $expected forch/ images.
-    docker images
     false
 fi
 

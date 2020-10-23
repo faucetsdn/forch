@@ -1,7 +1,5 @@
 #!/bin/sh
 
-env
-
 # User might already exist if docker restarted.
 echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
 
@@ -38,4 +36,10 @@ echo Adding fot bridge port
 sudo ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1
 ifconfig data0 up
 
+echo Starting daq...
+chmod a+rx .
+chown kronkiteman -R daq
+sudo -u kronkiteman daq/cmd/run &
+
+echo Blocking forever...
 tail -f /dev/null

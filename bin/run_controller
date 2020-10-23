@@ -31,7 +31,7 @@ fi
 
 if [ -n "$1" ]; then
     CONTAINER=$CONTAINER-$1
-    INSTDIR=$INSTDIR/forch-controller-$1
+    INSTDIR=$INSTDIR/$CONTAINER
     faucet_id=$1
     shift
 fi
@@ -109,7 +109,9 @@ docker_volumes+="\
         -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
         -v $INSTDIR/faucet_br:/var/log/faucet_br \
         -v $INSTDIR/faucet:/etc/faucet \
-        -v $INSTDIR:/var/log/faucet"
+        -v $INSTDIR:/var/log/faucet \
+        -v $INSTDIR/daq/local:/root/daq/local \
+        -v $INSTDIR/daq/inst:/root/daq/inst"
 
 
 if [ -n "$prom_pt" ]; then

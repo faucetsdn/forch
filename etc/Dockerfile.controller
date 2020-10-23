@@ -1,18 +1,34 @@
-## Image name: forch/faucet
+## Image name: forch/controller
 
-FROM faucet/python3:5.0.1
+FROM ubuntu:bionic
 
-RUN apk add -q tcpdump iptables sudo linux-headers openvswitch libstdc++ coreutils
+COPY bin/retry_cmd bin/
 
-COPY faucet/ /faucet-src/
-RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
+ENV AG="bin/retry_cmd apt-get -qqy --no-install-recommends -o=Dpkg::Use-Pty=0"
 
-# Check for target executable since installer doesn't error out properly.
-RUN which faucet
+RUN $AG update && $AG install net-tools bash iproute2 iputils-ping tcpdump strace vim \
+    jq nano ethtool netcat curl ifupdown isc-dhcp-client dnsmasq
 
-COPY misc/controller_go bin/
+# Weird workaround for problem running tcdump in a privlidged container.
+RUN mv /usr/sbin/tcpdump /usr/bin/tcpdump
 
-COPY . /forch-src/
-RUN /forch-src/bin/install_forch.sh && rm -rf /forch-src/.git
+######## Everything above taken from faux device docker build file #####
+
+WORKDIR /root
+COPY bin/retry_cmd bin/
+
+RUN $AG update && $AG install ash iptables sudo openvswitch-switch openvswitch-common \
+    python3-pip
+
+COPY misc/ bin/
+
+COPY faucet/ faucet/
+RUN bin/install_faucet && rm -rf faucet/.git
+
+COPY . forch/
+RUN bin/install_forch && rm -rf forch/.git
+
+COPY daq/ daq/
+RUN daq/bin/setup_dev simple && rm -rf daq/.git
 
 CMD ["bin/controller_go"]
