@@ -1,0 +1,110 @@
+/*
+ * Encapsulating Faucet configuration
+ */
+syntax = "proto3";
+
+/*
+ * Faucet configuration
+ */
+message FaucetConfig {
+  // datapaths
+  map<string, Datapath> dps = 1;
+
+  // include yaml files
+  repeated string include = 2;
+
+  // version
+  int32 version = 3;
+
+  // vlans
+  map<string, Vlan> vlans = 4;
+}
+
+/*
+ * Datapath configuration
+ */
+message Datapath {
+  // datapath ID
+  int32 dp_id = 1;
+
+  // DP mac
+  string faucet_dp_mac = 2;
+
+  // Hardware
+  string hardware = 3;
+
+  // LACP timeout
+  int32 lacp_timeout = 4;
+
+  // Stack
+  Stack stack = 5;
+
+  // Interfaces
+  map<int32, Interface> interfaces = 6;
+
+  // LLDP beacon
+  LLDPBeacon lldp_beacon = 7;
+}
+
+/*
+ * Stack
+ */
+message Stack {
+  //Stack priority
+  int32 priority = 1;
+}
+
+/*
+ * LLDP Beacon
+ */
+message LLDPBeacon {
+  // Max LLDP packets sent per interval
+  int32 max_per_interval = 1;
+
+  // Send interval
+  int32 send_interval = 2;
+}
+
+/*
+ * Interface
+ */
+message Interface {
+  // Description
+  string description = 1;
+
+  // Stack link
+  StackLink stack = 2;
+
+  // LACP ID
+  int32 lacp = 3;
+
+  // Tagged VLANS
+  repeated int32 tagged_vlans = 4;
+
+  // Native VLAN
+  int32 native_vlan = 5;
+
+  // Port ACL
+  string acl_in = 6;
+
+  // Max hosts to be learned
+  int32 max_hosts = 7;
+}
+
+/*
+ * Vlan
+ */ 
+message Vlan {
+  string description = 1;
+}
+
+/*
+ * Stack links
+ */
+message StackLink {
+  // Destination datapath
+  string dp = 1;
+
+  // Destination port
+  int32 port = 2;
+}
