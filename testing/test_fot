@@ -1,5 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 # Placeholder tests just to make sure DAQ even tries to run.
+docker logs forch-controller-1 2>&1
 docker logs forch-controller-1 2>&1 | fgrep "copying defaults"
 ls -l inst/forch-controller-1/daq/local/system.yaml
