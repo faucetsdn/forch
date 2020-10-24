@@ -2,9 +2,16 @@
 
 docker logs forch-controller-1 2>&1
 
-# Placeholder tests just to make sure DAQ even tries to run:
+# Basic process startup.
 docker logs forch-controller-1 2>&1 | fgrep "Loading base module config"
+
+# Testing that python path is good.
 ls -l inst/forch-controller-1/daq/inst/daq.pid
+
+# Requires valid config available.
 cat inst/forch-controller-1/daq/inst/daq_run_id.txt
+
+# Requiring mininet path.
+ls -l inst/forch-controller-1/daq/inst/dp_port_acls.yaml
 
 echo Done with daq startup tests.
