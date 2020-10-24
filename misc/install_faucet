@@ -19,10 +19,5 @@ for i in ${BUILDDEPS} ; do
     ${APK} remove "$i"
 done
 
-# Clean up
-rm -r "${FROOT}"
-
 # Smoke test
 faucet -V
-
-find / -name \*pyc -delete

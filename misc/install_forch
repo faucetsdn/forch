@@ -27,6 +27,3 @@ done
 
 # Sanity check
 forch -V
-
-# Clean up
-rm -r "${FROOT}"
