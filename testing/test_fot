@@ -2,5 +2,6 @@
 
 # Placeholder tests just to make sure DAQ even tries to run.
 docker logs forch-controller-1 2>&1
-docker logs forch-controller-1 2>&1 | fgrep "copying defaults"
-ls -l inst/forch-controller-1/daq/local/system.yaml
+docker logs forch-controller-1 2>&1 | fgrep "Loading base module config"
+ls -l inst/forch-controller-1/daq/inst/daq.pid
+
