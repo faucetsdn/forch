@@ -1,7 +1,10 @@
 #!/bin/bash -ex
 
-# Placeholder tests just to make sure DAQ even tries to run.
 docker logs forch-controller-1 2>&1
+
+# Placeholder tests just to make sure DAQ even tries to run:
 docker logs forch-controller-1 2>&1 | fgrep "Loading base module config"
 ls -l inst/forch-controller-1/daq/inst/daq.pid
+cat inst/forch-controller-1/daq/inst/daq_run_id.txt
 
+echo Done with daq startup tests.

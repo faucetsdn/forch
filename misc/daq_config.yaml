@@ -1,0 +1,13 @@
+# DAQ FOT configuration.
+
+include: config/system/default.yaml
+
+switch_setup:
+  data_intf: alt-intf
+  alt_port: 6669
+  uplink_port: 100
+  ext_br: alt-switch
+
+run_trigger:
+  vlan_start: 2000
+  vlan_end: 2050
