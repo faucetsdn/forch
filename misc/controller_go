@@ -8,8 +8,11 @@ FAUCET_ROOT=$ROOT/faucet
 # User might already exist if docker restarted.
 echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
 
-FAUCET_BR_CONFIG=/etc/faucet_br/faucet.yaml
+FAUCET_BR_CONFIG=$DAQ_ROOT/inst/faucet.yaml
 FAUCET_BR_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock
+
+# Prime faucet with a valid startup config.
+cp /etc/faucet_br/faucet.yaml $FAUCET_BR_CONFIG
 
 sudo -u kronkiteman \
     FAUCET_EXCEPTION_LOG=/var/log/faucet_br/faucet_exception.log \
@@ -53,6 +56,7 @@ PYTHONPATH=$DAQ_ROOT:$FORCH_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet:$DAQ_ROOT/libs:$
 sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \
+    FAUCET_CONFIG=$FAUCET_BR_CONFIG \
     FAUCET_EVENT_SOCK=$FAUCET_BR_EVENT_SOCK \
     daq/cmd/start ../bin/daq_config.yaml &
 
