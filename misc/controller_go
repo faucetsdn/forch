@@ -8,6 +8,10 @@ FAUCET_ROOT=$ROOT/faucet
 # User might already exist if docker restarted.
 echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
 
+# Clean up some permissions that are necessary for operation.
+chmod a+rx $ROOT
+chown kronkiteman -R $DAQ_ROOT
+
 FAUCET_BR_CONFIG=$DAQ_ROOT/inst/faucet.yaml
 FAUCET_BR_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock
 
@@ -56,9 +60,12 @@ PYTHONPATH=$DAQ_ROOT:$FORCH_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet:$DAQ_ROOT/libs:$
 sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \
-    FAUCET_CONFIG=$FAUCET_BR_CONFIG \
     FAUCET_EVENT_SOCK=$FAUCET_BR_EVENT_SOCK \
     daq/cmd/start ../bin/daq_config.yaml &
+
+# TODO: Add this line above so DAQ will update the correct dynamic config. But, requires that DAQ
+# properly implements the DHCP reflection logic, which is not trivial.
+# FAUCET_CONFIG=$FAUCET_BR_CONFIG
 
 echo Blocking forever...
 tail -f /dev/null

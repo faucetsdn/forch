@@ -13,9 +13,6 @@ dps:
         description: "OFPP_IN_PORT"
         output_only: True
 version: 2
-vlans:
-  300:
-    description: DHCP bridge
 acls:
   dhcp_request:
     - rule:
