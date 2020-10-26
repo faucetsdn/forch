@@ -447,6 +447,7 @@ class Forchestrator:
             assert self._config_hash_retry < self._config_hash_max_retry, (
                 f'config hash info does not match after {self._config_hash_max_retry} retries')
             self._config_hash_retry += 1
+            LOGGER.warning('Config hash does not match. Retry: %s', self._config_hash_retry)
 
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
