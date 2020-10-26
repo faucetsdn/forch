@@ -53,6 +53,7 @@ PYTHONPATH=$DAQ_ROOT:$FORCH_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet:$DAQ_ROOT/libs:$
 sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \
+    FAUCET_EVENT_SOCK=$FAUCET_BR_EVENT_SOCK \
     daq/cmd/start ../bin/daq_config.yaml &
 
 echo Blocking forever...
