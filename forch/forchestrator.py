@@ -444,8 +444,7 @@ class Forchestrator:
         if config_hash == config_info['hashes']:
             self._config_hash_retry = 0
         else:
-            assert (
-                self._config_hash_retry < self._config_hash_max_retry,
+            assert self._config_hash_retry < self._config_hash_max_retry, (
                 f'config hash info does not match after {self._config_hash_max_retry} retries')
             self._config_hash_retry += 1
 
