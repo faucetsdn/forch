@@ -45,6 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
+_CONFIG_HASH_MAX_RETRY = 5
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -112,6 +113,9 @@ class Forchestrator:
         self._faucet_config_summary = None
         self._metrics = None
         self._varz_proxy = None
+
+        self._config_hash_retry = 0
+        self._config_hash_max_retry = os.getenv('_CONFIG_HASH_MAX_RETRY', _CONFIG_HASH_MAX_RETRY)
 
         self._lock = threading.Lock()
 
@@ -436,7 +440,15 @@ class Forchestrator:
     def _restore_faucet_config(self, timestamp, config_hash):
         config_info, faucet_dps, _ = self._get_faucet_config()
         self._update_config_warning_varz()
-        assert config_hash == config_info['hashes'], 'config hash info does not match'
+
+        if config_hash == config_info['hashes']:
+            self._config_hash_retry = 0
+        else:
+            assert (
+                self._config_hash_retry < self._config_hash_max_retry,
+                f'config hash info does not match after {self._config_hash_max_retry} retries')
+            self._config_hash_retry += 1
+
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
     def _process_config_change(self, event):
