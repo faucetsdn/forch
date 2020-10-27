@@ -101,10 +101,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 9"
-        stack: {dp: nz-kiwi-t1sw1, port: 9}
+        stack: {dp: nz-kiwi-t1sw1, port: 100}
       52:
         description: "to t1sw2 port 9"
-        stack: {dp: nz-kiwi-t1sw2, port: 9}
+        stack: {dp: nz-kiwi-t1sw2, port: 100}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw2:
     dp_id: 1296
@@ -119,10 +119,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 10"
-        stack: {dp: nz-kiwi-t1sw1, port: 10}
+        stack: {dp: nz-kiwi-t1sw1, port: 101}
       52:
         description: "to t1sw2 port 10"
-        stack: {dp: nz-kiwi-t1sw2, port: 10}
+        stack: {dp: nz-kiwi-t1sw2, port: 101}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw3:
     dp_id: 1297
@@ -137,10 +137,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 11"
-        stack: {dp: nz-kiwi-t1sw1, port: 11}
+        stack: {dp: nz-kiwi-t1sw1, port: 102}
       52:
         description: "to t1sw2 port 11"
-        stack: {dp: nz-kiwi-t1sw2, port: 11}
+        stack: {dp: nz-kiwi-t1sw2, port: 102}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw4:
     dp_id: 1298
@@ -155,10 +155,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 12"
-        stack: {dp: nz-kiwi-t1sw1, port: 12}
+        stack: {dp: nz-kiwi-t1sw1, port: 103}
       52:
         description: "to t1sw2 port 12"
-        stack: {dp: nz-kiwi-t1sw2, port: 12}
+        stack: {dp: nz-kiwi-t1sw2, port: 103}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw5:
     dp_id: 1299
@@ -173,10 +173,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 13"
-        stack: {dp: nz-kiwi-t1sw1, port: 13}
+        stack: {dp: nz-kiwi-t1sw1, port: 104}
       52:
         description: "to t1sw2 port 13"
-        stack: {dp: nz-kiwi-t1sw2, port: 13}
+        stack: {dp: nz-kiwi-t1sw2, port: 104}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw6:
     dp_id: 1300
@@ -191,10 +191,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 14"
-        stack: {dp: nz-kiwi-t1sw1, port: 14}
+        stack: {dp: nz-kiwi-t1sw1, port: 105}
       52:
         description: "to t1sw2 port 14"
-        stack: {dp: nz-kiwi-t1sw2, port: 14}
+        stack: {dp: nz-kiwi-t1sw2, port: 105}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw7:
     dp_id: 1301
@@ -209,10 +209,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 15"
-        stack: {dp: nz-kiwi-t1sw1, port: 15}
+        stack: {dp: nz-kiwi-t1sw1, port: 106}
       52:
         description: "to t1sw2 port 15"
-        stack: {dp: nz-kiwi-t1sw2, port: 15}
+        stack: {dp: nz-kiwi-t1sw2, port: 106}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw8:
     dp_id: 1302
@@ -227,10 +227,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 16"
-        stack: {dp: nz-kiwi-t1sw1, port: 16}
+        stack: {dp: nz-kiwi-t1sw1, port: 107}
       52:
         description: "to t1sw2 port 16"
-        stack: {dp: nz-kiwi-t1sw2, port: 16}
+        stack: {dp: nz-kiwi-t1sw2, port: 107}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw9:
     dp_id: 1303
@@ -245,10 +245,10 @@ dps:
       105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 17"
-        stack: {dp: nz-kiwi-t1sw1, port: 17}
+        stack: {dp: nz-kiwi-t1sw1, port: 108}
       52:
         description: "to t1sw2 port 17"
-        stack: {dp: nz-kiwi-t1sw2, port: 17}
+        stack: {dp: nz-kiwi-t1sw2, port: 108}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
 include: [uniform.yaml]
 version: 2

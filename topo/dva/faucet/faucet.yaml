@@ -60,10 +60,10 @@ dps:
       104: {description: IoT Device, native_vlan: 100, max_hosts: 1}
       50:
         description: "to t1sw1 port 9"
-        stack: {dp: nz-kiwi-t1sw1, port: 9}
+        stack: {dp: nz-kiwi-t1sw1, port: 100}
       52:
         description: "to t1sw2 port 9"
-        stack: {dp: nz-kiwi-t1sw2, port: 9}
+        stack: {dp: nz-kiwi-t1sw2, port: 100}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw2:
     dp_id: 1296
@@ -77,10 +77,10 @@ dps:
       104: {description: IoT Device, native_vlan: 100, max_hosts: 1}
       50:
         description: "to t1sw1 port 10"
-        stack: {dp: nz-kiwi-t1sw1, port: 10}
+        stack: {dp: nz-kiwi-t1sw1, port: 101}
       52:
         description: "to t1sw2 port 10"
-        stack: {dp: nz-kiwi-t1sw2, port: 10}
+        stack: {dp: nz-kiwi-t1sw2, port: 101}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw3:
     dp_id: 1297
@@ -94,10 +94,10 @@ dps:
       104: {description: IoT Device, native_vlan: 100, max_hosts: 1}
       50:
         description: "to t1sw1 port 11"
-        stack: {dp: nz-kiwi-t1sw1, port: 11}
+        stack: {dp: nz-kiwi-t1sw1, port: 102}
       52:
         description: "to t1sw2 port 11"
-        stack: {dp: nz-kiwi-t1sw2, port: 11}
+        stack: {dp: nz-kiwi-t1sw2, port: 102}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
 acls:
   uniform_100:
