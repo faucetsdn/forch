@@ -445,6 +445,7 @@ class Forchestrator:
 
         if config_hash == config_info['hashes']:
             self._config_hash_retry = 0
+            LOGGER.debug('Cleared config hash retry counter')
         else:
             assert self._config_hash_retry < self._config_hash_max_retry, (
                 f'Config hash info does not match after {self._config_hash_max_retry} retries')
