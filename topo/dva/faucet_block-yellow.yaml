@@ -50,17 +50,17 @@ dps:
         stack:
           dp: nz-kiwi-t1sw2
           port: 6
-      9:
+      100:
         description: to t2sw1 port 50
         stack:
           dp: nz-kiwi-t2sw1
           port: 50
-      10:
+      101:
         description: to t2sw2 port 50
         stack:
           dp: nz-kiwi-t2sw2
           port: 50
-      11:
+      102:
         description: to t2sw3 port 50
         stack:
           dp: nz-kiwi-t2sw3
@@ -89,17 +89,17 @@ dps:
         stack:
           dp: nz-kiwi-t1sw1
           port: 6
-      9:
+      100:
         description: to t2sw1 port 52
         stack:
           dp: nz-kiwi-t2sw1
           port: 52
-      10:
+      101:
         description: to t2sw2 port 52
         stack:
           dp: nz-kiwi-t2sw2
           port: 52
-      11:
+      102:
         description: to t2sw3 port 52
         stack:
           dp: nz-kiwi-t2sw3
@@ -120,26 +120,26 @@ dps:
     faucet_dp_mac: 0e:00:00:00:02:01
     hardware: Generic
     interfaces:
-      1:
+      101:
         acls_in:
         - role_red
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 200
-      2:
+      102:
         acls_in:
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
-      3:
+      103:
         acls_in:
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
-      4:
+      104:
         acls_in:
         - tail_acl
         description: IoT Device
@@ -149,12 +149,12 @@ dps:
         description: to t1sw1 port 9
         stack:
           dp: nz-kiwi-t1sw1
-          port: 9
+          port: 100
       52:
         description: to t1sw2 port 9
         stack:
           dp: nz-kiwi-t1sw2
-          port: 9
+          port: 100
     lacp_timeout: 5
     lldp_beacon:
       max_per_interval: 5
@@ -164,26 +164,26 @@ dps:
     faucet_dp_mac: 0e:00:00:00:02:02
     hardware: Allied-Telesis
     interfaces:
-      1:
+      101:
         acls_in:
         - role_green
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 300
-      2:
+      102:
         acls_in:
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
-      3:
+      103:
         acls_in:
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
-      4:
+      104:
         acls_in:
         - tail_acl
         description: IoT Device
@@ -193,12 +193,12 @@ dps:
         description: to t1sw1 port 10
         stack:
           dp: nz-kiwi-t1sw1
-          port: 10
+          port: 101
       52:
         description: to t1sw2 port 10
         stack:
           dp: nz-kiwi-t1sw2
-          port: 10
+          port: 101
     lacp_timeout: 5
     lldp_beacon:
       max_per_interval: 5
@@ -208,26 +208,26 @@ dps:
     faucet_dp_mac: 0e:00:00:00:02:03
     hardware: Allied-Telesis
     interfaces:
-      1:
+      101:
         acls_in:
         - role_yellow
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 300
-      2:
+      102:
         acls_in:
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
-      3:
+      103:
         acls_in:
         - tail_acl
         description: IoT Device
         max_hosts: 1
         native_vlan: 100
-      4:
+      104:
         acls_in:
         - tail_acl
         description: IoT Device
@@ -237,12 +237,12 @@ dps:
         description: to t1sw1 port 11
         stack:
           dp: nz-kiwi-t1sw1
-          port: 11
+          port: 102
       52:
         description: to t1sw2 port 11
         stack:
           dp: nz-kiwi-t1sw2
-          port: 11
+          port: 102
     lacp_timeout: 5
     lldp_beacon:
       max_per_interval: 5
