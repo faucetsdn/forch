@@ -45,7 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
-_CONFIG_HASH_COOLING_SEC_DEFAULT = '20'
+_CONFIG_HASH_COOLING_SEC_DEFAULT = '30'
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -451,7 +451,7 @@ class Forchestrator:
             if self._config_hash_clash_start_time:
                 clash_elapsed_time = time.time() - self._config_hash_clash_start_time
                 assert clash_elapsed_time < self._config_hash_cooling_sec, (
-                    f'Config hash info does not match after {self._config_hash_cooling_sec} seconds')
+                    f'Config hash does not match after {self._config_hash_cooling_sec} seconds')
             else:
                 self._config_hash_clash_start_time = time.time()
             LOGGER.warning('Config hash does not match')
