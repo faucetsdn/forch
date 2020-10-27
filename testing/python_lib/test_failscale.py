@@ -12,10 +12,13 @@ class FailScaleConfigTest(IntegrationTestBase):
         super().__init__(*args, **kwargs)
 
         self.stack_options.update({
-            'devices': 5,
-            'switches': 9,
+            'devices': 9,
+            'switches': 5,
             'mode': 'scale'
         })
+
+    def tearDown(self):
+        pass
 
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""

@@ -13,31 +13,31 @@ dps:
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}
-      9:
+      100:
         description: "to t2sw1 port 50"
         stack: {dp: nz-kiwi-t2sw1, port: 50}
-      10:
+      101:
         description: "to t2sw2 port 50"
         stack: {dp: nz-kiwi-t2sw2, port: 50}
-      11:
+      102:
         description: "to t2sw3 port 50"
         stack: {dp: nz-kiwi-t2sw3, port: 50}
-      12:
+      103:
         description: "to t2sw4 port 50"
         stack: {dp: nz-kiwi-t2sw4, port: 50}
-      13:
+      104:
         description: "to t2sw5 port 50"
         stack: {dp: nz-kiwi-t2sw5, port: 50}
-      14:
+      105:
         description: "to t2sw6 port 50"
         stack: {dp: nz-kiwi-t2sw6, port: 50}
-      15:
+      106:
         description: "to t2sw7 port 50"
         stack: {dp: nz-kiwi-t2sw7, port: 50}
-      16:
+      107:
         description: "to t2sw8 port 50"
         stack: {dp: nz-kiwi-t2sw8, port: 50}
-      17:
+      108:
         description: "to t2sw9 port 50"
         stack: {dp: nz-kiwi-t2sw9, port: 50}
       28:
@@ -56,31 +56,31 @@ dps:
       6:
         description: "to t1sw1 port 6"
         stack: {dp: nz-kiwi-t1sw1, port: 6}
-      9:
+      100:
         description: "to t2sw1 port 52"
         stack: {dp: nz-kiwi-t2sw1, port: 52}
-      10:
+      101:
         description: "to t2sw2 port 52"
         stack: {dp: nz-kiwi-t2sw2, port: 52}
-      11:
+      102:
         description: "to t2sw3 port 52"
         stack: {dp: nz-kiwi-t2sw3, port: 52}
-      12:
+      103:
         description: "to t2sw4 port 52"
         stack: {dp: nz-kiwi-t2sw4, port: 52}
-      13:
+      104:
         description: "to t2sw5 port 52"
         stack: {dp: nz-kiwi-t2sw5, port: 52}
-      14:
+      105:
         description: "to t2sw6 port 52"
         stack: {dp: nz-kiwi-t2sw6, port: 52}
-      15:
+      106:
         description: "to t2sw7 port 52"
         stack: {dp: nz-kiwi-t2sw7, port: 52}
-      16:
+      107:
         description: "to t2sw8 port 52"
         stack: {dp: nz-kiwi-t2sw8, port: 52}
-      17:
+      108:
         description: "to t2sw9 port 52"
         stack: {dp: nz-kiwi-t2sw9, port: 52}
       28:
@@ -94,11 +94,11 @@ dps:
     hardware: Generic
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 9"
         stack: {dp: nz-kiwi-t1sw1, port: 9}
@@ -112,11 +112,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 10"
         stack: {dp: nz-kiwi-t1sw1, port: 10}
@@ -130,11 +130,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 11"
         stack: {dp: nz-kiwi-t1sw1, port: 11}
@@ -148,11 +148,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 12"
         stack: {dp: nz-kiwi-t1sw1, port: 12}
@@ -166,11 +166,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 13"
         stack: {dp: nz-kiwi-t1sw1, port: 13}
@@ -184,11 +184,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 14"
         stack: {dp: nz-kiwi-t1sw1, port: 14}
@@ -202,11 +202,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 15"
         stack: {dp: nz-kiwi-t1sw1, port: 15}
@@ -220,11 +220,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 16"
         stack: {dp: nz-kiwi-t1sw1, port: 16}
@@ -238,11 +238,11 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      1: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      2: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      3: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      4: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
-      5: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      101: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      102: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      103: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      104: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
+      105: {description: IoT Device, native_vlan: 171, acl_in: uniform_acl, max_hosts: 1}
       50:
         description: "to t1sw1 port 17"
         stack: {dp: nz-kiwi-t1sw1, port: 17}
