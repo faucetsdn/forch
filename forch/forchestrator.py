@@ -385,7 +385,7 @@ class Forchestrator:
             self._authenticator.process_device_placement(eth_src, device_placement)
         else:
             LOGGER.info(
-                'Ignored vlan expiration for device %s with expired vlan %d', eth_src, expired_vlan)
+                'Ignored vlan expiration for device %s with expired vlan %s', eth_src, expired_vlan)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
