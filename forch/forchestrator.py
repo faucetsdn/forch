@@ -45,7 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
-_CONFIG_HASH_COOLING_SEC_DEFAULT = '30'
+_CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT = '30'
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -115,9 +115,10 @@ class Forchestrator:
         self._varz_proxy = None
 
         self._config_hash_clash_start_time = None
-        self._config_hash_cooling_sec = (
-            self._config.event_client.config_hash_cooling_sec or
-            int(os.getenv('_CONFIG_HASH_COOLING_SEC', _CONFIG_HASH_COOLING_SEC_DEFAULT))
+        self._config_hash_clash_timeout_sec = (
+            self._config.event_client.config_hash_clash_timeout_sec or
+            int(os.getenv(
+                '_CONFIG_HASH_CLASH_TIMEOUT_SEC',_CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT))
         )
 
         self._lock = threading.Lock()
@@ -450,8 +451,9 @@ class Forchestrator:
         else:
             if self._config_hash_clash_start_time:
                 clash_elapsed_time = time.time() - self._config_hash_clash_start_time
-                assert clash_elapsed_time < self._config_hash_cooling_sec, (
-                    f'Config hash does not match after {self._config_hash_cooling_sec} seconds')
+                assert clash_elapsed_time < self._config_hash_clash_timeout_sec, (
+                    f'Config hash does not match after '
+                    f'{self._config_hash_clash_timeout_sec} seconds')
             else:
                 self._config_hash_clash_start_time = time.time()
             LOGGER.warning('Config hash does not match')

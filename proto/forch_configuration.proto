@@ -199,8 +199,8 @@ message EventClientConfig {
   // coalesce stack topo events to reduce churn
   int32 stack_topo_change_coalesce_sec = 2;
 
-  // cooling time (in seconds) for config hash checking
-  int32 config_hash_cooling_sec = 3;
+  // timeout for unmatched config hash
+  int32 config_hash_clash_timeout_sec = 3;
 }
 
 /*
