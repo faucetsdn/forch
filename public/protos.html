@@ -499,6 +499,10 @@
                 </li>
               
                 <li>
+                  <a href="#FaucetConfigProcessing"><span class="badge">M</span>FaucetConfigProcessing</a>
+                </li>
+              
+                <li>
                   <a href="#ForchConfig"><span class="badge">M</span>ForchConfig</a>
                 </li>
               
@@ -3214,6 +3218,30 @@
 
         
       
+        <h3 id="FaucetConfigProcessing">FaucetConfigProcessing</h3>
+        <p>Parameters for Faucet config porcessing</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>config_hash_max_retry</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>maximum retry times for Faucet config hash checking </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="ForchConfig">ForchConfig</h3>
         <p>Forch configuration</p>
 
@@ -3278,6 +3306,13 @@
                   <td><a href="#DataplaneMonitoring">DataplaneMonitoring</a></td>
                   <td></td>
                   <td><p>configuration for switches monitoring </p></td>
+                </tr>
+              
+                <tr>
+                  <td>facuet_config_processing</td>
+                  <td><a href="#FaucetConfigProcessing">FaucetConfigProcessing</a></td>
+                  <td></td>
+                  <td><p>configuration for facuet config processing </p></td>
                 </tr>
               
             </tbody>
