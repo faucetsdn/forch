@@ -17,7 +17,7 @@ message FaucetConfig {
   int32 version = 3;
 
   // vlans
-  map<string, Vlan> vlans = 4;
+  map<int32, Vlan> vlans = 4;
 }
 
 /*
