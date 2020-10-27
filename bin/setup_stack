@@ -9,6 +9,7 @@ skip_conn_check=
 no_clean=
 faux_dhcp=
 fot=
+run_opt=
 mode=bond
 
 if [ "$1" == "local" ]; then
@@ -38,6 +39,11 @@ fi
 
 if [ "$1" == "no-clean" ]; then
     no_clean=y
+    shift
+fi
+
+if [ "$1" == "static_dhcp" ]; then
+    run_opt=static_dhcp
     shift
 fi
 
@@ -126,7 +132,7 @@ docker kill $container || true
 if [ -n "$fot" ]; then
     mkdir -p $container_inst/faucet_br/faucet
     cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
-    bin/run_controller $local $inst $((6000 + inst)) $((8000 + inst)) $((7000 + inst)) $((9000 + inst))
+    bin/run_controller $local $run_opt $inst $((6000 + inst)) $((8000 + inst)) $((7000 + inst)) $((9000 + inst))
 else
     bin/run_faucet $local $inst $((6000 + inst)) $((8000 + inst))
     bin/run_faucet $local gauge $inst $((7000 + inst)) $((9000 + inst))
