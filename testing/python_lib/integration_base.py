@@ -17,7 +17,6 @@ class IntegrationTestBase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stack_options = {
-            'setup_warmup_sec': 20,
             'skip-conn-check': True,
             'no-clean': True
         }
@@ -79,9 +78,6 @@ class IntegrationTestBase(unittest.TestCase):
 
         print('setup_stack ' + ' '.join(stack_args))
         self._run_cmd('bin/setup_stack', stack_args)
-        setup_warmup_sec = options.get('setup_warmup_sec')
-        print('waiting %s...' % setup_warmup_sec)
-        time.sleep(setup_warmup_sec)
 
     def _clean_stack(self):
         self._run_cmd('bin/net_clean')
