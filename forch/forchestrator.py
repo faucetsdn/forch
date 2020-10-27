@@ -446,7 +446,7 @@ class Forchestrator:
 
         if config_hash == config_info['hashes']:
             self._config_hash_clash_start_time = None
-            LOGGER.debug('Cleared last config hash time')
+            LOGGER.debug('Cleared config hash clash starting time')
         else:
             if self._config_hash_clash_start_time:
                 clash_elapsed_time = time.time() - self._config_hash_clash_start_time
