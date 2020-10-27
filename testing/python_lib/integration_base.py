@@ -3,7 +3,6 @@
 import subprocess
 import unittest
 import os
-import time
 import yaml
 
 from tcpdump_helper import TcpdumpHelper
