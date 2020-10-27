@@ -447,12 +447,13 @@ class Forchestrator:
         if config_hash == config_info['hashes']:
             self._config_hash_clash_start_time = None
             LOGGER.debug('Cleared last config hash time')
-        elif self._config_hash_clash_start_time:
-            clash_elapsed_time = time.time() - self._config_hash_clash_start_time
-            assert clash_elapsed_time < self._config_hash_cooling_sec, (
-                f'Config hash info does not match after {self._config_hash_cooling_sec} seconds')
         else:
-            self._config_hash_clash_start_time = time.time()
+            if self._config_hash_clash_start_time:
+                clash_elapsed_time = time.time() - self._config_hash_clash_start_time
+                assert clash_elapsed_time < self._config_hash_cooling_sec, (
+                    f'Config hash info does not match after {self._config_hash_cooling_sec} seconds')
+            else:
+                self._config_hash_clash_start_time = time.time()
             LOGGER.warning('Config hash does not match')
             return False
 
