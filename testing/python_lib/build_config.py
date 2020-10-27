@@ -46,7 +46,7 @@ class FaucetConfigGenerator():
     def _build_datapath_config(self, dp_id, mac, interfaces):
         lldp_beacon = LLDPBeacon(max_per_interval=5, send_interval=5)
         stack = Stack(priority=1)
-        return Datapath(dp_id=dp_id, faucet_dp_mac=mac, hardware='Generic', \
+        return Datapath(dp_id=dp_id, faucet_dp_mac=mac, hardware='Generic',
                         lacp_timeout=5, lldp_beacon=lldp_beacon, interfaces=interfaces, stack=stack)
 
     def _create_scale_faucet_config(self, t1_switches, t2_switches, access_ports):
