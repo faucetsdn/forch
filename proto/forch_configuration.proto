@@ -33,7 +33,7 @@ message ForchConfig {
   DataplaneMonitoring dataplane_monitoring = 8;
 
   // configuration for facuet config processing
-  FaucetConfigProcessing facuet_config_processing = 9;
+  FaucetConfigProcessing faucet_config_processing = 9;
 }
 
 /*

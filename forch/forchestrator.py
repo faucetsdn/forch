@@ -45,7 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
-_CONFIG_HASH_MAX_RETRY_DEFAULT = 5
+_CONFIG_HASH_MAX_RETRY_DEFAULT = '5'
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -117,7 +117,8 @@ class Forchestrator:
         self._config_hash_retry = 0
         self._config_hash_max_retry = (
             self._config.faucet_config_processing.config_hash_max_retry or
-            os.getenv('_CONFIG_HASH_MAX_RETRY', _CONFIG_HASH_MAX_RETRY_DEFAULT))
+            int(os.getenv('_CONFIG_HASH_MAX_RETRY', _CONFIG_HASH_MAX_RETRY_DEFAULT))
+        )
 
         self._lock = threading.Lock()
 
