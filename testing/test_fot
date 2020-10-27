@@ -1,9 +1,11 @@
 #!/bin/bash -ex
 
-docker logs forch-controller-1 2>&1
+LOGFILE=controller_log.txt
+
+docker logs forch-controller-1 2>&1 | tee $LOGFILE
 
 # Basic process startup.
-docker logs forch-controller-1 2>&1 | fgrep "Loading base module config"
+fgrep "Loading base module config" $LOGFILE
 
 # Testing that python path is good.
 ls -l inst/forch-controller-1/daq/inst/daq.pid
@@ -13,5 +15,8 @@ cat inst/forch-controller-1/daq/inst/daq_run_id.txt
 
 # Requiring mininet path.
 ls -l inst/forch-controller-1/daq/inst/dp_port_acls.yaml
+
+# Check that OVS switch connects properly to managed faucet.
+fgrep "Port 1 dpid 250 is now active" $LOGFILE
 
 echo Done with daq startup tests.
