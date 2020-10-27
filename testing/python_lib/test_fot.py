@@ -269,6 +269,7 @@ class FotContainerTest(FotSequesterTest):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.stack_options['static_switch'] = True
         self.stack_options['fot'] = True
 
     def _internal_dhcp(self, on_vlan):
@@ -276,7 +277,7 @@ class FotContainerTest(FotSequesterTest):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    self._run_cmd('dhclient', docker_container=container)
+                    self._run_cmd('timeout 10s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
             return run_dhclient
