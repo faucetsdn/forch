@@ -77,20 +77,20 @@ add_br t2sw1 1295 6001 7001
 add_br t2sw2 1296 6001 7001
 add_br t2sw3 1297 6001 7001
 
-add_link t1sw1 9 t2sw1 50
-add_link t1sw1 10 t2sw2 50
-add_link t1sw1 11 t2sw3 50
+add_link t1sw1 100 t2sw1 50
+add_link t1sw1 101 t2sw2 50
+add_link t1sw1 102 t2sw3 50
 
-add_link t1sw2 9 t2sw1 52
-add_link t1sw2 10 t2sw2 52
-add_link t1sw2 11 t2sw3 52
+add_link t1sw2 100 t2sw1 52
+add_link t1sw2 101 t2sw2 52
+add_link t1sw2 102 t2sw3 52
 
 if [ -n "$switches" ]; then
     for snum in $(seq 4 $switches); do
         echo Adding extra switch num $snum
         add_br t2sw$snum $((1294 + snum)) 6001 7001
-        add_link t1sw1 $((8+snum)) t2sw$snum 50
-        add_link t1sw2 $((8+snum)) t2sw$snum 52
+        add_link t1sw1 $((99+snum)) t2sw$snum 50
+        add_link t1sw2 $((99+snum)) t2sw$snum 52
     done
 fi
 
@@ -132,28 +132,32 @@ done
 
 echo Connecting faux interfaces...
 add_faux corp 1 0 dnsmasq
-add_faux t2sw1 1 1
-add_faux t2sw2 1 2
-add_faux t2sw3 1 3 $faux_dhcp
+add_faux t2sw1 101 1
+add_faux t2sw2 101 2
+add_faux t2sw3 101 3 $faux_dhcp
 add_iface t1sw1 4 cntrl_tap_1
 
 dcount=${devices:-3}
 scount=${switches:-3}
 
-if [ -n "$devices" ]; then
-    for fnum in $(seq 4 $devices); do
-        echo Adding extra device num $fnum
-        add_faux t2sw1 $fnum $fnum
+if [ -n "$switches" ]; then
+    for snum in $(seq 4 $switches); do
+        echo Adding to switch t2sw$snum device num $snum
+        add_faux t2sw$snum 101 $snum
     done
 fi
 
-if [ -n "$switches" ]; then
-    for snum in $(seq 4 $switches); do
-        fnum=$((dcount+snum-3))
-        echo Adding switch device num $fnum
-        add_faux t2sw$snum 1 $fnum
+if [ -n "$devices" ]; then
+    for dnum in $(seq 2 $devices); do
+        for snum in $(seq $scount); do
+            echo dnum $dnum snum $snum scount $scount
+            device_num=$(((dnum - 1) * scount + snum))
+            echo Adding device num $device_num to switch t2sw$snum
+            add_faux t2sw$snum 10$dnum $device_num
+        done
     done
 fi
+
 
 tdevices=$((dcount + scount - 3))
 echo Working with $tdevices devices.
