@@ -1,3 +1,5 @@
+"""Generates faucet config for given number of switches and number of devices per switch"""
+
 import sys
 import yaml
 from forch.utils import proto_dict
@@ -5,6 +7,8 @@ from forch.proto.faucet_configuration_pb2 import Interface, StackLink, Datapath,
     Vlan, FaucetConfig, LLDPBeacon, Stack
 
 
+# pylint: disable=protected-access
+# pylint: disable=too-many-arguments
 class FaucetConfigGenerator():
     """Class for generating faucet config for given switches and devices per switch"""
 
@@ -12,17 +16,17 @@ class FaucetConfigGenerator():
         interfaces = {}
         if tap_vlan:
             interfaces[4] = Interface(description='tap', tagged_vlans=[tap_vlan])
-        for index, dp in enumerate(t1_dps):
+        for index, dp_name in enumerate(t1_dps):
             if abs(dp_index - index) == 1:
                 port = 6 + min(dp_index, index)
-                description = ("to %s port %s" % (dp, port))
+                description = ("to %s port %s" % (dp_name, port))
                 interfaces[port] = Interface(description=description,
-                                             stack=StackLink(dp=dp, port=port))
-        for index, dp in enumerate(t2_dps):
+                                             stack=StackLink(dp=dp_name, port=port))
+        for index, dp_name in enumerate(t2_dps):
             port = 100 + index
-            description = ("to %s port %s" % (dp, t2_port))
+            description = ("to %s port %s" % (dp_name, t2_port))
             interfaces[port] = Interface(description=description,
-                                         stack=StackLink(dp=dp, port=t2_port))
+                                         stack=StackLink(dp=dp_name, port=t2_port))
         interfaces[28] = Interface(description='egress', lacp=3, tagged_vlans=tagged_vlans)
         return interfaces
 
@@ -30,12 +34,13 @@ class FaucetConfigGenerator():
         interfaces = {}
         for index in range(access_ports):
             interfaces[index + 101] = Interface(description='IoT Device',
-                                            native_vlan=native_vlan, acl_in=port_acl, max_hosts=1)
-        for index, dp in enumerate(t1_dps):
+                                                native_vlan=native_vlan, acl_in=port_acl,
+                                                max_hosts=1)
+        for index, dp_name in enumerate(t1_dps):
             port = 50 + index * 2
-            description = ('to %s port %s' % (dp, 100+dp_index))
+            description = ('to %s port %s' % (dp_name, 100+dp_index))
             interfaces[port] = Interface(description=description,
-                                         stack=StackLink(dp=dp, port=100+dp_index))
+                                         stack=StackLink(dp=dp_name, port=100+dp_index))
         return interfaces
 
     def _build_datapath_config(self, dp_id, mac, interfaces):
@@ -63,7 +68,7 @@ class FaucetConfigGenerator():
 
         for dp_index, dp_name in enumerate(t2_dps):
             interfaces = self._build_t2_interfaces(dp_index,
-                                                t1_dps, access_ports, setup_vlan, 'uniform_acl')
+                                                   t1_dps, access_ports, setup_vlan, 'uniform_acl')
             dps[dp_name] = self._build_datapath_config(
                 1295 + dp_index, ('0e:00:00:00:02:%s' % ("{:02x}".format(dp_index+1))), interfaces)
         return FaucetConfig(dps=dps, version=2, include=['uniform.yaml'], vlans=vlans)
