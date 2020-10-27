@@ -42,8 +42,8 @@ if [ "$1" == "no-clean" ]; then
     shift
 fi
 
-if [ "$1" == "static_dhcp" ]; then
-    run_opt=static_dhcp
+if [ "$1" == "static_switch" ]; then
+    run_opt=static_switch
     shift
 fi
 
