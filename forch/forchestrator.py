@@ -45,7 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
-_CONFIG_HASH_MAX_RETRY_DEFAULT = '5'
+_CONFIG_HASH_COOLING_SEC_DEFAULT = '20'
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -114,10 +114,10 @@ class Forchestrator:
         self._metrics = None
         self._varz_proxy = None
 
-        self._config_hash_retry = 0
-        self._config_hash_max_retry = (
-            self._config.faucet_config_processing.config_hash_max_retry or
-            int(os.getenv('_CONFIG_HASH_MAX_RETRY', _CONFIG_HASH_MAX_RETRY_DEFAULT))
+        self._config_hash_clash_start_time = None
+        self._config_hash_cooling_sec = (
+            self._config.event_client.config_hash_cooling_sec or
+            int(os.getenv('_CONFIG_HASH_COOLING_SEC', _CONFIG_HASH_COOLING_SEC_DEFAULT))
         )
 
         self._lock = threading.Lock()
@@ -435,7 +435,7 @@ class Forchestrator:
 
         # Restore config first before restoring all state from varz.
         metrics, varz_config_hashes = self._get_varz_config()
-        self._restore_faucet_config(time.time(), varz_config_hashes)
+        assert self._restore_faucet_config(time.time(), varz_config_hashes)
 
         event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
         self._faucet_events.set_event_horizon(event_horizon)
@@ -445,15 +445,20 @@ class Forchestrator:
         self._update_config_warning_varz()
 
         if config_hash == config_info['hashes']:
-            self._config_hash_retry = 0
-            LOGGER.debug('Cleared config hash retry counter')
+            self._config_hash_clash_start_time = None
+            LOGGER.debug('Cleared last config hash time')
+        elif self._config_hash_clash_start_time:
+            clash_elapsed_time = time.time() - self._config_hash_clash_start_time
+            assert clash_elapsed_time < self._config_hash_cooling_sec, (
+                f'Config hash info does not match after {self._config_hash_cooling_sec} seconds')
         else:
-            assert self._config_hash_retry < self._config_hash_max_retry, (
-                f'Config hash info does not match after {self._config_hash_max_retry} retries')
-            self._config_hash_retry += 1
-            LOGGER.warning('Config hash does not match. Retry: %s', self._config_hash_retry)
+            self._config_hash_clash_start_time = time.time()
+            LOGGER.warning('Config hash does not match')
+            return False
 
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
+
+        return True
 
     def _process_config_change(self, event):
         self._faucet_collector.process_dp_config_change(

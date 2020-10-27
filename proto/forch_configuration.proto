@@ -31,9 +31,6 @@ message ForchConfig {
 
   // configuration for switches monitoring
   DataplaneMonitoring dataplane_monitoring = 8;
-
-  // configuration for facuet config processing
-  FaucetConfigProcessing faucet_config_processing = 9;
 }
 
 /*
@@ -201,6 +198,9 @@ message EventClientConfig {
 
   // coalesce stack topo events to reduce churn
   int32 stack_topo_change_coalesce_sec = 2;
+
+  // cooling time (in seconds) for config hash checking
+  int32 config_hash_cooling_sec = 3;
 }
 
 /*
@@ -239,12 +239,4 @@ message DataplaneMonitoring {
 
   // threshold of number of packets per second for each vlan; indexed by vlan
   map<int32, int32> vlan_pkt_per_sec_thresholds = 2;
-}
-
-/*
- * Parameters for Faucet config porcessing
- */
-message FaucetConfigProcessing {
-  // maximum retry times for Faucet config hash checking
-  int32 config_hash_max_retry = 1;
 }
