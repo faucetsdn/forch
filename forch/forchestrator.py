@@ -116,8 +116,8 @@ class Forchestrator:
 
         self._config_hash_clash_start_time = None
         self._config_hash_clash_timeout_sec = (
-                self._config.event_client.config_hash_clash_timeout_sec or
-                _CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT)
+            self._config.event_client.config_hash_clash_timeout_sec or
+            _CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT)
 
         self._lock = threading.Lock()
 
