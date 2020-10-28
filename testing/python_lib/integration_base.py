@@ -19,6 +19,7 @@ class IntegrationTestBase(unittest.TestCase):
             'skip-conn-check': True,
             'no-clean': True
         }
+        self.sim_setup_cmd = 'bin/setup_stack'
 
     def setUp(self):
         self._clean_stack()
@@ -75,8 +76,8 @@ class IntegrationTestBase(unittest.TestCase):
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
-        print('setup_stack ' + ' '.join(stack_args))
-        self._run_cmd('bin/setup_stack', stack_args)
+        print(self.sim_setup_cmd + ' ' + ' '.join(stack_args))
+        self._run_cmd(self.sim_setup_cmd, stack_args)
 
     def _clean_stack(self):
         self._run_cmd('bin/net_clean')
