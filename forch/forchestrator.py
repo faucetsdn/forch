@@ -115,6 +115,7 @@ class Forchestrator:
         self._varz_proxy = None
 
         self._config_hash_clash_timer = None
+        self._config_hash_clashed = False
         self._config_hash_clash_timeout_sec = (
             self._config.event_client.config_hash_clash_timeout_sec or
             int(os.getenv(
@@ -458,9 +459,10 @@ class Forchestrator:
             return
         self._config_hash_clash_timer = threading.Timer(
             interval=self._config_hash_clash_timeout_sec,
-            function=self._raise_config_hash_clash_exception)
+            function=self._set_config_hash_clashed)
         self._config_hash_clash_timer.start()
-        LOGGER.info('Config hash clash timer started')
+        LOGGER.info(
+            'Config hash clash timer started with %s seconds', self._config_hash_clash_timeout_sec)
 
     def _attempt_cancel_config_hash_clash_timer(self):
         if not self._config_hash_clash_timer:
@@ -469,9 +471,10 @@ class Forchestrator:
         self._config_hash_clash_timer = None
         LOGGER.info('Config hash clash timer cancelled')
 
-    def _raise_config_hash_clash_exception(self):
-        raise Exception(
-            f'Config hash does not match after {self._config_hash_clash_timeout_sec} seconds')
+    def _set_config_hash_clashed(self):
+        LOGGER.error(
+            'Config hash does not match after %s seconds', self._config_hash_clash_timeout_sec)
+        self._config_hash_clashed = True
 
     def _process_config_change(self, event):
         self._faucet_collector.process_dp_config_change(
@@ -498,6 +501,8 @@ class Forchestrator:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
 
+                if self._config_hash_clashed:
+                    raise Exception('Config hash clashed')
                 try:
                     self._faucet_events.next_event(blocking=True)
                 except FaucetEventOrderError as e:
