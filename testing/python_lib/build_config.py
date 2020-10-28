@@ -86,12 +86,12 @@ def main(argv):
     try:
         opts, _ = getopt.getopt(argv, 'he:a:d:p:', ['egress=', 'access=', 'devices=', 'path='])
     except getopt.GetoptError:
-        print('<python3> build_config.py -e <egress_switches> -a' \
+        print('<python3> build_config.py -e <egress_switches> -a'
               '<access_switches> -d <devices per switch> -p <config path>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('<python3> build_config.py -e <egress_switches> -a '\
+            print('<python3> build_config.py -e <egress_switches> -a '
                   '<access_switches> -d <devices per switch> -p <config path>')
             sys.exit()
         elif opt in ('-e', '--egress'):
@@ -105,6 +105,7 @@ def main(argv):
     config = proto_dict(config_generator._create_scale_faucet_config(egress, access, devices))
     with open(filepath, 'w') as config_file:
         yaml.dump(config, config_file)
+
 
 if __name__ == '__main__':
     main(sys.argv)
