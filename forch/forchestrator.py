@@ -458,7 +458,7 @@ class Forchestrator:
             return
         self._config_hash_clash_timer = threading.Timer(
             interval=self._config_hash_clash_timeout_sec,
-            function=self._raise_config_hash_clash_exception())
+            function=self._raise_config_hash_clash_exception)
         self._config_hash_clash_timer.start()
         LOGGER.info('Config hash clash timer started')
 
@@ -466,6 +466,7 @@ class Forchestrator:
         if not self._config_hash_clash_timer:
             return
         self._config_hash_clash_timer.cancel()
+        self._config_hash_clash_timer = None
         LOGGER.info('Config hash clash timer cancelled')
 
     def _raise_config_hash_clash_exception(self):
