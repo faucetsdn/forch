@@ -1,5 +1,6 @@
 """Generates faucet config for given number of switches and number of devices per switch"""
 
+import getopt
 import sys
 import yaml
 from forch.utils import proto_dict
@@ -76,7 +77,28 @@ class FaucetConfigGenerator():
 
 if __name__ == '__main__':
     config_generator = FaucetConfigGenerator()
-    filepath = sys.argv[1] if len(sys.argv) > 1 else '/tmp/faucet_config_dump'
-    config = proto_dict(config_generator._create_scale_faucet_config(2, 5, 9))
+    filepath = '/tmp/faucet_config_dump'
+    egress = 2
+    access = 3
+    devices = 1
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv,'he:a:d:p:',['egress=', 'access=', 'devices=', 'path='])
+    except getopt.GetoptError:
+        print('<python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> -p <config path>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('<python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> -p <config path>')
+            sys.exit()
+        elif opt in ('-e', '--egress'):
+            egress = int(arg)
+        elif opt in ('-a', '--access'):
+            access = int(arg)
+        elif opt in ('-d', '--devices'):
+            devices = int(arg)
+        elif opt in ('-p', '--path'):
+            filepath = arg
+    config = proto_dict(config_generator._create_scale_faucet_config(egress, access, devices))
     with open(filepath, 'w') as config_file:
         yaml.dump(config, config_file)
