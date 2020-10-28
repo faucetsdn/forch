@@ -470,6 +470,8 @@ class Forchestrator:
             raise Exception(f'Config hash does not match after '
                             f'{self._config_hash_verification_timeout_sec} seconds')
 
+        self._last_faucet_config_writing_time = None
+
     def _reset_faucet_config_writing_time(self):
         self._last_faucet_config_writing_time = time.time()
 
