@@ -244,7 +244,7 @@ class FotSequesterTest(IntegrationTestBase):
 
     def _sequester_device(self):
         config = self._read_faucet_config()
-        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][101]
+        interface = config['dps']['nz-kiwi-t2sw1']['interfaces'][1]
         interface['native_vlan'] = 272
         self._write_faucet_config(config)
         time.sleep(5)

@@ -10,13 +10,13 @@ dps:
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}
-      100:
+      9:
         description: "to t2sw1 port 50"
         stack: {dp: nz-kiwi-t2sw1, port: 50}
-      101:
+      10:
         description: "to t2sw2 port 50"
         stack: {dp: nz-kiwi-t2sw2, port: 50}
-      102:
+      11:
         description: "to t2sw3 port 50"
         stack: {dp: nz-kiwi-t2sw3, port: 50}
       28:
@@ -35,18 +35,19 @@ dps:
       6:
         description: "to t1sw1 port 6"
         stack: {dp: nz-kiwi-t1sw1, port: 6}
-      100:
+      9:
         description: "to t2sw1 port 52"
         stack: {dp: nz-kiwi-t2sw1, port: 52}
-      101:
+      10:
         description: "to t2sw2 port 52"
         stack: {dp: nz-kiwi-t2sw2, port: 52}
-      102:
+      11:
         description: "to t2sw3 port 52"
         stack: {dp: nz-kiwi-t2sw3, port: 52}
       28:
         description: egress
         lacp: 3
+        tagged_vlans: [100]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
     dp_id: 1295
@@ -54,16 +55,16 @@ dps:
     hardware: Generic
     lacp_timeout: 5
     interfaces:
-      101: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      102: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      103: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      104: {description: IoT Device, native_vlan: 100, max_hosts: 1}
+      1: {description: IoT Device, max_hosts: 1}
+      2: {description: IoT Device, max_hosts: 1}
+      3: {description: IoT Device, max_hosts: 1}
+      4: {description: IoT Device, max_hosts: 1}
       50:
         description: "to t1sw1 port 9"
-        stack: {dp: nz-kiwi-t1sw1, port: 100}
+        stack: {dp: nz-kiwi-t1sw1, port: 9}
       52:
         description: "to t1sw2 port 9"
-        stack: {dp: nz-kiwi-t1sw2, port: 100}
+        stack: {dp: nz-kiwi-t1sw2, port: 9}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw2:
     dp_id: 1296
@@ -71,16 +72,16 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      101: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      102: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      103: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      104: {description: IoT Device, native_vlan: 100, max_hosts: 1}
+      1: {description: IoT Device, max_hosts: 1}
+      2: {description: IoT Device, max_hosts: 1}
+      3: {description: IoT Device, max_hosts: 1}
+      4: {description: IoT Device, max_hosts: 1}
       50:
         description: "to t1sw1 port 10"
-        stack: {dp: nz-kiwi-t1sw1, port: 101}
+        stack: {dp: nz-kiwi-t1sw1, port: 10}
       52:
         description: "to t1sw2 port 10"
-        stack: {dp: nz-kiwi-t1sw2, port: 101}
+        stack: {dp: nz-kiwi-t1sw2, port: 10}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw3:
     dp_id: 1297
@@ -88,16 +89,16 @@ dps:
     hardware: Allied-Telesis
     lacp_timeout: 5
     interfaces:
-      101: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      102: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      103: {description: IoT Device, native_vlan: 100, max_hosts: 1}
-      104: {description: IoT Device, native_vlan: 100, max_hosts: 1}
+      1: {description: IoT Device, max_hosts: 1}
+      2: {description: IoT Device, max_hosts: 1}
+      3: {description: IoT Device, max_hosts: 1}
+      4: {description: IoT Device, max_hosts: 1}
       50:
         description: "to t1sw1 port 11"
-        stack: {dp: nz-kiwi-t1sw1, port: 102}
+        stack: {dp: nz-kiwi-t1sw1, port: 11}
       52:
         description: "to t1sw2 port 11"
-        stack: {dp: nz-kiwi-t1sw2, port: 102}
+        stack: {dp: nz-kiwi-t1sw2, port: 11}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
 acls:
   uniform_100:
@@ -138,9 +139,6 @@ include:
   - role-based-acls.yaml
 version: 2
 vlans:
-  100:
-    acls_in: [uniform_100]
-    description:
   200:
     acls_in: [uniform_200]
     description:
@@ -150,4 +148,3 @@ vlans:
   400:
     acls_in: [uniform_400]
     description:
-
