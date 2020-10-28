@@ -23,7 +23,7 @@ done
 
 if [ -n "$setup_base" ]; then
     bin/setup_base
-    bin/setup_faucet
+    bin/setup_remote faucet
     bin/build_docker ${DOCKER_BUILD:-pull}
 fi
 
