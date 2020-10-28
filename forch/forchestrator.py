@@ -114,7 +114,7 @@ class Forchestrator:
         self._metrics = None
         self._varz_proxy = None
 
-        self._config_hash_clash_start_time = None
+        self._config_hash_clash_timer = None
         self._config_hash_clash_timeout_sec = (
             self._config.event_client.config_hash_clash_timeout_sec or
             int(os.getenv(
@@ -436,7 +436,7 @@ class Forchestrator:
 
         # Restore config first before restoring all state from varz.
         metrics, varz_config_hashes = self._get_varz_config()
-        assert self._restore_faucet_config(time.time(), varz_config_hashes)
+        self._restore_faucet_config(time.time(), varz_config_hashes)
 
         event_horizon = self._faucet_collector.restore_states_from_metrics(metrics)
         self._faucet_events.set_event_horizon(event_horizon)
@@ -446,22 +446,31 @@ class Forchestrator:
         self._update_config_warning_varz()
 
         if config_hash == config_info['hashes']:
-            self._config_hash_clash_start_time = None
-            LOGGER.debug('Cleared config hash clash starting time')
+            self._attempt_cancel_config_hash_clash_timer()
         else:
-            if self._config_hash_clash_start_time:
-                clash_elapsed_time = time.time() - self._config_hash_clash_start_time
-                assert clash_elapsed_time < self._config_hash_clash_timeout_sec, (
-                    f'Config hash does not match after '
-                    f'{self._config_hash_clash_timeout_sec} seconds')
-            else:
-                self._config_hash_clash_start_time = time.time()
             LOGGER.warning('Config hash does not match')
-            return False
+            self._attempt_start_config_hash_clash_timer()
 
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
-        return True
+    def _attempt_start_config_hash_clash_timer(self):
+        if self._config_hash_clash_timer:
+            return
+        self._config_hash_clash_timer = threading.Timer(
+            interval=self._config_hash_clash_timeout_sec,
+            function=self._raise_config_hash_clash_exception())
+        self._config_hash_clash_timer.start()
+        LOGGER.info('Config hash clash timer started')
+
+    def _attempt_cancel_config_hash_clash_timer(self):
+        if not self._config_hash_clash_timer:
+            return
+        self._config_hash_clash_timer.cancel()
+        LOGGER.info('Config hash clash timer cancelled')
+
+    def _raise_config_hash_clash_exception(self):
+        raise Exception(
+            f'Config hash does not match after {self._config_hash_clash_timeout_sec} seconds')
 
     def _process_config_change(self, event):
         self._faucet_collector.process_dp_config_change(
