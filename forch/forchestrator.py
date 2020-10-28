@@ -472,7 +472,7 @@ class Forchestrator:
 
     def _check_config_hash_clashed(self):
         _, varz_config_hashes = self._get_varz_config()
-        config_info, faucet_dps, _ = self._get_faucet_config()
+        config_info, _, _ = self._get_faucet_config()
 
         if varz_config_hashes != config_info['hashes']:
             LOGGER.error(
