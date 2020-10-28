@@ -75,21 +75,24 @@ class FaucetConfigGenerator():
         return FaucetConfig(dps=dps, version=2, include=['uniform.yaml'], vlans=vlans)
 
 
-if __name__ == '__main__':
+def main(argv):
+    """main method for standalone run"""
     config_generator = FaucetConfigGenerator()
     filepath = '/tmp/faucet_config_dump'
     egress = 2
     access = 3
     devices = 1
-    argv = sys.argv[1:]
+    argv = argv[1:]
     try:
-        opts, args = getopt.getopt(argv,'he:a:d:p:',['egress=', 'access=', 'devices=', 'path='])
+        opts, _ = getopt.getopt(argv, 'he:a:d:p:', ['egress=', 'access=', 'devices=', 'path='])
     except getopt.GetoptError:
-        print('<python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> -p <config path>')
+        print('<python3> build_config.py -e <egress_switches> -a' \
+              '<access_switches> -d <devices per switch> -p <config path>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('<python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> -p <config path>')
+            print('<python3> build_config.py -e <egress_switches> -a '\
+                  '<access_switches> -d <devices per switch> -p <config path>')
             sys.exit()
         elif opt in ('-e', '--egress'):
             egress = int(arg)
@@ -102,3 +105,6 @@ if __name__ == '__main__':
     config = proto_dict(config_generator._create_scale_faucet_config(egress, access, devices))
     with open(filepath, 'w') as config_file:
         yaml.dump(config, config_file)
+
+if __name__ == '__main__':
+    main(sys.argv)

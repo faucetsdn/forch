@@ -111,7 +111,8 @@ class IntegrationTestBase(unittest.TestCase):
         self._run_cmd('sudo ip link set %s-eth28 %s' % (switch, command))
 
     def _get_docker_ip(self, container, interface='faux-eth0'):
-        _, out, _ = self._run_cmd('ip addr show %s' % (interface), docker_container=container, capture=True)
+        _, out, _ = self._run_cmd('ip addr show %s' % (interface),
+                                  docker_container=container, capture=True)
         out_list = out.split()
         return out_list[out_list.index('inet') + 1].split('/')[0]
 

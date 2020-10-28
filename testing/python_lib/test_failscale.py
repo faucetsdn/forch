@@ -20,7 +20,8 @@ class FailScaleConfigTest(IntegrationTestBase):
         self.sim_setup_cmd = 'bin/setup_scale'
         self.config_path = '/tmp/scale_config'
 
-        config = proto_dict(FaucetConfigGenerator()._create_scale_faucet_config(2, self.switches, self.devices))
+        config = proto_dict(
+            FaucetConfigGenerator()._create_scale_faucet_config(2, self.switches, self.devices))
         with open(self.config_path, 'w') as config_file:
             yaml.dump(config, config_file)
 
@@ -31,17 +32,14 @@ class FailScaleConfigTest(IntegrationTestBase):
             'overwrite-faucet-config': self.config_path
         })
 
-    def tearDown(self):
-        pass
-
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
         device_list = ['forch-faux-'+str(num) for num in range(1, self.devices * self.switches + 1)]
         for device in device_list:
             self.assertLessEqual(1, self._ping_host(device, '192.168.1.0', count=3, output=True),
-                             'Couldn\'t reach 192.168.1.0 from %s' % device)
+                                 'Couldn\'t reach 192.168.1.0 from %s' % device)
             self.assertLessEqual(1, self._ping_host(device, '192.168.1.1', count=3, output=True),
-                             'Couldn\'t reach 192.168.1.1 from %s' % device)
+                                 'Couldn\'t reach 192.168.1.1 from %s' % device)
 
         self.assertEqual(10, self._ping_host('forch-faux-8', '192.168.1.0', count=10, output=True),
                          'warm-up ping count')
