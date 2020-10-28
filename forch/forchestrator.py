@@ -476,6 +476,9 @@ class Forchestrator:
             'Config hash does not match after %s seconds', self._config_hash_clash_timeout_sec)
         self._config_hash_clashed = True
 
+    def _get_config_hash_clashed(self):
+        return self._config_hash_clashed
+
     def _process_config_change(self, event):
         self._faucet_collector.process_dp_config_change(
             event.timestamp, event.dp_name, event.restart_type, event.dp_id)
@@ -501,8 +504,6 @@ class Forchestrator:
                 while not self._faucet_events.event_socket_connected:
                     self._faucet_events_connect()
 
-                if self._config_hash_clashed:
-                    raise Exception('Config hash clashed')
                 try:
                     self._faucet_events.next_event(blocking=True)
                 except FaucetEventOrderError as e:
