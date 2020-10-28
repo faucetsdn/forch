@@ -45,7 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
-_CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT = '60'
+_CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT = 60
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -114,13 +114,10 @@ class Forchestrator:
         self._metrics = None
         self._varz_proxy = None
 
-        self._config_hash_clash_timer = None
-        self._config_hash_clashed = False
+        self._config_hash_clash_start_time = None
         self._config_hash_clash_timeout_sec = (
-            self._config.event_client.config_hash_clash_timeout_sec or
-            int(os.getenv(
-                '_CONFIG_HASH_CLASH_TIMEOUT_SEC', _CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT))
-        )
+                self._config.event_client.config_hash_clash_timeout_sec or
+                _CONFIG_HASH_CLASH_TIMEOUT_SEC_DEFAULT)
 
         self._lock = threading.Lock()
 
@@ -144,6 +141,7 @@ class Forchestrator:
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(
             self._faucet_collector.heartbeat_update_stack_state)
+        self._faucet_state_scheduler.add_callback(self._verify_config_hash_clash_state)
 
         gauge_metrics_interval_sec = self._config.dataplane_monitoring.gauge_metrics_interval_sec
         if gauge_metrics_interval_sec:
@@ -447,46 +445,30 @@ class Forchestrator:
         self._update_config_warning_varz()
 
         if config_hash == config_info['hashes']:
-            self._attempt_cancel_config_hash_clash_timer()
-        else:
+            self._config_hash_clash_start_time = None
+            LOGGER.debug('Cleared config hash clash starting time')
+        elif not self._config_hash_clash_start_time:
             LOGGER.warning('Config hash does not match')
-            self._attempt_start_config_hash_clash_timer()
+            self._config_hash_clash_start_time = time.time()
 
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
-
-    def _attempt_start_config_hash_clash_timer(self):
-        if self._config_hash_clash_timer and self._config_hash_clash_timer.is_alive():
-            return
-        self._config_hash_clash_timer = threading.Timer(
-            interval=self._config_hash_clash_timeout_sec,
-            function=self._check_config_hash_clashed)
-        self._config_hash_clash_timer.start()
-        LOGGER.info(
-            'Config hash clash timer started with %s seconds', self._config_hash_clash_timeout_sec)
-
-    def _attempt_cancel_config_hash_clash_timer(self):
-        if not self._config_hash_clash_timer or not self._config_hash_clash_timer.is_alive():
-            return
-        self._config_hash_clash_timer.cancel()
-        LOGGER.info('Config hash clash timer cancelled')
-
-    def _check_config_hash_clashed(self):
-        _, varz_config_hashes = self._get_varz_config()
-        config_info, _, _ = self._get_faucet_config()
-
-        if varz_config_hashes != config_info['hashes']:
-            LOGGER.error(
-                'Config hash does not match after %s seconds', self._config_hash_clash_timeout_sec)
-            self._config_hash_clashed = True
-
-    def _get_config_hash_clashed(self):
-        return self._config_hash_clashed
 
     def _process_config_change(self, event):
         self._faucet_collector.process_dp_config_change(
             event.timestamp, event.dp_name, event.restart_type, event.dp_id)
         if event.config_hash_info.hashes:
             self._restore_faucet_config(event.timestamp, event.config_hash_info.hashes)
+
+    def _verify_config_hash_clash_state(self):
+        if self._config_hash_clash_start_time:
+            clash_elapsed_time = time.time() - self._config_hash_clash_start_time
+            assert clash_elapsed_time < self._config_hash_clash_timeout_sec, (
+                f'Config hash does not match after '
+                f'{self._config_hash_clash_timeout_sec} seconds')
+
+    def _reset_config_hash_clash_timer(self):
+        if self._config_hash_clash_start_time:
+            self._config_hash_clash_start_time = time.time()
 
     def _faucet_events_connect(self):
         LOGGER.info('Attempting faucet event sock connection...')
@@ -508,7 +490,7 @@ class Forchestrator:
                     self._faucet_events_connect()
 
                 try:
-                    self._faucet_events.next_event(self._get_config_hash_clashed, blocking=True)
+                    self._faucet_events.next_event(blocking=True)
                 except FaucetEventOrderError as e:
                     LOGGER.error("Faucet event order error: %s", e)
                     if self._metrics:

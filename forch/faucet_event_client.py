@@ -212,11 +212,9 @@ class FaucetEventClient():
     def _should_log_event(self, event):
         return event and os.getenv('FAUCET_EVENT_DEBUG')
 
-    def next_event(self, get_config_hash_clashed, blocking=False):
+    def next_event(self, blocking=False):
         """Return the next event from the queue"""
         while self.event_socket_connected and self.has_event(blocking=blocking):
-            if get_config_hash_clashed():
-                raise Exception('Config hash clashed')
             with self._buffer_lock:
                 line, remainder = self.buffer.split('\n', 1)
                 self.buffer = remainder
