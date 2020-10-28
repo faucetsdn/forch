@@ -28,7 +28,7 @@ class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, behavioral_config_file,
-                 reregister_include_file_handlers=None, reset_config_hash_clash_timer=None):
+                 reregister_include_file_handlers=None, reset_faucet_config_writing_time=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
         self._device_behaviors = {}
@@ -49,7 +49,7 @@ class Faucetizer:
         self._available_testing_vlans = None
         self._watched_include_files = []
         self._reregister_include_file_handlers = reregister_include_file_handlers
-        self._reset_config_hash_clash_timer = reset_config_hash_clash_timer
+        self._reset_faucet_config_writing_time = reset_faucet_config_writing_time
         self._lock = threading.RLock()
 
         self._validate_and_initialize_config()
@@ -380,8 +380,8 @@ class Faucetizer:
             yaml.dump(self._behavioral_faucet_config, file)
             LOGGER.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
-        if self._reset_config_hash_clash_timer:
-            self._reset_config_hash_clash_timer()
+        if self._reset_faucet_config_writing_time:
+            self._reset_faucet_config_writing_time()
 
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
