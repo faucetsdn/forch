@@ -455,11 +455,11 @@ class Forchestrator:
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
     def _attempt_start_config_hash_clash_timer(self):
-        if self._config_hash_clash_timer:
+        if self._config_hash_clash_timer and self._config_hash_clash_timer.is_alive():
             return
         self._config_hash_clash_timer = threading.Timer(
             interval=self._config_hash_clash_timeout_sec,
-            function=self._set_config_hash_clashed)
+            function=self._check_config_hash_clashed)
         self._config_hash_clash_timer.start()
         LOGGER.info(
             'Config hash clash timer started with %s seconds', self._config_hash_clash_timeout_sec)
@@ -468,13 +468,16 @@ class Forchestrator:
         if not self._config_hash_clash_timer:
             return
         self._config_hash_clash_timer.cancel()
-        self._config_hash_clash_timer = None
         LOGGER.info('Config hash clash timer cancelled')
 
-    def _set_config_hash_clashed(self):
-        LOGGER.error(
-            'Config hash does not match after %s seconds', self._config_hash_clash_timeout_sec)
-        self._config_hash_clashed = True
+    def _check_config_hash_clashed(self):
+        _, varz_config_hashes = self._get_varz_config()
+        config_info, faucet_dps, _ = self._get_faucet_config()
+
+        if varz_config_hashes != config_info['hashes']:
+            LOGGER.error(
+                'Config hash does not match after %s seconds', self._config_hash_clash_timeout_sec)
+            self._config_hash_clashed = True
 
     def _get_config_hash_clashed(self):
         return self._config_hash_clashed
@@ -505,7 +508,7 @@ class Forchestrator:
                     self._faucet_events_connect()
 
                 try:
-                    self._faucet_events.next_event(blocking=True)
+                    self._faucet_events.next_event(self._get_config_hash_clashed, blocking=True)
                 except FaucetEventOrderError as e:
                     LOGGER.error("Faucet event order error: %s", e)
                     if self._metrics:
