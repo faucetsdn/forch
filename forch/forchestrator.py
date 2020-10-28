@@ -465,7 +465,7 @@ class Forchestrator:
             'Config hash clash timer started with %s seconds', self._config_hash_clash_timeout_sec)
 
     def _attempt_cancel_config_hash_clash_timer(self):
-        if not self._config_hash_clash_timer:
+        if not self._config_hash_clash_timer or not self._config_hash_clash_timer.is_alive():
             return
         self._config_hash_clash_timer.cancel()
         LOGGER.info('Config hash clash timer cancelled')
