@@ -15,8 +15,8 @@ class FailScaleConfigTest(IntegrationTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.devices = 9
-        self.switches = 5
+        self.devices = 11
+        self.switches = 4
         self.sim_setup_cmd = 'bin/setup_scale'
         self.config_path = '/tmp/scale_config'
 
@@ -31,6 +31,9 @@ class FailScaleConfigTest(IntegrationTestBase):
             'mode': 'scale',
             'overwrite-faucet-config': self.config_path
         })
+
+    def tearDown(self):
+        pass
 
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
