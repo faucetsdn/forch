@@ -19,6 +19,7 @@ class IntegrationTestBase(unittest.TestCase):
             'skip-conn-check': True,
             'no-clean': True
         }
+        self.sim_setup_cmd = 'bin/setup_stack'
 
     def setUp(self):
         self._clean_stack()
@@ -66,7 +67,9 @@ class IntegrationTestBase(unittest.TestCase):
         devices = options.get('devices')
         stack_args.extend(['devices', str(devices)] if devices else [])
         switches = options.get('switches')
-        stack_args.extend(['switches', str(switches)] if devices else [])
+        stack_args.extend(['switches', str(switches)] if switches else [])
+        config = options.get('overwrite-faucet-config')
+        stack_args.extend(['overwrite-faucet-config', str(config)] if config else [])
         stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
         stack_args.extend(['dhcp'] if options.get('dhcp') else [])
         stack_args.extend(['no-clean'] if options.get('no-clean') else [])
@@ -75,8 +78,8 @@ class IntegrationTestBase(unittest.TestCase):
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
-        print('setup_stack ' + ' '.join(stack_args))
-        self._run_cmd('bin/setup_stack', stack_args)
+        print(self.sim_setup_cmd + ' ' + ' '.join(stack_args))
+        self._run_cmd(self.sim_setup_cmd, stack_args)
 
     def _clean_stack(self):
         self._run_cmd('bin/net_clean')
@@ -106,6 +109,12 @@ class IntegrationTestBase(unittest.TestCase):
         switch = 't1sw2' if alternate else 't1sw1'
         command = 'up' if restore else 'down'
         self._run_cmd('sudo ip link set %s-eth28 %s' % (switch, command))
+
+    def _get_docker_ip(self, container, interface='faux-eth0'):
+        _, out, _ = self._run_cmd('ip addr show %s' % (interface),
+                                  docker_container=container, capture=True)
+        out_list = out.split()
+        return out_list[out_list.index('inet') + 1].split('/')[0]
 
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:

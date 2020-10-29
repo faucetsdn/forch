@@ -14,8 +14,15 @@ cd $ROOT
 # If the first argument is a number, then it's a port designation.
 if [ $# -gt 0 ] && [ $(($1)) -gt 0 -o "$1" == 0 ]; then
     port_num=$1
+    if (( $port_num >= 255 )); then
+        mac_prefix=$((port_num/256))
+        mac_port_num=$((port_num%256))
+    else
+        mac_prefix=143
+        mac_port_num=$port_num
+    fi
     postfix=-$port_num
-    intf_mac=9a:02:57:1e:8f:$(printf %02x $port_num)
+    intf_mac=9a:02:57:1e:$(printf %02x $mac_prefix):$(printf %02x $mac_port_num)
     shift
 fi
 

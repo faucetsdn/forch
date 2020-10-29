@@ -44,7 +44,7 @@ Running forch-solid tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -90,7 +90,7 @@ Running forch-healthy tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -182,7 +182,7 @@ Running forch-twod tests
 "nz-kiwi-t1sw2"
 9
 6
-"147058200627"
+"1295"
 "Switches in broken state: nz-kiwi-t2sw3"
 "active"
 null
@@ -250,7 +250,7 @@ Running forch-broken tests
 null
 null
 null
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -315,7 +315,7 @@ Running forch-restored tests
 "nz-kiwi-t1sw2"
 9
 6
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -380,7 +380,7 @@ Running forch-orphaned tests
 "nz-kiwi-t1sw2"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -426,7 +426,7 @@ Running forch-reset tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -472,7 +472,7 @@ Running forch-restart tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
