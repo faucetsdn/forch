@@ -28,7 +28,7 @@ echo Configuring network interface...
 ip link
 ip link set $IFACE up
 
-if [ -n "${options[dhcp]}" ]; then
+if [ -n "${options[dhcp]}" ] || [ $FAUX_NUM -gt 40 ]; then
     echo Using DHCP...
     dhclient
 else

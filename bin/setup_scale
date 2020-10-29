@@ -1,0 +1,177 @@
+#!/bin/bash -e
+
+ROOT=$(dirname $0)/..
+cd $ROOT
+local=
+devices=
+switches=
+no_clean=
+faux_dhcp=
+fot=
+faucet_config=
+mode=bond
+
+if [ "$1" == "local" ]; then
+    local=local
+    shift
+fi
+
+if [ "$1" == "devices" ]; then
+    devices=$2
+    shift 2
+fi
+
+if [ "$1" == "switches" ]; then
+    switches=$2
+    shift 2
+fi
+
+if [ "$1" == "overwrite-faucet-config" ]; then
+    faucet_config=$2
+    shift 2
+fi
+
+if [ "$1" == "dhcp" ]; then
+    faux_dhcp=dhcp
+    shift
+fi
+
+if [ "$1" == "no-clean" ]; then
+    no_clean=y
+    shift
+fi
+
+if [ "$1" == "fot" ]; then
+    fot=fot
+    shift
+fi
+
+if [ -n "$1" ]; then
+    mode=$1
+    shift
+fi
+
+source bin/stack_functions
+
+###########################################################
+
+if [ -z "$no_clean" ]; then
+    bin/net_clean
+fi
+
+echo Configuring mode $mode...
+
+add_br corp  0x111 6683
+add_br t1sw1 177 6001 7001
+add_br t1sw2 178 6001 7001
+add_oeth t1sw1 28 corp-eth10
+add_oeth t1sw2 28 corp-eth20
+add_link t1sw1 6 t1sw2 6
+
+add_br t2sw1 1295 6001 7001
+add_br t2sw2 1296 6001 7001
+add_br t2sw3 1297 6001 7001
+
+add_link t1sw1 100 t2sw1 50
+add_link t1sw1 101 t2sw2 50
+add_link t1sw1 102 t2sw3 50
+
+add_link t1sw2 100 t2sw1 52
+add_link t1sw2 101 t2sw2 52
+add_link t1sw2 102 t2sw3 52
+
+if [ -n "$switches" ]; then
+    for snum in $(seq 4 $switches); do
+        echo Adding extra switch num $snum
+        add_br t2sw$snum $((1294 + snum)) 6001 7001
+        add_link t1sw1 $((99+snum)) t2sw$snum 50
+        add_link t1sw2 $((99+snum)) t2sw$snum 52
+    done
+fi
+
+sudo ip link del bond || true
+echo Setting up bond interface...
+sudo ip link add bond type bond mode 802.3ad
+sudo ip link set bond up
+sudo ip link set corp-eth10 master bond
+sudo ip link set corp-eth20 master bond
+add_iface corp 10 bond
+
+echo Starting faucet instances...
+sudo rm -rf inst/
+mkdir -p inst/forch-faucet-corp/faucet
+cp topo/$mode/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
+docker kill forch-faucet-corp || true
+sudo modprobe bonding
+bin/run_faucet $local corp 6683
+
+for index in 1; do
+    if [ -n "$fot" ]; then
+        container=forch-controller-$index
+    else
+        container=forch-faucet-$index
+    fi
+    mkdir -p inst/$container/
+    cp -r topo/$mode/forch inst/$container/
+    cp -r topo/$mode/faucet inst/$container/
+    if [ -n "$faucet_config" ]; then
+        echo Copying config from $faucet_config
+        cp $faucet_config inst/$container/faucet/faucet.yaml
+    fi
+    docker kill $container || true
+    if [ -n "$fot" ]; then
+        mkdir -p inst/$container/faucet_br/faucet
+        cp -r topo/$mode/faucet_br/* inst/$container/faucet_br/faucet/
+        bin/run_controller $local $index $((6000 + index)) $((8000 + index)) $((7000 + index)) $((9000 + index))
+    else
+        bin/run_faucet $local $index $((6000 + index)) $((8000 + index))
+        bin/run_faucet $local gauge $index $((7000 + index)) $((9000 + index))
+    fi
+done
+
+echo Connecting faux interfaces...
+add_faux corp 1 0 dnsmasq
+add_faux t2sw1 101 1
+add_faux t2sw2 101 2
+add_faux t2sw3 101 3 $faux_dhcp
+add_iface t1sw1 4 cntrl_tap_1
+
+dcount=${devices:-3}
+scount=${switches:-3}
+
+if [ -n "$switches" ]; then
+    for snum in $(seq 4 $switches); do
+        echo Adding to switch t2sw$snum device num $snum
+        add_faux t2sw$snum 101 $snum
+    done
+fi
+
+if [ -n "$devices" ]; then
+    for dnum in $(seq 2 $devices); do
+        for snum in $(seq $scount); do
+            device_num=$(((dnum - 1) * scount + snum))
+            echo Adding device num $device_num to switch t2sw$snum
+            add_faux t2sw$snum $((dnum+100)) $device_num
+        done
+    done
+fi
+
+
+tdevices=$((dcount + scount - 3))
+echo Working with $tdevices devices.
+
+echo Letting system settle...
+sleep 60
+
+if [ -n "$fot" ]; then
+    echo head of forch-controller-1/faucet.log:
+    head inst/forch-controller-1/faucet.log
+else
+    echo head of forch-faucet-1/faucet.log:
+    head inst/forch-faucet-1/faucet.log
+fi
+echo
+
+sleep 2
+
+echo Done with stack setup mode $mode.

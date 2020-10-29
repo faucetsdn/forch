@@ -19,6 +19,7 @@ gauge_prom_pt=9303
 docker_volumes=
 port_opts=
 local=
+run_mode=
 faucet_id=
 
 cd $ROOT
@@ -26,6 +27,11 @@ cd $ROOT
 if [ "$1" == "local" ]; then
     docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
     local=local
+    shift
+fi
+
+if [ "$1" == "static_switch" ]; then
+    run_mode=static_switch
     shift
 fi
 
@@ -95,25 +101,6 @@ else
     fi
 fi
 
-docker_envs="\
-        --env FAUCET_CONFIG_STAT_RELOAD=1 \
-        --env GAUGE_CONFIG_STAT_RELOAD=1 \
-        --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
-        --env USERID=$(id -u) \
-        --env FAUCET_EVENT_SOCK=$event_sock \
-        --env FAUCET_CONFIG=$faucet_config \
-        --env FAUCET_LISTEN_PORT=6653 \
-        --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
-
-docker_volumes+="\
-        -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
-        -v $INSTDIR/faucet_br:/var/log/faucet_br \
-        -v $INSTDIR/faucet:/etc/faucet \
-        -v $INSTDIR:/var/log/faucet \
-        -v $INSTDIR/daq/local:/root/daq/local \
-        -v $INSTDIR/daq/inst:/root/daq/inst"
-
-
 if [ -n "$prom_pt" ]; then
     port_opts="-p $prom_pt:$PROM_TARGET"
     echo $prom_pt > $INSTDIR/PROM_PORT.$PROM_TARGET
@@ -125,7 +112,7 @@ if [ -n "$gauge_prom_pt" ]; then
 fi
 
 forch_port="-p 500$faucet_id:9019"
-docker_envs+="\
+docker_envs="\
     --env CONTROLLER_NAME=$CONTAINER \
     --env PROMETHEUS_PORT=9302 \
     --env FAUCET_EVENT_SOCK=/var/log/faucet/faucet_event.sock \
@@ -139,15 +126,35 @@ docker_envs+="\
     --env GAUGE_LOG=/var/log/faucet/gauge.log \
     --env GAUGE_EXCEPTION_LOG=/var/log/faucet/gauge_exception.log \
     --env GAUGE_CONFIG_STAT_RELOAD=1 \
-    --env FORCH_LOG_DIR=/var/log/faucet"
+    --env FORCH_LOG_DIR=/var/log/faucet \
+    --env FAUCET_CONFIG_STAT_RELOAD=1 \
+    --env GAUGE_CONFIG_STAT_RELOAD=1 \
+    --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
+    --env USERID=$(id -u) \
+    --env RUN_MODE=$run_mode \
+    --env FAUCET_EVENT_SOCK=$event_sock \
+    --env FAUCET_CONFIG=$faucet_config \
+    --env FAUCET_LISTEN_PORT=6653 \
+    --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
+
+docker_volumes+="\
+        -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
+        -v $INSTDIR/faucet_br:/var/log/faucet_br \
+        -v $INSTDIR/faucet:/etc/faucet \
+        -v $INSTDIR:/var/log/faucet \
+        -v $INSTDIR/daq/local:/root/daq/local \
+        -v $INSTDIR/daq/inst:/root/daq/inst"
+
+
 
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
              -p $ext_ofpt:6653 $forch_port $port_opts $gauge_port_opts -p $gauge_ext_ofpt:6654 $IMAGE)
 
 if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
-    for file in $INSTDIR/forch/*; do docker cp $file $CONTAINER:/etc/faucet/; done
-    # docker exec $CONTAINER /usr/bin/gauge --ryu-config-file=${GAUGE_RYU_CONF} --ryu-ofp-tcp-listen-port=${GAUGE_LISTEN_PORT} --ryu-wsapi-host=${WSAPI_LISTEN_HOST} --ryu-wsapi-port=${WSAPI_LISTEN_PORT} --ryu-app=ryu.app.ofctl_rest &
+    for file in $INSTDIR/forch/*; do
+        docker cp $file $CONTAINER:/etc/faucet/
+    done
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
     tap_intf_name=cntrl_tap_$faucet_id
     sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
