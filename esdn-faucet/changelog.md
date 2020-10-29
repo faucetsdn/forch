@@ -1,5 +1,7 @@
 ## 1.14.0
 ## Forch 0.46.x
+* Add varz for unconfigured port faucet event (#205)
+* Add scheduling for config hash verficiation (#203)
 * Bypass Authenticator for VLAN expiry (#196)
 * Ignore L2_EXPIRE event for stale VLAN (#195)
 * Do not raise exception in case of out-of-sequence Faucet event (#187)
