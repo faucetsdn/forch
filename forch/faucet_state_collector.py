@@ -1012,6 +1012,7 @@ class FaucetStateCollector:
             if not port_config:
                 self._forch_metrics.inc_var('unconfigured_port_event', labels=[name, port])
                 LOGGER.error('Port %s is not in switch config %s', port, name)
+                return
 
             port_table = self.switch_states\
                 .setdefault(name, {})\
