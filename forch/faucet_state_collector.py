@@ -1003,9 +1003,16 @@ class FaucetStateCollector:
         """process port state event"""
         with self.lock:
             switch_config = self.faucet_config.get(DPS_CFG, {}).get(name)
-            assert switch_config, 'Switch %s is not in faucet config' % name
+            if not switch_config:
+                self._forch_metrics.inc_var('unconfigured_port_event', labels=[name, port])
+                LOGGER.error('Switch %s is not in faucet config', name)
+                return
+
             port_config = switch_config.interfaces.get(port)
-            assert port_config, 'Port %d is not in switch config %s' % (port, name)
+            if not port_config:
+                self._forch_metrics.inc_var('unconfigured_port_event', labels=[name, port])
+                LOGGER.error('Port %s is not in switch config %s', port, name)
+                return
 
             port_table = self.switch_states\
                 .setdefault(name, {})\
