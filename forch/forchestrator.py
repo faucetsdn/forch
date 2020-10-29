@@ -45,6 +45,7 @@ _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
 _GAUGE_PROM_PORT_DEFAULT = 9303
+_CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT = 30
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -113,6 +114,12 @@ class Forchestrator:
         self._metrics = None
         self._varz_proxy = None
 
+        self._last_faucet_config_writing_time = None
+        self._last_received_faucet_config_hash = None
+        self._config_hash_verification_timeout_sec = (
+            self._config.event_client.config_hash_verification_timeout_sec or
+            _CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT)
+
         self._lock = threading.Lock()
 
     def initialize(self):
@@ -135,6 +142,7 @@ class Forchestrator:
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(
             self._faucet_collector.heartbeat_update_stack_state)
+        self._faucet_state_scheduler.add_callback(self._verify_config_hash)
 
         gauge_metrics_interval_sec = self._config.dataplane_monitoring.gauge_metrics_interval_sec
         if gauge_metrics_interval_sec:
@@ -328,7 +336,7 @@ class Forchestrator:
 
         self._faucetizer = faucetizer.Faucetizer(
             orch_config, self._structural_config_file, self._behavioral_config_file,
-            self._reregister_include_file_handlers)
+            self._reregister_include_file_handlers, self._reset_faucet_config_writing_time)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -377,7 +385,7 @@ class Forchestrator:
             self._authenticator.process_device_placement(eth_src, device_placement)
         else:
             LOGGER.info(
-                'Ignored vlan expiration for device %s with expired vlan %d', eth_src, expired_vlan)
+                'Ignored vlan expiration for device %s with expired vlan %s', eth_src, expired_vlan)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
@@ -436,7 +444,11 @@ class Forchestrator:
     def _restore_faucet_config(self, timestamp, config_hash):
         config_info, faucet_dps, _ = self._get_faucet_config()
         self._update_config_warning_varz()
-        assert config_hash == config_info['hashes'], 'config hash info does not match'
+
+        if config_hash != config_info['hashes']:
+            LOGGER.warning('Config hash does not match')
+        self._last_received_faucet_config_hash = config_hash
+
         self._faucet_collector.process_dataplane_config_change(timestamp, faucet_dps)
 
     def _process_config_change(self, event):
@@ -444,6 +456,24 @@ class Forchestrator:
             event.timestamp, event.dp_name, event.restart_type, event.dp_id)
         if event.config_hash_info.hashes:
             self._restore_faucet_config(event.timestamp, event.config_hash_info.hashes)
+
+    def _verify_config_hash(self):
+        if not self._last_faucet_config_writing_time:
+            return
+
+        elapsed_time = time.time() - self._last_faucet_config_writing_time
+        if elapsed_time < self._config_hash_verification_timeout_sec:
+            return
+
+        config_info, _, _ = self._get_faucet_config()
+        if config_info['hashes'] != self._last_received_faucet_config_hash:
+            raise Exception(f'Config hash does not match after '
+                            f'{self._config_hash_verification_timeout_sec} seconds')
+
+        self._last_faucet_config_writing_time = None
+
+    def _reset_faucet_config_writing_time(self):
+        self._last_faucet_config_writing_time = time.time()
 
     def _faucet_events_connect(self):
         LOGGER.info('Attempting faucet event sock connection...')
