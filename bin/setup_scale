@@ -5,7 +5,6 @@ cd $ROOT
 local=
 devices=
 switches=
-skip_conn_check=
 no_clean=
 faux_dhcp=
 fot=
@@ -32,11 +31,6 @@ if [ "$1" == "overwrite-faucet-config" ]; then
     shift 2
 fi
 
-if [ "$1" == "skip-conn-check" ]; then
-    skip_conn_check=y
-    shift
-fi
-
 if [ "$1" == "dhcp" ]; then
     faux_dhcp=dhcp
     shift
@@ -49,11 +43,6 @@ fi
 
 if [ "$1" == "fot" ]; then
     fot=fot
-    shift
-fi
-
-if [ "$1" == "dumptcp" ]; then
-    dumptcp=y
     shift
 fi
 
@@ -162,7 +151,7 @@ if [ -n "$devices" ]; then
         for snum in $(seq $scount); do
             device_num=$(((dnum - 1) * scount + snum))
             echo Adding device num $device_num to switch t2sw$snum
-            add_faux t2sw$snum 10$dnum $device_num
+            add_faux t2sw$snum $((dnum+100)) $device_num
         done
     done
 fi
@@ -182,53 +171,6 @@ else
     head inst/forch-faucet-1/faucet.log
 fi
 echo
-
-if [ -z "$skip_conn_check" ]; then
-    for num in $(seq 3); do
-        declare faux_ip_$num=$(docker exec forch-faux-$num ip addr show faux-eth0 | fgrep inet | awk '{print $2}' | cut -d'/' -f1)
-    done
-    echo Starting connection warm-up for 10s...
-    docker exec forch-faux-0 ping -q -c 10 $faux_ip_2 &
-    docker exec forch-faux-1 ping -q -c 10 $faux_ip_3 &
-    docker exec forch-faux-2 ping -q -c 10 $faux_ip_1 &
-    docker exec forch-faux-3 ping -q -c 10 $faux_ip_1 &
-
-    echo Waiting for warm-ups to complete...
-    wait
-
-    echo Connection sanity check...
-    docker exec forch-faux-0 ping -q -c 1 $faux_ip_2
-    docker exec forch-faux-1 ping -q -c 1 $faux_ip_3
-    docker exec forch-faux-2 ping -q -c 1 $faux_ip_1
-    docker exec forch-faux-3 ping -q -c 1 $faux_ip_1
-
-    if [ $tdevices -gt 3 ]; then
-        for device in $(seq 4 $tdevices); do
-            echo Checking forch-faux-$device...
-            docker exec forch-faux-$device ping -q -c 1 $faux_ip_0
-        done
-    fi
-fi
-
-rm -rf tcpdump
-function do_tcpdump {
-    sudo tcpdump -U --immediate-mode -Z root -eni $1 -w tcpdump/$1.pcap 2>&1 &
-    echo $! >> tcpdump/tcpdump.pids
-}
-
-if [ -n "$dumptcp" ]; then
-    echo Launching tcpdumps...
-    mkdir tcpdump
-    echo -n > tcpdump/tcpdump.pids
-    do_tcpdump bond
-    for switch in t1sw1 t1sw2; do
-        do_tcpdump $switch-eth6
-        do_tcpdump $switch-eth28
-        for port in 100 101 102 103 104 105 106 107 108; do
-            do_tcpdump $switch-eth$port
-        done
-    done
-fi
 
 sleep 2
 

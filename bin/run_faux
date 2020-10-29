@@ -15,8 +15,8 @@ cd $ROOT
 if [ $# -gt 0 ] && [ $(($1)) -gt 0 -o "$1" == 0 ]; then
     port_num=$1
     if (( $port_num >= 255 )); then
-        mac_prefix=$((port_num/255))
-        mac_port_num=$((port_num%255))
+        mac_prefix=$((port_num/256))
+        mac_port_num=$((port_num%256))
     else
         mac_prefix=143
         mac_port_num=$port_num
