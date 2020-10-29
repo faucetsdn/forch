@@ -98,6 +98,11 @@ class ForchMetrics():
             'faucet_event_out_of_sequence_count',
             'Number of times Faucet event becomes out of sequence', Counter)
 
+        self._add_var(
+            'unconfigured_port_event', 'No. of Faucet events received for unconfigured port',
+            Counter, labels=['switch', 'port']
+        )
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
