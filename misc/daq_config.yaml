@@ -12,4 +12,5 @@ switch_setup:
 
 run_trigger:
   vlan_start: 2000
-  vlan_end: 2050
+  vlan_end: 2010
+  egress_vlan: 171
