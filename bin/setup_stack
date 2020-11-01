@@ -79,7 +79,7 @@ add_oeth t1sw1 28 corp-eth10
 add_oeth t1sw2 28 corp-eth20
 add_link t1sw1 6 t1sw2 6
 
-add_br t2sw1 147058200627 6001 7001
+add_br t2sw1 1295 6001 7001
 add_br t2sw2 1296 6001 7001
 add_br t2sw3 1297 6001 7001
 
