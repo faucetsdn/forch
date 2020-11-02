@@ -1,6 +1,6 @@
 dps:
   br-fot:
-    dp_id: 250
+    dp_id: 1
     faucet_dp_mac: 0e:00:00:00:01:01
     hardware: Generic
     lacp_timeout: 5
