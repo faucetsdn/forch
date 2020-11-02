@@ -3,9 +3,8 @@
 include: config/system/default.yaml
 
 switch_setup:
-  of_dpid: 0xfa
   data_intf: data0
-  alt_port: 3984
+  lo_port: 3984
   model: EXT_STACK
 
 run_trigger:

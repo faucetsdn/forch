@@ -46,22 +46,16 @@ sudo -u kronkiteman \
     FAUCET_CONFIG=$FAUCET_CONFIG \
     faucet --ryu-config-file=${FAUCET_RYU_CONF} --ryu-ofp-tcp-listen-port=${FAUCET_LISTEN_PORT} &
 
-echo Adding fot bridge
+echo Starting ovs...
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
-sudo ovs-vsctl --if-exists del-br br-fot \
-    -- add-br br-fot \
-    -- set-fail-mode br-fot secure \
-    -- set bridge br-fot other_config:datapath-id=0xfa
-echo Adding fot bridge controller
-sudo ovs-vsctl set-controller br-fot tcp:127.0.0.1:3984
+
 /usr/bin/gauge_go &
 /usr/bin/forch &
+
+echo Waiting for data0...
 while ! ip link show data0; do
     sleep 2
 done
-
-echo Adding fot bridge port
-sudo ovs-vsctl add-port br-fot data0 -- set interface data0 ofport_request=1
 ifconfig data0 up
 
 echo Starting daq, output in daq/inst/cmdrun.log
