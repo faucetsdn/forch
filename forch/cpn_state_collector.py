@@ -128,7 +128,7 @@ class CPNStateCollector:
 
                 node_state_map = self._node_states[host_name]
                 last_state = node_state_map.get(NODE_STATE)
-                new_state = CPNStateCollector._get_node_state(res_map, ping_res_map)
+                new_state = self._get_node_state(node_state_map, res_map)
 
                 if not last_state or new_state != last_state:
                     state_count = node_state_map.get(NODE_STATE_CHANGE_COUNT, 0) + 1
@@ -153,11 +153,15 @@ class CPNStateCollector:
         return State.down
 
     def _get_node_state(self, node_state_map, ping_result):
-        last_ping_state = node_state_map.get(NODE_STATE)
+        last_ping_state = node_state_map.get(PING_STATE)
         new_ping_state = self._get_ping_state(ping_result)
+        node_state_map[PING_STATE] = new_ping_state
+
         last_consecutive_count = node_state_map.get(PING_STATE_CONSECUTIVE_COUNT, 0)
         new_consecutive_count = (last_consecutive_count + 1 if new_ping_state == last_ping_state
                                  else 0)
+        node_state_map[PING_STATE_CONSECUTIVE_COUNT] = new_consecutive_count
+
         if (new_ping_state == State.healthy and
                 new_consecutive_count >= self._min_consecutive_healthy):
             return State.healthy
@@ -166,7 +170,7 @@ class CPNStateCollector:
                 new_consecutive_count >= self._min_consecutive_down):
             return State.down
 
-        return State.damanged
+        return State.damaged
 
     @staticmethod
     def _get_ping_summary(ping_stdout):
