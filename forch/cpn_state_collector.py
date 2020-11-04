@@ -31,7 +31,7 @@ CPN_STATE_COUNT = 'state_count'
 CPN_STATE_UPDATE_TS = 'state_update'
 CPN_STATE_CHANGE_TS = 'state_change'
 
-MIN_CONSECUTIVE_PING_HEALTY_DEFAULT = 3
+MIN_CONSECUTIVE_PING_HEALTHY_DEFAULT = 3
 MIN_CONSECUTIVE_PING_DOWN_DEFAULT = 5
 PING_INTERVAL_DEFAULT = 2
 
@@ -48,7 +48,7 @@ class CPNStateCollector:
         self._node_states = {}
         self._hosts_ip = {}
         self._min_consecutive_healthy = (
-            config.min_consecutive_ping_healthy or MIN_CONSECUTIVE_PING_HEALTY_DEFAULT)
+            config.min_consecutive_ping_healthy or MIN_CONSECUTIVE_PING_HEALTHY_DEFAULT)
         self._min_consecutive_down = (
             config.min_consecutive_ping_down or MIN_CONSECUTIVE_PING_DOWN_DEFAULT)
         self.ping_interval = config.ping_interval or PING_INTERVAL_DEFAULT
