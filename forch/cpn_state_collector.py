@@ -43,12 +43,15 @@ PING_SUMMARY_REGEX = {'transmitted': r'\d+(?= packets transmitted)',
 
 class CPNStateCollector:
     """Processing and storing CPN components states"""
-    def __init__(self):
+    def __init__(self, config):
         self._cpn_state = {}
         self._node_states = {}
         self._hosts_ip = {}
-        self._min_consecutive_healthy = None
-        self._min_consecutive_down = None
+        self._min_consecutive_healthy = (
+            config.min_consecutive_ping_healthy or MIN_CONSECUTIVE_PING_HEALTY_DEFAULT)
+        self._min_consecutive_down = (
+            config.min_consecutive_ping_down or MIN_CONSECUTIVE_PING_DOWN_DEFAULT)
+        self.ping_interval = config.ping_interval or PING_INTERVAL_DEFAULT
         self._lock = threading.Lock()
         self._ping_manager = None
 
@@ -70,14 +73,7 @@ class CPNStateCollector:
             if not self._hosts_ip:
                 raise Exception('No CPN components defined in file')
 
-            self._min_consecutive_healthy = (
-                    cpn_data.min_consecutive_ping_healthy or MIN_CONSECUTIVE_PING_HEALTY_DEFAULT)
-            self._min_consecutive_down = (
-                    cpn_data.min_down_consecutive or MIN_CONSECUTIVE_PING_DOWN_DEFAULT)
-
-            ping_interval = (
-                cpn_data.ping_interval if cpn_data.ping_interval else PING_INTERVAL_DEFAULT)
-            self._ping_manager = PingManager(self._hosts_ip, ping_interval)
+            self._ping_manager = PingManager(self._hosts_ip, self.ping_interval)
             self._update_cpn_state(current_time, State.initializing, "Initializing")
         except Exception as e:
             LOGGER.error('Could not load config file: %s', e)

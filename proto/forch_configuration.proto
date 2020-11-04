@@ -31,6 +31,9 @@ message ForchConfig {
 
   // configuration for switches monitoring
   DataplaneMonitoring dataplane_monitoring = 8;
+
+  // configuration for control plane network monitoring
+  CpnMonitoring cpn_monitoring = 9;
 }
 
 /*
@@ -239,4 +242,18 @@ message DataplaneMonitoring {
 
   // threshold of number of packets per second for each vlan; indexed by vlan
   map<int32, int32> vlan_pkt_per_sec_thresholds = 2;
+}
+
+/*
+ * Monitoring for control plane network
+ */
+message CpnMonitoring {
+  // interval of the periodic ping task
+  int32 ping_interval = 1;
+
+  // minimum count of consecutive successful pings to determine healthy state
+  int32 min_consecutive_ping_healthy = 2;
+
+  // minimum count of consecutive unsuccessful pings to determine down state
+  int32 min_consecutive_ping_down = 3;
 }
