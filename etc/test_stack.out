@@ -29,7 +29,7 @@ Done with stack-solid test.
 Running forch-solid tests
 @system_state-solid
 "nz-kiwi"
-52
+53
 "http://localhost.n:9020"
 "split"
 @dataplane_state-solid
@@ -50,7 +50,7 @@ Running forch-solid tests
 null
 3
 @cpn_state-solid
-2
+3
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
@@ -457,7 +457,7 @@ null
 Running forch-restart tests
 @system_state-restart
 "nz-kiwi"
-30
+31
 "http://localhost.n:9020"
 "split"
 @dataplane_state-restart
@@ -478,7 +478,7 @@ Running forch-restart tests
 null
 1
 @cpn_state-restart
-2
+3
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
