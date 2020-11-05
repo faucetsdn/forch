@@ -538,6 +538,10 @@
             <ul>
               
                 <li>
+                  <a href="#CpnMonitoring"><span class="badge">M</span>CpnMonitoring</a>
+                </li>
+              
+                <li>
                   <a href="#DataplaneMonitoring"><span class="badge">M</span>DataplaneMonitoring</a>
                 </li>
               
@@ -3566,6 +3570,44 @@
       <p>Encapsulating Forch configuration</p>
 
       
+        <h3 id="CpnMonitoring">CpnMonitoring</h3>
+        <p>Monitoring for control plane network</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>ping_interval</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>interval of the periodic ping task </p></td>
+                </tr>
+              
+                <tr>
+                  <td>min_consecutive_ping_healthy</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>minimum count of consecutive successful pings to determine healthy state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>min_consecutive_ping_down</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>minimum count of consecutive unsuccessful pings to determine down state </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="DataplaneMonitoring">DataplaneMonitoring</h3>
         <p>Monitoring for dataplane</p>
 
@@ -3730,6 +3772,13 @@
                   <td><a href="#DataplaneMonitoring">DataplaneMonitoring</a></td>
                   <td></td>
                   <td><p>configuration for switches monitoring </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_monitoring</td>
+                  <td><a href="#CpnMonitoring">CpnMonitoring</a></td>
+                  <td></td>
+                  <td><p>configuration for control plane network monitoring </p></td>
                 </tr>
               
             </tbody>
