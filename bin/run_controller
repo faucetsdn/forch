@@ -153,9 +153,6 @@ cid=$(docker run -d --privileged --name $CONTAINER \
              -p $ext_ofpt:6653 $forch_port $port_opts $gauge_port_opts -p $gauge_ext_ofpt:6654 $IMAGE)
 
 if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
-    for file in $INSTDIR/forch/*; do
-        docker cp $file $CONTAINER:/etc/faucet/
-    done
     pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
     tap_intf_name=cntrl_tap_$faucet_id
     sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
