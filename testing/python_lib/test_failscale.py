@@ -13,11 +13,15 @@ from forch.utils import proto_dict
 class FailScaleConfigTest(IntegrationTestBase):
     """Test suite for failure modes during scaling"""
 
+
+    def tearDown(self):
+        pass
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.devices = 10
-        self.switches = 10
+        self.devices = 5
+        self.switches = 9
         self.sim_setup_cmd = 'bin/setup_scale'
         self.config_path = '/tmp/scale_config'
 
