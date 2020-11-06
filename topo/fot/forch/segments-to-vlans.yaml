@@ -1,4 +1,3 @@
 segments_to_vlans:
     GUEST: 100
-    INFRA: 200
-    BOS:   300
+    INFRA: 500

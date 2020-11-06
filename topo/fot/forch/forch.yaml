@@ -15,8 +15,8 @@ orchestration:
   segments_vlans_file: segments-to-vlans.yaml
   sequester_config:
     segment: FOT
-    vlan_start: 1500
-    vlan_end: 1699
+    vlan_start: 272
+    vlan_end: 276
     port_description: tap
 proxy_server:
   targets:

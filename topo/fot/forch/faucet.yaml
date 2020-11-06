@@ -9,7 +9,7 @@ dps:
     interfaces:
       4:
         description: tap
-        tagged_vlans: [272]
+        tagged_vlans: [171]
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}
@@ -25,7 +25,7 @@ dps:
       28:
         description: egress
         lacp: 3
-        tagged_vlans: [200, 300]
+        tagged_vlans: [171, 500]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t1sw2:
     dp_id: 178
@@ -50,7 +50,7 @@ dps:
       28:
         description: egress
         lacp: 3
-        tagged_vlans: [200, 300]
+        tagged_vlans: [171, 500]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
     dp_id: 1295
@@ -106,16 +106,9 @@ dps:
 include: [uniform.yaml]
 version: 2
 vlans:
-  171:
-    description: Faucet IoT
   100:
     acls_in: [uniform_100]
     description: unauthenticated
-  200:
-    acls_in: [uniform_200]
+  500:
+    acls_in: [uniform_500]
     description: INFRA
-  300:
-    acls_in: [uniform_300]
-    description: BOS
-  272:
-    description: Orchestrated Testing

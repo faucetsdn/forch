@@ -92,18 +92,8 @@ acls:
       description: deny all
       actions:
         allow: False
-  uniform_200:
+  uniform_500:
   - rule:
       description: allow all
       actions:
         allow: True
-  uniform_300:
-  - rule:
-      description: allow all
-      actions:
-        allow: True
-  uniform_400:
-  - rule:
-      description: allow all
-      actions:
-        allow: False
