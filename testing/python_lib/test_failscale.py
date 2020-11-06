@@ -13,10 +13,6 @@ from forch.utils import proto_dict
 class FailScaleConfigTest(IntegrationTestBase):
     """Test suite for failure modes during scaling"""
 
-
-    def tearDown(self):
-        pass
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
