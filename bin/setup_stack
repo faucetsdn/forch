@@ -60,6 +60,8 @@ fi
 if [ -n "$1" ]; then
     mode=$1
     shift
+elif [ -n "$fot" ]; then
+    mode=fot
 fi
 
 source bin/stack_functions
