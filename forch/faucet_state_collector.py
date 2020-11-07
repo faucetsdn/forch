@@ -1378,6 +1378,13 @@ class FaucetStateCollector:
                 ret_attr['type'] = 'egress'
                 return ret_attr
 
+            sequester_port_desc = self._config.orchestration.sequester_config.port_description
+            LOGGER.info(f'** sequester config: {sequester_port_desc}')
+            if sequester_port_desc and sequester_port_desc in port_info.get('description', ''):
+                LOGGER.info(f'** setting port {switch} {port} to sequester')
+                ret_attr['type'] = 'sequester'
+                return ret_attr
+
             ret_attr['type'] = 'access'
             return ret_attr
 
