@@ -293,7 +293,7 @@ class FotContainerTest(IntegrationTestBase):
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
         # trigger learning event for faux-1 to make it authenticated and sequestered
-        self._run_cmd('ping -c1 8.8.8.8', docker_container='forch-faux-1')
+        self._run_cmd('ping -c1 8.8.8.8', docker_container='forch-faux-1',strict=False)
 
         # test DHCP reflection with sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
