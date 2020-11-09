@@ -297,13 +297,13 @@ class FotContainerTest(IntegrationTestBase):
 
         # test DHCP reflection with sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
-        self.assertEqual(True, bool(re.search("DHCP.*Reply", device_tcpdump_text)))
-        self.assertEqual(True, bool(re.search("DHCP.*Reply", vlan_tcpdump_text)))
+        self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
+        self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
         # test DHCP with unauthenticated device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-2')
-        self.assertEqual(False, bool(re.search("DHCP.*Reply", device_tcpdump_text)))
-        self.assertEqual(False, bool(re.search("DHCP.*Reply", vlan_tcpdump_text)))
+        self.assertFalse(re.search("DHCP.*Reply", device_tcpdump_text))
+        self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
 
 if __name__ == '__main__':
