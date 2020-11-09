@@ -129,6 +129,7 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
+        self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
 
@@ -1379,9 +1380,7 @@ class FaucetStateCollector:
                 return ret_attr
 
             sequester_port_desc = self._config.orchestration.sequester_config.port_description
-            LOGGER.info(f'** sequester config: {sequester_port_desc}')
             if sequester_port_desc and sequester_port_desc in port_info.get('description', ''):
-                LOGGER.info(f'** setting port {switch} {port} to sequester')
                 ret_attr['type'] = 'sequester'
                 return ret_attr
 
