@@ -282,18 +282,20 @@ class FotContainerTest(IntegrationTestBase):
                     print(e)
             return run_dhclient
 
-        device_tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68', packets=10,
-                                           funcs=[dhclient_method(container=device_container)],
-                                           timeout=10, docker_host='forch-faux-1')
-        vlan_tcpdump_text = self.tcpdump_helper('data0', 'vlan 272 and port 67', packets=10,
-                                        funcs=[dhclient_method(container=device_container)],
-                                        timeout=10, docker_host='forch-controller-1')
+        device_tcpdump_text = self.tcpdump_helper(
+            'faux-eth0', 'port 67 or port 68', packets=10,
+            funcs=[dhclient_method(container=device_container)],
+            timeout=10, docker_host='forch-faux-1')
+        vlan_tcpdump_text = self.tcpdump_helper(
+            'data0', 'vlan 272 and port 67', packets=10,
+            funcs=[dhclient_method(container=device_container)],
+            timeout=10, docker_host='forch-controller-1')
         return device_tcpdump_text, vlan_tcpdump_text
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
         # trigger learning event for faux-1 to make it authenticated and sequestered
-        self._run_cmd('ping -c1 8.8.8.8', docker_container='forch-faux-1',strict=False)
+        self._run_cmd('ping -c1 8.8.8.8', docker_container='forch-faux-1', strict=False)
 
         # test DHCP reflection with sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
