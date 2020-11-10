@@ -285,7 +285,7 @@ class FotContainerTest(IntegrationTestBase):
         device_tcpdump_text = self.tcpdump_helper(
             'faux-eth0', 'port 67 or port 68', packets=10,
             funcs=[dhclient_method(container=device_container)],
-            timeout=10, docker_host='forch-faux-1')
+            timeout=10, docker_host=device_container)
         vlan_tcpdump_text = self.tcpdump_helper(
             'data0', 'vlan 272 and port 67', packets=10,
             funcs=[dhclient_method(container=device_container)],
