@@ -1,6 +1,8 @@
 #!/bin/bash -ex
 
-DAQBASE=inst/forch-controller-1/daq
+INST_BASE=inst/forch-controller-1
+DAQBASE=$INST_BASE/daq
+FAUCET_BASE=$INST_BASE/faucet
 
 echo Controller startup log
 docker logs forch-controller-1
@@ -26,3 +28,10 @@ ls -l $DAQBASE/inst/dp_port_acls.yaml
 fgrep "System port 1 on dpid 1 is active True" $DAQBASE/inst/cmdrun.log
 
 echo Done with daq startup tests.
+
+sleep 20
+
+# Forch startup checks
+# Check Forch has successfuly started
+fgrep "Starting Forchestrator" $INST_BASE/forch.log
+fgrep "Setting event horizon to event" $INST_BASE/forch.log

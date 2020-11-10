@@ -50,7 +50,7 @@ echo Starting ovs...
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 /usr/bin/gauge_go &
-/usr/bin/forch &
+forch &
 
 echo Waiting for data0...
 while ! ip link show data0; do
