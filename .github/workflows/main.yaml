@@ -27,7 +27,7 @@ jobs:
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup stack
-        run: bin/setup_stack skip_conn_check fot
+        run: bin/setup_stack skip-conn-check fot
       - name: run integration tests
         run: testing/test_fot
       - name: post-run logs
