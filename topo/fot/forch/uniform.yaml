@@ -49,6 +49,11 @@ acls:
   uniform_100:
   - rule:
       actions: {allow: 1}
+      description: ICMP Allow
+      dl_type: '0x0800'
+      nw_proto: 1
+  - rule:
+      actions: {allow: 1}
       description: ARP Allow
       dl_type: '0x0806'
   - rule:
