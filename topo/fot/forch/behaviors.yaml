@@ -1,3 +1,5 @@
 device_mac_behaviors:
   "9a:02:57:1e:8f:01":
     segment: INFRA
+  "9a:02:57:1e:8f:02":
+    segment: INFRA
