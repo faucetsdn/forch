@@ -15,4 +15,3 @@ pyyaml
 requests
 ryu==4.32
 watchdog
-yq
