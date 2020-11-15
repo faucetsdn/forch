@@ -13,7 +13,7 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 sudo apt-get update
 
 sudo apt-get install openvswitch-switch protobuf-compiler \
-     python$PVERSION-venv python$PVERSION-dev jq yq docker-ce net-tools
+     python$PVERSION-venv python$PVERSION-dev jq docker-ce net-tools
 
 if [ -z "$VIRTUAL_ENV" ]; then
     python$PVERSION -m venv venv
