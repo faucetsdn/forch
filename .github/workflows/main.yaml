@@ -29,7 +29,7 @@ jobs:
       - name: setup stack
         run: bin/setup_stack skip-conn-check fot
       - name: run integration tests
-        run: testing/test_fot
+        run: bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
         run: |

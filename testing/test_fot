@@ -1,8 +1,14 @@
 #!/bin/bash -ex
 
+source bin/stack_functions
+
+preamble_setup
+
 INST_BASE=inst/forch-controller-1
 DAQBASE=$INST_BASE/daq
 FAUCET_BASE=$INST_BASE/faucet
+BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
+YQ=venv/bin/yq
 
 echo Controller startup log
 docker logs forch-controller-1
@@ -33,5 +39,26 @@ sleep 20
 
 # Forch startup checks
 # Check Forch has successfuly started
-fgrep "Starting Forchestrator" $INST_BASE/forch.log
-fgrep "Setting event horizon to event" $INST_BASE/forch.log
+fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
+
+$YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+$YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+
+# Start DHCP client on faux-1 and faux-2
+docker exec forch-faux-1 dhclient -r &
+docker exec forch-faux-2 dhclient -r
+docker exec forch-faux-1 dhclient &
+docker exec forch-faux-2 dhclient
+docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
+docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
+
+vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
+echo $(( (vlan>271) + (vlan>276) )) | tee -a $TEST_RESULTS
+vlan=$($YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
+echo $(( (vlan>271) + (vlan>276) )) | tee -a $TEST_RESULTS
+
+# Waiting for DAQ test to complete
+sleep 360
+
+$YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+$YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
