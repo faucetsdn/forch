@@ -2,6 +2,7 @@
 
 import subprocess
 import unittest
+import multiprocessing
 import os
 import yaml
 
@@ -140,6 +141,23 @@ class IntegrationTestBase(unittest.TestCase):
                 (config_file_format % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
             (config_file_format % ('forch-faucet-1'))
+
+    def parallelize(self, job_count, target, target_args=[]):
+        """Parallelizes multiple runs of a target method with multiprocessing"""
+        jobs = []
+        for job in range(job_count):
+            try:
+                args = target_args[job]
+            except IndexError:
+                args=()
+            process = multiprocessing.Process(target=target, args=args)
+            jobs.append(process)
+
+        for job in jobs:
+            job.start()
+
+        for job in jobs:
+            job.join()
 
 
 if __name__ == '__main__':
