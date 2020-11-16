@@ -4,6 +4,19 @@ source bin/stack_functions
 
 preamble_setup
 
+function monitor_log {
+    runcommand=$1
+    daqlog=$DAQBASE/inst/cmdrun.log
+    while true; do
+        sleep 1
+        test_done=$(cat $daqlog | fgrep "Remaining target sets: []" || true)
+        if [ -n "$test_done" ]; then
+            eval $runcommand
+            break
+        fi
+    done
+}
+
 INST_BASE=inst/forch-controller-1
 DAQBASE=$INST_BASE/daq
 FAUCET_BASE=$INST_BASE/faucet
@@ -58,7 +71,10 @@ vlan=$($YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
 echo $(( (vlan>271) + (vlan>276) )) | tee -a $TEST_RESULTS
 
 # Waiting for DAQ test to complete
-sleep 360
-
-$YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
-$YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+function report_result {
+    $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
+}
+set +x
+monitor_log report_result
