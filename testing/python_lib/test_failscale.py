@@ -34,9 +34,6 @@ class FailScaleConfigTest(IntegrationTestBase):
             'skip-conn-check': False
         })
 
-    def tearDown(self):
-        pass
-
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
 
@@ -48,7 +45,6 @@ class FailScaleConfigTest(IntegrationTestBase):
                 faux_args.append((switch, 100 + dev_index + 1, device_num))
 
         self.parallelize(len(faux_args), self.add_faux, faux_args)
-#                self.add_faux(switch, 100 + dev_index + 1, device_num)
 
         device_list = ['forch-faux-'+str(num) for num in range(1, self.devices * self.switches + 1)]
 
