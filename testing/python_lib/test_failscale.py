@@ -56,7 +56,9 @@ class FailScaleConfigTest(IntegrationTestBase):
         ping_counts = {}
         target_args = []
         for device in device_list:
-            ping_count = self.get_multiprocessing_array('i', 2)
+            # Get shared memory int array which ensures same copy of the array across
+            # multiple processes
+            ping_count = self.get_shared_memory_int_array(size=2)
             ping_counts[device] = ping_count
             target_args.append((device, ping_count, ))
         self.parallelize(len(target_args), ping_device, target_args)
