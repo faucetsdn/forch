@@ -277,7 +277,7 @@ class FotContainerTest(IntegrationTestBase):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    self._run_cmd('timeout 10s dhclient', docker_container=container)
+                    self._run_cmd('timeout 20s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
             return run_dhclient
