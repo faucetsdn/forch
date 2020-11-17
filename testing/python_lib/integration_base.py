@@ -116,8 +116,9 @@ class IntegrationTestBase(unittest.TestCase):
         _, out, _ = self._run_cmd('ip addr show %s' % (interface),
                                   docker_container=container, capture=True)
         out_list = out.split()
-        return out_list[out_list.index('inet') + 1].split('/')[0] \
-            if 'inet' in out_list else None
+        if 'inet' in out_list:
+            return out_list[out_list.index('inet') + 1].split('/')[0]
+        return None
 
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
@@ -150,9 +151,9 @@ class IntegrationTestBase(unittest.TestCase):
         if not target_args:
             target_args = []
         for job in range(job_count):
-            try:
+            if job < len(target_args):
                 args = target_args[job]
-            except IndexError:
+            else:
                 args = ()
             process = multiprocessing.Process(target=target, args=args)
             jobs.append(process)

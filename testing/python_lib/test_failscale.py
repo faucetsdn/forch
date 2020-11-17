@@ -27,7 +27,6 @@ class FailScaleConfigTest(IntegrationTestBase):
             yaml.dump(config, config_file)
 
         self.stack_options.update({
-            'devices': 1,
             'switches': self.switches,
             'mode': 'scale',
             'overwrite-faucet-config': self.config_path,
@@ -38,13 +37,16 @@ class FailScaleConfigTest(IntegrationTestBase):
         """Test to build stack and check for connectivity"""
 
         faux_args = []
-        for dev_index in range(1, self.devices):
+        for dev_index in range(self.devices):
             for sw_index in range(1, self.switches + 1):
                 device_num = dev_index * self.switches + sw_index
                 switch = 't2sw%s' % sw_index
-                faux_args.append((switch, 100 + dev_index + 1, device_num))
+                device_port = 100 + dev_index + 1
+                faux_args.append((switch, device_port, device_num))
 
         self.parallelize(len(faux_args), self.add_faux, faux_args)
+
+        time.sleep(10)
 
         device_list = ['forch-faux-'+str(num) for num in range(1, self.devices * self.switches + 1)]
 
@@ -63,10 +65,12 @@ class FailScaleConfigTest(IntegrationTestBase):
         for device in ping_counts:
             print('Device %s ping_count: %s' % (device, ping_counts[device][:]))
         for device in ping_counts:
-            self.assertLessEqual(1, ping_counts[device][0], 'Device %s \
-                                    ping packets to 192.168.1.0 below threshold.' % (device))
-            self.assertLessEqual(1, ping_counts[device][1], 'Device %s \
-                                    ping packets to 192.168.1.1 below threshold.' % (device))
+            self.assertLessEqual(1, ping_counts[device][0],
+                                 'Device %s ping packets to 192.168.1.0 below threshold.'
+                                 % (device))
+            self.assertLessEqual(1, ping_counts[device][1],
+                                 'Device %s ping packets to 192.168.1.1 below threshold.'
+                                 % (device))
 
         self.assertEqual(10, self._ping_host('forch-faux-8', '192.168.1.0', count=10, output=True),
                          'warm-up ping count')
@@ -77,9 +81,7 @@ class FailScaleConfigTest(IntegrationTestBase):
         try:
             ping_count = self._ping_host_reap(process, output=True)
             # Check that at least some flow was disrupted, but not too much.
-            # Note: Changing it to greater than equal 40 since on higher devices,
-            # there are cases where there is no disruption observed.
-            self.assertTrue(2 < ping_count <= 40, 'disrupted ping count %s' % ping_count)
+            self.assertTrue(2 < ping_count < 40, 'disrupted ping count %s' % ping_count)
         except Exception as e:
             self._run_cmd('bin/dump_logs')
             raise e

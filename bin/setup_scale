@@ -3,10 +3,8 @@
 ROOT=$(dirname $0)/..
 cd $ROOT
 local=
-devices=
 switches=
 no_clean=
-faux_dhcp=
 fot=
 faucet_config=
 mode=bond
@@ -14,11 +12,6 @@ mode=bond
 if [ "$1" == "local" ]; then
     local=local
     shift
-fi
-
-if [ "$1" == "devices" ]; then
-    devices=$2
-    shift 2
 fi
 
 if [ "$1" == "switches" ]; then
@@ -29,11 +22,6 @@ fi
 if [ "$1" == "overwrite-faucet-config" ]; then
     faucet_config=$2
     shift 2
-fi
-
-if [ "$1" == "dhcp" ]; then
-    faux_dhcp=dhcp
-    shift
 fi
 
 if [ "$1" == "no-clean" ]; then
@@ -131,34 +119,7 @@ done
 
 echo Connecting faux interfaces...
 add_faux corp 1 0 dnsmasq
-add_faux t2sw1 101 1
-add_faux t2sw2 101 2
-add_faux t2sw3 101 3 $faux_dhcp
 add_iface t1sw1 4 cntrl_tap_1
-
-dcount=${devices:-3}
-scount=${switches:-3}
-
-if [ -n "$switches" ]; then
-    for snum in $(seq 4 $switches); do
-        echo Adding to switch t2sw$snum device num $snum
-        add_faux t2sw$snum 101 $snum
-    done
-fi
-
-if [ -n "$devices" ]; then
-    for dnum in $(seq 2 $devices); do
-        for snum in $(seq $scount); do
-            device_num=$(((dnum - 1) * scount + snum))
-            echo Adding device num $device_num to switch t2sw$snum
-            add_faux t2sw$snum $((dnum+100)) $device_num
-        done
-    done
-fi
-
-
-tdevices=$((dcount + scount - 3))
-echo Working with $tdevices devices.
 
 echo Letting system settle...
 sleep 60
