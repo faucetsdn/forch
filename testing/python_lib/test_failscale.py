@@ -1,7 +1,6 @@
 """Integration test base class for Forch"""
 import unittest
 import time
-import multiprocessing
 import yaml
 
 from integration_base import IntegrationTestBase
@@ -57,7 +56,7 @@ class FailScaleConfigTest(IntegrationTestBase):
         ping_counts = {}
         target_args = []
         for device in device_list:
-            ping_count = multiprocessing.Array("i", [0, 1])
+            ping_count = self.get_multiprocessing_array('i', 2)
             ping_counts[device] = ping_count
             target_args.append((device, ping_count, ))
         self.parallelize(len(target_args), ping_device, target_args)
