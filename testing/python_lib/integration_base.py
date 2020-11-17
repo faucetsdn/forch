@@ -179,9 +179,13 @@ class IntegrationTestBase(unittest.TestCase):
             print('Waiting on %s for IP address...' % container)
             time.sleep(2)
 
-    def get_multiprocessing_array(self, type_code, size):
+    def _get_multiprocessing_array(self, type_code, size):
         """Returns shared memory array from multiprocessing library"""
         return multiprocessing.Array(type_code, size)
+
+    def get_shared_memory_int_array(self, size):
+        """Returns shared memory array of the int type"""
+        return self._get_multiprocessing_array('i', size)
 
 
 if __name__ == '__main__':
