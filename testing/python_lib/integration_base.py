@@ -144,14 +144,16 @@ class IntegrationTestBase(unittest.TestCase):
         return os.path.dirname(os.path.abspath(__file__)) + \
             (config_file_format % ('forch-faucet-1'))
 
-    def parallelize(self, job_count, target, target_args=[]):
+    def parallelize(self, job_count, target, target_args=None):
         """Parallelizes multiple runs of a target method with multiprocessing"""
         jobs = []
+        if not target_args:
+            target_args = []
         for job in range(job_count):
             try:
                 args = target_args[job]
             except IndexError:
-                args=()
+                args = ()
             process = multiprocessing.Process(target=target, args=args)
             jobs.append(process)
 
@@ -161,13 +163,16 @@ class IntegrationTestBase(unittest.TestCase):
         for job in jobs:
             job.join()
 
-    def add_faux(self, switch, port, fnum, args=[]):
+    def add_faux(self, switch, port, fnum, args=None):
         """Add faux device to a specific switch at a specific port"""
         container = 'forch-faux-%s' % fnum
         print('Adding %s...' % (container))
+        if not args:
+            args = []
         self._run_cmd('bin/run_faux %s %s' % (fnum, ' '.join(args)))
         iface = 'faux-%s' % fnum
-        self._run_cmd('sudo ovs-vsctl add-port %s %s -- set interface %s ofport_request=%s ' % (switch, iface, iface, port))
+        self._run_cmd('sudo ovs-vsctl add-port %s %s -- set interface %s ofport_request=%s '
+                      % (switch, iface, iface, port))
         self._run_cmd('sudo ifconfig %s up' % iface)
         while not self._get_docker_ip(container):
             print('Waiting on %s for IP address...' % container)
