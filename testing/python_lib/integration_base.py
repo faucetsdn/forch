@@ -181,7 +181,7 @@ class IntegrationTestBase(unittest.TestCase):
 
     def get_multiprocessing_array(self, type_code, size):
         """Returns shared memory array from multiprocessing library"""
-        return multiprocessing.Array(type_code, range(size))
+        return multiprocessing.Array(type_code, size)
 
 
 if __name__ == '__main__':
