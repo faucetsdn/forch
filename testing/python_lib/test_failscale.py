@@ -27,7 +27,7 @@ class FailScaleConfigTest(IntegrationTestBase):
             yaml.dump(config, config_file)
 
         self.stack_options.update({
-            'devices': self.devices,
+            'devices': 1,
             'switches': self.switches,
             'mode': 'scale',
             'overwrite-faucet-config': self.config_path,
@@ -36,6 +36,13 @@ class FailScaleConfigTest(IntegrationTestBase):
 
     def test_stack_connectivity(self):
         """Test to build stack and check for connectivity"""
+
+        for dev_index in range(1, self.devices):
+            for sw_index in range(1, self.switches + 1):
+                device_num = dev_index * self.switches + sw_index
+                switch = 't2sw%s' % sw_index
+                self.add_faux(switch, 100 + dev_index + 1, device_num)
+
         device_list = ['forch-faux-'+str(num) for num in range(1, self.devices * self.switches + 1)]
 
         def ping_device(device, ping_count):
