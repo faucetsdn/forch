@@ -1380,7 +1380,7 @@ class FaucetStateCollector:
                 return ret_attr
 
             sequester_port_desc = self._config.orchestration.sequester_config.port_description
-            if sequester_port_desc and sequester_port_desc in port_info.get('description', ''):
+            if sequester_port_desc and sequester_port_desc == port_info.get('description', ''):
                 ret_attr['type'] = 'sequester'
                 return ret_attr
 

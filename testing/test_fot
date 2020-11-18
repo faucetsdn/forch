@@ -66,9 +66,9 @@ docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
 docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
 
 vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
-echo $(( (vlan>271) + (vlan>276) )) | tee -a $TEST_RESULTS
+echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 vlan=$($YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
-echo $(( (vlan>271) + (vlan>276) )) | tee -a $TEST_RESULTS
+echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
 # Waiting for DAQ test to complete
 function report_result {

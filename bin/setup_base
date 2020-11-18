@@ -5,11 +5,13 @@ cd $ROOT
 
 PVERSION=3.8
 GO_VERSION=1.13.3
+RELEASE=$(lsb_release -is | awk '{print tolower($0)}')
+REPO=$(lsb_release -cs)
 
 sudo apt-get update
 sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | awk '{print tolower($0)}') $(lsb_release -cs) stable"
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$RELEASE $REPO stable"
 sudo apt-get update
 
 sudo apt-get install openvswitch-switch protobuf-compiler \
