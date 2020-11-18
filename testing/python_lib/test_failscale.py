@@ -56,8 +56,7 @@ class FailScaleConfigTest(IntegrationTestBase):
         ping_counts = {}
         target_args = []
         for device in device_list:
-            # Get shared memory int array which ensures same copy of the array across
-            # parent and child processes
+            # Get shared memory int array which is used across parent and child processes
             ping_count = self.get_shared_memory_int_array(size=2)
             ping_counts[device] = ping_count
             target_args.append((device, ping_count, ))
