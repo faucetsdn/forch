@@ -43,7 +43,7 @@ class FailScaleConfigTest(IntegrationTestBase):
                 device_port = 100 + dev_index + 1
                 faux_args.append((switch, device_port, device_num))
 
-        self.parallelize(len(faux_args), self.add_faux, faux_args)
+        self.parallelize(self.add_faux, faux_args)
 
         time.sleep(10)
 
@@ -61,7 +61,7 @@ class FailScaleConfigTest(IntegrationTestBase):
             ping_count = self.get_shared_memory_int_array(size=2)
             ping_counts[device] = ping_count
             target_args.append((device, ping_count, ))
-        self.parallelize(len(target_args), ping_device, target_args)
+        self.parallelize(ping_device, target_args)
 
         for device in ping_counts:
             print('Device %s ping_count: %s' % (device, ping_counts[device][:]))

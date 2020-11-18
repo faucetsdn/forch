@@ -145,17 +145,14 @@ class IntegrationTestBase(unittest.TestCase):
         return os.path.dirname(os.path.abspath(__file__)) + \
             (config_file_format % ('forch-faucet-1'))
 
-    def parallelize(self, job_count, target, target_args=None):
-        """Parallelizes multiple runs of a target method with multiprocessing"""
+    def parallelize(self, target, target_args):
+        """Parallelizes multiple runs of a target method with multiprocessing.
+           target_args: List of tuples which serve as args for target.
+                        List size determines number of jobs
+           target: Target method"""
         jobs = []
-        if not target_args:
-            target_args = []
-        for job in range(job_count):
-            if job < len(target_args):
-                args = target_args[job]
-            else:
-                args = ()
-            process = multiprocessing.Process(target=target, args=args)
+        for arg_tuple in target_args:
+            process = multiprocessing.Process(target=target, args=arg_tuple)
             jobs.append(process)
 
         for job in jobs:
