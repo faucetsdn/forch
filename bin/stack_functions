@@ -101,12 +101,15 @@ function add_faux {
     port=$2
     fnum=$3
     shift 3
+    dhcp=$1
     bin/run_faux $fnum $*
     add_iface $switch $port faux-$fnum
-    while ! docker exec forch-faux-$fnum ip addr show faux-eth0 | fgrep inet; do
-        echo Waiting for IP address...
-        sleep 2
-    done
+    if [[ -z "$dhcp" ]]; then
+        while ! docker exec forch-faux-$fnum ip addr show faux-eth0 | fgrep inet; do
+            echo Waiting for IP address...
+            sleep 2
+        done
+    fi
 }
 
 function diagnose_stack {

@@ -142,9 +142,9 @@ fi
 
 echo Connecting faux interfaces...
 add_faux corp 1 0 dnsmasq
-add_faux t2sw1 1 1
-add_faux t2sw2 1 2
-add_faux t2sw3 1 3 $faux_dhcp
+add_faux t2sw1 1 1 $faux_dhcp
+add_faux t2sw2 1 2 $faux_dhcp
+add_faux t2sw3 1 3
 add_iface t1sw1 4 cntrl_tap_1
 
 dcount=${devices:-3}
