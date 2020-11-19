@@ -58,8 +58,6 @@ $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -
 $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
 
 # Start DHCP client on faux-1 and faux-2
-docker exec forch-faux-1 dhclient -r &
-docker exec forch-faux-2 dhclient -r
 docker exec forch-faux-1 dhclient &
 docker exec forch-faux-2 dhclient
 docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
