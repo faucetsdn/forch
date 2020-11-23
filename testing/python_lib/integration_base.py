@@ -2,7 +2,9 @@
 
 import subprocess
 import unittest
+import multiprocessing
 import os
+import time
 import yaml
 
 from tcpdump_helper import TcpdumpHelper
@@ -114,7 +116,9 @@ class IntegrationTestBase(unittest.TestCase):
         _, out, _ = self._run_cmd('ip addr show %s' % (interface),
                                   docker_container=container, capture=True)
         out_list = out.split()
-        return out_list[out_list.index('inet') + 1].split('/')[0]
+        if 'inet' in out_list:
+            return out_list[out_list.index('inet') + 1].split('/')[0]
+        return None
 
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
@@ -140,6 +144,45 @@ class IntegrationTestBase(unittest.TestCase):
                 (config_file_format % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
             (config_file_format % ('forch-faucet-1'))
+
+    def parallelize(self, target, target_args):
+        """Parallelizes multiple runs of a target method with multiprocessing.
+           target_args: List of tuples which serve as args for target.
+                        List size determines number of jobs
+           target: Target method"""
+        jobs = []
+        for arg_tuple in target_args:
+            process = multiprocessing.Process(target=target, args=arg_tuple)
+            jobs.append(process)
+
+        for job in jobs:
+            job.start()
+
+        for job in jobs:
+            job.join()
+
+    def add_faux(self, switch, port, fnum, args=None):
+        """Add faux device to a specific switch at a specific port"""
+        container = 'forch-faux-%s' % fnum
+        print('Adding %s...' % (container))
+        if not args:
+            args = []
+        self._run_cmd('bin/run_faux %s %s' % (fnum, ' '.join(args)))
+        iface = 'faux-%s' % fnum
+        self._run_cmd('sudo ovs-vsctl add-port %s %s -- set interface %s ofport_request=%s '
+                      % (switch, iface, iface, port))
+        self._run_cmd('sudo ifconfig %s up' % iface)
+        while not self._get_docker_ip(container):
+            print('Waiting on %s for IP address...' % container)
+            time.sleep(2)
+
+    def _get_multiprocessing_array(self, type_code, size):
+        """Returns shared memory array from multiprocessing library"""
+        return multiprocessing.Array(type_code, size)
+
+    def get_shared_memory_int_array(self, size):
+        """Returns shared memory array of the int type"""
+        return self._get_multiprocessing_array('i', size)
 
 
 if __name__ == '__main__':
