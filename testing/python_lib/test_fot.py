@@ -182,36 +182,69 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         unauthenticated_devices = ['00:0X:00:00:00:01', '00:0A:00:00:00:04']
         reauthenticated_device = {'00:0A:00:00:00:04': {'segment': 'SEG_D'}}
 
+        expected_device_placements = []
+        expected_device_behaviors = []
+
         # load static device placements
+        self._load_static_device_placements(static_device_placements, expected_device_placements)
+
+        # load static device behaviors
+        self._load_static_device_behaviors(static_device_behaviors)
+
+        # devices are learned
+        self._learn_devices(dynamic_device_placements, expected_device_placements)
+
+        # devices are authenticated
+        self._authenticate_devices(authentication_results, expected_device_behaviors)
+
+        # received testing results for devices
+        self._receive_testing_results(testing_results, expected_device_behaviors)
+
+        # devices are expired
+        self._expire_devices(expired_device_vlans, expected_device_placements)
+
+        # devices are unauthenticated
+        self._unauthenticate_devices(unauthenticated_devices, expected_device_behaviors)
+
+        # devices are reauthenticated
+        self._reauthenticate_devices(reauthenticated_device, expected_device_behaviors)
+
+    def _load_static_device_placements(self, static_device_placements, expected_device_placements):
         for mac, device_placement_map in static_device_placements.items():
             self._port_state_manager.handle_device_placement(mac, dict_proto(
                 device_placement_map, DevicePlacement), static=True)
 
-        expected_received_device_placements = [
+        expected_device_placements.extend([
             # mac, connected, static
             ('00:0Y:00:00:00:02', True, True),
             ('00:0Z:00:00:00:03', True, True),
-        ]
-        self._verify_received_device_placements(expected_received_device_placements)
+        ])
+        self._verify_received_device_placements(expected_device_placements)
 
-        # load static device behaviors
+    def _load_static_device_behaviors(self, static_device_behaviors):
         for mac, device_behavior_map in static_device_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
 
-        # devices are learned
+        expected_states = {
+            '00:0Y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0Z:00:00:00:03': self.UNAUTHENTICATED
+        }
+        self._verify_ports_states(expected_states)
+
+    def _learn_devices(self, dynamic_device_placements, expected_device_placements):
         for mac, device_placement_map in dynamic_device_placements.items():
             self._port_state_manager.handle_device_placement(mac, dict_proto(
                 device_placement_map, DevicePlacement), static=False)
 
-        expected_received_device_placements.extend([
+        expected_device_placements.extend([
             ('00:0X:00:00:00:01', True, False),
             ('00:0A:00:00:00:04', True, False),
             ('00:0B:00:00:00:05', True, False)
         ])
-        self._verify_received_device_placements(expected_received_device_placements)
+        self._verify_received_device_placements(expected_device_placements)
 
-        # devices are authenticated
+    def _authenticate_devices(self, authentication_results, expected_device_behaviors):
         for mac, device_behavior_map in authentication_results.items():
             self._port_state_manager.handle_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
@@ -225,16 +258,16 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_received_device_behaviors = [
+        expected_device_behaviors.extend([
             ('00:0X:00:00:00:01', 'SEG_A', True),
             ('00:0X:00:00:00:01', 'SEG_A', True),
             ('00:0Z:00:00:00:03', 'TESTING', False),
             ('00:0A:00:00:00:04', 'TESTING', False),
             ('00:0B:00:00:00:05', 'TESTING', False)
-        ]
-        self._verify_received_device_behaviors(expected_received_device_behaviors)
+        ])
+        self._verify_received_device_behaviors(expected_device_behaviors)
 
-        # received testing results for devices
+    def _receive_testing_results(self, testing_results, expected_device_behaviors):
         for testing_result in testing_results:
             self._port_state_manager.handle_testing_result(
                 self._encapsulate_testing_result(*testing_result))
@@ -248,24 +281,24 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_received_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
-        self._verify_received_device_behaviors(expected_received_device_behaviors)
+        expected_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
+        self._verify_received_device_behaviors(expected_device_behaviors)
 
-        # devices are expired
+    def _expire_devices(self, expired_device_vlans, expected_device_placements):
         for expired_device_vlan in expired_device_vlans:
             mac = expired_device_vlan[0]
             expired_vlan = expired_device_vlan[1]
             self._port_state_manager.handle_device_placement(
                 mac, DevicePlacement(switch='switch', port=1), False, expired_vlan)
 
-        expected_received_device_placements.extend([
+        expected_device_placements.extend([
             # mac, device_placement.connected, static
             ('00:0X:00:00:00:01', False, False),
             ('00:0B:00:00:00:05', False, False)
         ])
-        self._verify_received_device_placements(expected_received_device_placements)
+        self._verify_received_device_placements(expected_device_placements)
 
-        # devices are unauthenticated
+    def _unauthenticate_devices(self, unauthenticated_devices, expected_device_behaviors):
         for mac in unauthenticated_devices:
             self._port_state_manager.handle_device_behavior(mac, DeviceBehavior())
 
@@ -276,9 +309,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_received_device_behaviors.extend([('00:0A:00:00:00:04', '', False)])
-        self._verify_received_device_behaviors(expected_received_device_behaviors)
+        expected_device_behaviors.extend([('00:0A:00:00:00:04', '', False)])
+        self._verify_received_device_behaviors(expected_device_behaviors)
 
+    def _reauthenticate_devices(self, reauthenticated_device, expected_device_behaviors):
         for mac, device_behavior_map in reauthenticated_device.items():
             self._port_state_manager.handle_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
@@ -290,8 +324,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_received_device_behaviors.extend([('00:0A:00:00:00:04', 'TESTING', False)])
-        self._verify_received_device_behaviors(expected_received_device_behaviors)
+        expected_device_behaviors.extend([('00:0A:00:00:00:04', 'TESTING', False)])
+        self._verify_received_device_behaviors(expected_device_behaviors)
 
 
 class FotSequesterTest(IntegrationTestBase):
