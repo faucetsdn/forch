@@ -45,6 +45,7 @@ class PortStateMachine:
         },
     }
 
+    # pylint: disable=too-many-arguments
     def __init__(self, mac, initial_state, unauthenticated_state_callback, sequester_state_callback,
                  operational_state_callback, infracted_state_callback):
         self._mac = mac
@@ -104,6 +105,8 @@ class PortStateMachine:
 
 class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
+
+    # pylint: disable=too-many-arguments
     def __init__(self, process_device_placement, process_device_behavior, get_vlan_from_segment,
                  update_device_state_varz=None, testing_segment=None):
         self._state_machines = {}
