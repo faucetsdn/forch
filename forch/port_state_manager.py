@@ -31,9 +31,6 @@ class PortStateMachine:
 
     TRANSITIONS = {
         UNAUTHENTICATED: {
-            PortBehavior.authenticated: AUTHENTICATED
-        },
-        AUTHENTICATED: {
             PortBehavior.cleared: OPERATIONAL,
             PortBehavior.sequestered: SEQUESTERED,
         },
@@ -56,6 +53,8 @@ class PortStateMachine:
         self._sequester_state_callback = sequester_state_callback
         self._operational_state_callback = operational_state_callback
         self._infracted_state_callback = infracted_state_callback
+
+        self._handle_current_state()
 
     def handle_port_behavior(self, port_behavior):
         """Handle port behavior"""
@@ -86,10 +85,6 @@ class PortStateMachine:
     def _handle_unauthenticated_state(self):
         LOGGER.info('Handling unauthenticated state for device %s', self._mac)
         self._unauthenticated_state_callback(self._mac)
-
-    @_register_state_handler(state_name=AUTHENTICATED)
-    def _handle_authenticated_state(self):
-        LOGGER.info('Handling authenticated state for device %s', self._mac)
 
     @_register_state_handler(state_name=SEQUESTERED)
     def _handle_sequestered_state(self):
@@ -149,9 +144,15 @@ class PortStateManager:
 
             if mac not in self._state_machines:
                 self._state_machines[mac] = PortStateMachine(
-                    mac, PortStateMachine.AUTHENTICATED, self._handle_unauthenticated_state,
+                    mac, PortStateMachine.UNAUTHENTICATED, self._handle_unauthenticated_state,
                     self._set_port_sequestered, self._set_port_operational,
                     self._handle_infracted_state)
+
+                device_behavior = (self._static_device_behaviors.get(mac) or
+                                   self._dynamic_device_behaviors.get(mac))
+                if device_behavior:
+                    static = mac in self._static_device_behaviors
+                    self.handle_device_behavior(mac, device_behavior, static=static)
 
             return True
 
@@ -165,7 +166,8 @@ class PortStateManager:
             self._process_device_placement(mac, device_placement, static=False)
 
             self._update_device_state_varz(mac, DVAState.initial)
-            self._state_machines.pop(mac)
+            if mac in self._state_machines:
+                self._state_machines.pop(mac)
             return True
         return False
 
@@ -182,7 +184,8 @@ class PortStateManager:
             else:
                 port_behavior = PortBehavior.sequestered
 
-            self._state_machines[mac].handle_port_behavior(port_behavior)
+            if mac in self._state_machines:
+                self._state_machines[mac].handle_port_behavior(port_behavior)
 
     def _handle_deauthenticated_device(self, mac, static):
         """Handle an unauthenticated device"""
