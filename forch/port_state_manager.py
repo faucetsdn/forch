@@ -193,7 +193,7 @@ class PortStateManager:
                 self._state_machines[mac].handle_port_behavior(port_behavior)
 
     def _handle_deauthenticated_device(self, mac, static):
-        """Handle an unauthenticated device"""
+        """Handle an deauthenticated device"""
         with self._lock:
             try:
                 device_behaviors = (
@@ -224,7 +224,6 @@ class PortStateManager:
             state_machine.handle_port_behavior(port_behavior)
 
     def _handle_unauthenticated_state(self, mac):
-        """Handle unauthenticated state"""
         self._update_device_state_varz(mac, DVAState.unauthenticated)
 
     def _set_port_sequestered(self, mac):
@@ -243,7 +242,6 @@ class PortStateManager:
         self._update_device_state_varz(mac, DVAState.static if static else DVAState.operational)
 
     def _handle_infracted_state(self, mac):
-        """Handle infracted state"""
         self._update_device_state_varz(mac, DVAState.infracted)
 
     def clear_static_device_behaviors(self):
