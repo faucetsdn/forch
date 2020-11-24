@@ -6,6 +6,7 @@ from forch.utils import get_logger
 
 from forch.proto.shared_constants_pb2 import PortBehavior
 from forch.proto.devices_state_pb2 import DeviceBehavior
+from forch.proto.shared_constants_pb2 import DVAState
 
 
 LOGGER = get_logger('portsm')
@@ -22,12 +23,16 @@ def _register_state_handler(state_name):
 class PortStateMachine:
     """State machine class that manages testing states of an access port"""
 
+    UNAUTHENTICATED = 'unauthenticated'
     AUTHENTICATED = 'authenticated'
     SEQUESTERED = 'sequestered'
     OPERATIONAL = 'operational'
     INFRACTED = 'infracted'
 
     TRANSITIONS = {
+        UNAUTHENTICATED: {
+            PortBehavior.authenticated: AUTHENTICATED
+        },
         AUTHENTICATED: {
             PortBehavior.cleared: OPERATIONAL,
             PortBehavior.sequestered: SEQUESTERED,
@@ -35,17 +40,22 @@ class PortStateMachine:
         SEQUESTERED: {
             PortBehavior.passed: OPERATIONAL,
             PortBehavior.failed: INFRACTED,
+            PortBehavior.deauthenticated: UNAUTHENTICATED,
         },
         OPERATIONAL: {
             PortBehavior.cleared: OPERATIONAL,
+            PortBehavior.deauthenticated: UNAUTHENTICATED,
         },
     }
 
-    def __init__(self, mac, initial_state, sequester_state_callback, operational_state_callback):
+    def __init__(self, mac, initial_state, unauthenticated_state_callback, sequester_state_callback,
+                 operational_state_callback, infracted_state_callback):
         self._mac = mac
         self._current_state = initial_state
+        self._unauthenticated_state_callback = unauthenticated_state_callback
         self._sequester_state_callback = sequester_state_callback
         self._operational_state_callback = operational_state_callback
+        self._infracted_state_callback = infracted_state_callback
 
     def handle_port_behavior(self, port_behavior):
         """Handle port behavior"""
@@ -72,6 +82,11 @@ class PortStateMachine:
         if self._current_state in STATE_HANDLERS:
             STATE_HANDLERS[self._current_state](self)
 
+    @_register_state_handler(state_name=UNAUTHENTICATED)
+    def _handle_unauthenticated_state(self):
+        LOGGER.info('Handling unauthenticated state for device %s', self._mac)
+        self._unauthenticated_state_callback(self._mac)
+
     @_register_state_handler(state_name=AUTHENTICATED)
     def _handle_authenticated_state(self):
         LOGGER.info('Handling authenticated state for device %s', self._mac)
@@ -86,23 +101,26 @@ class PortStateMachine:
         LOGGER.info('Handling operational state for device %s', self._mac)
         self._operational_state_callback(self._mac)
 
+    @_register_state_handler(state_name=INFRACTED)
+    def _handle_infracted_state(self):
+        LOGGER.info('Handling infracted state for device %s', self._mac)
+        self._infracted_state_callback(self._mac)
+
 
 class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
     def __init__(self, process_device_placement, process_device_behavior, get_vlan_from_segment,
-                 testing_segment=None):
+                 update_device_state_varz=None, testing_segment=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
-        self._process_device_placement = (
-            lambda *args, **kwargs: process_device_placement(*args, **kwargs)
-            if process_device_placement else None)
-        self._process_device_behavior = (
-            lambda *args, **kwargs: process_device_behavior(*args, **kwargs)
-            if process_device_behavior else None)
-        self._get_vlan_from_segment = (
-            lambda segment: get_vlan_from_segment(segment) if get_vlan_from_segment else None)
+        self._process_device_placement = process_device_placement
+        self._process_device_behavior = process_device_behavior
+        self._get_vlan_from_segment = get_vlan_from_segment
+        self._update_device_state_varz = (
+            lambda mac, state: update_device_state_varz(mac, state)
+            if update_device_state_varz else None)
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
 
@@ -121,13 +139,20 @@ class PortStateManager:
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)
         else:
-            self._handle_unauthenticated_device(mac, static)
+            self._handle_deauthenticated_device(mac, static)
 
     def handle_device_placement(self, mac, device_placement, static=False, expired_vlan=None):
         """Handle a learning or expired VLAN for a device"""
         if device_placement.connected:
             # if device is learned
             self._process_device_placement(mac, device_placement, static=static)
+
+            if mac not in self._state_machines:
+                self._state_machines[mac] = PortStateMachine(
+                    mac, PortStateMachine.AUTHENTICATED, self._handle_unauthenticated_state,
+                    self._set_port_sequestered, self._set_port_operational,
+                    self._handle_infracted_state)
+
             return True
 
         # if device vlan is expired
@@ -138,6 +163,9 @@ class PortStateManager:
         if (not expired_vlan or not device_behavior or
                 self._get_vlan_from_segment(device_behavior.segment) == expired_vlan):
             self._process_device_placement(mac, device_placement, static=False)
+
+            self._update_device_state_varz(mac, DVAState.initial)
+            self._state_machines.pop(mac)
             return True
         return False
 
@@ -154,13 +182,9 @@ class PortStateManager:
             else:
                 port_behavior = PortBehavior.sequestered
 
-            new_state_machine = PortStateMachine(
-                mac, PortStateMachine.AUTHENTICATED, self._set_port_sequestered,
-                self._set_port_operational)
-            state_machine = self._state_machines.setdefault(mac, new_state_machine)
-            state_machine.handle_port_behavior(port_behavior)
+            self._state_machines[mac].handle_port_behavior(port_behavior)
 
-    def _handle_unauthenticated_device(self, mac, static):
+    def _handle_deauthenticated_device(self, mac, static):
         """Handle an unauthenticated device"""
         with self._lock:
             try:
@@ -169,8 +193,11 @@ class PortStateManager:
                 device_behaviors.pop(mac)
 
                 if static or mac not in self._static_device_behaviors:
-                    self._state_machines.pop(mac)
+                    if mac in self._state_machines:
+                        port_behavior = PortBehavior.deauthenticated
+                        self._state_machines[mac].handle_port_behavior(port_behavior)
                     self._process_device_behavior(mac, DeviceBehavior(), static=static)
+
             except KeyError as error:
                 LOGGER.warning('MAC %s does not exist: %s', mac, error)
 
@@ -188,10 +215,16 @@ class PortStateManager:
                 return
             state_machine.handle_port_behavior(port_behavior)
 
+    def _handle_unauthenticated_state(self, mac):
+        """Handle unauthenticated state"""
+        self._update_device_state_varz(mac, DVAState.unauthenticated)
+
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
         device_behavior = DeviceBehavior(segment=self._testing_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
+        if self._update_device_state_varz:
+            self._update_device_state_varz(mac, DVAState.sequestered)
 
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""
@@ -200,10 +233,15 @@ class PortStateManager:
         static = mac in self._static_device_behaviors
         assert device_behavior
         self._process_device_behavior(mac, device_behavior, static=static)
+        self._update_device_state_varz(mac, DVAState.static if static else DVAState.operational)
+
+    def _handle_infracted_state(self, mac):
+        """Handle infracted state"""
+        self._update_device_state_varz(mac, DVAState.infracted)
 
     def clear_static_device_behaviors(self):
         """Remove all static device behaviors"""
         with self._lock:
             macs = list(self._static_device_behaviors.keys())
             for mac in macs:
-                self._handle_unauthenticated_device(mac, static=True)
+                self._handle_deauthenticated_device(mac, static=True)

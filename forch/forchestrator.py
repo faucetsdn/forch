@@ -208,9 +208,16 @@ class Forchestrator:
             process_device_behavior = None
             get_vlan_from_segment = None
 
-        self._port_state_manager = PortStateManager(
-            process_device_placement, process_device_behavior, get_vlan_from_segment,
-            self._config.orchestration.sequester_config.segment)
+        if self._metrics:
+            update_device_state_varz = (lambda mac, state: self._metrics.update_var(
+                'device_state', state, labels=[mac]))
+            self._port_state_manager = PortStateManager(
+                process_device_placement, process_device_behavior, get_vlan_from_segment,
+                update_device_state_varz, self._config.orchestration.sequester_config.segment)
+        else:
+            self._port_state_manager = PortStateManager(
+                process_device_placement, process_device_behavior, get_vlan_from_segment,
+                testing_segment=self._config.orchestration.sequester_config.segment)
 
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
