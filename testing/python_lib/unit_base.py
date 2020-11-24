@@ -340,6 +340,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 class PortsStateManagerTestBase(UnitTestBase):
     """Base class for PortsStateManager"""
 
+    UNAUTHENTICATED = 'unauthenticated'
     AUTHENTICATED = 'authenticated'
     SEQUESTERED = 'sequestered'
     OPERATIONAL = 'operational'

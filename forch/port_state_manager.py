@@ -110,9 +110,14 @@ class PortStateManager:
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
-        self._process_device_placement = process_device_placement
-        self._process_device_behavior = process_device_behavior
-        self._get_vlan_from_segment = get_vlan_from_segment
+        self._process_device_placement = (
+            lambda *args, **kwargs: process_device_placement(*args, **kwargs)
+            if process_device_placement else None)
+        self._process_device_behavior = (
+            lambda *args, **kwargs: process_device_behavior(*args, **kwargs)
+            if process_device_behavior else None)
+        self._get_vlan_from_segment = (
+            lambda segment: get_vlan_from_segment(segment) if get_vlan_from_segment else None)
         self._update_device_state_varz = (
             lambda mac, state: update_device_state_varz(mac, state)
             if update_device_state_varz else None)
