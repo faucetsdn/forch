@@ -226,8 +226,7 @@ class PortStateManager:
         """Set port to sequester vlan"""
         device_behavior = DeviceBehavior(segment=self._testing_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
-        if self._update_device_state_varz:
-            self._update_device_state_varz(mac, DVAState.sequestered)
+        self._update_device_state_varz(mac, DVAState.sequestered)
 
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""
