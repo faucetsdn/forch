@@ -90,6 +90,9 @@ message DVAState {
 
     // operational
     operational = 4;
+
+    // infracted
+    infracted = 5;
   }
 }
 
@@ -159,6 +162,9 @@ message PortBehavior {
 
     // failed testing
     failed = 5;
+
+    // deauthenticated
+    deauthenticated = 6;
   }
 }
 
