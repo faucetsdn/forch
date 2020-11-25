@@ -113,17 +113,10 @@ class PortStateManager:
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
-        self._process_device_placement = (
-            lambda mac, placement, static: process_device_placement(mac, placement, static)
-            if process_device_placement else None)
-        self._process_device_behavior = (
-            lambda mac, behavior, static: process_device_behavior(mac, behavior, static)
-            if process_device_behavior else None)
-        self._get_vlan_from_segment = (
-            lambda segment: get_vlan_from_segment(segment) if get_vlan_from_segment else None)
-        self._update_device_state_varz = (
-            lambda mac, state: update_device_state_varz(mac, state)
-            if update_device_state_varz else None)
+        self._process_device_placement = process_device_placement
+        self._process_device_behavior = process_device_behavior
+        self._get_vlan_from_segment = get_vlan_from_segment
+        self._device_state_varz_callback = update_device_state_varz
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
 
@@ -148,7 +141,8 @@ class PortStateManager:
         """Handle a learning or expired VLAN for a device"""
         if device_placement.connected:
             # if device is learned
-            self._process_device_placement(mac, device_placement, static=static)
+            if self._process_device_placement:
+                self._process_device_placement(mac, device_placement, static=static)
 
             if mac not in self._state_machines:
                 self._state_machines[mac] = PortStateMachine(
@@ -168,19 +162,28 @@ class PortStateManager:
         static_behavior = self._static_device_behaviors.get(mac)
         dynamic_behavior = self._dynamic_device_behaviors.get(mac)
         device_behavior = static_behavior or dynamic_behavior
+        if device_behavior and self._get_vlan_from_segment:
+            port_vlan = self._get_vlan_from_segment(device_behavior.segment)
+        else:
+            port_vlan = None
 
-        if (not expired_vlan or not device_behavior or
-                self._get_vlan_from_segment(device_behavior.segment) == expired_vlan):
+        if expired_vlan and port_vlan != expired_vlan:
+            return False
+
+        if self._process_device_placement:
             self._process_device_placement(mac, device_placement, static=False)
+        if mac in self._state_machines:
+            self._state_machines.pop(mac)
 
-            self._update_device_state_varz(mac, DVAState.initial)
-            if mac in self._state_machines:
-                self._state_machines.pop(mac)
-            return True
-        return False
+        self._update_device_state_varz(mac, DVAState.initial)
+
+        return True
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""
+        if not self._process_device_behavior:
+            return
+
         with self._lock:
             device_behaviors = (
                 self._static_device_behaviors if static else self._dynamic_device_behaviors)
@@ -197,20 +200,26 @@ class PortStateManager:
 
     def _handle_deauthenticated_device(self, mac, static):
         """Handle an deauthenticated device"""
+        if not self._process_device_behavior:
+            return
+
         with self._lock:
-            try:
-                device_behaviors = (
-                    self._static_device_behaviors if static else self._dynamic_device_behaviors)
+            device_behaviors = (
+                self._static_device_behaviors if static else self._dynamic_device_behaviors)
+            if mac in device_behaviors:
                 device_behaviors.pop(mac)
+            else:
+                LOGGER.warning(
+                    '%s behavior does not exist for %s', 'static' if static else 'dynamic', mac)
 
-                if static or mac not in self._static_device_behaviors:
-                    if mac in self._state_machines:
-                        port_behavior = PortBehavior.deauthenticated
-                        self._state_machines[mac].handle_port_behavior(port_behavior)
-                    self._process_device_behavior(mac, DeviceBehavior(), static=static)
+            # ignore dynamic behavior for device that has static behavior defined
+            if not static and mac in self._static_device_behaviors:
+                return
 
-            except KeyError as error:
-                LOGGER.warning('MAC %s does not exist: %s', mac, error)
+            if mac in self._state_machines:
+                port_behavior = PortBehavior.deauthenticated
+                self._state_machines[mac].handle_port_behavior(port_behavior)
+                self._process_device_behavior(mac, DeviceBehavior(), static=static)
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
@@ -231,12 +240,16 @@ class PortStateManager:
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
+        if not self._process_device_behavior:
+            return
         device_behavior = DeviceBehavior(segment=self._testing_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
         self._update_device_state_varz(mac, DVAState.sequestered)
 
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""
+        if not self._process_device_behavior:
+            return
         device_behavior = (
             self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
         static = mac in self._static_device_behaviors
@@ -246,6 +259,10 @@ class PortStateManager:
 
     def _handle_infracted_state(self, mac):
         self._update_device_state_varz(mac, DVAState.infracted)
+
+    def _update_device_state_varz(self, mac, device_state):
+        if self._device_state_varz_callback:
+            self._device_state_varz_callback(mac, device_state)
 
     def clear_static_device_behaviors(self):
         """Remove all static device behaviors"""
