@@ -1,3 +1,30 @@
+## 1.15.0
+## Forch 0.47.1
+* Parallelize connectivity tests and faux device creation to boost setup speed. (#211)
+* Determine CPN node state based on consecutive successful or failed ping counts (#208)
+* Revert to static ip assignment (#206)
+* Allow test_rescale to scale and generate config for the setup (#199)
+* Add configured DAQ to FOT setup (#204)
+* Update dependencies for more complete daq run (#202)
+* Add daq to controller container (#201)
+## Faucet 1.9.52.1
+* Reduce forwarding impact of warm starts
+* Refine choice of redundant stack root when stack is degraded
+* Don't provision meters if they are not used by any ACL
+* Do not run pytype CI job on python3.5 (pytype no longer supports python3.5)
+* Update Cisco documentation to include configuration for a larger TCP window so that OpenFlow connections are more stable when large numbers of flow modifications are sent.
+* No longer use wildcard VLAN delete - makes adding/removing ports to a VLAN less computationally expensive.
+* Clone dynamic stack state on stack root change to make change over smoother.
+* Fix transient build error with rabbitmq adapter docker image.
+* Fix build error with faucetagent docker image.
+* Add 32bit support for running the test suite.
+* Fix unnecessary apt package installation during test suite run.
+* Update dependencies:
+    * Upgrade grafana to v7.3.3 [apt, docker]
+    * Upgrade prometheus to v2.22.2 [docker]
+    * Upgrade sphinx to v3.3.1 [docs]
+    * Upgrade pytype to v2020.11.12 [tests]
+
 ## 1.14.0
 ## Forch 0.46.x
 * Add varz for unconfigured port faucet event (#205)
