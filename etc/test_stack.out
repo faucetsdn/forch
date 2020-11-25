@@ -29,7 +29,7 @@ Done with stack-solid test.
 Running forch-solid tests
 @system_state-solid
 "nz-kiwi"
-52
+53
 "http://localhost.n:9020"
 "split"
 @dataplane_state-solid
@@ -44,13 +44,13 @@ Running forch-solid tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
 3
 @cpn_state-solid
-2
+3
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
@@ -90,7 +90,7 @@ Running forch-healthy tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -182,7 +182,7 @@ Running forch-twod tests
 "nz-kiwi-t1sw2"
 9
 6
-"147058200627"
+"1295"
 "Switches in broken state: nz-kiwi-t2sw3"
 "active"
 null
@@ -250,7 +250,7 @@ Running forch-broken tests
 null
 null
 null
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -315,7 +315,7 @@ Running forch-restored tests
 "nz-kiwi-t1sw2"
 9
 6
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -365,13 +365,13 @@ Done with stack-orphaned test.
 Running forch-orphaned tests
 @system_state-orphaned
 "nz-kiwi"
-98
+70
 "http://localhost.n:9020"
 "split"
 @dataplane_state-orphaned
 "broken"
 "egress: nz-kiwi-t1sw2:28; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50']"
-77
+49
 "active"
 "down"
 10
@@ -380,7 +380,7 @@ Running forch-orphaned tests
 "nz-kiwi-t1sw2"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -411,13 +411,13 @@ null
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-91
+63
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1:28; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-71
+43
 "active"
 "active"
 9
@@ -426,7 +426,7 @@ Running forch-reset tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
@@ -457,7 +457,7 @@ null
 Running forch-restart tests
 @system_state-restart
 "nz-kiwi"
-30
+31
 "http://localhost.n:9020"
 "split"
 @dataplane_state-restart
@@ -472,13 +472,13 @@ Running forch-restart tests
 "nz-kiwi-t1sw1"
 9
 28
-"147058200627"
+"1295"
 ""
 "active"
 null
 1
 @cpn_state-restart
-2
+3
 "127.0.0.1"
 "healthy"
 "240.0.0.1"

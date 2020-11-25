@@ -150,7 +150,7 @@ class Forchestrator:
 
         self._local_collector = LocalStateCollector(
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
-        self._cpn_collector = CPNStateCollector()
+        self._cpn_collector = CPNStateCollector(self._config.cpn_monitoring)
 
         faucet_prom_port = os.getenv('FAUCET_PROM_PORT', str(_FAUCET_PROM_PORT_DEFAULT))
         self._faucet_prom_endpoint = f"http://{_FAUCET_PROM_HOST}:{faucet_prom_port}"

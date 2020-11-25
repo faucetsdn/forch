@@ -18,7 +18,7 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
-        run: bin/setup_faucet
+        run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
       - name: build docker
@@ -39,7 +39,7 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
-        run: bin/setup_faucet
+        run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
       - name: run test
@@ -47,6 +47,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -55,16 +56,26 @@ jobs:
           python-version: 3.8
       - name: setup base
         run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_faucet
+      - name: setup faucet and daq
+        run: |
+          bin/setup_remote faucet
+          bin/setup_remote daq
       - name: build docker
         run: bin/retry_cmd bin/build_docker controller
-      - name: run test
+      - name: run python tests
         run: testing/python_test test_fot
+      - name: setup stack
+        run: bin/setup_stack fot
+      - name: run integration tests
+        run: testing/test_fot
+      - name: post-run logs
+        if: ${{ always() }}
+        run: |
+          docker logs forch-controller-1
 
   test_reconfig:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -74,7 +85,7 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
-        run: bin/setup_faucet
+        run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
       - name: build docker
@@ -86,7 +97,7 @@ jobs:
 
   test_stack:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -96,7 +107,7 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
-        run: bin/setup_faucet
+        run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
       - name: build docker
@@ -111,7 +122,7 @@ jobs:
 
   test_scale:
     runs-on: ubuntu-20.04
-    timeout-minutes: 40
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -121,7 +132,7 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
-        run: bin/setup_faucet
+        run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
       - name: run test

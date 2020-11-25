@@ -17,7 +17,9 @@ for option in $*; do
 done
 
 IFACE=faux-eth0
-IPADDR=192.168.1.$FAUX_NUM
+PREFIX=$(($FAUX_NUM/256 + 1))
+SUFFIX=$(($FAUX_NUM%256))
+IPADDR=192.168.$PREFIX.$SUFFIX
 GATEWAY=192.168.1.0
 
 while ! ip link show $IFACE; do
