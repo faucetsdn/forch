@@ -2,6 +2,7 @@
 
 import subprocess
 import unittest
+import multiprocessing
 import os
 import time
 import yaml
@@ -17,10 +18,10 @@ class IntegrationTestBase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stack_options = {
-            'setup_warmup_sec': 20,
             'skip-conn-check': True,
             'no-clean': True
         }
+        self.sim_setup_cmd = 'bin/setup_stack'
 
     def setUp(self):
         self._clean_stack()
@@ -68,19 +69,19 @@ class IntegrationTestBase(unittest.TestCase):
         devices = options.get('devices')
         stack_args.extend(['devices', str(devices)] if devices else [])
         switches = options.get('switches')
-        stack_args.extend(['switches', str(switches)] if devices else [])
+        stack_args.extend(['switches', str(switches)] if switches else [])
+        config = options.get('overwrite-faucet-config')
+        stack_args.extend(['overwrite-faucet-config', str(config)] if config else [])
         stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
         stack_args.extend(['dhcp'] if options.get('dhcp') else [])
         stack_args.extend(['no-clean'] if options.get('no-clean') else [])
+        stack_args.extend(['static_switch'] if options.get('static_switch') else [])
         stack_args.extend(['fot'] if options.get('fot') else [])
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
 
-        print('setup_stack ' + ' '.join(stack_args))
-        self._run_cmd('bin/setup_stack', stack_args)
-        setup_warmup_sec = options.get('setup_warmup_sec')
-        print('waiting %s...' % setup_warmup_sec)
-        time.sleep(setup_warmup_sec)
+        print(self.sim_setup_cmd + ' ' + ' '.join(stack_args))
+        self._run_cmd(self.sim_setup_cmd, stack_args)
 
     def _clean_stack(self):
         self._run_cmd('bin/net_clean')
@@ -111,6 +112,14 @@ class IntegrationTestBase(unittest.TestCase):
         command = 'up' if restore else 'down'
         self._run_cmd('sudo ip link set %s-eth28 %s' % (switch, command))
 
+    def _get_docker_ip(self, container, interface='faux-eth0'):
+        _, out, _ = self._run_cmd('ip addr show %s' % (interface),
+                                  docker_container=container, capture=True)
+        out_list = out.split()
+        if 'inet' in out_list:
+            return out_list[out_list.index('inet') + 1].split('/')[0]
+        return None
+
     def _read_yaml_from_file(self, filename):
         with open(filename) as config_file:
             yaml_object = yaml.load(config_file, yaml.SafeLoader)
@@ -135,6 +144,45 @@ class IntegrationTestBase(unittest.TestCase):
                 (config_file_format % ('forch-controller-1'))
         return os.path.dirname(os.path.abspath(__file__)) + \
             (config_file_format % ('forch-faucet-1'))
+
+    def parallelize(self, target, target_args):
+        """Parallelizes multiple runs of a target method with multiprocessing.
+           target_args: List of tuples which serve as args for target.
+                        List size determines number of jobs
+           target: Target method"""
+        jobs = []
+        for arg_tuple in target_args:
+            process = multiprocessing.Process(target=target, args=arg_tuple)
+            jobs.append(process)
+
+        for job in jobs:
+            job.start()
+
+        for job in jobs:
+            job.join()
+
+    def add_faux(self, switch, port, fnum, args=None):
+        """Add faux device to a specific switch at a specific port"""
+        container = 'forch-faux-%s' % fnum
+        print('Adding %s...' % (container))
+        if not args:
+            args = []
+        self._run_cmd('bin/run_faux %s %s' % (fnum, ' '.join(args)))
+        iface = 'faux-%s' % fnum
+        self._run_cmd('sudo ovs-vsctl add-port %s %s -- set interface %s ofport_request=%s '
+                      % (switch, iface, iface, port))
+        self._run_cmd('sudo ifconfig %s up' % iface)
+        while not self._get_docker_ip(container):
+            print('Waiting on %s for IP address...' % container)
+            time.sleep(2)
+
+    def _get_multiprocessing_array(self, type_code, size):
+        """Returns shared memory array from multiprocessing library"""
+        return multiprocessing.Array(type_code, size)
+
+    def get_shared_memory_int_array(self, size):
+        """Returns shared memory array of the int type"""
+        return self._get_multiprocessing_array('i', size)
 
 
 if __name__ == '__main__':

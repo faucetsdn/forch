@@ -404,6 +404,57 @@
         
           
           <li>
+            <a href="#forch%2fproto%2ffaucet_configuration.proto">forch/proto/faucet_configuration.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#Datapath"><span class="badge">M</span>Datapath</a>
+                </li>
+              
+                <li>
+                  <a href="#Datapath.InterfacesEntry"><span class="badge">M</span>Datapath.InterfacesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#FaucetConfig"><span class="badge">M</span>FaucetConfig</a>
+                </li>
+              
+                <li>
+                  <a href="#FaucetConfig.DpsEntry"><span class="badge">M</span>FaucetConfig.DpsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#FaucetConfig.VlansEntry"><span class="badge">M</span>FaucetConfig.VlansEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#Interface"><span class="badge">M</span>Interface</a>
+                </li>
+              
+                <li>
+                  <a href="#LLDPBeacon"><span class="badge">M</span>LLDPBeacon</a>
+                </li>
+              
+                <li>
+                  <a href="#Stack"><span class="badge">M</span>Stack</a>
+                </li>
+              
+                <li>
+                  <a href="#StackLink"><span class="badge">M</span>StackLink</a>
+                </li>
+              
+                <li>
+                  <a href="#Vlan"><span class="badge">M</span>Vlan</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2ffaucet_event.proto">forch/proto/faucet_event.proto</a>
             <ul>
               
@@ -485,6 +536,10 @@
           <li>
             <a href="#forch%2fproto%2fforch_configuration.proto">forch/proto/forch_configuration.proto</a>
             <ul>
+              
+                <li>
+                  <a href="#CpnMonitoring"><span class="badge">M</span>CpnMonitoring</a>
+                </li>
               
                 <li>
                   <a href="#DataplaneMonitoring"><span class="badge">M</span>DataplaneMonitoring</a>
@@ -2305,6 +2360,400 @@
     
       
       <div class="file-heading">
+        <h2 id="forch/proto/faucet_configuration.proto">forch/proto/faucet_configuration.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>Encapsulating Faucet configuration</p>
+
+      
+        <h3 id="Datapath">Datapath</h3>
+        <p>Datapath configuration</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>dp_id</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>datapath ID </p></td>
+                </tr>
+              
+                <tr>
+                  <td>faucet_dp_mac</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>DP mac </p></td>
+                </tr>
+              
+                <tr>
+                  <td>hardware</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Hardware </p></td>
+                </tr>
+              
+                <tr>
+                  <td>lacp_timeout</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>LACP timeout </p></td>
+                </tr>
+              
+                <tr>
+                  <td>stack</td>
+                  <td><a href="#Stack">Stack</a></td>
+                  <td></td>
+                  <td><p>Stack </p></td>
+                </tr>
+              
+                <tr>
+                  <td>interfaces</td>
+                  <td><a href="#Datapath.InterfacesEntry">Datapath.InterfacesEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Interfaces </p></td>
+                </tr>
+              
+                <tr>
+                  <td>lldp_beacon</td>
+                  <td><a href="#LLDPBeacon">LLDPBeacon</a></td>
+                  <td></td>
+                  <td><p>LLDP beacon </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="Datapath.InterfacesEntry">Datapath.InterfacesEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#Interface">Interface</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="FaucetConfig">FaucetConfig</h3>
+        <p>Faucet configuration</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>dps</td>
+                  <td><a href="#FaucetConfig.DpsEntry">FaucetConfig.DpsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>datapaths </p></td>
+                </tr>
+              
+                <tr>
+                  <td>include</td>
+                  <td><a href="#string">string</a></td>
+                  <td>repeated</td>
+                  <td><p>include yaml files </p></td>
+                </tr>
+              
+                <tr>
+                  <td>version</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>version </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vlans</td>
+                  <td><a href="#FaucetConfig.VlansEntry">FaucetConfig.VlansEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>vlans </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="FaucetConfig.DpsEntry">FaucetConfig.DpsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#Datapath">Datapath</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="FaucetConfig.VlansEntry">FaucetConfig.VlansEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#Vlan">Vlan</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="Interface">Interface</h3>
+        <p>Interface</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Description </p></td>
+                </tr>
+              
+                <tr>
+                  <td>stack</td>
+                  <td><a href="#StackLink">StackLink</a></td>
+                  <td></td>
+                  <td><p>Stack link </p></td>
+                </tr>
+              
+                <tr>
+                  <td>lacp</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>LACP ID </p></td>
+                </tr>
+              
+                <tr>
+                  <td>tagged_vlans</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td>repeated</td>
+                  <td><p>Tagged VLANS </p></td>
+                </tr>
+              
+                <tr>
+                  <td>native_vlan</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Native VLAN </p></td>
+                </tr>
+              
+                <tr>
+                  <td>acl_in</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Port ACL </p></td>
+                </tr>
+              
+                <tr>
+                  <td>max_hosts</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Max hosts to be learned </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="LLDPBeacon">LLDPBeacon</h3>
+        <p>LLDP Beacon</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>max_per_interval</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Max LLDP packets sent per interval </p></td>
+                </tr>
+              
+                <tr>
+                  <td>send_interval</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Send interval </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="Stack">Stack</h3>
+        <p>Stack</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>priority</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Stack priority </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="StackLink">StackLink</h3>
+        <p>Stack links</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>dp</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Destination datapath </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Destination port </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="Vlan">Vlan</h3>
+        <p>Vlan</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
         <h2 id="forch/proto/faucet_event.proto">forch/proto/faucet_event.proto</h2><a href="#title">Top</a>
       </div>
       <p>Encapsulation of an event on the Faucet event socket.</p>
@@ -3121,6 +3570,44 @@
       <p>Encapsulating Forch configuration</p>
 
       
+        <h3 id="CpnMonitoring">CpnMonitoring</h3>
+        <p>Monitoring for control plane network</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>ping_interval</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>interval of the periodic ping task </p></td>
+                </tr>
+              
+                <tr>
+                  <td>min_consecutive_ping_healthy</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>minimum count of consecutive successful pings to determine healthy state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>min_consecutive_ping_down</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>minimum count of consecutive unsuccessful pings to determine down state </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="DataplaneMonitoring">DataplaneMonitoring</h3>
         <p>Monitoring for dataplane</p>
 
@@ -3285,6 +3772,13 @@
                   <td><a href="#DataplaneMonitoring">DataplaneMonitoring</a></td>
                   <td></td>
                   <td><p>configuration for switches monitoring </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cpn_monitoring</td>
+                  <td><a href="#CpnMonitoring">CpnMonitoring</a></td>
+                  <td></td>
+                  <td><p>configuration for control plane network monitoring </p></td>
                 </tr>
               
             </tbody>

@@ -14,7 +14,7 @@ LOGGER = get_logger('ping')
 
 class PingManager:
     """Manages a thread that periodically pings the hosts"""
-    def __init__(self, hosts: dict, interval: int = 60, count: int = 10):
+    def __init__(self, hosts: dict, interval: int = 60, count: int = 1):
         self._hosts = hosts
         self._count = count
         self._timeout = self._count
