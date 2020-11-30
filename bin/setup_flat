@@ -1,0 +1,39 @@
+#!/bin/bash -e
+
+ROOT=$(dirname $0)/..
+cd $ROOT
+
+switches=1
+access_switches=()
+
+if [ "$1" == "switches" ]; then
+    switches=$2
+    shift 2
+fi
+
+if [ -z "$1" ]; then
+    echo Topology not specified
+    exit 1
+fi
+
+topo=flat$1
+echo Using topology $topo
+
+source bin/stack_functions
+
+# set up corp switch
+add_br corp 0x111 6683
+
+# set up access switches and links to corp switch
+
+for sw_num in $(seq 1 $switches); do
+    switch=sw$sw_num
+    access_switches+=($switch)
+
+    echo Adding access switch $switch
+    add_br $switch $((512 + sw_num)) 6001 7001
+
+    add_oeth $switch 50
+done
+
+echo Added switches: $access_switches
