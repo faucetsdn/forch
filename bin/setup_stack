@@ -5,6 +5,7 @@ cd $ROOT
 local=
 devices=
 switches=
+t1sw2=t1sw2
 skip_conn_check=
 no_clean=
 faux_dhcp=
@@ -25,6 +26,11 @@ fi
 if [ "$1" == "switches" ]; then
     switches=$2
     shift 2
+fi
+
+if [ "$1" == "single-t1" ]; then
+    t1sw2=
+    shift
 fi
 
 if [ "$1" == "skip-conn-check" ]; then
@@ -74,10 +80,7 @@ echo Configuring mode $mode...
 
 add_br corp  0x111 6683
 add_br t1sw1 177 6001 7001
-add_br t1sw2 178 6001 7001
 add_oeth t1sw1 28 corp-eth10
-add_oeth t1sw2 28 corp-eth20
-add_link t1sw1 6 t1sw2 6
 
 add_br t2sw1 1295 6001 7001
 add_br t2sw2 1296 6001 7001
@@ -87,33 +90,48 @@ add_link t1sw1 9 t2sw1 50
 add_link t1sw1 10 t2sw2 50
 add_link t1sw1 11 t2sw3 50
 
-add_link t1sw2 9 t2sw1 52
-add_link t1sw2 10 t2sw2 52
-add_link t1sw2 11 t2sw3 52
+
+if [ -n "$t1sw2" ]; then
+    add_br t1sw2 178 6001 7001
+    add_oeth t1sw2 28 corp-eth20
+    add_link t1sw1 6 t1sw2 6
+
+    add_link t1sw2 9 t2sw1 52
+    add_link t1sw2 10 t2sw2 52
+    add_link t1sw2 11 t2sw3 52
+fi
 
 if [ -n "$switches" ]; then
     for snum in $(seq 4 $switches); do
         echo Adding extra switch num $snum
         add_br t2sw$snum $((1294 + snum)) 6001 7001
         add_link t1sw1 $((8+snum)) t2sw$snum 50
-        add_link t1sw2 $((8+snum)) t2sw$snum 52
+        if [ -n "$t1sw2" ]; then
+            add_link t1sw2 $((8+snum)) t2sw$snum 52
+        fi
     done
 fi
 
 sudo ip link del bond || true
-echo Setting up bond interface...
-sudo ip link add bond type bond mode 802.3ad
-sudo ip link set bond up
-sudo ip link set corp-eth10 master bond
-sudo ip link set corp-eth20 master bond
-add_iface corp 10 bond
+if [ -n "$t1sw2" ]; then
+    echo Setting up bond interface...
+    sudo ip link add bond type bond mode 802.3ad
+    sudo ip link set bond up
+    sudo ip link set corp-eth10 master bond
+    sudo ip link set corp-eth20 master bond
+    add_iface corp 10 bond
+else
+    add_iface corp 10 corp-eth10
+fi
 
 echo Starting faucet instances...
 sudo rm -rf inst/
 mkdir -p inst/forch-faucet-corp/faucet
 cp topo/$mode/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
 docker kill forch-faucet-corp || true
-sudo modprobe bonding
+if [ -n "$t1sw2" ]; then
+    sudo modprobe bonding
+fi
 bin/run_faucet $local corp 6683
 
 inst=1
@@ -212,8 +230,13 @@ if [ -n "$dumptcp" ]; then
     echo Launching tcpdumps...
     mkdir tcpdump
     echo -n > tcpdump/tcpdump.pids
-    do_tcpdump bond
-    for switch in t1sw1 t1sw2; do
+    if [ -n "$t1sw2" ]; then
+        do_tcpdump bond
+        t1_switches=(t1sw1 t1sw2)
+    else
+        t1_switches=(t1sw1)
+    fi
+    for switch in $t1_switches; do
         do_tcpdump $switch-eth6
         do_tcpdump $switch-eth28
         for port in 9 10 11 12 13 14 15 16 17 18; do

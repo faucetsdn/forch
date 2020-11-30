@@ -1,0 +1,27 @@
+#!/bin/bash
+
+source bin/stack_functions
+
+preamble_setup
+
+echo Setting up stack and Forch...
+bin/setup_stack local single-t1 dhcp single-t1
+restart_forch
+
+# Initial healty state
+echo %%% healthy state | tee -a $TEST_RESULTS
+sudo ip addr add 240.0.0.1/24 dev lo
+sudo ip addr add 240.0.0.2/24 dev lo
+sudo ip addr add 240.0.0.253/24 dev lo
+sleep 50.3231 &
+sleep $STABILIZE_SEC
+test_forch -healthy
+
+echo Killing forch...
+sudo kill `ps ax | fgrep forch | awk '{print $1}'`
+
+echo Killing tails...
+kill `ps ax | fgrep $faucet_log | fgrep -v fgrep | awk '{print $1}'`
+kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'`
+
+echo Done with test_sting_t1
