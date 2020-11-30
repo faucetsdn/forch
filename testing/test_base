@@ -11,6 +11,7 @@ testing/test_check
 testing/test_topology
 testing/test_solo
 testing/test_counting
+testing/test_single_t1
 testing/python_test coverage test_faucetizer
 testing/python_test coverage test_faucet_state_collector
 testing/python_test coverage test_event

@@ -113,16 +113,14 @@ if [ -n "$switches" ]; then
 fi
 
 sudo ip link del bond || true
+echo Setting up bond interface...
+sudo ip link add bond type bond mode 802.3ad
+sudo ip link set bond up
+sudo ip link set corp-eth10 master bond
 if [ -n "$t1sw2" ]; then
-    echo Setting up bond interface...
-    sudo ip link add bond type bond mode 802.3ad
-    sudo ip link set bond up
-    sudo ip link set corp-eth10 master bond
     sudo ip link set corp-eth20 master bond
-    add_iface corp 10 bond
-else
-    add_iface corp 10 corp-eth10
 fi
+add_iface corp 10 bond
 
 echo Starting faucet instances...
 sudo rm -rf inst/
@@ -230,13 +228,9 @@ if [ -n "$dumptcp" ]; then
     echo Launching tcpdumps...
     mkdir tcpdump
     echo -n > tcpdump/tcpdump.pids
-    if [ -n "$t1sw2" ]; then
-        do_tcpdump bond
-        t1_switches=(t1sw1 t1sw2)
-    else
-        t1_switches=(t1sw1)
-    fi
-    for switch in $t1_switches; do
+    do_tcpdump bond
+
+    for switch in t1sw1 $t1sw2; do
         do_tcpdump $switch-eth6
         do_tcpdump $switch-eth28
         for port in 9 10 11 12 13 14 15 16 17 18; do

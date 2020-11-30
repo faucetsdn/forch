@@ -7,24 +7,24 @@ Running forch-healthy tests
 "http://missing_target_num_controllers_1:9019"
 "split"
 @dataplane_state-healthy
-"unknown"
-"egress: No LAG information received"
-11
+"healthy"
+"egress: nz-kiwi-t1sw1:28"
+12
 "active"
 null
-0
+1
 @switch_state-healthy
 4
 "nz-kiwi-t1sw1"
 9
-0
+28
 "1295"
 null
 null
 null
 1
 @cpn_state-healthy
-4
+3
 "127.0.0.1"
 "healthy"
 "240.0.0.1"
@@ -43,5 +43,5 @@ null
 "nz-kiwi-t1sw1"
 10
 "nz-kiwi-t1sw1"
-0
+28
 2
