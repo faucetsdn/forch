@@ -38,8 +38,8 @@ LOGGER = get_logger('forch')
 
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
 _BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
-_FORCH_CONFIG_DIR_DEFAULT = '/etc/faucet/forch'
-_FAUCET_CONFIG_DIR_DEFAULT = '/etc/faucet/faucet'
+_FORCH_CONFIG_DIR_DEFAULT = '/etc/forch'
+_FAUCET_CONFIG_DIR_DEFAULT = '/etc/faucet'
 _DEFAULT_PORT = 9019
 _FAUCET_PROM_HOST = '127.0.0.1'
 _FAUCET_PROM_PORT_DEFAULT = 9302
