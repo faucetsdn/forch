@@ -1,5 +1,5 @@
 dps:
-  nz-kiwi-t1sw1:
+  sw1:
     dp_id: 513
     faucet_dp_mac: 0e:00:00:00:01:01
     hardware: Generic
@@ -12,7 +12,7 @@ dps:
         native_vlan: 171
         acl_in: uniform_acl
         max_hosts: 1
-      28:
+      50:
         description: egress
         lacp: 3
         tagged_vlans: [171]

@@ -78,7 +78,6 @@ docker kill $container || true
 bin/run_faucet local $inst $((6000 + inst)) $((8000 + inst))
 bin/run_faucet local gauge $inst $((7000 + inst)) $((9000 + inst))
 
-
 # set up devices
 add_faux corp 1 0
 device_id=1
@@ -86,3 +85,7 @@ for switch in ${access_switches[@]}; do
     add_faux $switch 1 $device_id
     device_id=$((device_id+1))
 done
+
+echo Letting system settle...
+sleep 10
+echo Done with setting up flat stack with topo $topo

@@ -1,6 +1,6 @@
 dps:
   sw1:
-    dp_id: 257
+    dp_id: 513
     faucet_dp_mac: 0e:00:00:00:01:01
     hardware: Generic
     lacp_timeout: 5
@@ -24,7 +24,7 @@ dps:
         stack: {dp: sw3, port: 51}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   sw2:
-    dp_id: 258
+    dp_id: 514
     faucet_dp_mac: 0e:00:00:00:01:02
     hardware: Generic
     lacp_timeout: 5
@@ -48,7 +48,7 @@ dps:
         stack: {dp: sw1, port: 51}
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   sw3:
-    dp_id: 259
+    dp_id: 515
     faucet_dp_mac: 0e:00:00:00:01:03
     hardware: Generic
     lacp_timeout: 5
