@@ -1,0 +1,100 @@
+#!/bin/bash -e
+
+function test_dataplane_state {
+    api_result=$1
+    jq '.dataplane_state' $api_result | tee -a $TEST_RESULTS
+    jq '.egress.egress_state_detail' $api_result | tee -a $TEST_RESULTS
+}
+
+function test_switch_state {
+    api_result=$1
+    switch=$2
+    jq ".switches.$switch.switch_state" $api_result | tee -a $TEST_RESULTS
+    jq '.switch_state_detail' $api_result | tee -a $TEST_RESULTS
+    jq ".switches.$switch.ports.\"50\".attributes.port_type" $api_result | tee -a $TEST_RESULTS
+    jq ".switches.$switch.ports.\"50\".port_state" $api_result | tee -a $TEST_RESULTS
+}
+
+function test_list_hosts {
+    api_result=$1
+    device=$2
+    jq ".eth_srcs.\"$device\".host_ips[0]" $api_result | tee -a $TEST_RESULTS
+}
+
+function test_apis {
+    local switches=$1
+    local devices=$2
+    fout_dir=$OUT_DIR/forch
+    mkdir -p $fout_dir
+
+    echo Testing Forch | tee -a $TEST_RESULTS
+
+    # fetch api results
+    fetch_forch dataplane_state
+    fetch_forch list_hosts
+
+    for sw_num in $(seq 1 $switches); do
+        fetch_forch switch_state "?switch=sw$sw_num" $sw_num
+    done
+
+    # test dataplane_state
+    test_dataplane_state $fout_dir/dataplane_state.json
+
+    # test list_hosts
+    for device_num in $(seq 1 $devices); do
+        test_list_hosts $fout_dir/list_hosts.json "9a:02:57:1e:8f:0$device_num"
+    done
+
+    # test switch_state
+    for sw_num in $(seq 1 $switches); do
+        test_switch_state $fout_dir/switch_state$sw_num.json sw$sw_num
+    done
+}
+
+function test_connectivity {
+    local devices=$1
+    echo Testing connectivity | tee -a $TEST_RESULTS
+    for from in $(seq 0 $devices); do
+        for to in $(seq 0 $devices); do
+            if [ $from != $to ]; then
+                docker exec forch-faux-$from sh -c "arp -d 192.168.1.$to; ping -c 3 192.168.1.$to"
+            fi
+        done
+    done
+}
+
+skip_topo_setup=
+cleanup=
+
+if [ "$1" == "skip-topo-setup" ]; then
+    skip_topo_setup=y
+    shift
+fi
+
+if [ "$1" == "cleanup" ]; then
+    cleanup=y
+    shift
+fi
+
+source bin/stack_functions
+preamble_setup
+
+# set up topology and Forch
+if [ -z "$skip_topo_setup" ]; then
+    bin/setup_flat switches 1 one
+fi
+restart_forch
+
+# test connectivity
+test_connectivity 1
+sleep 10
+
+# test Forch APIs
+test_apis 1 1
+
+
+if [ -n "$cleanup" ]; then
+    bin/net_clean
+    sudo rm -rf inst
+    kill_forch
+fi
