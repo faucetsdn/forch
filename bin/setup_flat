@@ -17,7 +17,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-topo=flat$1
+topo=flat/$1
 echo Using topology $topo
 
 source bin/stack_functions
@@ -39,11 +39,13 @@ for sw_num in $(seq 1 $switches); do
 done
 
 # set up ring links
-for sw_num in $(seq 1 $switches); do
-    sw_a=sw$sw_num
-    sw_b=sw$((sw_num % switches))
-    add_link $sw_a 51 $sw_b 52
-done
+if (( $switches > 1)); then
+    for sw_num in $(seq 1 $switches); do
+        sw_a=sw$sw_num
+        sw_b=sw$((sw_num % switches + 1))
+        add_link $sw_a 51 $sw_b 52
+    done
+fi
 
 # set up bond port
 sudo ip link del bond || true
@@ -59,22 +61,22 @@ add_iface corp 10 bond
 echo Starting faucet instances...
 sudo rm -rf inst/
 mkdir -p inst/forch-faucet-corp/faucet
-cp topo/flat/$topo/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
+cp topo/$topo/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
 docker kill forch-faucet-corp || true
 sudo modprobe bonding
-bin/run_faucet $local corp 6683
+bin/run_faucet local corp 6683
 
 inst=1
 container=forch-faucet-$inst
 
 container_inst=inst/$container/
 mkdir -p $container_inst/
-cp -r topo/flat/$topo/faucet $container_inst/
-cp -r topo/flat/$topo/forch $container_inst/
+cp -r topo/$topo/faucet $container_inst/
+cp -r topo/$topo/forch $container_inst/
 docker kill $container || true
 
-bin/run_faucet $local $inst $((6000 + inst)) $((8000 + inst))
-bin/run_faucet $local gauge $inst $((7000 + inst)) $((9000 + inst))
+bin/run_faucet local $inst $((6000 + inst)) $((8000 + inst))
+bin/run_faucet local gauge $inst $((7000 + inst)) $((9000 + inst))
 
 
 # set up devices
