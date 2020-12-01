@@ -1,0 +1,7 @@
+cpn_nodes:
+    sw1:
+        cpn_ip: 127.0.0.1
+        role: dist
+        vendor: NoviSwitch
+        model: NS-2128
+ping_interval: 10

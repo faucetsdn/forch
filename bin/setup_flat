@@ -5,6 +5,7 @@ cd $ROOT
 
 switches=1
 access_switches=()
+bonded_ifaces=()
 
 if [ "$1" == "switches" ]; then
     switches=$2
@@ -24,16 +25,62 @@ source bin/stack_functions
 # set up corp switch
 add_br corp 0x111 6683
 
-# set up access switches and links to corp switch
-
+# set up access switches and set up interfaces to be bonded
 for sw_num in $(seq 1 $switches); do
     switch=sw$sw_num
-    access_switches+=($switch)
+    bonded_iface=bonded-eth$sw_num
+    access_switches+=("$switch")
+    bonded_ifaces+=($bonded_iface)
 
     echo Adding access switch $switch
     add_br $switch $((512 + sw_num)) 6001 7001
 
-    add_oeth $switch 50
+    add_oeth $switch 50 $bonded_iface
 done
 
-echo Added switches: $access_switches
+# set up ring links
+for sw_num in $(seq 1 $switches); do
+    sw_a=sw$sw_num
+    sw_b=sw$((sw_num % switches))
+    add_link $sw_a 51 $sw_b 52
+done
+
+# set up bond port
+sudo ip link del bond || true
+echo Setting up bond interface...
+sudo ip link add bond type bond mode 802.3ad
+sudo ip link set bond up
+for iface in ${bonded_ifaces[@]}; do
+    sudo ip link set $iface master bond
+done
+add_iface corp 10 bond
+
+# set up Faucet instances
+echo Starting faucet instances...
+sudo rm -rf inst/
+mkdir -p inst/forch-faucet-corp/faucet
+cp topo/flat/$topo/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
+docker kill forch-faucet-corp || true
+sudo modprobe bonding
+bin/run_faucet $local corp 6683
+
+inst=1
+container=forch-faucet-$inst
+
+container_inst=inst/$container/
+mkdir -p $container_inst/
+cp -r topo/flat/$topo/faucet $container_inst/
+cp -r topo/flat/$topo/forch $container_inst/
+docker kill $container || true
+
+bin/run_faucet $local $inst $((6000 + inst)) $((8000 + inst))
+bin/run_faucet $local gauge $inst $((7000 + inst)) $((9000 + inst))
+
+
+# set up devices
+add_faux corp 1 0
+device_id=1
+for switch in ${access_switches[@]}; do
+    add_faux $switch 1 $device_id
+    device_id=$((device_id+1))
+done
