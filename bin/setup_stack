@@ -111,7 +111,7 @@ add_iface corp 10 bond
 echo Starting faucet instances...
 sudo rm -rf inst/
 mkdir -p inst/forch-faucet-corp/faucet
-python testing/python_lib/build_config.py -p inst/forch-faucet-corp/faucet/faucet.yaml -t corp
+setup_corp_faucet_config
 docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet $local corp 6683
