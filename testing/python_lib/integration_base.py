@@ -145,7 +145,7 @@ class IntegrationTestBase(unittest.TestCase):
         return os.path.dirname(os.path.abspath(__file__)) + \
             (config_file_format % ('forch-faucet-1'))
 
-    def parallelize(self, target, target_args):
+    def parallelize(self, target, target_args, batch_size=None):
         """Parallelizes multiple runs of a target method with multiprocessing.
            target_args: List of tuples which serve as args for target.
                         List size determines number of jobs
@@ -155,11 +155,23 @@ class IntegrationTestBase(unittest.TestCase):
             process = multiprocessing.Process(target=target, args=arg_tuple)
             jobs.append(process)
 
-        for job in jobs:
-            job.start()
+        batch_start = 0
+        if not batch_size:
+            batch_size = len(jobs)
+        while batch_start  <= len(jobs):
+            batch_end = batch_size + batch_start
+            if batch_end > len(jobs):
+                batch_jobs = jobs[batch_start:]
+            else:
+                batch_jobs = jobs[batch_start:batch_end]
 
-        for job in jobs:
-            job.join()
+            for job in batch_jobs:
+                job.start()
+
+            for job in batch_jobs:
+                job.join()
+
+            batch_start = batch_end
 
     def add_faux(self, switch, port, fnum, args=None):
         """Add faux device to a specific switch at a specific port"""
