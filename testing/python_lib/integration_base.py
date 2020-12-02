@@ -168,6 +168,7 @@ class IntegrationTestBase(unittest.TestCase):
 
             for job in batch_jobs:
                 job.join()
+                job.close()
 
             batch_start = batch_end
 
