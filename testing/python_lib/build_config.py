@@ -137,10 +137,11 @@ class FaucetConfigGenerator():
     def _generate_dp_mac(self, dp_type, dp_index):
         if dp_type == T1_DP:
             return T1_DP_MAC_PREFIX + "{:02x}".format(dp_index+1)
-        elif dp_type == T2_DP:
+
+        if dp_type == T2_DP:
             return T2_DP_MAC_PREFIX + "{:02x}".format(dp_index+1)
-        else:
-            raise Exception('Unknown dp_type: %s' % dp_type)
+
+        raise Exception('Unknown dp_type: %s' % dp_type)
 
     def create_scale_faucet_config(self, t1_switches, t2_switches, access_ports):
         """Create Faucet config with stacking topology"""
@@ -214,6 +215,7 @@ def main(argv):
     <python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> 
     -p <config path> -t <topology type (flat, corp, stack)>
     """
+
     try:
         opts, _ = getopt.getopt(
             argv, 'he:a:d:p:t:', ['egress=', 'access=', 'devices=', 'path=', 'type='])
