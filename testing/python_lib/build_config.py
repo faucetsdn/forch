@@ -212,7 +212,7 @@ def main(argv):
     argv = argv[1:]
 
     help_msg = """
-    <python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> 
+    <python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch>
     -p <config path> -t <topology type (flat, corp, stack)>
     """
 
