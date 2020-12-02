@@ -28,6 +28,8 @@ T2_DP_MAC_PREFIX = '0e:00:00:00:02:'
 FLAT = 'flat'
 CORP = 'corp'
 STACK = 'stack'
+T1_DP = 't1'
+T2_DP = 't2'
 
 
 # pylint: disable=protected-access
@@ -43,53 +45,27 @@ class FaucetConfigGenerator():
         tagged_vlans = kwargs.get('tagged_vlans')
         lacp = kwargs.get('lacp')
         if egress_port:
-            if lacp:
-                interfaces[egress_port] = Interface(
-                    description='egress', lacp=LACP_MODE, tagged_vlans=tagged_vlans)
-            else:
-                interfaces[egress_port] = Interface(
-                    description='egress', tagged_vlans=tagged_vlans)
+            self._add_egress_interface(interfaces, egress_port, tagged_vlans, lacp)
 
         # add tap interface
         tap_vlan = kwargs.get('tap_vlan')
         if tap_vlan:
-            interfaces[TAP_PORT] = Interface(description='tap', tagged_vlans=[tap_vlan])
+            self._add_tap_interface(interfaces, tap_vlan)
 
         # add flat link interfaces
         dps = kwargs.get('dps')
         if dps:
-            if dp_index < len(dps) - 1:
-                next_dp = dps[dp_index + 1]
-                next_port = FLAT_LINK_PORT_START + dp_index
-                description = ("to %s port %s" % (next_dp, next_port))
-                interfaces[next_port] = Interface(
-                    description=description, stack=StackLink(dp=next_dp, port=next_port))
-
-            if dp_index > 0:
-                prev_dp = dps[dp_index - 1]
-                prev_port = FLAT_LINK_PORT_START + (len(dps) + dp_index - 1) % len(dps)
-                description = ("to %s port %s" % (prev_dp, prev_port))
-                interfaces[prev_port] = Interface(
-                    description=description, stack=StackLink(dp=prev_dp, port=prev_port))
+            self._add_flat_link_interfaces(interfaces, dps, dp_index)
 
         # add stack interfaces linking from t1 to t2 switches
         t2_dps = kwargs.get('t2_dps')
-        t2_port = T2_STACK_PORT_START + dp_index * 2
         if t2_dps:
-            for index, t2_dp in enumerate(t2_dps):
-                port = T1_STACK_PORT_START + index
-                description = ("to %s port %s" % (t2_dp, t2_port))
-                interfaces[port] = Interface(description=description,
-                                             stack=StackLink(dp=t2_dp, port=t2_port))
+            self._add_t1_stack_interfaces(interfaces, dp_index, t2_dps)
 
         # add stack interfaces linking from t2 to t1 switches
         t1_dps = kwargs.get('t1_dps')
         if t1_dps:
-            for index, t1_dp in enumerate(t1_dps):
-                port = T2_STACK_PORT_START + index * 2
-                description = ('to %s port %s' % (t1_dp, T1_STACK_PORT_START+dp_index))
-                interfaces[port] = Interface(
-                    description=description, stack=StackLink(dp=t1_dp, port=100+dp_index))
+            self._add_t2_stack_interfaces(interfaces, dp_index, t1_dps)
 
         # add access interfaces
         access_ports = kwargs.get('access_ports')
@@ -97,12 +73,59 @@ class FaucetConfigGenerator():
         native_vlan = kwargs.get('native_vlan')
         port_acl = kwargs.get('port_acl')
         if access_ports:
-            for index in range(access_ports):
-                interfaces[index + access_port_start] = Interface(
-                    description='IoT Device', native_vlan=native_vlan, acl_in=port_acl,
-                    max_hosts=1)
+            self._add_access_interfaces(
+                interfaces, access_ports, access_port_start, native_vlan, port_acl)
 
         return interfaces
+
+    def _add_egress_interface(self, interfaces, egress_port, tagged_vlans, lacp):
+        if lacp:
+            interfaces[egress_port] = Interface(
+                description='egress', lacp=LACP_MODE, tagged_vlans=tagged_vlans)
+        else:
+            interfaces[egress_port] = Interface(
+                description='egress', tagged_vlans=tagged_vlans)
+
+    def _add_tap_interface(self, interfaces, tap_vlan):
+        interfaces[TAP_PORT] = Interface(description='tap', tagged_vlans=[tap_vlan])
+
+    def _add_flat_link_interfaces(self, interfaces, dps, dp_index):
+        if dp_index < len(dps) - 1:
+            next_dp = dps[dp_index + 1]
+            next_port = FLAT_LINK_PORT_START + dp_index
+            description = ("to %s port %s" % (next_dp, next_port))
+            interfaces[next_port] = Interface(
+                description=description, stack=StackLink(dp=next_dp, port=next_port))
+
+        if dp_index > 0:
+            prev_dp = dps[dp_index - 1]
+            prev_port = FLAT_LINK_PORT_START + (len(dps) + dp_index - 1) % len(dps)
+            description = ("to %s port %s" % (prev_dp, prev_port))
+            interfaces[prev_port] = Interface(
+                description=description, stack=StackLink(dp=prev_dp, port=prev_port))
+
+    def _add_t1_stack_interfaces(self, interfaces, dp_index, t2_dps):
+        t2_port = T2_STACK_PORT_START + dp_index * 2
+        for index, t2_dp in enumerate(t2_dps):
+            port = T1_STACK_PORT_START + index
+            description = ("to %s port %s" % (t2_dp, t2_port))
+            interfaces[port] = Interface(
+                description=description, stack=StackLink(dp=t2_dp, port=t2_port))
+
+    def _add_t2_stack_interfaces(self, interfaces, dp_index, t1_dps):
+        t1_port = T1_STACK_PORT_START + dp_index
+        for index, t1_dp in enumerate(t1_dps):
+            port = T2_STACK_PORT_START + index * 2
+            description = ('to %s port %s' % (t1_dp, t1_port))
+            interfaces[port] = Interface(
+                description=description, stack=StackLink(dp=t1_dp, port=t1_port))
+
+    def _add_access_interfaces(self, interfaces, access_ports, access_port_start, native_vlan,
+                               port_acl):
+        for index in range(access_ports):
+            interfaces[index + access_port_start] = Interface(
+                description='IoT Device', native_vlan=native_vlan, acl_in=port_acl,
+                max_hosts=1)
 
     def _build_datapath_config(self, dp_id, interfaces, mac=None):
         lldp_beacon = LLDPBeacon(max_per_interval=5, send_interval=5)
@@ -110,6 +133,14 @@ class FaucetConfigGenerator():
         return Datapath(
             dp_id=dp_id, faucet_dp_mac=mac, hardware='Generic',
             lacp_timeout=5, lldp_beacon=lldp_beacon, interfaces=interfaces, stack=stack)
+
+    def _generate_dp_mac(self, dp_type, dp_index):
+        if dp_type == T1_DP:
+            return T1_DP_MAC_PREFIX + "{:02x}".format(dp_index+1)
+        elif dp_type == T2_DP:
+            return T2_DP_MAC_PREFIX + "{:02x}".format(dp_index+1)
+        else:
+            raise Exception('Unknown dp_type: %s' % dp_type)
 
     def create_scale_faucet_config(self, t1_switches, t2_switches, access_ports):
         """Create Faucet config with stacking topology"""
@@ -128,16 +159,14 @@ class FaucetConfigGenerator():
                 dp_index, dps=t1_dps, t2_dps=t2_dps, tagged_vlans=[setup_vlan],
                 tap_vlan=tap_vlan, egress_port=FAUCET_EGRESS_PORT, lacp=True)
             dps[dp_name] = self._build_datapath_config(
-                T1_DP_ID_START + dp_index, interfaces,
-                (T1_DP_MAC_PREFIX + "{:02x}".format(dp_index+1)))
+                T1_DP_ID_START + dp_index, interfaces, self._generate_dp_mac(T1_DP, dp_index))
 
         for dp_index, dp_name in enumerate(t2_dps):
             interfaces = self._build_dp_interfaces(
                 dp_index, t1_dps=t1_dps, access_ports=access_ports, native_vlan=setup_vlan,
                 port_acl='uniform_acl', lacp=True)
             dps[dp_name] = self._build_datapath_config(
-                T2_DP_ID_START + dp_index, interfaces,
-                (T2_DP_MAC_PREFIX + "{:02x}".format(dp_index+1)))
+                T2_DP_ID_START + dp_index, interfaces, self._generate_dp_mac(T2_DP, dp_index))
         return FaucetConfig(dps=dps, version=2, include=['uniform.yaml'], vlans=vlans)
 
     def create_flat_faucet_config(self, num_switches, num_access_ports):
@@ -153,8 +182,7 @@ class FaucetConfigGenerator():
                 access_ports=num_access_ports, native_vlan=setup_vlan, port_acl='uniform_acl',
                 access_port_start=FLAT_ACCESS_PORT_START, lacp=True)
             dps[sw_name] = self._build_datapath_config(
-                FLAT_DP_ID_START + sw_num, interfaces,
-                T2_DP_MAC_PREFIX + "{:02x}".format(sw_num+1))
+                FLAT_DP_ID_START + sw_num, interfaces, self._generate_dp_mac(T2_DP, sw_num))
 
         return FaucetConfig(dps=dps, version=2, include=['uniform.yaml'], vlans=vlans)
 
@@ -179,19 +207,22 @@ def main(argv):
     egress = 2
     access = 3
     devices = 1
-    type = STACK
+    topo_type = STACK
     argv = argv[1:]
+
+    help_msg = """
+    <python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch> 
+    -p <config path> -t <topology type (flat, corp, stack)>
+    """
     try:
         opts, _ = getopt.getopt(
             argv, 'he:a:d:p:t:', ['egress=', 'access=', 'devices=', 'path=', 'type='])
     except getopt.GetoptError:
-        print('<python3> build_config.py -e <egress_switches> -a'
-              '<access_switches> -d <devices per switch> -p <config path> -t <topology type>')
+        print(help_msg)
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('<python3> build_config.py -e <egress_switches> -a '
-                  '<access_switches> -d <devices per switch> -p <config path>')
+            print(help_msg)
             sys.exit()
         elif opt in ('-e', '--egress'):
             egress = int(arg)
@@ -202,16 +233,16 @@ def main(argv):
         elif opt in ('-p', '--path'):
             filepath = arg
         elif opt in ('-t', '--type'):
-            type = arg
+            topo_type = arg
 
-    if type == FLAT:
+    if topo_type == FLAT:
         faucet_config = config_generator.create_flat_faucet_config(access, devices)
-    elif type == CORP:
+    elif topo_type == CORP:
         faucet_config = config_generator.create_corp_faucet_config()
-    elif type == STACK:
+    elif topo_type == STACK:
         faucet_config = config_generator.create_scale_faucet_config(egress, access, devices)
     else:
-        raise Exception('Unkown topology type: %s' % type)
+        raise Exception('Unkown topology type: %s' % topo_type)
 
     config_map = proto_dict(faucet_config)
     with open(filepath, 'w') as config_file:
