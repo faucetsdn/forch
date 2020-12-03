@@ -7,7 +7,7 @@ import sys
 import threading
 import yaml
 
-from forch.utils import get_logger, safe_mkdir, yaml_proto
+from forch.utils import get_logger, yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
@@ -386,7 +386,7 @@ class Faucetizer:
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
         faucet_include_file_path = os.path.join(self._faucet_config_dir, include_file_name)
-        safe_mkdir(os.path.dirname(faucet_include_file_path))
+        os.makedirs(os.path.dirname(faucet_include_file_path), exist_ok=True)
         with open(faucet_include_file_path, 'w') as file:
             yaml.dump(include_config, file)
             LOGGER.debug('Wrote augmented included file to %s', faucet_include_file_path)

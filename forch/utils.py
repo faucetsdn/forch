@@ -1,6 +1,5 @@
 """Utility functions for forch"""
 
-import errno
 import logging
 import os
 import yaml
@@ -90,13 +89,3 @@ def dict_proto(message, proto_func, ignore_unknown_fields=False):
 def str_proto(message_text, proto_func):
     """Convert a string represented protobuf message to proto object"""
     return text_format.Parse(message_text, proto_func())
-
-
-def safe_mkdir(path):
-    """Create directory if not exists"""
-    try:
-        os.makedirs(path)
-    except OSError as error:
-        if error.errno == errno.EEXIST and os.path.isdir(path):
-            return
-        raise Exception('Cannot create director %s: %s' % (path, error))
