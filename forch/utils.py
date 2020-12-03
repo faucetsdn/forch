@@ -93,6 +93,7 @@ def str_proto(message_text, proto_func):
 
 
 def safe_mkdir(path):
+    """Create directory if not exists"""
     try:
         os.makedirs(path)
     except OSError as error:
