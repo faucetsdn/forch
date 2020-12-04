@@ -36,5 +36,5 @@ bin/run_faucet local solo $faucet_port $prom_port
 
 echo Killing any old instances of forch...
 kill `ps ax | fgrep forchestrator | fgrep -v fgrep | awk '{print $1}'` || true
-bin/forch --base inst/forch-faucet-solo 2>&1 &
+bin/run_forch --base inst/forch-faucet-solo 2>&1 &
 sleep 20
