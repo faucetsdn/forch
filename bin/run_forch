@@ -1,7 +1,5 @@
 #!/bin/bash -ex
 
-echo TAP2 FAUCET_CONFIG_DIR $FAUCET_CONFIG_DIR
-
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 base=
@@ -42,8 +40,6 @@ else
     FORCH_LOG_DIR=${FORCH_LOG_DIR:-/var/log/faucet}
     mkdir -p $FORCH_LOG_DIR $FORCH_CONFIG_DIR
 fi
-
-echo TAP3 FAUCET_CONFIG_DIR $FAUCET_CONFIG_DIR
 
 if [ "$nolog" = true ]; then
     FORCH_LOG_DIR=
@@ -86,11 +82,6 @@ else
     PYTHON=python3
 fi
 
-echo TAP4 FAUCET_CONFIG_DIR $FAUCET_CONFIG_DIR
-
-echo forch env
-env
-
 export CONTROLLER_NAME
 export FAUCET_PROM_PORT
 export GAUGE_PROM_PORT
@@ -99,4 +90,8 @@ export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR
 export FORCH_LOG_DIR
 export PYTHONPATH
+
+echo dump forch env:
+env
+
 $PYTHON -m forch "${pyargs[@]}" || tail $FORCH_LOG_DIR/forch.log && false

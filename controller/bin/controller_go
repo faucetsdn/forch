@@ -71,8 +71,6 @@ sudo -u kronkiteman \
 echo Starting ovs...
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
-echo TAP1 FAUCET_CONFIG_DIR $FAUCET_CONFIG_DIR
-
 /usr/bin/gauge_go &
 forch/bin/run_forch &
 
