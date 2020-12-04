@@ -340,6 +340,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 class PortsStateManagerTestBase(UnitTestBase):
     """Base class for PortsStateManager"""
 
+    UNAUTHENTICATED = 'unauthenticated'
     AUTHENTICATED = 'authenticated'
     SEQUESTERED = 'sequestered'
     OPERATIONAL = 'operational'
@@ -350,7 +351,7 @@ class PortsStateManagerTestBase(UnitTestBase):
         super().__init__(*args, **kwargs)
         self._port_state_manager = PortStateManager(
             self._process_device_placement, self._process_device_behavior,
-            self._get_vlan_from_segment, self.SEQUESTER_SEGMENT)
+            self._get_vlan_from_segment, testing_segment=self.SEQUESTER_SEGMENT)
         self._received_device_placements = []
         self._received_device_behaviors = []
 

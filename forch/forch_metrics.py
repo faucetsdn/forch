@@ -103,6 +103,8 @@ class ForchMetrics():
             Counter, labels=['switch', 'port']
         )
 
+        self._add_var('device_state', 'device state', Gauge, labels=['mac'])
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
