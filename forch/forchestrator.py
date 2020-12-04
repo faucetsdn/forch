@@ -285,9 +285,7 @@ class Forchestrator:
         orch_config = self._config.orchestration
 
         self._forch_config_dir = os.getenv('FORCH_CONFIG_DIR', _FORCH_CONFIG_DIR_DEFAULT)
-        LOGGER.info('Forch config dir %s', self._forch_config_dir)
         self._faucet_config_dir = os.getenv('FAUCET_CONFIG_DIR', _FAUCET_CONFIG_DIR_DEFAULT)
-        LOGGER.info('Faucet config dir %s', self._faucet_config_dir)
 
         behavioral_config_file = (orch_config.behavioral_config_file or
                                   os.getenv('FAUCET_CONFIG_FILE') or
@@ -327,8 +325,6 @@ class Forchestrator:
             raise Exception(
                 f'Behavioral config file does not exist: {self._behavioral_config_file}')
 
-        LOGGER.info('Structural config is %s', self._structural_config_file)
-        LOGGER.info('Behavorial config is %s', self._behavioral_config_file)
         if self._structural_config_file == self._behavioral_config_file:
             raise Exception(
                 'Structural and behavioral config file cannot be the same: '
