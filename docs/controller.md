@@ -1,0 +1,15 @@
+# Standalone Controller Container
+
+* `bin/build_docker controller`
+* Results in docker image `forch/controller`
+* Running: `docker run -d --privileged $docker_volumes $docker_ports forch/controller`
+  * volumes
+    *
+  * exposed ports
+    * 6553: OpenFlow port connecting to faucet.
+    * 6554: OpenFlow port connecting to gauge.
+    * 9019: Faucet NOAH json API.
+* OpenFlow switch configuration
+  * Each switch configured with two controllers:
+    * Port-exposed-for-`6553`
+    * Port-exposed-for-`6554`

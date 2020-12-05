@@ -301,7 +301,7 @@ function restart_forch {
 
     local base="inst/forch-faucet-$inst"
     echo Starting Forch with base $base
-    bin/forch --base $base 2>&1 &
+    bin/run_forch --base $base 2>&1 &
 
     # Wait for system to warm-up, including background process/cpn checks.
     sleep $STABILIZE_SEC

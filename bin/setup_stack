@@ -173,7 +173,9 @@ sleep 60
 
 if [ -n "$fot" ]; then
     echo head of forch-controller-1/faucet.log:
-    head inst/forch-controller-1/faucet.log
+    head -n 50 inst/forch-controller-1/faucet.log
+    echo head of forch-controller-1/forch.log:
+    head -n 50 inst/forch-controller-1/forch.log
 else
     echo head of forch-faucet-1/faucet.log:
     head inst/forch-faucet-1/faucet.log

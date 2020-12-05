@@ -68,9 +68,9 @@ class ForchestratorEventTestBase(UnitTestBase):
 
     def _setup_env(self):
         assert self._temp_dir
-        os.environ['FORCH_CONFIG_DIR'] = self._temp_dir
+        os.environ['FORCH_CONFIG_DIR'] = os.path.join(self._temp_dir, 'forch')
         os.environ['FORCH_CONFIG_FILE'] = os.path.basename(self._temp_forch_config_file)
-        os.environ['FAUCET_CONFIG_DIR'] = self._temp_dir
+        os.environ['FAUCET_CONFIG_DIR'] = os.path.join(self._temp_dir, 'faucet')
         os.environ['FAUCET_CONFIG_FILE'] = os.path.basename(self._temp_behavioral_config_file)
         os.environ['FAUCET_EVENT_SOCK'] = self._temp_socket_file
         os.environ['CONTROLLER_NAME'] = 'ctr1'

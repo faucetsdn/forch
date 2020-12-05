@@ -5,6 +5,31 @@ FORCH_ROOT=$ROOT
 DAQ_ROOT=$ROOT/daq
 FAUCET_ROOT=$ROOT/faucet
 
+ls -ld /var/log/faucet/faucet
+USERID=`ls -ldn /var/log/faucet/faucet | awk '{print $3}'`
+
+PROMETHEUS_PORT=9302
+FAUCET_EVENT_SOCK=/var/log/faucet/faucet_event.sock
+FAUCET_CONFIG=/etc/faucet/faucet.yaml
+FAUCET_CONFIG_STAT_RELOAD=1
+export FAUCET_CONFIG_DIR=/etc/faucet
+FAUCET_EVENT_SOCK_HEARTBEAT=10
+FAUCET_LISTEN_PORT=6653
+FAUCET_RYU_CONF=/etc/faucet/ryu.conf
+export FORCH_CONFIG_DIR=/etc/forch
+export FORCH_LOG_DIR=/var/log/faucet
+WSAPI_LISTEN_HOST=localhost
+WSAPI_LISTEN_PORT=4000
+GAUGE_RYU_CONF=/etc/faucet/ryu.conf
+GAUGE_LISTEN_PORT=6654
+GAUGE_CONFIG=/etc/faucet/gauge.yaml
+GAUGE_LOG=/var/log/faucet/gauge.log
+GAUGE_EXCEPTION_LOG=/var/log/faucet/gauge_exception.log
+GAUGE_CONFIG_STAT_RELOAD=1
+FAUCET_BR_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock
+STATIC_CONFIG=/etc/faucet_br/faucet.yaml
+export PYTHONPATH=$DAQ_ROOT:$FORCH_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet:$DAQ_ROOT/libs:$DAQ_ROOT/libs/proto
+
 env
 
 # User might already exist if docker restarted.
@@ -14,9 +39,6 @@ echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
 chmod a+rx $ROOT
 chown kronkiteman -R $DAQ_ROOT
 
-FAUCET_BR_EVENT_SOCK=/var/log/faucet_br/faucet_event.sock
-
-STATIC_CONFIG=/etc/faucet_br/faucet.yaml
 if [ "$RUN_MODE" == static_switch ]; then
     echo Using static switch configuration.
     FAUCET_BR_CONFIG=$STATIC_CONFIG
@@ -50,7 +72,7 @@ echo Starting ovs...
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 /usr/bin/gauge_go &
-forch &
+forch/bin/run_forch &
 
 echo Waiting for data0...
 while ! ip link show data0; do
@@ -59,7 +81,6 @@ done
 ifconfig data0 up
 
 echo Starting daq, output in daq/inst/cmdrun.log
-PYTHONPATH=$DAQ_ROOT:$FORCH_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet:$DAQ_ROOT/libs:$DAQ_ROOT/libs/proto
 sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \

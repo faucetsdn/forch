@@ -7,7 +7,6 @@ IMAGE=forch/controller
 PROM_TARGET=9302
 GAUGE_PROM_TARGET=9303
 FAUCET_SOCK=faucet_event.sock
-FAUCET_CONFIG=faucet.yaml
 SYSTEM_CONF=system.conf
 LOCAL_CONFIG=local/$SYSTEM_CONF
 
@@ -74,12 +73,7 @@ if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; 
     docker rm -f $CONTAINER
 fi
 
-if [ -n "$FAUCET_SOCK" ]; then
-    rm -f $INSTDIR/$FAUCET_SOCK
-    event_sock=/var/log/faucet/$FAUCET_SOCK
-fi
-
-faucet_config=/etc/faucet/$FAUCET_CONFIG
+rm -f $INSTDIR/$FAUCET_SOCK
 
 if [ -n "$local" ]; then
     using_faucet=$(cd faucet; git rev-list -n 1 `git describe --dirty`) || using_faucet=dev
@@ -112,58 +106,32 @@ if [ -n "$gauge_prom_pt" ]; then
 fi
 
 forch_port="-p 500$faucet_id:9019"
-docker_envs="\
-    --env CONTROLLER_NAME=$CONTAINER \
-    --env PROMETHEUS_PORT=9302 \
-    --env FAUCET_EVENT_SOCK=/var/log/faucet/faucet_event.sock \
-    --env FAUCET_CONFIG_DIR=/etc/faucet \
-    --env FORCH_CONFIG_DIR=/etc/forch \
-    --env WSAPI_LISTEN_HOST=localhost \
-    --env WSAPI_LISTEN_PORT=4000 \
-    --env GAUGE_RYU_CONF=/etc/faucet/ryu.conf \
-    --env GAUGE_LISTEN_PORT=6654 \
-    --env GAUGE_CONFIG=/etc/faucet/gauge.yaml \
-    --env GAUGE_LOG=/var/log/faucet/gauge.log \
-    --env GAUGE_EXCEPTION_LOG=/var/log/faucet/gauge_exception.log \
-    --env GAUGE_CONFIG_STAT_RELOAD=1 \
-    --env FORCH_LOG_DIR=/var/log/faucet \
-    --env FAUCET_CONFIG_STAT_RELOAD=1 \
-    --env GAUGE_CONFIG_STAT_RELOAD=1 \
-    --env FAUCET_EVENT_SOCK_HEARTBEAT=10 \
-    --env USERID=$(id -u) \
-    --env RUN_MODE=$run_mode \
-    --env FAUCET_EVENT_SOCK=$event_sock \
-    --env FAUCET_CONFIG=$faucet_config \
-    --env FAUCET_LISTEN_PORT=6653 \
-    --env FAUCET_RYU_CONF=/etc/faucet/ryu.conf"
+docker_envs="--env RUN_MODE=$run_mode"
 
 docker_volumes+="\
         -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
         -v $INSTDIR/faucet_br:/var/log/faucet_br \
         -v $INSTDIR/faucet:/etc/faucet \
-        -v $INSTDIR/forch:/etc/forch \
         -v $INSTDIR:/var/log/faucet \
+        -v $INSTDIR/forch:/etc/forch \
         -v $INSTDIR/daq/local:/root/daq/local \
         -v $INSTDIR/daq/inst:/root/daq/inst"
-
-
 
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
              -p $ext_ofpt:6653 $forch_port $port_opts $gauge_port_opts -p $gauge_ext_ofpt:6654 $IMAGE)
 
-if [ $IMAGE == "forch/controller" ] && [[ $faucet_id =~ ^[0-9]+$ ]]; then
-    pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
-    tap_intf_name=cntrl_tap_$faucet_id
-    sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
-    sudo ip link set $tap_intf_name up
-    docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
-    docker exec $CONTAINER ip link set data0 up
-fi
+pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
+tap_intf_name=cntrl_tap_$faucet_id
+echo Creating tap interface $tap_intf_name for container pid $pid
+sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
+sudo ip link set $tap_intf_name up
+docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
+docker exec $CONTAINER ip link set data0 up
 
 echo Container $CONTAINER started as $cid
 
-while [ -n "$FAUCET_SOCK" -a ! -e $INSTDIR/$FAUCET_SOCK ]; do
+while [ ! -e $INSTDIR/$FAUCET_SOCK ]; do
     status=`docker inspect $CONTAINER | jq -r '.[0].State.Status'`
     if [ "$status" != running ]; then
        echo Docker container $CONTAINER not running, is $status
