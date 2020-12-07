@@ -4,8 +4,8 @@
 * Results in docker image `forch/controller`
 * Running: `docker run -d --privileged $docker_volumes $docker_ports forch/controller`
   * useful volumes
-    * `/etc/faucet`
-    * `/etc/forch`
+    * `/etc/faucet`: Configuration directory for `faucet`.
+    * `/etc/forch`: Configuration directory for `forch`.
   * exposed ports
     * 6553: OpenFlow port connecting to faucet.
     * 6554: OpenFlow port connecting to gauge.
