@@ -10,6 +10,7 @@ no_clean=
 faux_dhcp=
 fot=
 run_opt=
+remote=
 mode=bond
 
 if [ "$1" == "local" ]; then
@@ -24,6 +25,11 @@ fi
 
 if [ "$1" == "switches" ]; then
     switches=$2
+    shift 2
+fi
+
+if [ "$1" == "remote" ]; then
+    remote=$2
     shift 2
 fi
 
@@ -75,15 +81,15 @@ fi
 echo Configuring mode $mode...
 
 add_br corp  0x111 6683
-add_br t1sw1 177 6001 7001
-add_br t1sw2 178 6001 7001
+add_br t1sw1 177 $remote 6001 7001
+add_br t1sw2 178 $remote 6001 7001
 add_oeth t1sw1 28 corp-eth10
 add_oeth t1sw2 28 corp-eth20
 add_link t1sw1 6 t1sw2 6
 
-add_br t2sw1 1295 6001 7001
-add_br t2sw2 1296 6001 7001
-add_br t2sw3 1297 6001 7001
+add_br t2sw1 1295 $remote 6001 7001
+add_br t2sw2 1296 $remote 6001 7001
+add_br t2sw3 1297 $remote 6001 7001
 
 add_link t1sw1 9 t2sw1 50
 add_link t1sw1 10 t2sw2 50
@@ -96,7 +102,7 @@ add_link t1sw2 11 t2sw3 52
 if [ -n "$switches" ]; then
     for snum in $(seq 4 $switches); do
         echo Adding extra switch num $snum
-        add_br t2sw$snum $((1294 + snum)) 6001 7001
+        add_br t2sw$snum $((1294 + snum)) $remote 6001 7001
         add_link t1sw1 $((8+snum)) t2sw$snum 50
         add_link t1sw2 $((8+snum)) t2sw$snum 52
     done
