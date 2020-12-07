@@ -5,8 +5,8 @@ FORCH_ROOT=$ROOT
 DAQ_ROOT=$ROOT/daq
 FAUCET_ROOT=$ROOT/faucet
 
-ls -ld /var/log/faucet/faucet
-USERID=`ls -ldn /var/log/faucet/faucet | awk '{print $3}'`
+ls -ld /var/log/faucet
+USERID=`ls -ldn /var/log/faucet | awk '{print $3}'`
 
 PROMETHEUS_PORT=9302
 FAUCET_EVENT_SOCK=/var/log/faucet/faucet_event.sock
