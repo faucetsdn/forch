@@ -1,5 +1,17 @@
 #!/bin/bash -e
 
+function setup_flat_faucet_config {
+    local switch_count=1
+    if [ -n "$1" ]; then
+        switch_count=$1
+    fi
+    echo "Creating Faucet config for flat topology with $switch_count switches"
+    local root=$(realpath $(dirname $0)/..)
+    local out_file_arg="-p $root/inst/forch-faucet-1/faucet/faucet.yaml"
+    local topo_arg="-t flat -a $switch_count -d 1"
+    PYTHONPATH=$root venv/bin/python $root/testing/python_lib/build_config.py $out_file_arg $topo_arg
+}
+
 ROOT=$(dirname $0)/..
 cd $ROOT
 
@@ -35,15 +47,17 @@ for sw_num in $(seq 1 $switches); do
     echo Adding access switch $switch
     add_br $switch $((512 + sw_num)) 6001 7001
 
-    add_oeth $switch 50 $bonded_iface
+    add_oeth $switch 28 $bonded_iface
 done
 
 # set up ring links
-if (( $switches > 1)); then
-    for sw_num in $(seq 1 $switches); do
+if (( $switches > 2)); then
+    for sw_num in $(seq 1 $((switches-1))); do
         sw_a=sw$sw_num
-        sw_b=sw$((sw_num % switches + 1))
-        add_link $sw_a 51 $sw_b 52
+        sw_b=sw$((sw_num + 1))
+        port_a=$((6 + sw_num))
+        port_b=$((7 + sw_num))
+        add_link $sw_a $port_a $sw_b $port_b
     done
 fi
 
@@ -61,7 +75,7 @@ add_iface corp 10 bond
 echo Starting faucet instances...
 sudo rm -rf inst/
 mkdir -p inst/forch-faucet-corp/faucet
-cp topo/$topo/corp_conf.yaml inst/forch-faucet-corp/faucet/faucet.yaml
+setup_corp_faucet_config
 docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet local corp 6683
@@ -72,6 +86,7 @@ container=forch-faucet-$inst
 container_inst=inst/$container/
 mkdir -p $container_inst/
 cp -r topo/$topo/faucet $container_inst/
+setup_flat_faucet_config $switches
 cp -r topo/$topo/forch $container_inst/
 docker kill $container || true
 

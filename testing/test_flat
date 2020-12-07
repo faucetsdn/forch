@@ -11,8 +11,8 @@ function test_switch_state {
     switch=$2
     jq ".switches.$switch.switch_state" $api_result | tee -a $TEST_RESULTS
     jq '.switch_state_detail' $api_result | tee -a $TEST_RESULTS
-    jq ".switches.$switch.ports.\"50\".attributes.port_type" $api_result | tee -a $TEST_RESULTS
-    jq ".switches.$switch.ports.\"50\".port_state" $api_result | tee -a $TEST_RESULTS
+    jq ".switches.$switch.ports.\"28\".attributes.port_type" $api_result | tee -a $TEST_RESULTS
+    jq ".switches.$switch.ports.\"28\".port_state" $api_result | tee -a $TEST_RESULTS
 }
 
 function test_list_hosts {

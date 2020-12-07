@@ -10,7 +10,7 @@ from forch.proto.faucet_configuration_pb2 import Interface, StackLink, Datapath,
 CORP_DP_ID = 273
 T1_DP_ID_START = 177
 T2_DP_ID_START = 1295
-FLAT_DP_ID_START = 512
+FLAT_DP_ID_START = 513
 SETUP_VLAN = 171
 TEST_VLAN = 272
 FLAT_LINK_PORT_START = 6
