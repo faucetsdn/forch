@@ -21,7 +21,7 @@ class FailScaleConfigTest(IntegrationTestBase):
         self.config_path = '/tmp/scale_config'
 
         config = proto_dict(
-            FaucetConfigGenerator()._create_scale_faucet_config(2, self.switches, self.devices))
+            FaucetConfigGenerator().create_scale_faucet_config(2, self.switches, self.devices))
         with open(self.config_path, 'w') as config_file:
             yaml.dump(config, config_file)
 
