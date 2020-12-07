@@ -348,8 +348,9 @@ class Faucetizer:
             acls_config = include_config.get('acls')
             self._augment_acls_config(acls_config, file_path)
 
-            new_file_name = self._augment_include_file_name(os.path.split(file_path)[1])
-            self.flush_include_config(new_file_name, include_config)
+            relative_include_path = os.path.relpath(file_path, start=self._forch_config_dir)
+            new_file_path = self._augment_include_file_name(relative_include_path)
+            self.flush_include_config(new_file_path, include_config)
 
     def reload_segments_to_vlans(self, file_path):
         """Reload file that contains the mappings from segments to vlans"""
@@ -386,6 +387,7 @@ class Faucetizer:
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
         faucet_include_file_path = os.path.join(self._faucet_config_dir, include_file_name)
+        os.makedirs(os.path.dirname(faucet_include_file_path), exist_ok=True)
         with open(faucet_include_file_path, 'w') as file:
             yaml.dump(include_config, file)
             LOGGER.debug('Wrote augmented included file to %s', faucet_include_file_path)
