@@ -2,8 +2,8 @@
 
 env
 
-ls -ld /var/log/faucet/faucet
-USERID=`ls -ldn /var/log/faucet/faucet | awk '{print $3}'`
+ls -ld /var/log/faucet
+USERID=`ls -ldn /var/log/faucet | awk '{print $3}'`
 
 # User might already exist if docker restarted.
 echo "kronkiteman::$USERID:$USERID::/:bin/bash" >> /etc/passwd
