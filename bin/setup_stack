@@ -11,6 +11,7 @@ faux_dhcp=
 fot=
 run_opt=
 remote=
+container=
 mode=bond
 
 if [ "$1" == "local" ]; then
@@ -124,26 +125,29 @@ docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet $local corp 6683
 
-inst=1
-if [ -n "$fot" ]; then
-    container=forch-controller-$inst
-else
-    container=forch-faucet-$inst
-fi
+finst=1
+if [ -z "$remote" ]; then
+    if [ -n "$fot" ]; then
+        container=forch-controller-$finst
+    else
+        container=forch-faucet-$finst
+    fi
 
-container_inst=inst/$container/
-mkdir -p $container_inst/
-cp -r topo/$mode/forch $container_inst/
-cp -r topo/$mode/faucet $container_inst/
-docker kill $container || true
+    container_inst=inst/$container/
+    mkdir -p $container_inst/
+    cp -r topo/$mode/forch $container_inst/
+    cp -r topo/$mode/faucet $container_inst/
+    docker kill $container || true
 
-if [ -n "$fot" ]; then
-    mkdir -p $container_inst/faucet_br/faucet
-    cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
-    bin/run_controller $local $run_opt $inst $((6000 + inst)) $((8000 + inst)) $((7000 + inst)) $((9000 + inst))
-else
-    bin/run_faucet $local $inst $((6000 + inst)) $((8000 + inst))
-    bin/run_faucet $local gauge $inst $((7000 + inst)) $((9000 + inst))
+    if [ -n "$fot" ]; then
+        mkdir -p $container_inst/faucet_br/faucet
+        # TODO: faucet_br should not be under topo/ since it has nothing to do with the topology.
+        cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
+        bin/run_controller $local $run_opt $finst $((6000 + finst)) $((8000 + finst)) $((7000 + finst)) $((9000 + finst))
+    else
+        bin/run_faucet $local $finst $((6000 + finst)) $((8000 + finst))
+        bin/run_faucet $local gauge $finst $((7000 + finst)) $((9000 + finst))
+    fi
 fi
 
 echo Connecting faux interfaces...
@@ -151,7 +155,9 @@ add_faux corp 1 0 dnsmasq
 add_faux t2sw1 1 1 $faux_dhcp
 add_faux t2sw2 1 2 $faux_dhcp
 add_faux t2sw3 1 3
-add_iface t1sw1 4 cntrl_tap_1
+if [ -z "$remote" ]; then
+    add_iface t1sw1 4 cntrl_tap_1
+fi
 
 dcount=${devices:-3}
 scount=${switches:-3}
@@ -177,16 +183,18 @@ echo Working with $tdevices devices.
 echo Letting system settle...
 sleep 60
 
-if [ -n "$fot" ]; then
-    echo head of forch-controller-1/faucet.log:
-    head -n 50 inst/forch-controller-1/faucet.log
-    echo head of forch-controller-1/forch.log:
-    head -n 50 inst/forch-controller-1/forch.log
-else
-    echo head of forch-faucet-1/faucet.log:
-    head inst/forch-faucet-1/faucet.log
+if [ -z "$remote" ]; then
+    if [ -n "$fot" ]; then
+        echo head of forch-controller-1/faucet.log:
+        head -n 50 inst/forch-controller-1/faucet.log
+        echo head of forch-controller-1/forch.log:
+        head -n 50 inst/forch-controller-1/forch.log
+    else
+        echo head of forch-faucet-1/faucet.log:
+        head inst/forch-faucet-1/faucet.log
+    fi
+    echo
 fi
-echo
 
 if [ -z "$skip_conn_check" ]; then
     echo Starting connection warm-up for 10s...
