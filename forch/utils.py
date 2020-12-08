@@ -9,6 +9,7 @@ from google.protobuf import json_format, text_format
 _LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
 _LOG_LEVEL_DEFAULT = 'INFO'
+_LOG_FILE_DEFAULT = '/var/log/faucet/forch.log'
 
 
 class MessageParseError(Exception):
@@ -29,11 +30,8 @@ class MetricsFetchingError(Exception):
 
 def get_logger(name):
     """Get a logger"""
-    log_file_path = os.getenv('FORCH_LOG')
-    if log_file_path:
-        log_handler = logging.FileHandler(log_file_path)
-    else:
-        log_handler = logging.StreamHandler()
+    log_file_path = os.getenv('FORCH_LOG', _LOG_FILE_DEFAULT)
+    log_handler = logging.FileHandler(log_file_path)
 
     logging_level = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
     log_handler.setFormatter(logging.Formatter(_LOG_FORMAT, _LOG_DATE_FORMAT))

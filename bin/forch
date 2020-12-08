@@ -41,10 +41,6 @@ else
     mkdir -p $((dirname $FORCH_LOG)) $FORCH_CONFIG_DIR
 fi
 
-if [ "$nolog" = true ]; then
-    FORCH_LOG_DIR=
-fi
-
 if [ -z "$CONTROLLER_NAME" ]; then
     CONTROLLER_NAME=$(hostname -s)
     echo Setting controller name to $CONTROLLER_NAME
@@ -72,9 +68,7 @@ else
     echo Using default gauge prometheus port $GAUGE_PROM_PORT
 fi
 
-if [ -n "$FORCH_LOG" ]; then
-    echo Writing forch logs to $FORCH_LOG
-fi
+echo Writing forch logs to $FORCH_LOG
 
 if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
     PYTHON=venv/bin/python3
