@@ -31,33 +31,6 @@ cat forch/__version__.py
 
 glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
 
-if [ -f esdn-faucet/FORCH_VERSION ]; then
-    echo Pollution from esdn-faucet should not be here.
-    false
-fi
-
-(
-    echo Starting build of esdn-faucet meta-package...
-
-    git add debian
-    git stash
-    git checkout esdn
-    git log -n 1
-    cd esdn-faucet
-
-    FORCH_VERSION=$(< FORCH_VERSION)
-    echo Fixing debian forch version to $FORCH_VERSION
-    fgrep -v $FORCH_VERSION debian/control > /dev/null
-    sed -i s/FORCH_VERSION/${FORCH_VERSION}/ debian/control
-    fgrep $FORCH_VERSION debian/control
-
-    VERSION=$(git describe)
-    echo esdn-faucet version $VERSION
-    debchange --newversion $VERSION -b "New upstream release"
-
-    glinux-build -type="binary" -base-path="${TMPDIR}/glinux-build" -additional-repos="enterprise-sdn-faucet-core-unstable" -name="rodete" . "${TMPDIR}/binary/"
-)
-
 mkdir binary
 cp ${TMPDIR}/binary/* binary/
 ls -l binary/
