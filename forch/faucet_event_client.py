@@ -143,6 +143,7 @@ class FaucetEventClient():
         state_key = '%s-%d' % (dpid, port)
         if state_key in self.previous_state and self.previous_state[state_key] == active:
             return False
+        LOGGER.debug('Port change %s active %s', state_key, active)
         self.previous_state[state_key] = active
         return True
 
