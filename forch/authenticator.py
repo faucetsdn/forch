@@ -16,8 +16,6 @@ from forch.proto.devices_state_pb2 import DevicePlacement
 from forch.proto.authentication_pb2 import AuthResult
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
-LOGGER = get_logger('auth')
-
 HEARTBEAT_INTERVAL_SEC = 3
 
 class Authenticator:
@@ -29,6 +27,7 @@ class Authenticator:
         self._sessions_lock = threading.Lock()
         self.auth_callback = auth_callback
         self._metrics = metrics
+        self._logger = get_logger('auth')
         radius_info = auth_config.radius_info
         radius_ip = radius_info.server_ip
         radius_port = radius_info.server_port
@@ -38,7 +37,7 @@ class Authenticator:
         else:
             secret = None
         if not (radius_ip and radius_port and secret):
-            LOGGER.warning('Invalid radius_info in config. \
+            self._logger.warning('Invalid radius_info in config. \
                            Radius IP: %s; Radius port: %s Secret present: %s',
                            radius_ip, radius_port, bool(secret))
             raise ConfigError
@@ -57,7 +56,7 @@ class Authenticator:
         self.timer = HeartbeatScheduler(interval)
         self.timer.add_callback(self.handle_sm_timeout)
         self.timer.start()
-        LOGGER.info('Created Authenticator module with radius IP %s and port %s.',
+        self._logger.info('Created Authenticator module with radius IP %s and port %s.',
                     radius_ip, radius_port)
 
     def process_auth_result(self):
@@ -69,7 +68,7 @@ class Authenticator:
             try:
                 auth_list = yaml.safe_load(stream).get('auth_list')
             except yaml.YAMLError as exc:
-                LOGGER.error("Error loading yaml file: %s", exc, exc_info=True)
+                self._logger.error("Error loading yaml file: %s", exc, exc_info=True)
         for auth_obj in auth_list:
             auth_example = dict_proto(auth_obj, AuthResult)
             sys.stdout.write(str(proto_dict(auth_example)) + '\n')
@@ -81,7 +80,7 @@ class Authenticator:
 
     def do_mab_request(self, src_mac, port_id):
         """Initiate MAB request"""
-        LOGGER.info('sending MAB request for %s', src_mac)
+        self._logger.info('sending MAB request for %s', src_mac)
         self.radius_query.send_mab_request(src_mac, port_id)
 
     def process_device_placement(self, src_mac, device_placement):
@@ -102,17 +101,17 @@ class Authenticator:
 
     def process_radius_result(self, src_mac, code, segment, role):
         """Process RADIUS result from radius_query"""
-        LOGGER.info(
+        self._logger.info(
             "Received RADIUS result for src_mac %s: %s, %s, %s",
             src_mac, code, segment, role)
 
         if self._metrics:
             self._metrics.inc_var('radius_query_responses')
         if code == radius_query.INVALID_RESP:
-            LOGGER.warning("Received invalid response for src_mac: %s", src_mac)
+            self._logger.warning("Received invalid response for src_mac: %s", src_mac)
             return
         if src_mac not in self.sessions:
-            LOGGER.warning("Session doesn't exist for src_mac:%s", src_mac)
+            self._logger.warning("Session doesn't exist for src_mac:%s", src_mac)
             return
         with self._sessions_lock:
             if code == radius_query.ACCEPT:

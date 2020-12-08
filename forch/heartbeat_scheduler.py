@@ -4,8 +4,6 @@ import threading
 
 from forch.utils import get_logger
 
-LOGGER = get_logger('heartbeat')
-
 
 class HeartbeatScheduler:
     """Heart beat scheduler"""
@@ -13,6 +11,7 @@ class HeartbeatScheduler:
         self._interval_sec = interval_sec
         self._callbacks = []
         self._run = False
+        self._logger = get_logger('heartbeat')
 
     def add_callback(self, callback):
         """Add callback"""
@@ -26,7 +25,7 @@ class HeartbeatScheduler:
             try:
                 callback()
             except Exception as error:
-                LOGGER.error("Error in running %s: %s", callback, error)
+                self._logger.error("Error in running %s: %s", callback, error)
 
         threading.Timer(self._interval_sec, self._periodic_task).start()
 
