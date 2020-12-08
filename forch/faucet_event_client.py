@@ -120,7 +120,7 @@ class FaucetEventClient():
 
     def _handle_port_change_debounce(self, event, target_event):
         if isinstance(target_event, PortChange):
-            dpid = target_event.dp_id
+            dpid = event['dp_id']
             port = target_event.port_no
             active = target_event.status and target_event.reason != 'DELETE'
             if not event.get('debounced'):
