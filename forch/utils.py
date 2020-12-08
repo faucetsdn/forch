@@ -27,17 +27,9 @@ class MetricsFetchingError(Exception):
     """Failure of fetching target metrics"""
 
 
-def _get_log_path():
-    """Get path for logging"""
-    forch_log_dir = os.getenv('FORCH_LOG_DIR')
-    if not forch_log_dir:
-        return None
-    return os.path.join(forch_log_dir, 'forch.log')
-
-
 def get_logger(name):
     """Get a logger"""
-    log_file_path = _get_log_path()
+    log_file_path = os.getenv('FORCH_LOG')
     if log_file_path:
         log_handler = logging.FileHandler(log_file_path)
     else:
