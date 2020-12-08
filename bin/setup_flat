@@ -87,7 +87,10 @@ container_inst=inst/$container/
 mkdir -p $container_inst/
 cp -r topo/$topo/faucet $container_inst/
 setup_flat_faucet_config $switches
+cp topo/common/faucet/ryu.conf $container_inst/
+cp topo/common/faucet/uniform.conf $container_inst/
 cp -r topo/$topo/forch $container_inst/
+cp topo/common/forch/forch.yaml $container_inst/
 docker kill $container || true
 
 bin/run_faucet local $inst $((6000 + inst)) $((8000 + inst))
