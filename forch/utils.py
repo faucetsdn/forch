@@ -31,12 +31,8 @@ class MetricsFetchingError(Exception):
 def get_logger(name):
     """Get a logger"""
     log_file_path = os.getenv('FORCH_LOG', _LOG_FILE_DEFAULT)
-    log_dir = os.path.dirname(log_file_path)
-
-    if os.path.exists(log_dir):
-        log_handler = logging.FileHandler(log_file_path)
-    else:
-        log_handler = logging.StreamHandler()
+    os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+    log_handler = logging.FileHandler(log_file_path)
 
     logging_level = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
     log_handler.setFormatter(logging.Formatter(_LOG_FORMAT, _LOG_DATE_FORMAT))
