@@ -349,6 +349,7 @@ function test_forch {
     fetch_forch switch_state '?switch=nz-kiwi-t2sw1&port=1' 1
     fetch_forch switch_state '?switch=nz-kiwi-t1sw2&port=10' 2
     fetch_forch switch_state '?switch=nz-kiwi-t2sw3&port=1' 3
+    fetch_forch switch_state '?switch=nz-kiwi-t1sw2&port=6' 4
     fetch_forch cpn_state
     fetch_forch process_state
     fetch_forch list_hosts '' 1
@@ -388,6 +389,8 @@ function test_forch {
     jq '.switches."nz-kiwi-t2sw2".ports."46".attributes.description' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state3.json
     dq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result $TEST_RESULTS
+    api_result=$fout_dir/switch_state4.json
+    jq '.switches."nz-kiwi-t1sw2".ports."6".port_state' $api_result | tee -a $TEST_RESULTS
 
     echo @cpn_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/cpn_state.json
