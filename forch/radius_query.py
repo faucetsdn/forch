@@ -30,7 +30,7 @@ class RadiusQuery:
         self.radius_socket = RadiusSocket(socket_info.source_ip, socket_info.source_port,
                                           socket_info.server_ip, socket_info.server_port)
         self._logger = get_logger('rquery')
-        
+
         self.radius_socket.setup()
 
     def get_mac_from_packet_id(self, packet_id):

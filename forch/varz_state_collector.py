@@ -10,14 +10,14 @@ from forch.utils import get_logger, MetricsFetchingError
 
 class VarzStateCollector:
     """Collecting metrics from Varzs"""
-    
+
     def __init__(self):
         self._logger = get_logger('vstate')
-    
+
     def get_metrics(self, endpoint, target_metrics):
         """Get a list of target metrics"""
         metric_map = {}
-    
+
         response = requests.get(endpoint)
         if response.status_code == requests.status_codes.codes.ok:  # pylint: disable=no-member
             content = response.content.decode('utf-8', 'strict')
@@ -26,7 +26,7 @@ class VarzStateCollector:
                 metric_map[metric.name] = metric
         else:
             raise Exception(f"Error response code: {response.status_code}")
-    
+
         return metric_map
 
     def retry_get_metrics(self, endpoint, target_metrics, retries=3):

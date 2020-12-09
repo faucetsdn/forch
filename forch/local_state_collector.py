@@ -108,7 +108,8 @@ class LocalStateCollector:
 
         if state != old_state or state_detail != old_state_detail:
             state_change_count = process_state.get('process_state_change_count', 0) + 1
-            self._logger.info('process_state #%d is %s: %s', state_change_count, state, state_detail)
+            self._logger.info(
+                'process_state #%d is %s: %s', state_change_count, state, state_detail)
             process_state['process_state'] = state
             process_state['process_state_detail'] = state_detail
             process_state['process_state_change_count'] = state_change_count

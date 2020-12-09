@@ -34,7 +34,7 @@ class AuthStateMachine():
         self._metrics = metrics
         self._transition_lock = Lock()
         self._logger = get_logger('mabsm')
-        
+
         self._reset_state_machine()
 
     def _increment_retries(self):
@@ -80,7 +80,8 @@ class AuthStateMachine():
         """Received RADIUS accept message"""
         with self._transition_lock:
             if self._current_state != self.REQUEST:
-                self._logger.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                self._logger.warning(
+                    'Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
                 return
             self._state_transition(self.ACCEPT, self.REQUEST)
             self._current_timeout = time.time() + self._auth_timeout_sec
@@ -91,7 +92,8 @@ class AuthStateMachine():
         """Received RADIUS reject message"""
         with self._transition_lock:
             if self._current_state != self.REQUEST:
-                self._logger.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                self._logger.warning(
+                    'Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
                 return
             self._state_transition(self.UNAUTH, self.REQUEST)
             self._current_timeout = time.time() + self._rej_timeout_sec

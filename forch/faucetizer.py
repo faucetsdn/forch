@@ -409,9 +409,9 @@ class Faucetizer:
 
 def load_devices_state(file):
     """Load devices state file"""
-    self._logger.info('Loading network state file %s', file)
+    LOGGER.info('Loading network state file %s', file)
     devices_state = yaml_proto(file, DevicesState)
-    self._logger.info('Loaded %d devices', len(devices_state.device_mac_behaviors))
+    LOGGER.info('Loaded %d devices', len(devices_state.device_mac_behaviors))
     return devices_state
 
 

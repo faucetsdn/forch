@@ -1237,7 +1237,8 @@ class FaucetStateCollector:
                 link_change_count = self._update_stack_links_stats(timestamp)
                 graph_links = [link.key for link in link_graph]
                 graph_links.sort()
-                self._logger.info('stack_state_links #%d links: %s', link_change_count, graph_links)
+                self._logger.info(
+                    'stack_state_links #%d links: %s', link_change_count, graph_links)
 
             msg_str = "root %s: %s" % (stack_root, self._list_root_hops(dps))
             prev_msg = topo_state.get(TOPOLOGY_DPS_HASH)
@@ -1307,7 +1308,8 @@ class FaucetStateCollector:
         learned_host = self.learned_macs.get(mac)
         if not learned_host:
             # This covers the case where we do a RADIUS request for a static placement
-            self._logger.warning('%s is not a learned mac. Skipping faucet_state_collector update.', mac)
+            self._logger.warning(
+                '%s is not a learned mac. Skipping faucet_state_collector update.', mac)
             return
         host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
         host_radius[MAC_RADIUS_ACCESS] = access
