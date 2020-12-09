@@ -64,15 +64,15 @@ function test_connectivity {
 }
 
 skip_topo_setup=
-cleanup=
+no_clean=
 
 if [ "$1" == "skip-topo-setup" ]; then
     skip_topo_setup=y
     shift
 fi
 
-if [ "$1" == "cleanup" ]; then
-    cleanup=y
+if [ "$1" == "no-clean" ]; then
+    no_clean=y
     shift
 fi
 
@@ -93,7 +93,7 @@ sleep 10
 test_apis 1 1
 
 
-if [ -n "$cleanup" ]; then
+if [ -z "$no_clean" ]; then
     bin/net_clean
     sudo rm -rf inst
     kill_forch

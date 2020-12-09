@@ -9,7 +9,7 @@ export TEST_RESULTS
 
 testing/test_check
 testing/test_topology
-testing/test_flat cleanup
+testing/test_flat
 testing/test_solo
 testing/test_counting
 testing/python_test coverage test_faucetizer

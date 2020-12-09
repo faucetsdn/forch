@@ -8,8 +8,8 @@ function setup_flat_faucet_config {
     echo "Creating Faucet config for flat topology with $switch_count switches"
     local root=$(realpath $(dirname $0)/..)
     local out_file_arg="-p $root/inst/forch-faucet-1/faucet/faucet.yaml"
-    local topo_arg="-t flat -a $switch_count -d 1"
-    PYTHONPATH=$root venv/bin/python $root/testing/python_lib/build_config.py $out_file_arg $topo_arg
+    local topo_args="-t flat -a $switch_count -d 1"
+    PYTHONPATH=$root venv/bin/python $root/testing/python_lib/build_config.py $out_file_arg $topo_args
 }
 
 ROOT=$(dirname $0)/..
@@ -51,8 +51,8 @@ for sw_num in $(seq 1 $switches); do
 done
 
 # set up ring links
-if (( $switches > 2)); then
-    for sw_num in $(seq 1 $((switches-1))); do
+if (( $switches > 2 )); then
+    for sw_num in $(seq 1 $((switches - 1))); do
         sw_a=sw$sw_num
         sw_b=sw$((sw_num + 1))
         port_a=$((6 + sw_num))
@@ -85,12 +85,11 @@ container=forch-faucet-$inst
 
 container_inst=inst/$container/
 mkdir -p $container_inst/
+cp -r topo/common/faucet $container_inst/
 cp -r topo/$topo/faucet $container_inst/
 setup_flat_faucet_config $switches
-cp topo/common/faucet/ryu.conf $container_inst/faucet/
-cp topo/common/faucet/uniform.yaml $container_inst/faucet/
+cp -r topo/common/forch $container_inst/
 cp -r topo/$topo/forch $container_inst/
-cp topo/common/forch/forch.yaml $container_inst/forch/
 docker kill $container || true
 
 bin/run_faucet local $inst $((6000 + inst)) $((8000 + inst))
