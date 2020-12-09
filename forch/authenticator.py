@@ -37,9 +37,9 @@ class Authenticator:
         else:
             secret = None
         if not (radius_ip and radius_port and secret):
-            self._logger.warning('Invalid radius_info in config. \
-                           Radius IP: %s; Radius port: %s Secret present: %s',
-                           radius_ip, radius_port, bool(secret))
+            self._logger.warning(
+                'Invalid radius_info in config. Radius IP: %s; Radius port: %s Secret present: %s',
+                radius_ip, radius_port, bool(secret))
             raise ConfigError
         Socket = collections.namedtuple(
             'Socket', 'source_ip, source_port, server_ip, server_port')
@@ -56,8 +56,8 @@ class Authenticator:
         self.timer = HeartbeatScheduler(interval)
         self.timer.add_callback(self.handle_sm_timeout)
         self.timer.start()
-        self._logger.info('Created Authenticator module with radius IP %s and port %s.',
-                    radius_ip, radius_port)
+        self._logger.info(
+            'Created Authenticator module with radius IP %s and port %s.', radius_ip, radius_port)
 
     def process_auth_result(self):
         """Prints Auth example object to out"""

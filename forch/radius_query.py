@@ -17,6 +17,7 @@ INVALID_RESP = "INVALID_RESPONSE"
 SERVICE_CALL_CHECK = 10
 NAS_TYPE_ETHERNET = 15
 
+
 class RadiusQuery:
     """Maintains socket information and sends out and receives requests form RADIUS server"""
     def __init__(self, socket_info, radius_secret, auth_callback):
@@ -57,8 +58,9 @@ class RadiusQuery:
             elif radius.CODE == 3:
                 code = REJECT
             src_mac = self.get_mac_from_packet_id(radius.packet_id)['src_mac']
-            self._logger.debug("Received RADIUS msg: Code:%s src:%s attributes:%s",
-                         code, src_mac, radius.attributes.to_dict())
+            self._logger.debug(
+                'Received RADIUS msg: Code:%s src:%s attributes:%s', code, src_mac,
+                radius.attributes.to_dict())
             if self.auth_callback:
                 attr = radius.attributes.find('Tunnel-Private-Group-ID')
                 segment = attr.data().decode('utf-8') if attr else None

@@ -41,6 +41,7 @@ def _dump_states(func):
     def wrapped(self, *args, **kwargs):
         res = func(self, *args, **kwargs)
         with self.lock:
+            # pylint: disable=protected-access
             self._logger.debug(json.dumps(self.switch_states, default=_set_default))
         return res
 
@@ -116,6 +117,7 @@ class FaucetStateCollector:
         self.packet_counts = {}
         self.lock = threading.RLock()
         self._lock = threading.Lock()
+        self._logger = get_logger('fstate')
         self.process_lag_state(time.time(), None, None, False, False)
         self._active_state = State.initializing
         self._is_faucetizer_enabled = is_faucetizer_enabled
@@ -130,7 +132,6 @@ class FaucetStateCollector:
         self._forch_metrics = None
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
-        self._logger = get_logger('fstate')
 
     def set_active(self, active_state):
         """Set active state"""
@@ -1034,9 +1035,10 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            self._logger.info('lag_state update %s Port %s Role: %s State: %s',
-                        name, port, LacpRole.LacpRole.Name(int(lacp_role)),
-                        LacpState.LacpState.Name(int(lacp_state)))
+            self._logger.info(
+                'lag_state update %s Port %s Role: %s State: %s',
+                name, port, LacpRole.LacpRole.Name(int(lacp_role)),
+                LacpState.LacpState.Name(int(lacp_state)))
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_role = int(lacp_role)  # varz returns float. Need to convert to int
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
@@ -1061,8 +1063,9 @@ class FaucetStateCollector:
             egress_state[EGRESS_CHANGE_COUNT] = change_count
             egress_state[EGRESS_STATE] = state
             egress_state[EGRESS_DETAIL] = egress_detail
-            self._logger.info('lag_state Change #%d %s, State: %s Egress detail: %s',
-                        change_count, name, State.State.Name(state), egress_detail)
+            self._logger.info(
+                'lag_state Change #%d %s, State: %s Egress detail: %s',
+                change_count, name, State.State.Name(state), egress_detail)
 
     def _get_egress_state_detail(self, links):
         state_set = set()
@@ -1173,8 +1176,9 @@ class FaucetStateCollector:
             new_state = SWITCH_CONNECTED if connected else SWITCH_DOWN
             if dp_state.get(SW_STATE) != new_state:
                 change_count = dp_state.get(SW_STATE_CHANGE_COUNT, 0) + 1
-                self._logger.info('dp_change #%d %s, %s -> %s', change_count, dp_name,
-                            dp_state.get(SW_STATE), new_state)
+                self._logger.info(
+                    'dp_change #%d %s, %s -> %s', change_count, dp_name, dp_state.get(SW_STATE),
+                    new_state)
                 dp_state[SW_STATE] = new_state
                 dp_state[SW_STATE_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 dp_state[SW_STATE_CHANGE_COUNT] = change_count
@@ -1202,8 +1206,9 @@ class FaucetStateCollector:
             if port_state.get('state') != new_state:
                 port_state['state'] = new_state
                 link_change_count = self._update_stack_links_stats(timestamp)
-                self._logger.info('stack_state_links #%d %s:%d is now %s', link_change_count,
-                            dp_name, port, new_state)
+                self._logger.info(
+                    'stack_state_links #%d %s:%d is now %s', link_change_count, dp_name, port,
+                    new_state)
 
     @_dump_states
     def process_stack_topo_change_event(self, topo_change):

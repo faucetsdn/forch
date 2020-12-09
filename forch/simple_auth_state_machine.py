@@ -105,8 +105,9 @@ class AuthStateMachine():
         with self._transition_lock:
             if time.time() > self._current_timeout:
                 if self._retry_backoff:
-                    self._logger.debug('Retrying RADIUS request for src_mac %s. Retry #%s',
-                                 self.src_mac, self._retry_backoff)
+                    self._logger.debug(
+                        'Retrying RADIUS request for src_mac %s. Retry #%s', self.src_mac,
+                        self._retry_backoff)
                 self._radius_query_callback(self.src_mac, self.port_id)
                 backoff = min(self._retry_backoff, self._max_radius_backoff)
                 backoff_time = backoff * self._query_timeout_sec

@@ -246,8 +246,9 @@ class LocalStateCollector:
             if entry['local_port'] == port:
                 new_process_entry = entry['process_info']
                 if process_entry and new_process_entry != process_entry:
-                    self._logger.error('Insonsistent process entry for %s: %s != %s',
-                                 port, process_entry, new_process_entry)
+                    self._logger.error(
+                        'Inconsistent process entry for %s: %s != %s', port, process_entry,
+                        new_process_entry)
                 process_entry = new_process_entry
                 foreign_addresses[foreign_address] = {
                     'established': 'now'
