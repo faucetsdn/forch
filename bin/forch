@@ -30,19 +30,15 @@ if [ -n "$base" ]; then
     FAUCET_EVENT_SOCK=$INST_BASE/$FSOCK
     FAUCET_CONFIG_DIR=$INST_BASE/faucet
     FORCH_CONFIG_DIR=$INST_BASE/forch
-    FORCH_LOG_DIR=$INST_BASE
+    FORCH_LOG=$INST_BASE/forch.log
     FAUCET_PROM_PORT_FILE=$INST_BASE/PROM_PORT.9302
     GAUGE_PROM_PORT_FILE=$INST_BASE/PROM_PORT.9303
 else
     FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK}
     FAUCET_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
     FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
-    FORCH_LOG_DIR=${FORCH_LOG_DIR:-/var/log/faucet}
-    mkdir -p $FORCH_LOG_DIR $FORCH_CONFIG_DIR
-fi
-
-if [ "$nolog" = true ]; then
-    FORCH_LOG_DIR=
+    FORCH_LOG=${FORCH_LOG:-/var/log/faucet/forch.log}
+    mkdir -p $((dirname $FORCH_LOG)) $FORCH_CONFIG_DIR
 fi
 
 if [ -z "$CONTROLLER_NAME" ]; then
@@ -72,9 +68,7 @@ else
     echo Using default gauge prometheus port $GAUGE_PROM_PORT
 fi
 
-if [ -n "$FORCH_LOG_DIR" ]; then
-    echo Writing forch logs to $FORCH_LOG_DIR/forch.log
-fi
+echo Writing forch logs to $FORCH_LOG
 
 if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
     PYTHON=venv/bin/python3
@@ -88,6 +82,6 @@ export GAUGE_PROM_PORT
 export FAUCET_EVENT_SOCK
 export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR
-export FORCH_LOG_DIR
+export FORCH_LOG
 export PYTHONPATH
-$PYTHON -m forch "${pyargs[@]}" || tail $FORCH_LOG_DIR/forch.log && false
+$PYTHON -m forch "${pyargs[@]}" || tail $FORCH_LOG && false

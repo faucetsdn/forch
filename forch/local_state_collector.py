@@ -15,8 +15,6 @@ from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 from forch.utils import dict_proto, get_logger
 
-LOGGER = get_logger('lstate')
-
 _PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
 
 
@@ -43,8 +41,9 @@ class LocalStateCollector:
         self._cleanup_handler = cleanup_handler
         self._active_state_handler = active_state_handler
 
-        LOGGER.info('Scanning %s processes every %ds',
-                    len(self._target_procs), self._process_interval)
+        self._logger = get_logger('lstate')
+        self._logger.info(
+            'Scanning %s processes every %ds', len(self._target_procs), self._process_interval)
 
     def initialize(self):
         """Initialize LocalStateCollector"""
@@ -94,7 +93,7 @@ class LocalStateCollector:
             state_map['state'] = State.broken
             self._metrics.update_var('process_state', 0, labels=[target_name])
             if detail != self._last_error.get(target_name):
-                LOGGER.error(detail)
+                self._logger.error(detail)
                 self._last_error[target_name] = detail
             broken.append(target_name)
 
@@ -109,7 +108,8 @@ class LocalStateCollector:
 
         if state != old_state or state_detail != old_state_detail:
             state_change_count = process_state.get('process_state_change_count', 0) + 1
-            LOGGER.info('process_state #%d is %s: %s', state_change_count, state, state_detail)
+            self._logger.info(
+                'process_state #%d is %s: %s', state_change_count, state, state_detail)
             process_state['process_state'] = state
             process_state['process_state_detail'] = state_detail
             process_state['process_state_change_count'] = state_change_count
@@ -145,7 +145,7 @@ class LocalStateCollector:
 
         if create_time != old_proc_map.get('create_time'):
             change_count = old_proc_map.get('create_time_change_count', 0) + 1
-            LOGGER.info('create_time #%d for %s: %s', change_count, proc_name, create_time)
+            self._logger.info('create_time #%d for %s: %s', change_count, proc_name, create_time)
             proc_map['create_time_change_count'] = change_count
             proc_map['create_time_last_change'] = self._current_time
 
@@ -156,7 +156,7 @@ class LocalStateCollector:
 
         cpu_percent_threshold = self._target_procs[proc_name].cpu_percent_threshold
         if cpu_percent_threshold and proc_map['cpu_percent'] > cpu_percent_threshold:
-            LOGGER.warning(
+            self._logger.warning(
                 'CPU percent of process %s is %.2f, exceeding threshold %.2f',
                 proc_name, proc_map['cpu_percent'], cpu_percent_threshold)
 
@@ -212,7 +212,7 @@ class LocalStateCollector:
         if conn_state != self._conn_state:
             self._conn_state = conn_state
             self._conn_state_count += 1
-            LOGGER.info('conn_state #%d: %s', self._conn_state_count, conn_state)
+            self._logger.info('conn_state #%d: %s', self._conn_state_count, conn_state)
             connection_info['detail'] = conn_state
             connection_info['change_count'] = self._conn_state_count
             connection_info['last_change'] = self._current_time
@@ -234,7 +234,7 @@ class LocalStateCollector:
                             'process_info': parts[6]
                         }
                     except Exception as e:
-                        LOGGER.error('Processing netstat entry: %s', e)
+                        self._logger.error('Processing netstat entry: %s', e)
 
         return connections
 
@@ -246,8 +246,9 @@ class LocalStateCollector:
             if entry['local_port'] == port:
                 new_process_entry = entry['process_info']
                 if process_entry and new_process_entry != process_entry:
-                    LOGGER.error('Insonsistent process entry for %s: %s != %s',
-                                 port, process_entry, new_process_entry)
+                    self._logger.error(
+                        'Inconsistent process entry for %s: %s != %s', port, process_entry,
+                        new_process_entry)
                 process_entry = new_process_entry
                 foreign_addresses[foreign_address] = {
                     'established': 'now'
@@ -275,7 +276,7 @@ class LocalStateCollector:
                 self._active_state_handler(active_state)
 
         except Exception as e:
-            LOGGER.error("Cannot get VRRP info, setting controller to inactive: %s", e)
+            self._logger.error("Cannot get VRRP info, setting controller to inactive: %s", e)
             self._active_state_handler(State.broken)
 
     def _extract_vrrp_state(self, stats):
@@ -291,7 +292,7 @@ class LocalStateCollector:
         if vrrp_map['is_master'] != old_vrrp_map.get('is_master'):
             vrrp_map['is_master_last_change'] = self._current_time
             is_master_change_count = old_vrrp_map.get('is_master_change_count', 0) + 1
-            LOGGER.info('is_master #%d: %s', is_master_change_count, vrrp_map['is_master'])
+            self._logger.info('is_master #%d: %s', is_master_change_count, vrrp_map['is_master'])
             vrrp_map['is_master_change_count'] = is_master_change_count
             if not vrrp_map['is_master']:
                 self._cleanup_handler()
@@ -306,7 +307,7 @@ class LocalStateCollector:
         if vrrp_map['state'] != old_vrrp_map.get('state'):
             vrrp_map['state_last_change'] = self._current_time
             state_change_count = old_vrrp_map.get('state_change_count', 0) + 1
-            LOGGER.info('vrrp_state #%d: %s', state_change_count, vrrp_map['state'])
+            self._logger.info('vrrp_state #%d: %s', state_change_count, vrrp_map['state'])
             vrrp_map['state_change_count'] = state_change_count
 
         return vrrp_map

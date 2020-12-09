@@ -19,6 +19,8 @@ from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 
+_FORCH_LOG_DEFAULT = '/tmp/forch.log'
+
 
 class UnitTestBase(unittest.TestCase):
     """Base class for unit tests"""
@@ -64,6 +66,7 @@ class ForchestratorEventTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._forchestrator = None
 
     def _setup_env(self):
@@ -229,6 +232,7 @@ class FaucetizerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._faucetizer = None
         self._segments_vlans_file = None
 
@@ -291,6 +295,7 @@ class DeviceReportServerTestBase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._server = None
         self._client = None
 
@@ -321,6 +326,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._faucet_state_collector = None
 
     def setUp(self):
@@ -349,6 +355,7 @@ class PortsStateManagerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._port_state_manager = PortStateManager(
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment, testing_segment=self.SEQUESTER_SEGMENT)
@@ -388,6 +395,7 @@ class ForchestratorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._forchestrator = None
 
     def setUp(self):

@@ -8,8 +8,6 @@ from watchdog.events import FileSystemEventHandler
 
 from forch.utils import get_logger
 
-LOGGER = get_logger('watcher')
-
 
 class FileChangeWatcher:
     """Watch file changes in a directory"""
@@ -17,6 +15,7 @@ class FileChangeWatcher:
         self._observer = Observer()
         self._dir_path = dir_path
         self._watched_files = {}
+        self._logger = get_logger('watcher')
 
     def start(self):
         """Start watcher"""
@@ -53,7 +52,7 @@ class FileChangeWatcher:
             return
         file_data['hash'] = new_hash
 
-        LOGGER.info('File "%s" changed. Executing callback', file_path)
+        self._logger.info('File "%s" changed. Executing callback', file_path)
 
         file_data['callback'](file_path)
 
