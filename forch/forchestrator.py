@@ -212,9 +212,13 @@ class Forchestrator:
 
         update_device_state_varz = (lambda mac, state: self._metrics.update_var(
             'device_state', state, labels=[mac])) if self._metrics else None
+        update_static_behavior_varz = (lambda mac, vlan: self._metrics.update_var(
+            'static_behavior'
+        ))
         self._port_state_manager = PortStateManager(
             process_device_placement, process_device_behavior, get_vlan_from_segment,
-            update_device_state_varz, self._config.orchestration.sequester_config.segment)
+            update_device_state_varz, self._update_static_behavior_varz,
+            self._config.orchestration.sequester_config.segment)
 
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
@@ -282,6 +286,9 @@ class Forchestrator:
 
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
+
+    def _update_static_behavior_varz(self, mac, vlan):
+        self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
