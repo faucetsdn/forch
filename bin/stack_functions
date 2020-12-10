@@ -294,7 +294,7 @@ function test_stack {
     echo Done with $desc test. | tee -a $TEST_RESULTS
 }
 
-function restart_forch {
+function kill_forch {
     echo Killing any old instances of forch...
     ps ax | fgrep -- '-m forch' | fgrep -v fgrep || true
     kill `ps ax | fgrep -- '-m forch' | fgrep -v fgrep | awk '{print $1}'` || true
@@ -302,6 +302,11 @@ function restart_forch {
     kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'` || true
 
     rm -f $forch_log
+}
+
+function restart_forch {
+    kill_forch
+
     tail --retry -f $forch_log &
 
     local inst=
@@ -366,6 +371,7 @@ function test_forch {
     fetch_forch switch_state '?switch=nz-kiwi-t2sw1&port=1' 1
     fetch_forch switch_state '?switch=nz-kiwi-t1sw2&port=10' 2
     fetch_forch switch_state '?switch=nz-kiwi-t2sw3&port=1' 3
+    fetch_forch switch_state '?switch=nz-kiwi-t1sw2&port=6' 4
     fetch_forch cpn_state
     fetch_forch process_state
     fetch_forch list_hosts '' 1
@@ -405,6 +411,8 @@ function test_forch {
     jq '.switches."nz-kiwi-t2sw2".ports."46".attributes.description' $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/switch_state3.json
     dq '.switches."nz-kiwi-t2sw3".switch_state_change_count' $api_result $TEST_RESULTS
+    api_result=$fout_dir/switch_state4.json
+    jq '.switches."nz-kiwi-t1sw2".ports."6".port_state' $api_result | tee -a $TEST_RESULTS
 
     echo @cpn_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/cpn_state.json
@@ -451,7 +459,6 @@ function reset_system {
 function setup_corp_faucet_config {
     local root=$(realpath $(dirname $0)/..)
     local build_config_args="-p $root/inst/forch-faucet-corp/faucet/faucet.yaml -t corp"
-    echo $root
     PYTHONPATH=$root venv/bin/python $root/testing/python_lib/build_config.py $build_config_args
 }
 

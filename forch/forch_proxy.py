@@ -7,7 +7,6 @@ import requests
 from forch.http_server import HttpServer
 from forch.utils import get_logger
 
-LOGGER = get_logger('proxy')
 DEFAULT_PROXY_PORT = 8080
 LOCALHOST = '0.0.0.0'
 
@@ -21,6 +20,7 @@ class ForchProxy():
         self._pages = {}
         self._proxy_server = None
         self._content_type = content_type
+        self._logger = get_logger('proxy')
 
     def start(self):
         """Start proxy server"""
@@ -32,11 +32,11 @@ class ForchProxy():
             self._proxy_server.map_request('', functools.partial(self._show_error, e))
         finally:
             threading.Thread(target=self._proxy_server.start_server(), daemon=True).start()
-            LOGGER.info('Started proxy server on port %s', self._proxy_port)
+            self._logger.info('Started proxy server on port %s', self._proxy_port)
 
     def stop(self):
         """Kill server"""
-        LOGGER.info('Stopping proxy server')
+        self._logger.info('Stopping proxy server')
         self._proxy_server.stop_server()
 
     def _get_url(self, server, port):

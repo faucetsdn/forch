@@ -9,7 +9,6 @@ from forch.utils import get_logger
 import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty
 
-LOGGER = get_logger('drserver')
 ADDRESS_DEFAULT = '0.0.0.0'
 PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10
@@ -21,15 +20,16 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     def __init__(self, on_receiving_result):
         super().__init__()
         self._on_receiving_result = on_receiving_result
+        self._logger = get_logger('drserver')
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):
         """RPC call for client to send devices state"""
         if not request:
-            LOGGER.warning('Received empty request in gRPC ReportDevicesState')
+            self._logger.warning('Received empty request in gRPC ReportDevicesState')
             return Empty()
 
-        LOGGER.info(
+        self._logger.info(
             'Received DevicesState of %d devices', len(request.device_mac_behaviors))
 
         self._on_receiving_result(request)

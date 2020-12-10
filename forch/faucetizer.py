@@ -14,8 +14,6 @@ from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.shared_constants_pb2 import DVAState, PortType
 
-LOGGER = get_logger('faucetizer')
-
 INCLUDE_FILE_SUFFIX = '_augmented'
 SEQUESTER_PORT_DESCRIPTION_DEFAULT = 'TESTING'
 DEVICE_BEHAVIOR = 'device_behavior'
@@ -51,6 +49,7 @@ class Faucetizer:
         self._reregister_include_file_handlers = reregister_include_file_handlers
         self._reset_faucet_config_writing_time = reset_faucet_config_writing_time
         self._lock = threading.RLock()
+        self._logger = get_logger('faucetizer')
 
         self._validate_and_initialize_config()
 
@@ -68,13 +67,13 @@ class Faucetizer:
             if placement.connected:
                 device_placement = device_placements.setdefault(eth_src, DevicePlacement())
                 device_placement.CopyFrom(placement)
-                LOGGER.info(
+                self._logger.info(
                     'Received %s placement: %s, %s, %s',
                     device_type, eth_src, device_placement.switch, device_placement.port)
             else:
                 removed = device_placements.pop(eth_src, None)
                 if removed:
-                    LOGGER.info('Removed %s placement: %s', device_type, eth_src)
+                    self._logger.info('Removed %s placement: %s', device_type, eth_src)
 
             self.flush_behavioral_config()
 
@@ -89,13 +88,13 @@ class Faucetizer:
                 behavior_map[DEVICE_TYPE] = device_type
                 device_behavior = behavior_map.setdefault(DEVICE_BEHAVIOR, DeviceBehavior())
                 device_behavior.CopyFrom(behavior)
-                LOGGER.info(
+                self._logger.info(
                     'Received %s behavior: %s, %s, %s',
                     device_type, eth_src, device_behavior.segment, device_behavior.role)
             else:
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
-                    LOGGER.info('Removed %s behavior: %s', device_type, eth_src)
+                    self._logger.info('Removed %s behavior: %s', device_type, eth_src)
 
             self.flush_behavioral_config()
 
@@ -209,7 +208,7 @@ class Faucetizer:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
 
         if testing_port_vlans and not testing_port_configured:
-            LOGGER.error('No testing port found')
+            self._logger.error('No testing port found')
 
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
@@ -225,7 +224,7 @@ class Faucetizer:
 
         if sequester_segment and device_segment == sequester_segment:
             if device_mac not in self._testing_device_vlans and not available_testing_vlans:
-                LOGGER.error(
+                self._logger.error(
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
             else:
                 vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
@@ -234,7 +233,7 @@ class Faucetizer:
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
-            LOGGER.warning(
+            self._logger.warning(
                 'Device segment does not have a matching vlan: %s, %s', device_mac, device_segment)
 
         return vid
@@ -261,9 +260,9 @@ class Faucetizer:
                 }
                 vlans_config[self._config.unauthenticated_vlan] = vlan_config
             else:
-                LOGGER.error('VLAN ACL is not defined: %s', vlan_acl)
+                self._logger.error('VLAN ACL is not defined: %s', vlan_acl)
         else:
-            LOGGER.warning(
+            self._logger.warning(
                 'Unauthenticated VLAN is already defined in structural config: %s',
                 self._config.unauthenticated_vlan)
 
@@ -287,8 +286,9 @@ class Faucetizer:
             port_cfg = switch_cfg.get('interfaces', {}).get(device_placement.port)
 
             if not port_cfg:
-                LOGGER.warning('Switch or port not defined in faucet config for MAC %s: %s, %s',
-                               mac, device_placement.switch, device_placement.port)
+                self._logger.warning(
+                    'Switch or port not defined in faucet config for MAC %s: %s, %s',
+                    mac, device_placement.switch, device_placement.port)
                 continue
 
             vid = self._calculate_vlan_id(mac, device_behavior, available_testing_vlans,
@@ -302,7 +302,7 @@ class Faucetizer:
                 if self._has_acl(acl_name):
                     port_cfg['acls_in'] = [acl_name]
                 else:
-                    LOGGER.error('No ACL defined for role %s', device_behavior.role)
+                    self._logger.error('No ACL defined for role %s', device_behavior.role)
 
             self._update_device_dva_state(device_placement, device_behavior, device_type)
 
@@ -335,21 +335,22 @@ class Faucetizer:
         new_gauge_file_path = os.path.join(self._faucet_config_dir, gauge_file_name)
         with open(new_gauge_file_path, 'w') as file:
             yaml.dump(gauge_config, file)
-            LOGGER.debug('Wrote Gauge configuration file to %s', new_gauge_file_path)
+            self._logger.debug('Wrote Gauge configuration file to %s', new_gauge_file_path)
 
     def reload_include_file(self, file_path):
         """Reload include file"""
         with open(file_path) as file:
             include_config = yaml.safe_load(file)
             if not include_config:
-                LOGGER.warning('Included file is empty: %s', file_path)
+                self._logger.warning('Included file is empty: %s', file_path)
                 return
 
             acls_config = include_config.get('acls')
             self._augment_acls_config(acls_config, file_path)
 
-            new_file_name = self._augment_include_file_name(os.path.split(file_path)[1])
-            self.flush_include_config(new_file_name, include_config)
+            relative_include_path = os.path.relpath(file_path, start=self._forch_config_dir)
+            new_file_path = self._augment_include_file_name(relative_include_path)
+            self.flush_include_config(new_file_path, include_config)
 
     def reload_segments_to_vlans(self, file_path):
         """Reload file that contains the mappings from segments to vlans"""
@@ -357,7 +358,7 @@ class Faucetizer:
 
         operational_vlans = set(self._segments_to_vlans.values())
         if self._all_testing_vlans and self._all_testing_vlans & operational_vlans:
-            LOGGER.error(
+            self._logger.error(
                 'Testing VLANs has intersection with operational VLANs: %s',
                 self._all_testing_vlans & operational_vlans)
 
@@ -378,7 +379,7 @@ class Faucetizer:
         self._faucetize()
         with open(self._behavioral_config_file, 'w') as file:
             yaml.dump(self._behavioral_faucet_config, file)
-            LOGGER.debug('Wrote behavioral config to %s', self._behavioral_config_file)
+            self._logger.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
         if self._reset_faucet_config_writing_time:
             self._reset_faucet_config_writing_time()
@@ -386,9 +387,10 @@ class Faucetizer:
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
         faucet_include_file_path = os.path.join(self._faucet_config_dir, include_file_name)
+        os.makedirs(os.path.dirname(faucet_include_file_path), exist_ok=True)
         with open(faucet_include_file_path, 'w') as file:
             yaml.dump(include_config, file)
-            LOGGER.debug('Wrote augmented included file to %s', faucet_include_file_path)
+            self._logger.debug('Wrote augmented included file to %s', faucet_include_file_path)
 
     def get_structural_config(self):
         """Return structural config"""
@@ -456,6 +458,7 @@ def parse_args(raw_args):
 
 
 if __name__ == '__main__':
+    LOGGER = get_logger('faucetizer', stdout=True)
     FORCH_BASE_DIR = os.getenv('FORCH_CONFIG_DIR')
     FAUCET_BASE_DIR = os.getenv('FAUCET_CONFIG_DIR')
     ARGS = parse_args(sys.argv[1:])

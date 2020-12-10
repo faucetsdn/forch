@@ -3,6 +3,15 @@ testing/test_base
 RADIUS request for 00:aa:bb:cc:dd:ee
 auth_callback for 00:aa:bb:cc:dd:ee: access:Authorized segment:test role:test
 0
+Testing connectivity
+Testing Forch
+"healthy"
+"sw1:28"
+"192.168.1.1"
+"active"
+""
+"egress"
+"up"
 0 received
 Version from varz matches forch version.
 5 received

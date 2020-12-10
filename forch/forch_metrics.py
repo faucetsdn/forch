@@ -7,7 +7,6 @@ from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
 from forch.http_server import HttpServer
 from forch.utils import get_logger
 
-LOGGER = get_logger('metrics')
 DEFAULT_VARZ_PORT = 8302
 
 
@@ -17,9 +16,10 @@ class ForchMetrics():
 
     def __init__(self, varz_config):
         self._local_port = varz_config.varz_port or DEFAULT_VARZ_PORT
-        LOGGER.info('forch_metrics port is %s', self._local_port)
         self._http_server = None
         self._metrics = {}
+        self._logger = get_logger('metrics')
+        self._logger.info('forch_metrics port is %s', self._local_port)
 
     def start(self):
         """Start serving varz"""
@@ -41,7 +41,7 @@ class ForchMetrics():
         if labels:
             varz = varz.labels(*labels)
         if not varz:
-            LOGGER.error('Error updating to varz %s since it is not known.', var)
+            self._logger.error('Error updating to varz %s since it is not known.', var)
             raise RuntimeError('Unknown varz')
         return varz
 

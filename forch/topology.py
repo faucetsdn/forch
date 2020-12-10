@@ -7,8 +7,6 @@ from forch.utils import get_logger, yaml_proto
 
 from forch.proto.building_schema_pb2 import BuildingSchema
 
-LOGGER = get_logger('topology')
-
 
 def load_devices():
     """Load a device specification file"""
@@ -23,4 +21,5 @@ def load_devices():
 
 
 if __name__ == '__main__':
+    LOGGER = get_logger('topology', stdout=True)
     load_devices()

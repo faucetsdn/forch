@@ -14,8 +14,6 @@ from forch.proto.cpn_state_pb2 import CpnState
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 
-LOGGER = get_logger('cstate')
-
 NODE_ATTRIBUTES = 'attributes'
 NODE_PING_RES = 'ping_results'
 NODE_STATE = 'state'
@@ -54,13 +52,14 @@ class CPNStateCollector:
         self.ping_interval = config.ping_interval or PING_INTERVAL_DEFAULT
         self._lock = threading.Lock()
         self._ping_manager = None
+        self._logger = get_logger('cstate')
 
     def initialize(self):
         """Initialize this instance and make it go"""
         cpn_dir_name = os.getenv('FORCH_CONFIG_DIR')
         cpn_file_name = os.path.join(cpn_dir_name, 'cpn.yaml')
         current_time = datetime.now().isoformat()
-        LOGGER.info("Loading CPN config file: %s", cpn_file_name)
+        self._logger.info("Loading CPN config file: %s", cpn_file_name)
         try:
             cpn_data = yaml_proto(cpn_file_name, CpnConfig)
             cpn_nodes = cpn_data.cpn_nodes
@@ -76,7 +75,7 @@ class CPNStateCollector:
             self._ping_manager = PingManager(self._hosts_ip, self.ping_interval)
             self._update_cpn_state(current_time, State.initializing, "Initializing")
         except Exception as e:
-            LOGGER.error('Could not load config file: %s', e)
+            self._logger.error('Could not load config file: %s', e)
             self._node_states.clear()
             self._update_cpn_state(current_time, State.broken, str(e))
 
@@ -132,7 +131,8 @@ class CPNStateCollector:
 
                 if not last_state or new_state != last_state:
                     state_count = node_state_map.get(NODE_STATE_CHANGE_COUNT, 0) + 1
-                    LOGGER.info('cpn_state #%d host %s is %s', state_count, host_name, new_state)
+                    self._logger.info(
+                        'cpn_state #%d host %s is %s', state_count, host_name, new_state)
                     node_state_map[NODE_STATE] = new_state
                     node_state_map[NODE_STATE_CHANGE_COUNT] = state_count
                     node_state_map[NODE_STATE_CHANGE_TS] = current_time
@@ -203,7 +203,7 @@ class CPNStateCollector:
             self._cpn_state[CPN_STATE_COUNT] = cpn_state_count
             self._cpn_state[CPN_STATE] = new_cpn_state
             self._cpn_state[CPN_STATE_CHANGE_TS] = current_time
-            LOGGER.info('cpn_state #%d %s: %s', cpn_state_count, new_cpn_state, use_detail)
+            self._logger.info('cpn_state #%d %s: %s', cpn_state_count, new_cpn_state, use_detail)
         self._cpn_state[CPN_STATE_DETAIL] = use_detail
         self._cpn_state[CPN_STATE_UPDATE_TS] = current_time
 
