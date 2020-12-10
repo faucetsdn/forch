@@ -109,7 +109,7 @@ class PortStateManager:
 
     # pylint: disable=too-many-arguments
     def __init__(self, process_device_placement, process_device_behavior, get_vlan_from_segment,
-                 update_device_state_varz=None, update_static_behavior_varz=None,
+                 update_device_state_varz=None, update_static_vlan_varz=None,
                  testing_segment=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
@@ -119,7 +119,7 @@ class PortStateManager:
         self._process_device_behavior = process_device_behavior
         self._get_vlan_from_segment = get_vlan_from_segment
         self._device_state_varz_callback = update_device_state_varz
-        self._static_behavior_varz_callback = update_static_behavior_varz
+        self._static_vlan_varz_callback = update_static_vlan_varz
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
@@ -139,7 +139,7 @@ class PortStateManager:
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)
             if static:
-                self._static_behavior_varz_callback(
+                self._static_vlan_varz_callback(
                     mac, self._get_vlan_from_segment(device_behavior.segment))
         else:
             self._handle_deauthenticated_device(mac, static)
@@ -276,5 +276,5 @@ class PortStateManager:
         with self._lock:
             macs = list(self._static_device_behaviors.keys())
             for mac in macs:
-                self._static_behavior_varz_callback(mac, vlan=INVALID_VLAN)
+                self._static_vlan_varz_callback(mac, vlan=INVALID_VLAN)
                 self._handle_deauthenticated_device(mac, static=True)
