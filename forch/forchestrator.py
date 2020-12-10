@@ -462,22 +462,24 @@ class Forchestrator:
             self._restore_faucet_config(event.timestamp, event.config_hash_info.hashes)
 
     def _verify_config_hash(self):
-        if not self._last_faucet_config_writing_time:
-            return
+        with self._lock:
+            if not self._last_faucet_config_writing_time:
+                return
 
-        elapsed_time = time.time() - self._last_faucet_config_writing_time
-        if elapsed_time < self._config_hash_verification_timeout_sec:
-            return
+            elapsed_time = time.time() - self._last_faucet_config_writing_time
+            if elapsed_time < self._config_hash_verification_timeout_sec:
+                return
 
-        config_info, _, _ = self._get_faucet_config()
-        if config_info['hashes'] != self._last_received_faucet_config_hash:
-            raise Exception(f'Config hash does not match after '
-                            f'{self._config_hash_verification_timeout_sec} seconds')
+            config_info, _, _ = self._get_faucet_config()
+            if config_info['hashes'] != self._last_received_faucet_config_hash:
+                raise Exception(f'Config hash does not match after '
+                                f'{self._config_hash_verification_timeout_sec} seconds')
 
-        self._last_faucet_config_writing_time = None
+            self._last_faucet_config_writing_time = None
 
     def _reset_faucet_config_writing_time(self):
-        self._last_faucet_config_writing_time = time.time()
+        with self._lock:
+            self._last_faucet_config_writing_time = time.time()
 
     def _faucet_events_connect(self):
         self._logger.info('Attempting faucet event sock connection...')
