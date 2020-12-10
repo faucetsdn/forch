@@ -146,7 +146,7 @@ if [ -z "$remote" ]; then
         bin/run_controller $local $run_opt $finst $((5999 + finst*2)) $((8000 + finst)) $((6000 + finst*2)) $((9000 + finst))
     else
         bin/run_faucet $local $finst $((5999 + finst*2)) $((8000 + finst))
-        bin/run_faucet $local gauge $finst $((5999 + finst*2)) $((9000 + finst))
+        bin/run_faucet $local gauge $finst $((6000 + finst*2)) $((9000 + finst))
     fi
 fi
 
