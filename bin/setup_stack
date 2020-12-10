@@ -12,6 +12,7 @@ fot=
 run_opt=
 remote=
 container=
+base_port=6001
 mode=bond
 
 if [ "$1" == "local" ]; then
@@ -30,7 +31,9 @@ if [ "$1" == "switches" ]; then
 fi
 
 if [ "$1" == "remote" ]; then
-    remote=$2
+    port=${2#*:}
+    remote=${2%:*}
+    base_port=${port:-$base_port}
     shift 2
 fi
 
@@ -82,15 +85,15 @@ fi
 echo Configuring mode $mode...
 
 add_br corp  0x111 6683
-add_br t1sw1 177 $remote 6001 6002
-add_br t1sw2 178 $remote 6001 6002
+add_br t1sw1 177 $remote $base_port $((base_port + 1))
+add_br t1sw2 178 $remote $base_port $((base_port + 1))
 add_oeth t1sw1 28 corp-eth10
 add_oeth t1sw2 28 corp-eth20
 add_link t1sw1 6 t1sw2 6
 
-add_br t2sw1 1295 $remote 6001 6002
-add_br t2sw2 1296 $remote 6001 6002
-add_br t2sw3 1297 $remote 6001 6002
+add_br t2sw1 1295 $remote $base_port $((base_port + 1))
+add_br t2sw2 1296 $remote $base_port $((base_port + 1))
+add_br t2sw3 1297 $remote $base_port $((base_port + 1))
 
 add_link t1sw1 9 t2sw1 50
 add_link t1sw1 10 t2sw2 50
@@ -103,7 +106,7 @@ add_link t1sw2 11 t2sw3 52
 if [ -n "$switches" ]; then
     for snum in $(seq 4 $switches); do
         echo Adding extra switch num $snum
-        add_br t2sw$snum $((1294 + snum)) $remote 6001 6002
+        add_br t2sw$snum $((1294 + snum)) $remote $base_port $((base_port + 1))
         add_link t1sw1 $((8+snum)) t2sw$snum 50
         add_link t1sw2 $((8+snum)) t2sw$snum 52
     done
@@ -143,10 +146,10 @@ if [ -z "$remote" ]; then
         mkdir -p $container_inst/faucet_br/faucet
         # TODO: faucet_br should not be under topo/ since it has nothing to do with the topology.
         cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
-        bin/run_controller $local $run_opt $finst $((5999 + finst*2)) $((8000 + finst)) $((6000 + finst*2)) $((9000 + finst))
+        bin/run_controller $local $run_opt $finst $((base_port + finst*2 - 2)) $((8000 + finst)) $((base_port + finst*2 - 1)) $((9000 + finst))
     else
-        bin/run_faucet $local $finst $((5999 + finst*2)) $((8000 + finst))
-        bin/run_faucet $local gauge $finst $((6000 + finst*2)) $((9000 + finst))
+        bin/run_faucet $local $finst $((base_port + finst*2 - 2)) $((8000 + finst))
+        bin/run_faucet $local gauge $finst $((base_port + finst*2 - 1)) $((9000 + finst))
     fi
 fi
 
