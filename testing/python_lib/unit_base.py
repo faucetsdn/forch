@@ -37,7 +37,7 @@ class UnitTestBase(unittest.TestCase):
         self._structural_config_file = None
         self._behavioral_config_file = None
         self._forch_config_file = None
-        self._socket_file = None
+        self._faucet_socket_file = None
 
     def _setup_config_files(self):
         self._base_dir = tempfile.mkdtemp()
@@ -48,7 +48,7 @@ class UnitTestBase(unittest.TestCase):
         _, self._structural_config_file = tempfile.mkstemp(dir=self._forch_config_dir)
         _, self._behavioral_config_file = tempfile.mkstemp(dir=self._faucet_config_dir)
         _, self._forch_config_file = tempfile.mkstemp(dir=self._forch_config_dir)
-        self._socket_file = os.path.join(self._base_dir, 'faucet_event.sock')
+        self._faucet_socket_file = os.path.join(self._base_dir, 'faucet_event.sock')
 
         with open(self._structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
@@ -81,7 +81,7 @@ class ForchestratorEventTestBase(UnitTestBase):
         os.environ['FORCH_CONFIG_FILE'] = os.path.basename(self._forch_config_file)
         os.environ['FAUCET_CONFIG_DIR'] = self._faucet_config_dir
         os.environ['FAUCET_CONFIG_FILE'] = os.path.basename(self._behavioral_config_file)
-        os.environ['FAUCET_EVENT_SOCK'] = self._socket_file
+        os.environ['FAUCET_EVENT_SOCK'] = self._faucet_socket_file
         os.environ['CONTROLLER_NAME'] = 'ctr1'
 
     def _initialize_forchestrator(self):
