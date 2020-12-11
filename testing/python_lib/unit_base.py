@@ -76,7 +76,6 @@ class ForchestratorEventTestBase(UnitTestBase):
         self._forchestrator = None
 
     def _setup_env(self):
-        assert self._base_dir
         os.environ['FORCH_CONFIG_DIR'] = self._forch_config_dir
         os.environ['FORCH_CONFIG_FILE'] = os.path.basename(self._forch_config_file)
         os.environ['FAUCET_CONFIG_DIR'] = self._faucet_config_dir
