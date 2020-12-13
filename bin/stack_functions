@@ -123,6 +123,7 @@ function add_faux {
         fi
         sleep 2
     done
+    echo "Device faux-$fnum has IP $ip_address"
     declare -g "ip_faux_$fnum"="$ip_address"
 }
 
