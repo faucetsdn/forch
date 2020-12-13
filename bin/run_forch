@@ -38,7 +38,7 @@ else
     FAUCET_CONFIG_DIR=${FAUCET_CONFIG_DIR:-/etc/faucet}
     FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/forch}
     FORCH_LOG=${FORCH_LOG:-/var/log/faucet/forch.log}
-    mkdir -p $((dirname $FORCH_LOG)) $FORCH_CONFIG_DIR
+    mkdir -p $(dirname $FORCH_LOG) $FORCH_CONFIG_DIR
 fi
 
 if [ "$nolog" = true ]; then
