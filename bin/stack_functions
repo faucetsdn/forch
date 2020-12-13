@@ -297,10 +297,13 @@ function test_stack {
 
 function kill_forch {
     echo Killing any old instances of forch...
-    ps ax | fgrep -- '-m forch' | fgrep -v fgrep || true
-    kill `ps ax | fgrep -- '-m forch' | fgrep -v fgrep | awk '{print $1}'` || true
-    ps ax | fgrep $forch_log | fgrep -v fgrep || true
-    kill `ps ax | fgrep $forch_log | fgrep -v fgrep | awk '{print $1}'` || true
+    local forch_procs=$(ps ax | fgrep -- '-m forch' | fgrep -v fgrep || true)
+    echo $forch_procs
+    kill $(echo $forch_procs | awk '{print $1}') || true
+
+    local forch_tail_procs=$(ps ax | fgrep 'forch.log' | fgrep 'tail' | fgrep -v fgrep || true)
+    echo $forch_tail_procs
+    kill $(echo $forch_tail_procs | awk '{print $1}') || true
 
     rm -f $forch_log
 }
