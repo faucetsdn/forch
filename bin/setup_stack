@@ -138,8 +138,11 @@ if [ -z "$remote" ]; then
 
     container_inst=inst/$container/
     mkdir -p $container_inst/
-    cp -r topo/$mode/forch $container_inst/
-    cp -r topo/$mode/faucet $container_inst/
+    cp -r topo/common/forch $container_inst/
+    cp -r topo/common/faucet $container_inst/
+
+    cp topo/$mode/forch/* $container_inst/forch/
+    cp topo/$mode/faucet/* $container_inst/faucet/
     docker kill $container || true
 
     if [ -n "$fot" ]; then
