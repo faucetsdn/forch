@@ -1,7 +1,8 @@
 #!/bin/bash
 
-echo Killing any old instances of forch...
-pids=`ps ax | fgrep forch | fgrep bash` | xargs -r kill $pids
+source bin/stack_functions
+
+kill_forch
 
 echo Cleaning docker images...
 for image in forch/faucet forch/faux forch/gauge forch/controller; do
