@@ -34,11 +34,15 @@ if [ -n "$base" ]; then
     FAUCET_PROM_PORT_FILE=$INST_BASE/PROM_PORT.9302
     GAUGE_PROM_PORT_FILE=$INST_BASE/PROM_PORT.9303
 else
-    FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/run/faucet/$FSOCK}
-    FAUCET_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
-    FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/faucet}
+    FAUCET_EVENT_SOCK=${FAUCET_EVENT_SOCK:-/var/log/faucet/$FSOCK}
+    FAUCET_CONFIG_DIR=${FAUCET_CONFIG_DIR:-/etc/faucet}
+    FORCH_CONFIG_DIR=${FORCH_CONFIG_DIR:-/etc/forch}
     FORCH_LOG=${FORCH_LOG:-/var/log/faucet/forch.log}
-    mkdir -p $((dirname $FORCH_LOG)) $FORCH_CONFIG_DIR
+    mkdir -p $(dirname $FORCH_LOG) $FORCH_CONFIG_DIR
+fi
+
+if [ "$nolog" = true ]; then
+    FORCH_LOG_DIR=
 fi
 
 if [ -z "$CONTROLLER_NAME" ]; then
@@ -84,4 +88,8 @@ export FAUCET_CONFIG_DIR
 export FORCH_CONFIG_DIR
 export FORCH_LOG
 export PYTHONPATH
+
+echo dump forch env:
+env
+
 $PYTHON -m forch "${pyargs[@]}" || tail $FORCH_LOG && false
