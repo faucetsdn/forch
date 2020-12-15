@@ -120,7 +120,7 @@ class Forchestrator:
             self._config.event_client.config_hash_verification_timeout_sec or
             _CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT)
 
-        self._lock = threading.Lock()
+        self._states_lock = threading.Lock()
         self._timer_lock = threading.Lock()
         self._logger = get_logger('forch')
 
@@ -270,12 +270,12 @@ class Forchestrator:
         except Exception as error:
             msg = f'Authentication disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
-            with self._lock:
+            with self._states_lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
                 self._should_ignore_auth_result = True
             return
 
-        with self._lock:
+        with self._states_lock:
             self._config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
             self._should_ignore_auth_result = False
 
@@ -395,7 +395,7 @@ class Forchestrator:
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         self._faucet_collector.update_radius_result(mac, access, segment, role)
-        with self._lock:
+        with self._states_lock:
             if self._should_ignore_auth_result:
                 self._logger.warning('Ingoring authentication result for device %s', mac)
             else:
@@ -647,7 +647,7 @@ class Forchestrator:
             has_error = True
             detail += '. Faucet disconnected'
 
-        with self._lock:
+        with self._states_lock:
             if self._config_errors:
                 has_error = True
                 detail += '. ' + '. '.join(self._config_errors.values())
