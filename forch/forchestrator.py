@@ -120,7 +120,7 @@ class Forchestrator:
             self._config.event_client.config_hash_verification_timeout_sec or
             _CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT)
 
-        self._lock = threading.RLock()
+        self._lock = threading.Lock()
         self._logger = get_logger('forch')
 
     def initialize(self):
