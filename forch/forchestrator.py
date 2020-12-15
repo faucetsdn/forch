@@ -121,6 +121,7 @@ class Forchestrator:
             _CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT)
 
         self._lock = threading.Lock()
+        self._timer_lock = threading.Lock()
         self._logger = get_logger('forch')
 
     def initialize(self):
@@ -462,7 +463,7 @@ class Forchestrator:
             self._restore_faucet_config(event.timestamp, event.config_hash_info.hashes)
 
     def _verify_config_hash(self):
-        with self._lock:
+        with self._timer_lock:
             if not self._last_faucet_config_writing_time:
                 return
 
@@ -478,7 +479,7 @@ class Forchestrator:
             self._last_faucet_config_writing_time = None
 
     def _reset_faucet_config_writing_time(self):
-        with self._lock:
+        with self._timer_lock:
             self._last_faucet_config_writing_time = time.time()
 
     def _faucet_events_connect(self):
