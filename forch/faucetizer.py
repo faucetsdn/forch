@@ -22,6 +22,7 @@ DEVICE_TYPE = 'device_type'
 STATIC_DEVICE = 'static'
 DYNAMIC_DEVICE = 'dynamic'
 
+
 class Faucetizer:
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
