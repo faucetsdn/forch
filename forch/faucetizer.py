@@ -3,6 +3,7 @@
 import argparse
 import copy
 import os
+import shutil
 import sys
 import tempfile
 import threading
@@ -136,7 +137,7 @@ class Faucetizer:
             tmp_file = os.path.join(tmp_dir, os.path.basename(file_path))
             with open(tmp_file, 'w') as fd:
                 yaml.dump(config, fd)
-            os.rename(tmp_file, file_path)
+            shutil.move(tmp_file, file_path)
 
     def _augment_acls_config(self, acls_config, file_path):
         if not acls_config:
