@@ -3,7 +3,9 @@
 import argparse
 import copy
 import os
+import shutil
 import sys
+import tempfile
 import threading
 import yaml
 
@@ -129,6 +131,13 @@ class Faucetizer:
             self._watched_include_files = new_watched_include_files
 
             self.flush_behavioral_config()
+
+    def _yaml_atomic_dump(self, config, file_path):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_file = os.path.join(tmp_dir, os.path.basename(file_path))
+            with open(tmp_file, 'w') as fd:
+                yaml.dump(config, fd)
+            shutil.move(tmp_file, file_path)
 
     def _augment_acls_config(self, acls_config, file_path):
         if not acls_config:
@@ -333,9 +342,8 @@ class Faucetizer:
 
         gauge_file_name = os.path.split(gauge_config_file)[1]
         new_gauge_file_path = os.path.join(self._faucet_config_dir, gauge_file_name)
-        with open(new_gauge_file_path, 'w') as file:
-            yaml.dump(gauge_config, file)
-            self._logger.debug('Wrote Gauge configuration file to %s', new_gauge_file_path)
+        self._yaml_atomic_dump(gauge_config, new_gauge_file_path)
+        self._logger.debug('Wrote Gauge configuration file to %s', new_gauge_file_path)
 
     def reload_include_file(self, file_path):
         """Reload include file"""
@@ -377,9 +385,8 @@ class Faucetizer:
         if not force and self._config.faucetize_interval_sec:
             return
         self._faucetize()
-        with open(self._behavioral_config_file, 'w') as file:
-            yaml.dump(self._behavioral_faucet_config, file)
-            self._logger.debug('Wrote behavioral config to %s', self._behavioral_config_file)
+        self._yaml_atomic_dump(self._behavioral_faucet_config, self._behavioral_config_file)
+        self._logger.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
         if self._reset_faucet_config_writing_time:
             self._reset_faucet_config_writing_time()
@@ -388,9 +395,8 @@ class Faucetizer:
         """Write include configs to file"""
         faucet_include_file_path = os.path.join(self._faucet_config_dir, include_file_name)
         os.makedirs(os.path.dirname(faucet_include_file_path), exist_ok=True)
-        with open(faucet_include_file_path, 'w') as file:
-            yaml.dump(include_config, file)
-            self._logger.debug('Wrote augmented included file to %s', faucet_include_file_path)
+        self._yaml_atomic_dump(include_config, faucet_include_file_path)
+        self._logger.debug('Wrote augmented included file to %s', faucet_include_file_path)
 
     def get_structural_config(self):
         """Return structural config"""
