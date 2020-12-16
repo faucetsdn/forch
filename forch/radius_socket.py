@@ -5,8 +5,6 @@ from threading import RLock
 
 from forch.utils import get_logger
 
-LOGGER = get_logger('rsocket')
-
 
 class RadiusSocket:
     """Handle the RADIUS socket"""
@@ -19,16 +17,17 @@ class RadiusSocket:
         self.server_ip = server_ip
         self.server_port = server_port
         self.lock = RLock()
+        self._logger = get_logger('rsocket')
 
     def setup(self):
         """Setup RADIUS Socket"""
-        LOGGER.info("Setting up radius socket.")
+        self._logger.info("Setting up radius socket.")
         try:
             self.socket = socket.socket(socket.AF_INET,
                                         socket.SOCK_DGRAM)
             self.socket.bind((self.source_ip, self.source_port))
         except socket.error as err:
-            LOGGER.error("Unable to setup socket: %s", str(err))
+            self._logger.error("Unable to setup socket: %s", str(err))
             raise err
 
     def send(self, data):

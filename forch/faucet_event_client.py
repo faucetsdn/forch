@@ -13,8 +13,6 @@ from forch.utils import dict_proto, get_logger, FaucetEventOrderError
 
 from forch.proto.faucet_event_pb2 import FaucetEvent, PortChange
 
-LOGGER = get_logger('fevent')
-
 
 class FaucetEventClient():
     """A general client interface to the FAUCET event API"""
@@ -33,6 +31,7 @@ class FaucetEventClient():
         self._port_timers = {}
         self.event_socket_connected = False
         self._last_event_id = None
+        self._logger = get_logger('fevent')
 
     def connect(self):
         """Make connection to sock to receive events"""
@@ -46,7 +45,7 @@ class FaucetEventClient():
 
         retries = self.FAUCET_RETRIES
         while not os.path.exists(sock_path):
-            LOGGER.info('Waiting for socket path %s', sock_path)
+            self._logger.info('Waiting for socket path %s', sock_path)
             assert retries > 0, "Could not find socket path %s" % sock_path
             retries -= 1
             time.sleep(1)
@@ -71,7 +70,7 @@ class FaucetEventClient():
     def register_handler(self, proto, handler):
         """Register an event handler for the given proto class"""
         message_name = self._convert_to_snake_caps(proto.__name__)
-        LOGGER.info('Registering handler for event type %s', message_name)
+        self._logger.info('Registering handler for event type %s', message_name)
         self._handlers[message_name] = handler
 
     def register_handlers(self, handlers):
@@ -111,7 +110,7 @@ class FaucetEventClient():
         assert self._last_event_id, '_last_event_id undefined, check for initialization errors'
         event_id = int(event['event_id'])
         if event_id <= self._last_event_id:
-            LOGGER.debug('Outdated faucet event #%d', event_id)
+            self._logger.debug('Outdated faucet event #%d', event_id)
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
@@ -120,7 +119,7 @@ class FaucetEventClient():
 
     def _handle_port_change_debounce(self, event, target_event):
         if isinstance(target_event, PortChange):
-            dpid = target_event.dp_id
+            dpid = event['dp_id']
             port = target_event.port_no
             active = target_event.status and target_event.reason != 'DELETE'
             if not event.get('debounced'):
@@ -143,7 +142,7 @@ class FaucetEventClient():
         state_key = '%s-%d' % (dpid, port)
         if state_key in self.previous_state and self.previous_state[state_key] == active:
             return False
-        LOGGER.debug('Port change %s active %s', state_key, active)
+        self._logger.debug('Port change %s active %s', state_key, active)
         self.previous_state[state_key] = active
         return True
 
@@ -153,19 +152,19 @@ class FaucetEventClient():
             return
         state_key = '%s-%d' % (event['dp_id'], port)
         if state_key in self._port_timers:
-            LOGGER.debug('Port cancel %s', state_key)
+            self._logger.debug('Port cancel %s', state_key)
             self._port_timers[state_key].cancel()
         if active:
             self._handle_debounce(event, port, active)
             return
-        LOGGER.debug('Port timer %s = %s', state_key, active)
+        self._logger.debug('Port timer %s = %s', state_key, active)
         timer = threading.Timer(self._port_debounce_sec,
                                 lambda: self._handle_debounce(event, port, active))
         timer.start()
         self._port_timers[state_key] = timer
 
     def _handle_debounce(self, event, port, active):
-        LOGGER.debug('Port handle %s-%s as %s', event['dp_id'], port, active)
+        self._logger.debug('Port handle %s-%s as %s', event['dp_id'], port, active)
         self._append_event(event, self._make_port_change(port, active), debounced=True)
 
     def _merge_event(self, base, event, timestamp=None, debounced=None):
@@ -195,16 +194,16 @@ class FaucetEventClient():
                 self.buffer = '%s\n%s' % (event_str, self.buffer)
             else:
                 self.buffer = '%s\n%s%s' % (self.buffer[:index], event_str, self.buffer[index:])
-            LOGGER.debug('appended %s\n%s*', event_str, self.buffer)
+            self._logger.debug('appended %s\n%s*', event_str, self.buffer)
 
     def set_event_horizon(self, event_horizon):
         """Set the event horizon to throw away unnecessary events"""
         self._last_event_id = event_horizon
-        LOGGER.info('Setting event horizon to event #%d', event_horizon)
+        self._logger.info('Setting event horizon to event #%d', event_horizon)
 
     def _dispatch_faucet_event(self, target, target_event):
         if target in self._handlers:
-            LOGGER.debug('dispatching %s event', target)
+            self._logger.debug('dispatching %s event', target)
             self._handlers[target](target_event)
             return True
         return False
@@ -221,10 +220,10 @@ class FaucetEventClient():
             try:
                 event = json.loads(line)
             except Exception as e:
-                LOGGER.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
+                self._logger.info('Error (%s) parsing\n%s*\nwith\n%s*', str(e), line, remainder)
                 continue
             if self._should_log_event(event):
-                LOGGER.info('faucet_event %s', event)
+                self._logger.info('faucet_event %s', event)
             targets = list(t for t in self._handlers if t in event)
             event_target = targets[0] if targets else None
             faucet_event = dict_proto(event, FaucetEvent, ignore_unknown_fields=True)
@@ -232,7 +231,7 @@ class FaucetEventClient():
             try:
                 dispatch = self._valid_event_order(event) and target_event
             except Exception as e:
-                LOGGER.error('Validation failed for event %s: %s', event, e)
+                self._logger.error('Validation failed for event %s: %s', event, e)
                 raise
             dispatch = dispatch and self._handle_port_change_debounce(event, target_event)
             dispatch = dispatch and self._handle_ports_status(event)

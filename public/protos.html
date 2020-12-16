@@ -4081,10 +4081,10 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
-                  <td>check_vrrp</td>
-                  <td><a href="#bool">bool</a></td>
+                  <td>keepalived_pid_file</td>
+                  <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>indicate if Forch should check VRRP state </p></td>
+                  <td><p>location of keepalived.pid file. Not specifying it implies no VRRP check </p></td>
                 </tr>
               
                 <tr>
@@ -5332,6 +5332,12 @@ or to host_path API to list path </p></td>
                 <td><p>operational</p></td>
               </tr>
             
+              <tr>
+                <td>infracted</td>
+                <td>5</td>
+                <td><p>infracted</p></td>
+              </tr>
+            
           </tbody>
         </table>
       
@@ -5459,6 +5465,12 @@ or to host_path API to list path </p></td>
                 <td>failed</td>
                 <td>5</td>
                 <td><p>failed testing</p></td>
+              </tr>
+            
+              <tr>
+                <td>deauthenticated</td>
+                <td>6</td>
+                <td><p>deauthenticated</p></td>
               </tr>
             
           </tbody>

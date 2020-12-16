@@ -19,6 +19,8 @@ from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 
+_FORCH_LOG_DEFAULT = '/tmp/forch.log'
+
 
 class UnitTestBase(unittest.TestCase):
     """Base class for unit tests"""
@@ -29,27 +31,33 @@ class UnitTestBase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._temp_dir = None
-        self._temp_structural_config_file = None
-        self._temp_behavioral_config_file = None
-        self._temp_forch_config_file = None
-        self._temp_socket_file = None
+        self._base_dir = None
+        self._forch_config_dir = None
+        self._faucet_config_dir = None
+        self._structural_config_file = None
+        self._behavioral_config_file = None
+        self._forch_config_file = None
+        self._faucet_socket_file = None
 
     def _setup_config_files(self):
-        self._temp_dir = tempfile.mkdtemp()
-        _, self._temp_structural_config_file = tempfile.mkstemp(dir=self._temp_dir)
-        _, self._temp_behavioral_config_file = tempfile.mkstemp(dir=self._temp_dir)
-        _, self._temp_forch_config_file = tempfile.mkstemp(dir=self._temp_dir)
-        self._temp_socket_file = os.path.join(self._temp_dir, 'faucet_event.sock')
+        self._base_dir = tempfile.mkdtemp()
+        self._forch_config_dir = os.path.join(self._base_dir, 'forch')
+        os.mkdir(self._forch_config_dir)
+        self._faucet_config_dir = os.path.join(self._base_dir, 'faucet')
+        os.mkdir(self._faucet_config_dir)
+        _, self._structural_config_file = tempfile.mkstemp(dir=self._forch_config_dir)
+        _, self._behavioral_config_file = tempfile.mkstemp(dir=self._faucet_config_dir)
+        _, self._forch_config_file = tempfile.mkstemp(dir=self._forch_config_dir)
+        self._faucet_socket_file = os.path.join(self._base_dir, 'faucet_event.sock')
 
-        with open(self._temp_structural_config_file, 'w') as structural_config_file:
+        with open(self._structural_config_file, 'w') as structural_config_file:
             structural_config_file.write(self.FAUCET_STRUCTURAL_CONFIG)
 
-        with open(self._temp_forch_config_file, 'w') as forch_config_file:
+        with open(self._forch_config_file, 'w') as forch_config_file:
             forch_config_file.write(self.FORCH_CONFIG)
 
     def _cleanup_config_files(self):
-        shutil.rmtree(self._temp_dir)
+        shutil.rmtree(self._base_dir)
 
 
 class ForchestratorEventTestBase(UnitTestBase):
@@ -64,15 +72,15 @@ class ForchestratorEventTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._forchestrator = None
 
     def _setup_env(self):
-        assert self._temp_dir
-        os.environ['FORCH_CONFIG_DIR'] = self._temp_dir
-        os.environ['FORCH_CONFIG_FILE'] = os.path.basename(self._temp_forch_config_file)
-        os.environ['FAUCET_CONFIG_DIR'] = self._temp_dir
-        os.environ['FAUCET_CONFIG_FILE'] = os.path.basename(self._temp_behavioral_config_file)
-        os.environ['FAUCET_EVENT_SOCK'] = self._temp_socket_file
+        os.environ['FORCH_CONFIG_DIR'] = self._forch_config_dir
+        os.environ['FORCH_CONFIG_FILE'] = os.path.basename(self._forch_config_file)
+        os.environ['FAUCET_CONFIG_DIR'] = self._faucet_config_dir
+        os.environ['FAUCET_CONFIG_FILE'] = os.path.basename(self._behavioral_config_file)
+        os.environ['FAUCET_EVENT_SOCK'] = self._faucet_socket_file
         os.environ['CONTROLLER_NAME'] = 'ctr1'
 
     def _initialize_forchestrator(self):
@@ -229,13 +237,14 @@ class FaucetizerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._faucetizer = None
         self._segments_vlans_file = None
 
     def _setup_config_files(self):
         super()._setup_config_files()
 
-        _, self._segments_vlans_file = tempfile.mkstemp(dir=self._temp_dir)
+        _, self._segments_vlans_file = tempfile.mkstemp(dir=self._forch_config_dir)
         with open(self._segments_vlans_file, 'w') as segments_vlans_file:
             segments_vlans_file.write(self.SEGMENTS_TO_VLANS)
 
@@ -243,8 +252,8 @@ class FaucetizerTestBase(UnitTestBase):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
 
         self._faucetizer = Faucetizer(
-            forch_config.orchestration, self._temp_structural_config_file,
-            self._temp_behavioral_config_file)
+            forch_config.orchestration, self._structural_config_file,
+            self._behavioral_config_file)
         self._faucetizer.reload_structural_config()
         self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
@@ -269,8 +278,8 @@ class FaucetizerTestBase(UnitTestBase):
             port_config['tagged_vlans'] = kwargs['tagged_vlans']
 
     def _verify_behavioral_config(self, expected_behavioral_config):
-        with open(self._temp_behavioral_config_file) as temp_behavioral_config_file:
-            faucetizer_behavioral_config = yaml.safe_load(temp_behavioral_config_file)
+        with open(self._behavioral_config_file) as behavioral_config_file:
+            faucetizer_behavioral_config = yaml.safe_load(behavioral_config_file)
         self.assertEqual(faucetizer_behavioral_config, expected_behavioral_config)
 
     def setUp(self):
@@ -291,6 +300,7 @@ class DeviceReportServerTestBase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._server = None
         self._client = None
 
@@ -321,6 +331,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._faucet_state_collector = None
 
     def setUp(self):
@@ -340,6 +351,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 class PortsStateManagerTestBase(UnitTestBase):
     """Base class for PortsStateManager"""
 
+    UNAUTHENTICATED = 'unauthenticated'
     AUTHENTICATED = 'authenticated'
     SEQUESTERED = 'sequestered'
     OPERATIONAL = 'operational'
@@ -348,9 +360,10 @@ class PortsStateManagerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._port_state_manager = PortStateManager(
             self._process_device_placement, self._process_device_behavior,
-            self._get_vlan_from_segment, self.SEQUESTER_SEGMENT)
+            self._get_vlan_from_segment, testing_segment=self.SEQUESTER_SEGMENT)
         self._received_device_placements = []
         self._received_device_behaviors = []
 
@@ -387,6 +400,7 @@ class ForchestratorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
         self._forchestrator = None
 
     def setUp(self):

@@ -12,8 +12,6 @@ from google.protobuf.message import Message
 
 from forch.utils import get_logger, proto_json
 
-LOGGER = get_logger('httpserv')
-
 
 class HttpException(Exception):
     """Http exception base class"""
@@ -32,6 +30,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def __init__(self, context, *args, **kwargs):
         self._context = context
         super().__init__(*args, **kwargs)
+        self._logger = get_logger('httpserv')
 
     # pylint: disable=invalid-name
     def do_GET(self):
@@ -52,11 +51,11 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         except HttpException as http_exception:
             self.send_response(http_exception.http_status)
             self.end_headers()
-            LOGGER.warning(http_exception)
+            self._logger.warning(http_exception)
         except Exception as exception:
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
-            LOGGER.error('Unhandled exception: %s', exception)
+            self._logger.error('Unhandled exception: %s', exception)
 
     def _check_url(self):
         """Check if url is illegal"""
@@ -84,10 +83,11 @@ class HttpServer():
         self._host = '0.0.0.0'
         self._thread = None
         self.content_type = content_type
+        self._logger = get_logger('httpserv')
 
     def start_server(self):
         """Start serving thread"""
-        LOGGER.info('Starting http server on %s', self._get_url_base())
+        self._logger.info('Starting http server on %s', self._get_url_base())
         address = (self._host, self._port)
         handler = functools.partial(RequestHandler, self)
         self._server = ThreadedHTTPServer(address, handler)
@@ -105,7 +105,7 @@ class HttpServer():
 
     def stop_server(self):
         """Stop and clean up server"""
-        LOGGER.info("Stopping server.")
+        self._logger.info("Stopping server.")
         self._server.server_close()
         self._server.shutdown()
 

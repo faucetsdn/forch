@@ -6,6 +6,7 @@ preamble_setup
 
 export FORCH_CONFIG_DIR=topo/dva
 export FAUCET_CONFIG_DIR=$OUT_DIR
+export FORCH_LOG="/tmp/faucet/forch.log"
 
 if [ -z "$VIRTUAL_ENV" -a -f venv/bin/python3 ]; then
     PYTHON=venv/bin/python3

@@ -1,0 +1,45 @@
+site:
+  name: nz-kiwi
+  controllers:
+    127.0.0.1:
+      fqdn: 127.0.0.1
+      port: 9019
+    nz-kiwi-ctl1:
+      fqdn: localhost.n
+      port: 9020
+orchestration:
+  structural_config_file: faucet.yaml
+  unauthenticated_vlan: 100
+  static_device_behavior: behaviors.yaml
+  gauge_config_file: gauge.yaml
+  segments_vlans_file: segments-to-vlans.yaml
+  sequester_config:
+    segment: FOT
+    vlan_start: 272
+    vlan_end: 276
+    port_description: tap
+proxy_server:
+  targets:
+    faucet:
+      port: 8001
+    forch:
+      port: 8302
+    gauge:
+      port: 9001
+process:
+  scan_interval_sec: 10
+  processes:
+    faucet:
+      regex: python.*ryu-manager.*faucet\.faucet
+      count: 2
+    gauge:
+      regex: python.*ryu-manager.*faucet\.gauge
+    forch:
+      regex: "python3 -m forch"
+    sleep:
+      regex: "sleep 50\\.3231"
+  connections:
+    6001:
+      description: Faucet openflow port
+event_client:
+  stack_topo_change_coalesce_sec: 15

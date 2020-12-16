@@ -5,8 +5,6 @@ import time
 
 from forch.utils import get_logger
 
-LOGGER = get_logger('mabsm')
-
 
 class AuthStateMachine():
     """Class represents the state machine that handles the Auth for a session"""""
@@ -35,6 +33,8 @@ class AuthStateMachine():
         self._auth_timeout_sec = auth_config.auth_timeout_sec or self.AUTH_TIMEOUT_SEC
         self._metrics = metrics
         self._transition_lock = Lock()
+        self._logger = get_logger('mabsm')
+
         self._reset_state_machine()
 
     def _increment_retries(self):
@@ -44,7 +44,7 @@ class AuthStateMachine():
         if expected is not None:
             message = 'state was %s expected %s' % (self._current_state, expected)
             assert self._current_state == expected, message
-        LOGGER.debug('Transition for %s: %s -> %s', self.src_mac, self._current_state, target)
+        self._logger.debug('Transition for %s: %s -> %s', self.src_mac, self._current_state, target)
         self._current_state = target
 
     def _reset_state_machine(self):
@@ -80,7 +80,8 @@ class AuthStateMachine():
         """Received RADIUS accept message"""
         with self._transition_lock:
             if self._current_state != self.REQUEST:
-                LOGGER.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                self._logger.warning(
+                    'Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
                 return
             self._state_transition(self.ACCEPT, self.REQUEST)
             self._current_timeout = time.time() + self._auth_timeout_sec
@@ -91,7 +92,8 @@ class AuthStateMachine():
         """Received RADIUS reject message"""
         with self._transition_lock:
             if self._current_state != self.REQUEST:
-                LOGGER.warning('Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
+                self._logger.warning(
+                    'Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
                 return
             self._state_transition(self.UNAUTH, self.REQUEST)
             self._current_timeout = time.time() + self._rej_timeout_sec
@@ -103,8 +105,9 @@ class AuthStateMachine():
         with self._transition_lock:
             if time.time() > self._current_timeout:
                 if self._retry_backoff:
-                    LOGGER.debug('Retrying RADIUS request for src_mac %s. Retry #%s',
-                                 self.src_mac, self._retry_backoff)
+                    self._logger.debug(
+                        'Retrying RADIUS request for src_mac %s. Retry #%s', self.src_mac,
+                        self._retry_backoff)
                 self._radius_query_callback(self.src_mac, self.port_id)
                 backoff = min(self._retry_backoff, self._max_radius_backoff)
                 backoff_time = backoff * self._query_timeout_sec
@@ -113,7 +116,7 @@ class AuthStateMachine():
                     if self._metrics:
                         self._metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
-                    LOGGER.debug('RADIUS request timed out for %s', self.src_mac)
+                    self._logger.debug('RADIUS request timed out for %s', self.src_mac)
                 else:
                     self._state_transition(self.REQUEST)
                     self._auth_callback(self.src_mac, self.UNAUTH, None, None)
