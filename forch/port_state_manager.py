@@ -160,7 +160,7 @@ class PortStateManager:
 
             return True, None
 
-        # if device vlan is expired
+        # if device port is down
         eth_src = self._placement_to_mac.pop((device_placement.switch, device_placement.port), None)
 
         # Dont propagate removal of placement if not in cache
@@ -168,11 +168,11 @@ class PortStateManager:
             return False, None
 
         if self._process_device_placement:
-            self._process_device_placement(mac, device_placement, static=False)
-        if mac in self._state_machines:
-            self._state_machines.pop(mac)
+            self._process_device_placement(eth_src, device_placement, static=False)
+        if eth_src in self._state_machines:
+            self._state_machines.pop(eth_src)
 
-        self._update_device_state_varz(mac, DVAState.initial)
+        self._update_device_state_varz(eth_src, DVAState.initial)
 
         return True, eth_src
 
