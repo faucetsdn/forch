@@ -1023,6 +1023,12 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access':
+                if self._placement_callback:
+                    devices_placement = DevicePlacement(switch=name, port=port, connected=False)
+                    self._placement_callback(None, devices_placement)
+
             LOGGER.info('port_state update %s %s %s', name, port, state)
 
     def process_port_change(self, event):
@@ -1127,10 +1133,6 @@ class FaucetStateCollector:
 
             port_attr = self._get_port_attributes(name, port)
             if port_attr and port_attr['type'] == 'access':
-                if self._placement_callback:
-                    devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                    self._placement_callback(mac, devices_placement, expired_vlan=expired_vlan)
-
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port, expire=True)
 
