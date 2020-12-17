@@ -8,8 +8,6 @@ from forch.proto.shared_constants_pb2 import PortBehavior
 from forch.proto.devices_state_pb2 import DeviceBehavior
 from forch.proto.shared_constants_pb2 import DVAState
 
-
-LOGGER = get_logger('portsm')
 STATE_HANDLERS = {}
 
 
@@ -54,6 +52,7 @@ class PortStateMachine:
         self._sequester_state_callback = sequester_state_callback
         self._operational_state_callback = operational_state_callback
         self._infracted_state_callback = infracted_state_callback
+        self._logger = get_logger('portsm')
 
         self._handle_current_state()
 
@@ -62,12 +61,12 @@ class PortStateMachine:
         next_state = self.TRANSITIONS.get(self._current_state, {}).get(port_behavior, {})
 
         if not next_state:
-            LOGGER.warning(
+            self._logger.warning(
                 'Cannot find next state for device %s in state %s for port behavior %s',
                 self._mac, self._current_state, port_behavior)
             return
 
-        LOGGER.info(
+        self._logger.info(
             'Device %s is entering %s state from %s state',
             self._mac, next_state, self._current_state)
 
@@ -84,22 +83,22 @@ class PortStateMachine:
 
     @_register_state_handler(state_name=UNAUTHENTICATED)
     def _handle_unauthenticated_state(self):
-        LOGGER.info('Handling unauthenticated state for device %s', self._mac)
+        self._logger.info('Handling unauthenticated state for device %s', self._mac)
         self._unauthenticated_state_callback(self._mac)
 
     @_register_state_handler(state_name=SEQUESTERED)
     def _handle_sequestered_state(self):
-        LOGGER.info('Handling sequestered state for device %s', self._mac)
+        self._logger.info('Handling sequestered state for device %s', self._mac)
         self._sequester_state_callback(self._mac)
 
     @_register_state_handler(state_name=OPERATIONAL)
     def _handle_operational_state(self):
-        LOGGER.info('Handling operational state for device %s', self._mac)
+        self._logger.info('Handling operational state for device %s', self._mac)
         self._operational_state_callback(self._mac)
 
     @_register_state_handler(state_name=INFRACTED)
     def _handle_infracted_state(self):
-        LOGGER.info('Handling infracted state for device %s', self._mac)
+        self._logger.info('Handling infracted state for device %s', self._mac)
         self._infracted_state_callback(self._mac)
 
 
@@ -120,6 +119,7 @@ class PortStateManager:
         self._device_state_varz_callback = update_device_state_varz
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
+        self._logger = get_logger('portmgr')
 
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
@@ -206,7 +206,7 @@ class PortStateManager:
             if mac in device_behaviors:
                 device_behaviors.pop(mac)
             else:
-                LOGGER.warning(
+                self._logger.warning(
                     '%s behavior does not exist for %s', 'static' if static else 'dynamic', mac)
 
             # ignore dynamic behavior for device that has static behavior defined
@@ -227,7 +227,7 @@ class PortStateManager:
         with self._lock:
             state_machine = self._state_machines.get(mac)
             if not state_machine:
-                LOGGER.error(
+                self._logger.error(
                     'No state machine defined for device %s before receiving testing result', mac)
                 return
             state_machine.handle_port_behavior(port_behavior)

@@ -21,8 +21,6 @@ from forch.proto.shared_constants_pb2 import DVAState, LacpState, State, LacpRol
 from forch.proto.switch_state_pb2 import SwitchState
 from forch.proto.system_state_pb2 import StateSummary
 
-LOGGER = get_logger('fstate')
-
 LACP_TO_LINK_STATE = {
     LacpState.none: STATE_DOWN,
     LacpState.default: STATE_DOWN,
@@ -30,6 +28,7 @@ LACP_TO_LINK_STATE = {
     LacpState.active: STATE_ACTIVE,
     LacpState.noact: STATE_UP,
 }
+
 
 def _dump_states(func):
     """Decorator to dump the current states after the states map is modified"""
@@ -42,7 +41,8 @@ def _dump_states(func):
     def wrapped(self, *args, **kwargs):
         res = func(self, *args, **kwargs)
         with self.lock:
-            LOGGER.debug(json.dumps(self.switch_states, default=_set_default))
+            # pylint: disable=protected-access
+            self._logger.debug(json.dumps(self.switch_states, default=_set_default))
         return res
 
     return wrapped
@@ -117,6 +117,7 @@ class FaucetStateCollector:
         self.packet_counts = {}
         self.lock = threading.RLock()
         self._lock = threading.Lock()
+        self._logger = get_logger('fstate')
         self.process_lag_state(time.time(), None, None, False, False)
         self._active_state = State.initializing
         self._is_faucetizer_enabled = is_faucetizer_enabled
@@ -129,6 +130,7 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
+        self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
 
@@ -151,12 +153,12 @@ class FaucetStateCollector:
         event_delta = time_now - self._stack_state_event
         update_delta = time_now - self._stack_state_update
         if event_delta > self._change_coalesce_sec or update_delta > self._change_coalesce_sec * 2:
-            LOGGER.warning('stack_state_links update apply %ds', update_delta)
+            self._logger.warning('stack_state_links update apply %ds', update_delta)
             self._stack_state_update = 0
             state_data, self._stack_state_data = (self._stack_state_data, None)
             self._update_stack_topo_state_raw(*state_data)
         else:
-            LOGGER.warning('stack_state_links update ignore %ds', event_delta)
+            self._logger.warning('stack_state_links update ignore %ds', event_delta)
 
     def _get_packet_counts_from_samples(self, metric_samples):
         vlan_counts = {}
@@ -184,7 +186,7 @@ class FaucetStateCollector:
             if not threshold:
                 rate_state = State.unknown
             elif rate > threshold:
-                LOGGER.error(
+                self._logger.error(
                     'Packet per sec for vlan %d is greater than threshold %d: %.2f',
                     vlan_id, threshold, rate)
                 rate_state = State.broken
@@ -202,7 +204,7 @@ class FaucetStateCollector:
 
         packet_count_metric = get_metrics([VLAN_PACKET_COUNT_METRIC]).get(VLAN_PACKET_COUNT_METRIC)
         if not packet_count_metric:
-            LOGGER.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
+            self._logger.warning('No %s metric available', VLAN_PACKET_COUNT_METRIC)
             return
 
         vlan_counts = self._get_packet_counts_from_samples(packet_count_metric.samples)
@@ -234,7 +236,7 @@ class FaucetStateCollector:
                     try:
                         return func(self, *args, **kwargs)
                     except Exception as e:
-                        LOGGER.exception(e)
+                        self._logger.exception(e)
                         return self._make_summary(State.broken, str(e))
             return wrapped
         return pre_check
@@ -248,12 +250,12 @@ class FaucetStateCollector:
 
     def restore_states_from_metrics(self, metrics):
         """Restore internal states from prometheus metrics"""
-        LOGGER.info('restoring internal state from metrics')
+        self._logger.info('restoring internal state from metrics')
         current_time = time.time()
         for label_name, method_map in _RESTORE_METHODS.items():
             for metric_name, restore_method in method_map.items():
                 if metric_name not in metrics:
-                    LOGGER.warning("Metrics does not contain: %s", metric_name)
+                    self._logger.warning("Metrics does not contain: %s", metric_name)
                     continue
                 for sample in metrics[metric_name].samples:
                     switch = sample.labels['dp_name']
@@ -279,7 +281,7 @@ class FaucetStateCollector:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, None)
                 ports_learned = True
         if not ports_learned:
-            LOGGER.info('No learned ports restored.')
+            self._logger.info('No learned ports restored.')
             return
 
     def _restore_dataplane_state_from_metrics(self, metrics):
@@ -339,7 +341,7 @@ class FaucetStateCollector:
                 dp_state[DP_ID] = dp_id
                 dp_state[CONFIG_CHANGE_COUNT] = change_count
 
-                LOGGER.info(
+                self._logger.info(
                     'Restored dp_config_change of switch %s with change count %d',
                     dp_id, change_count)
 
@@ -433,7 +435,7 @@ class FaucetStateCollector:
         dplane_state['dataplane_state_change_count'] = sum(change_counts)
         dplane_state['dataplane_state_last_change'] = last_change
 
-        LOGGER.info('dataplane_state_change_count sources: %s', change_counts)
+        self._logger.info('dataplane_state_change_count sources: %s', change_counts)
 
         return dict_proto(dplane_state, DataplaneState)
 
@@ -705,7 +707,7 @@ class FaucetStateCollector:
     def _fill_vlan_behavior(self, switch_name, switch_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
         if not dp_config:
-            LOGGER.warning('Switch not defined in dps config: %s', switch_name)
+            self._logger.warning('Switch not defined in dps config: %s', switch_name)
             return
 
         vlans_map = switch_map.setdefault('vlans', {})
@@ -728,7 +730,7 @@ class FaucetStateCollector:
     def _fill_port_behavior(self, switch_name, port_id, port_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
         if not dp_config:
-            LOGGER.warning('Switch not defined in dps config: %s', switch_name)
+            self._logger.warning('Switch not defined in dps config: %s', switch_name)
             return
 
         port_config = dp_config.ports.get(port_id)
@@ -783,7 +785,7 @@ class FaucetStateCollector:
                     break
 
                 if not has_sample:
-                    LOGGER.debug(
+                    self._logger.debug(
                         'No metric sample available for switch, port, ACL, rule: %s, %s, %s ,%s',
                         switch_name, port_id, acl_config._id, cookie_num)
 
@@ -1005,13 +1007,13 @@ class FaucetStateCollector:
             switch_config = self.faucet_config.get(DPS_CFG, {}).get(name)
             if not switch_config:
                 self._forch_metrics.inc_var('unconfigured_port_event', labels=[name, port])
-                LOGGER.error('Switch %s is not in faucet config', name)
+                self._logger.error('Switch %s is not in faucet config', name)
                 return
 
             port_config = switch_config.interfaces.get(port)
             if not port_config:
                 self._forch_metrics.inc_var('unconfigured_port_event', labels=[name, port])
-                LOGGER.error('Port %s is not in switch config %s', port, name)
+                self._logger.error('Port %s is not in switch config %s', port, name)
                 return
 
             port_table = self.switch_states\
@@ -1029,7 +1031,7 @@ class FaucetStateCollector:
                     devices_placement = DevicePlacement(switch=name, port=port, connected=False)
                     self._placement_callback(None, devices_placement)
 
-            LOGGER.info('port_state update %s %s %s', name, port, state)
+            self._logger.info('port_state update %s %s %s', name, port, state)
 
     def process_port_change(self, event):
         """Wrapper for process_port_state"""
@@ -1040,9 +1042,10 @@ class FaucetStateCollector:
     def process_lag_state(self, timestamp, name, port, lacp_role, lacp_state):
         """Process a lag state change"""
         with self.lock:
-            LOGGER.info('lag_state update %s Port %s Role: %s State: %s',
-                        name, port, LacpRole.LacpRole.Name(int(lacp_role)),
-                        LacpState.LacpState.Name(int(lacp_state)))
+            self._logger.info(
+                'lag_state update %s Port %s Role: %s State: %s',
+                name, port, LacpRole.LacpRole.Name(int(lacp_role)),
+                LacpState.LacpState.Name(int(lacp_state)))
             egress_state = self.topo_state.setdefault('egress', {})
             lacp_role = int(lacp_role)  # varz returns float. Need to convert to int
             lacp_state = int(lacp_state)  # varz returns float. Need to convert to int
@@ -1067,8 +1070,9 @@ class FaucetStateCollector:
             egress_state[EGRESS_CHANGE_COUNT] = change_count
             egress_state[EGRESS_STATE] = state
             egress_state[EGRESS_DETAIL] = egress_detail
-            LOGGER.info('lag_state Change #%d %s, State: %s Egress detail: %s',
-                        change_count, name, State.State.Name(state), egress_detail)
+            self._logger.info(
+                'lag_state Change #%d %s, State: %s Egress detail: %s',
+                change_count, name, State.State.Name(state), egress_detail)
 
     def _get_egress_state_detail(self, links):
         state_set = set()
@@ -1114,7 +1118,7 @@ class FaucetStateCollector:
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
-            LOGGER.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
+            self._logger.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
             port_attr = self._get_port_attributes(name, port)
 
             if port_attr and port_attr['type'] == 'access':
@@ -1129,7 +1133,7 @@ class FaucetStateCollector:
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
         """process port expire event"""
         with self.lock:
-            LOGGER.info('Learned entry %s at %s:%s expired.', mac, name, port)
+            self._logger.info('Learned entry %s at %s:%s expired.', mac, name, port)
 
             port_attr = self._get_port_attributes(name, port)
             if port_attr and port_attr['type'] == 'access':
@@ -1140,14 +1144,14 @@ class FaucetStateCollector:
             if mac in switch_learned_macs:
                 switch_learned_macs.remove(mac)
             else:
-                LOGGER.warning('Entry %s does not exist in learned macs dict', mac)
+                self._logger.warning('Entry %s does not exist in learned macs dict', mac)
 
             if name in self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH, {}):
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
                 if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
                     self.learned_macs.pop(mac)
             else:
-                LOGGER.warning('Entry %s does not exist in learned macs set', mac)
+                self._logger.warning('Entry %s does not exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
@@ -1159,7 +1163,7 @@ class FaucetStateCollector:
 
             dp_state = self.switch_states.setdefault(dp_name, {})
             change_count = dp_state.get(CONFIG_CHANGE_COUNT, 0) + 1
-            LOGGER.info('dp_config #%d %s change type %s', change_count, dp_id, restart_type)
+            self._logger.info('dp_config #%d %s change type %s', change_count, dp_id, restart_type)
 
             dp_state[DP_ID] = dp_id
             dp_state[CONFIG_CHANGE_COUNT] = change_count
@@ -1175,8 +1179,9 @@ class FaucetStateCollector:
             new_state = SWITCH_CONNECTED if connected else SWITCH_DOWN
             if dp_state.get(SW_STATE) != new_state:
                 change_count = dp_state.get(SW_STATE_CHANGE_COUNT, 0) + 1
-                LOGGER.info('dp_change #%d %s, %s -> %s', change_count, dp_name,
-                            dp_state.get(SW_STATE), new_state)
+                self._logger.info(
+                    'dp_change #%d %s, %s -> %s', change_count, dp_name, dp_state.get(SW_STATE),
+                    new_state)
                 dp_state[SW_STATE] = new_state
                 dp_state[SW_STATE_LAST_CHANGE] = datetime.fromtimestamp(timestamp).isoformat()
                 dp_state[SW_STATE_CHANGE_COUNT] = change_count
@@ -1187,7 +1192,7 @@ class FaucetStateCollector:
         with self.lock:
             cfg_state = self.faucet_config
             change_count = cfg_state.get(DPS_CFG_CHANGE_COUNT, 0) + 1
-            LOGGER.info('dataplane_config #%d change: %r', change_count, dps_config)
+            self._logger.info('dataplane_config #%d change: %r', change_count, dps_config)
             cfg_state[DPS_CFG] = {str(dp): dp for dp in dps_config}
             cfg_state[DPS_CFG_CHANGE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             cfg_state[DPS_CFG_CHANGE_COUNT] = change_count
@@ -1204,8 +1209,9 @@ class FaucetStateCollector:
             if port_state.get('state') != new_state:
                 port_state['state'] = new_state
                 link_change_count = self._update_stack_links_stats(timestamp)
-                LOGGER.info('stack_state_links #%d %s:%d is now %s', link_change_count,
-                            dp_name, port, new_state)
+                self._logger.info(
+                    'stack_state_links #%d %s:%d is now %s', link_change_count, dp_name, port,
+                    new_state)
 
     @_dump_states
     def process_stack_topo_change_event(self, topo_change):
@@ -1224,7 +1230,7 @@ class FaucetStateCollector:
             if not self._stack_state_update:
                 self._stack_state_update = self._stack_state_event
             self._stack_state_data = (timestamp, link_graph, stack_root, dps)
-            LOGGER.warning('stack_state_links update save')
+            self._logger.warning('stack_state_links update save')
             return
 
         self._update_stack_topo_state_raw(timestamp, link_graph, stack_root, dps)
@@ -1239,13 +1245,14 @@ class FaucetStateCollector:
                 link_change_count = self._update_stack_links_stats(timestamp)
                 graph_links = [link.key for link in link_graph]
                 graph_links.sort()
-                LOGGER.info('stack_state_links #%d links: %s', link_change_count, graph_links)
+                self._logger.info(
+                    'stack_state_links #%d links: %s', link_change_count, graph_links)
 
             msg_str = "root %s: %s" % (stack_root, self._list_root_hops(dps))
             prev_msg = topo_state.get(TOPOLOGY_DPS_HASH)
             if prev_msg != msg_str:
                 topo_change_count = topo_state.get(TOPOLOGY_CHANGE_COUNT, 0) + 1
-                LOGGER.info('stack_topo_change #%d to %s', topo_change_count, msg_str)
+                self._logger.info('stack_topo_change #%d to %s', topo_change_count, msg_str)
                 topo_state[TOPOLOGY_ROOT] = stack_root
                 topo_state[TOPOLOGY_DPS] = dps
                 topo_state[TOPOLOGY_DPS_HASH] = msg_str
@@ -1309,7 +1316,8 @@ class FaucetStateCollector:
         learned_host = self.learned_macs.get(mac)
         if not learned_host:
             # This covers the case where we do a RADIUS request for a static placement
-            LOGGER.warning('%s is not a learned mac. Skipping faucet_state_collector update.', mac)
+            self._logger.warning(
+                '%s is not a learned mac. Skipping faucet_state_collector update.', mac)
             return
         host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
         host_radius[MAC_RADIUS_ACCESS] = access
@@ -1378,6 +1386,11 @@ class FaucetStateCollector:
 
             if 'lacp' in port_info:
                 ret_attr['type'] = 'egress'
+                return ret_attr
+
+            sequester_port_desc = self._config.orchestration.sequester_config.port_description
+            if sequester_port_desc and sequester_port_desc == port_info.get('description'):
+                ret_attr['type'] = 'sequester'
                 return ret_attr
 
             ret_attr['type'] = 'access'

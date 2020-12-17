@@ -1,5 +1,6 @@
 """Unit tests for Faucetizer"""
 
+import os
 import shutil
 import tempfile
 import unittest
@@ -21,6 +22,7 @@ class FaucetizerTestBase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = '/tmp/forch.log'
         self._faucetizer = None
         self._orch_config = None
         self._temp_dir = None

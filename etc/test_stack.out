@@ -49,6 +49,7 @@ Running forch-solid tests
 "active"
 null
 3
+"up"
 @cpn_state-solid
 3
 "127.0.0.1"
@@ -95,6 +96,7 @@ Running forch-healthy tests
 "active"
 null
 0
+"up"
 @cpn_state-healthy
 1
 "127.0.0.1"
@@ -187,6 +189,7 @@ Running forch-twod tests
 "active"
 null
 1
+"up"
 @cpn_state-twod
 0
 "127.0.0.1"
@@ -255,6 +258,7 @@ null
 "active"
 null
 3
+"down"
 @cpn_state-broken
 0
 "127.0.0.1"
@@ -320,6 +324,7 @@ Running forch-restored tests
 "active"
 null
 2
+"up"
 @cpn_state-restored
 0
 "127.0.0.1"
@@ -365,13 +370,13 @@ Done with stack-orphaned test.
 Running forch-orphaned tests
 @system_state-orphaned
 "nz-kiwi"
-98
+70
 "http://localhost.n:9020"
 "split"
 @dataplane_state-orphaned
 "broken"
 "egress: nz-kiwi-t1sw2:28; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50']"
-77
+49
 "active"
 "down"
 10
@@ -385,6 +390,7 @@ Running forch-orphaned tests
 "active"
 null
 4
+"down"
 @cpn_state-orphaned
 1
 "127.0.0.1"
@@ -411,13 +417,13 @@ null
 Running forch-reset tests
 @system_state-reset
 "nz-kiwi"
-91
+63
 "http://localhost.n:9020"
 "split"
 @dataplane_state-reset
 "broken"
 "egress: nz-kiwi-t1sw1:28; broken links: ['nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw2:11@nz-kiwi-t2sw3:52']"
-71
+43
 "active"
 "active"
 9
@@ -431,6 +437,7 @@ Running forch-reset tests
 "active"
 null
 4
+"up"
 @cpn_state-reset
 0
 "127.0.0.1"
@@ -477,6 +484,7 @@ Running forch-restart tests
 "active"
 null
 1
+"up"
 @cpn_state-restart
 3
 "127.0.0.1"

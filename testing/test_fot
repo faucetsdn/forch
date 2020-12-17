@@ -1,22 +1,71 @@
 #!/bin/bash -ex
 
-LOGFILE=controller_log.txt
+source bin/stack_functions
 
-docker logs forch-controller-1 2>&1 | tee $LOGFILE
+preamble_setup
+
+function monitor_log {
+    runcommand=$1
+    daqlog=$DAQBASE/inst/cmdrun.log
+    while true; do
+        sleep 1
+        test_done=$(cat $daqlog | fgrep "Remaining target sets: []" || true)
+        if [ -n "$test_done" ]; then
+            eval $runcommand
+            break
+        fi
+    done
+}
+
+INST_BASE=inst/forch-controller-1
+DAQBASE=$INST_BASE/daq
+FAUCET_BASE=$INST_BASE/faucet
+BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
+YQ=venv/bin/yq
+
+echo Controller startup log
+docker logs forch-controller-1
+
+echo DAQ log
+cat $DAQBASE/inst/cmdrun.log
+
+echo DAQ spot checks
 
 # Basic process startup.
-fgrep "Loading base module config" $LOGFILE
+fgrep "Loading base module config" $DAQBASE/inst/cmdrun.log
 
 # Testing that python path is good.
-ls -l inst/forch-controller-1/daq/inst/daq.pid
+ls -l $DAQBASE/inst/daq.pid
 
 # Requires valid config available.
-cat inst/forch-controller-1/daq/inst/daq_run_id.txt
+cat $DAQBASE/inst/daq_run_id.txt
 
 # Requiring mininet path.
-ls -l inst/forch-controller-1/daq/inst/dp_port_acls.yaml
+ls -l $DAQBASE/inst/dp_port_acls.yaml
 
 # Check that OVS switch connects properly to managed faucet.
-fgrep "Port 1 dpid 250 is now active" $LOGFILE
+fgrep "System port 1 on dpid 1 is active True" $DAQBASE/inst/cmdrun.log
 
 echo Done with daq startup tests.
+
+sleep 20
+
+# Forch startup checks
+# Check Forch has successfuly started
+fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
+
+docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
+docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
+
+vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
+echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
+echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
+
+# Waiting for DAQ test to complete
+function report_result {
+    $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
+}
+set +x
+monitor_log report_result

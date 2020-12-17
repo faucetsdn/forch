@@ -1,0 +1,108 @@
+#!/bin/bash -e
+
+function setup_flat_faucet_config {
+    local switch_count=1
+    if [ -n "$1" ]; then
+        switch_count=$1
+    fi
+    echo "Creating Faucet config for flat topology with $switch_count switches"
+    local root=$(realpath $(dirname $0)/..)
+    local out_file_arg="-p $root/inst/forch-faucet-1/faucet/faucet.yaml"
+    local topo_args="-t flat -a $switch_count -d 1"
+    PYTHONPATH=$root venv/bin/python $root/testing/python_lib/build_config.py $out_file_arg $topo_args
+}
+
+ROOT=$(dirname $0)/..
+cd $ROOT
+
+switches=1
+access_switches=()
+bonded_ifaces=()
+
+if [ "$1" == "switches" ]; then
+    switches=$2
+    shift 2
+fi
+
+if [ -z "$1" ]; then
+    echo Topology not specified
+    exit 1
+fi
+
+topo=flat/$1
+echo Using topology $topo
+
+source bin/stack_functions
+
+# set up corp switch
+add_br corp 0x111 6683
+
+# set up access switches and set up interfaces to be bonded
+for sw_num in $(seq 1 $switches); do
+    switch=sw$sw_num
+    bonded_iface=bonded-eth$sw_num
+    access_switches+=("$switch")
+    bonded_ifaces+=($bonded_iface)
+
+    echo Adding access switch $switch
+    add_br $switch $((512 + sw_num)) 6001 7001
+
+    add_oeth $switch 28 $bonded_iface
+done
+
+# set up ring links
+if (( $switches > 2 )); then
+    for sw_num in $(seq 1 $((switches - 1))); do
+        sw_a=sw$sw_num
+        sw_b=sw$((sw_num + 1))
+        port_a=$((6 + sw_num))
+        port_b=$((7 + sw_num))
+        add_link $sw_a $port_a $sw_b $port_b
+    done
+fi
+
+# set up bond port
+sudo ip link del bond || true
+echo Setting up bond interface...
+sudo ip link add bond type bond mode 802.3ad
+sudo ip link set bond up
+for iface in ${bonded_ifaces[@]}; do
+    sudo ip link set $iface master bond
+done
+add_iface corp 10 bond
+
+# set up Faucet instances
+echo Starting faucet instances...
+sudo rm -rf inst/
+mkdir -p inst/forch-faucet-corp/faucet
+setup_corp_faucet_config
+docker kill forch-faucet-corp || true
+sudo modprobe bonding
+bin/run_faucet local corp 6683
+
+inst=1
+container=forch-faucet-$inst
+
+container_inst=inst/$container/
+mkdir -p $container_inst/
+cp -r topo/common/faucet $container_inst/
+cp -r topo/$topo/faucet/* $container_inst/faucet/
+setup_flat_faucet_config $switches
+cp -r topo/common/forch $container_inst/
+cp -r topo/$topo/forch/* $container_inst/forch/
+docker kill $container || true
+
+bin/run_faucet local $inst $((6000 + inst)) $((8000 + inst))
+bin/run_faucet local gauge $inst $((7000 + inst)) $((9000 + inst))
+
+# set up devices
+add_faux corp 1 0
+device_id=1
+for switch in ${access_switches[@]}; do
+    add_faux $switch 1 $device_id
+    device_id=$((device_id+1))
+done
+
+echo Letting system settle...
+sleep 10
+echo Done with setting up flat stack with topo $topo

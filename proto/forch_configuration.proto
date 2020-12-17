@@ -156,8 +156,8 @@ message ProcessConfig {
   // scan interval in seconds
   int32 scan_interval_sec = 1;
 
-  // indicate if Forch should check VRRP state
-  bool check_vrrp = 2;
+  // location of keepalived.pid file. Not specifying it implies no VRRP check
+  string keepalived_pid_file = 2;
 
   // target processes to check indexed by process name
   map<string, Process> processes = 3;

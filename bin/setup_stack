@@ -10,6 +10,9 @@ no_clean=
 faux_dhcp=
 fot=
 run_opt=
+remote=
+container=
+base_port=6001
 mode=bond
 
 if [ "$1" == "local" ]; then
@@ -24,6 +27,13 @@ fi
 
 if [ "$1" == "switches" ]; then
     switches=$2
+    shift 2
+fi
+
+if [ "$1" == "remote" ]; then
+    port=${2#*:}
+    remote=${2%:*}
+    base_port=${port:-$base_port}
     shift 2
 fi
 
@@ -60,6 +70,8 @@ fi
 if [ -n "$1" ]; then
     mode=$1
     shift
+elif [ -n "$fot" ]; then
+    mode=fot
 fi
 
 source bin/stack_functions
@@ -73,15 +85,15 @@ fi
 echo Configuring mode $mode...
 
 add_br corp  0x111 6683
-add_br t1sw1 177 6001 7001
-add_br t1sw2 178 6001 7001
+add_br t1sw1 177 $remote $base_port $((base_port + 1))
+add_br t1sw2 178 $remote $base_port $((base_port + 1))
 add_oeth t1sw1 28 corp-eth10
 add_oeth t1sw2 28 corp-eth20
 add_link t1sw1 6 t1sw2 6
 
-add_br t2sw1 1295 6001 7001
-add_br t2sw2 1296 6001 7001
-add_br t2sw3 1297 6001 7001
+add_br t2sw1 1295 $remote $base_port $((base_port + 1))
+add_br t2sw2 1296 $remote $base_port $((base_port + 1))
+add_br t2sw3 1297 $remote $base_port $((base_port + 1))
 
 add_link t1sw1 9 t2sw1 50
 add_link t1sw1 10 t2sw2 50
@@ -94,7 +106,7 @@ add_link t1sw2 11 t2sw3 52
 if [ -n "$switches" ]; then
     for snum in $(seq 4 $switches); do
         echo Adding extra switch num $snum
-        add_br t2sw$snum $((1294 + snum)) 6001 7001
+        add_br t2sw$snum $((1294 + snum)) $remote $base_port $((base_port + 1))
         add_link t1sw1 $((8+snum)) t2sw$snum 50
         add_link t1sw2 $((8+snum)) t2sw$snum 52
     done
@@ -116,34 +128,42 @@ docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet $local corp 6683
 
-inst=1
-if [ -n "$fot" ]; then
-    container=forch-controller-$inst
-else
-    container=forch-faucet-$inst
-fi
+finst=1
+if [ -z "$remote" ]; then
+    if [ -n "$fot" ]; then
+        container=forch-controller-$finst
+    else
+        container=forch-faucet-$finst
+    fi
 
-container_inst=inst/$container/
-mkdir -p $container_inst/
-cp -r topo/$mode/forch $container_inst/
-cp -r topo/$mode/faucet $container_inst/
-docker kill $container || true
+    container_inst=inst/$container/
+    mkdir -p $container_inst/
+    cp -r topo/common/forch $container_inst/
+    cp -r topo/common/faucet $container_inst/
 
-if [ -n "$fot" ]; then
-    mkdir -p $container_inst/faucet_br/faucet
-    cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
-    bin/run_controller $local $run_opt $inst $((6000 + inst)) $((8000 + inst)) $((7000 + inst)) $((9000 + inst))
-else
-    bin/run_faucet $local $inst $((6000 + inst)) $((8000 + inst))
-    bin/run_faucet $local gauge $inst $((7000 + inst)) $((9000 + inst))
+    cp topo/$mode/forch/* $container_inst/forch/
+    cp topo/$mode/faucet/* $container_inst/faucet/
+    docker kill $container || true
+
+    if [ -n "$fot" ]; then
+        mkdir -p $container_inst/faucet_br/faucet
+        # TODO: faucet_br should not be under topo/ since it has nothing to do with the topology.
+        cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
+        bin/run_controller $local $run_opt $finst $((base_port + finst*2 - 2)) $((8000 + finst)) $((base_port + finst*2 - 1)) $((9000 + finst))
+    else
+        bin/run_faucet $local $finst $((base_port + finst*2 - 2)) $((8000 + finst))
+        bin/run_faucet $local gauge $finst $((base_port + finst*2 - 1)) $((9000 + finst))
+    fi
 fi
 
 echo Connecting faux interfaces...
 add_faux corp 1 0 dnsmasq
-add_faux t2sw1 1 1
-add_faux t2sw2 1 2
-add_faux t2sw3 1 3 $faux_dhcp
-add_iface t1sw1 4 cntrl_tap_1
+add_faux t2sw1 1 1 $faux_dhcp
+add_faux t2sw2 1 2 $faux_dhcp
+add_faux t2sw3 1 3
+if [ -z "$remote" ]; then
+    add_iface t1sw1 4 cntrl_tap_1
+fi
 
 dcount=${devices:-3}
 scount=${switches:-3}
@@ -169,30 +189,34 @@ echo Working with $tdevices devices.
 echo Letting system settle...
 sleep 60
 
-if [ -n "$fot" ]; then
-    echo head of forch-controller-1/faucet.log:
-    head inst/forch-controller-1/faucet.log
-else
-    echo head of forch-faucet-1/faucet.log:
-    head inst/forch-faucet-1/faucet.log
+if [ -z "$remote" ]; then
+    if [ -n "$fot" ]; then
+        echo head of forch-controller-1/faucet.log:
+        head -n 50 inst/forch-controller-1/faucet.log
+        echo head of forch-controller-1/forch.log:
+        head -n 50 inst/forch-controller-1/forch.log
+    else
+        echo head of forch-faucet-1/faucet.log:
+        head inst/forch-faucet-1/faucet.log
+    fi
+    echo
 fi
-echo
 
 if [ -z "$skip_conn_check" ]; then
     echo Starting connection warm-up for 10s...
-    docker exec forch-faux-0 ping -q -c 10 192.168.1.2 &
-    docker exec forch-faux-1 ping -q -c 10 192.168.1.3 &
-    docker exec forch-faux-2 ping -q -c 10 192.168.1.1 &
-    docker exec forch-faux-3 ping -q -c 10 192.168.1.1 &
+    docker exec forch-faux-0 ping -q -c 10 $ip_faux_2 &
+    docker exec forch-faux-1 ping -q -c 10 $ip_faux_3 &
+    docker exec forch-faux-2 ping -q -c 10 $ip_faux_1 &
+    docker exec forch-faux-3 ping -q -c 10 $ip_faux_1 &
 
     echo Waiting for warm-ups to complete...
     wait
 
     echo Connection sanity check...
-    docker exec forch-faux-0 ping -q -c 1 192.168.1.2
-    docker exec forch-faux-1 ping -q -c 1 192.168.1.3
-    docker exec forch-faux-2 ping -q -c 1 192.168.1.1
-    docker exec forch-faux-3 ping -q -c 1 192.168.1.1
+    docker exec forch-faux-0 ping -q -c 1 $ip_faux_2
+    docker exec forch-faux-1 ping -q -c 1 $ip_faux_3
+    docker exec forch-faux-2 ping -q -c 1 $ip_faux_1
+    docker exec forch-faux-3 ping -q -c 1 $ip_faux_1
 
     if [ $tdevices -gt 3 ]; then
         for device in $(seq 4 $tdevices); do
