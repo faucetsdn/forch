@@ -393,7 +393,8 @@ class Forchestrator:
             self._authenticator.process_device_placement(eth_src, device_placement)
         else:
             self._logger.info(
-                'Ignored deauthentication for port %s on switch %s', device_placement.port, device_placement.switch)
+                'Ignored deauthentication for port %s on switch %s',
+                device_placement.port, device_placement.switch)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
