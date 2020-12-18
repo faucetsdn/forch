@@ -1029,8 +1029,8 @@ class FaucetStateCollector:
                 port_attr = self._get_port_attributes(name, port)
                 if port_attr and port_attr['type'] == 'access':
                     if self._placement_callback:
-                        devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                        self._placement_callback(None, devices_placement)
+                        device_placement = DevicePlacement(switch=name, port=port, connected=False)
+                        self._placement_callback(None, device_placement)
 
             self._logger.info('port_state update %s %s %s', name, port, state)
 
@@ -1124,8 +1124,8 @@ class FaucetStateCollector:
 
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
-                    devices_placement = DevicePlacement(switch=name, port=port, connected=True)
-                    self._placement_callback(mac, devices_placement)
+                    device_placement = DevicePlacement(switch=name, port=port, connected=True)
+                    self._placement_callback(mac, device_placement)
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port)
