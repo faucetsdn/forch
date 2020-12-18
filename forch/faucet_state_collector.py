@@ -1025,11 +1025,12 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
-            port_attr = self._get_port_attributes(name, port)
-            if port_attr and port_attr['type'] == 'access':
-                if self._placement_callback:
-                    devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                    self._placement_callback(None, devices_placement)
+            if not state:
+                port_attr = self._get_port_attributes(name, port)
+                if port_attr and port_attr['type'] == 'access':
+                    if self._placement_callback:
+                        devices_placement = DevicePlacement(switch=name, port=port, connected=False)
+                        self._placement_callback(None, devices_placement)
 
             self._logger.info('port_state update %s %s %s', name, port, state)
 
