@@ -383,14 +383,15 @@ class Forchestrator:
 
     def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
+        src_mac = eth_src
         propagate_placement, mac = self._port_state_manager.handle_device_placement(
-            eth_src, device_placement, static)
+            src_mac, device_placement, static)
 
         if mac:
-            eth_src = mac
+            src_mac = mac
 
         if self._authenticator and propagate_placement:
-            self._authenticator.process_device_placement(eth_src, device_placement)
+            self._authenticator.process_device_placement(src_mac, device_placement)
         else:
             self._logger.info(
                 'Ignored deauthentication for port %s on switch %s',
