@@ -174,10 +174,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             ('00:0Z:00:00:00:03', 'failed'),
             ('00:0A:00:00:00:04', 'passed')
         ]
-        expired_device_vlans = [
-            ('00:0X:00:00:00:01', 100),
-            ('00:0B:00:00:00:05', 600),
-            ('00:0B:00:00:00:05', 500),
+        expired_device_placements = [
+            ('00:0X:00:00:00:01', ('t2sw1', 1)),
+            ('00:0B:00:00:00:05', ('t2sw5', 5)),
+            ('00:0B:00:00:00:05', ('t2sw5', 5)),
         ]
         unauthenticated_devices = ['00:0X:00:00:00:01', '00:0A:00:00:00:04']
         reauthenticated_device = {'00:0A:00:00:00:04': {'segment': 'SEG_D'}}
@@ -201,7 +201,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         self._receive_testing_results(testing_results, expected_device_behaviors)
 
         # devices are expired
-        self._expire_devices(expired_device_vlans, expected_device_placements)
+        self._expire_devices(expired_device_placements, expected_device_placements)
 
         # devices are unauthenticated
         self._unauthenticate_devices(unauthenticated_devices, expected_device_behaviors)
@@ -284,12 +284,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
-    def _expire_devices(self, expired_device_vlans, expected_device_placements):
-        for expired_device_vlan in expired_device_vlans:
-            mac = expired_device_vlan[0]
-            expired_vlan = expired_device_vlan[1]
+    def _expire_devices(self, expired_device_placements, expected_device_placements):
+        for expired_device_placement in expired_device_placements:
+            mac = None
+            switch = expired_device_placement[1][0]
+            port = expired_device_placement[1][1]
             self._port_state_manager.handle_device_placement(
-                mac, DevicePlacement(switch='switch', port=1), False, expired_vlan)
+                mac, DevicePlacement(switch=switch, port=port), False)
 
         expected_device_placements.extend([
             # mac, device_placement.connected, static

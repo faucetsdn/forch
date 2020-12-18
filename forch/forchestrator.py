@@ -381,16 +381,19 @@ class Forchestrator:
         """If forch is initialized or not"""
         return self._initialized
 
-    def _process_device_placement(self, eth_src, device_placement, static=False, expired_vlan=None):
+    def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
-        propagate_placement = self._port_state_manager.handle_device_placement(
-            eth_src, device_placement, static, expired_vlan)
+        propagate_placement, mac = self._port_state_manager.handle_device_placement(
+            eth_src, device_placement, static)
+
+        src_mac = mac if mac else eth_src
 
         if self._authenticator and propagate_placement:
-            self._authenticator.process_device_placement(eth_src, device_placement)
+            self._authenticator.process_device_placement(src_mac, device_placement)
         else:
             self._logger.info(
-                'Ignored vlan expiration for device %s with expired vlan %s', eth_src, expired_vlan)
+                'Ignored deauthentication for port %s on switch %s',
+                device_placement.port, device_placement.switch)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
