@@ -7,6 +7,7 @@ import sys
 import threading
 import yaml
 
+from forch.device_state_manager import DeviceStateManager
 from forch.utils import get_logger, yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
@@ -22,7 +23,7 @@ STATIC_DEVICE = 'static'
 DYNAMIC_DEVICE = 'dynamic'
 
 
-class Faucetizer:
+class Faucetizer(DeviceStateManager):
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, behavioral_config_file,

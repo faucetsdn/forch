@@ -24,6 +24,7 @@ from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.port_state_manager import PortStateManager
 from forch.varz_state_collector import VarzStateCollector
+from forch.varz_updater import VarzUpdater
 from forch.utils import (
     get_logger, proto_dict, yaml_proto, FaucetEventOrderError, MetricsFetchingError)
 
@@ -69,7 +70,7 @@ _TARGET_GAUGE_METRICS = (
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 
-class Forchestrator:
+class Forchestrator(VarzUpdater):
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""
 
@@ -202,20 +203,8 @@ class Forchestrator:
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
-            process_device_placement = self._faucetizer.process_device_placement
-            process_device_behavior = self._faucetizer.process_device_behavior
-            get_vlan_from_segment = self._faucetizer.get_vlan_from_segment
-        else:
-            process_device_placement = None
-            process_device_behavior = None
-            get_vlan_from_segment = None
-
-        update_device_state_varz = (lambda mac, state: self._metrics.update_var(
-            'device_state', state, labels=[mac])) if self._metrics else None
         self._port_state_manager = PortStateManager(
-            process_device_placement, process_device_behavior, get_vlan_from_segment,
-            update_device_state_varz, self._update_static_vlan_varz,
-            self._config.orchestration.sequester_config.segment)
+            self._faucetizer, self, self._config.orchestration.sequester_config.segment)
 
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
@@ -284,8 +273,13 @@ class Forchestrator:
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
-    def _update_static_vlan_varz(self, mac, vlan):
-        self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
+    def update_device_state_varz(self, mac, state):
+        if self._metrics:
+            self._metrics.update_var('device_state', state, labels=[mac])
+
+    def update_static_vlan_varz(self, mac, vlan):
+        if self._metrics:
+            self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
