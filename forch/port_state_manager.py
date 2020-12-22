@@ -115,6 +115,7 @@ class PortStateManager:
         self._dynamic_device_behaviors = {}
         self._device_state_manager = device_state_manager
         self._varz_updater = varz_updater
+        self._placement_to_mac = {}
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
@@ -139,10 +140,11 @@ class PortStateManager:
         else:
             self._handle_deauthenticated_device(mac, static)
 
-    def handle_device_placement(self, mac, device_placement, static=False, expired_vlan=None):
+    def handle_device_placement(self, mac, device_placement, static=False):
         """Handle a learning or expired VLAN for a device"""
         if device_placement.connected:
             # if device is learned
+            self._placement_to_mac[(device_placement.switch, device_placement.port)] = mac
             if self._process_device_placement:
                 self._process_device_placement(mac, device_placement, static=static)
 
@@ -158,28 +160,23 @@ class PortStateManager:
                     static = mac in self._static_device_behaviors
                     self.handle_device_behavior(mac, device_behavior, static=static)
 
-            return True
+            return True, None
 
-        # if device vlan is expired
-        static_behavior = self._static_device_behaviors.get(mac)
-        dynamic_behavior = self._dynamic_device_behaviors.get(mac)
-        device_behavior = static_behavior or dynamic_behavior
-        if device_behavior:
-            port_vlan = self._get_vlan_from_segment(device_behavior.segment)
-        else:
-            port_vlan = None
+        # if device port is down
+        eth_src = self._placement_to_mac.pop((device_placement.switch, device_placement.port), None)
 
-        if expired_vlan and port_vlan != expired_vlan:
-            return False
+        # Dont propagate removal of placement if not in cache
+        if not eth_src:
+            return False, None
 
         if self._process_device_placement:
-            self._process_device_placement(mac, device_placement, static=False)
-        if mac in self._state_machines:
-            self._state_machines.pop(mac)
+            self._process_device_placement(eth_src, device_placement, static=False)
+        if eth_src in self._state_machines:
+            self._state_machines.pop(eth_src)
 
-        self._update_device_state_varz(mac, DVAState.initial)
+        self._update_device_state_varz(eth_src, DVAState.initial)
 
-        return True
+        return True, eth_src
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""

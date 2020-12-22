@@ -121,7 +121,8 @@ class Forchestrator(VarzUpdater):
             self._config.event_client.config_hash_verification_timeout_sec or
             _CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT)
 
-        self._lock = threading.Lock()
+        self._states_lock = threading.Lock()
+        self._timer_lock = threading.Lock()
         self._logger = get_logger('forch')
 
     def initialize(self):
@@ -259,12 +260,12 @@ class Forchestrator(VarzUpdater):
         except Exception as error:
             msg = f'Authentication disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
-            with self._lock:
+            with self._states_lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
                 self._should_ignore_auth_result = True
             return
 
-        with self._lock:
+        with self._states_lock:
             self._config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
             self._should_ignore_auth_result = False
 
@@ -378,21 +379,24 @@ class Forchestrator(VarzUpdater):
         """If forch is initialized or not"""
         return self._initialized
 
-    def _process_device_placement(self, eth_src, device_placement, static=False, expired_vlan=None):
+    def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
-        propagate_placement = self._port_state_manager.handle_device_placement(
-            eth_src, device_placement, static, expired_vlan)
+        propagate_placement, mac = self._port_state_manager.handle_device_placement(
+            eth_src, device_placement, static)
+
+        src_mac = mac if mac else eth_src
 
         if self._authenticator and propagate_placement:
-            self._authenticator.process_device_placement(eth_src, device_placement)
+            self._authenticator.process_device_placement(src_mac, device_placement)
         else:
             self._logger.info(
-                'Ignored vlan expiration for device %s with expired vlan %s', eth_src, expired_vlan)
+                'Ignored deauthentication for port %s on switch %s',
+                device_placement.port, device_placement.switch)
 
     def handle_auth_result(self, mac, access, segment, role):
         """Method passed as callback to authenticator to forward auth results"""
         self._faucet_collector.update_radius_result(mac, access, segment, role)
-        with self._lock:
+        with self._states_lock:
             if self._should_ignore_auth_result:
                 self._logger.warning('Ingoring authentication result for device %s', mac)
             else:
@@ -460,22 +464,24 @@ class Forchestrator(VarzUpdater):
             self._restore_faucet_config(event.timestamp, event.config_hash_info.hashes)
 
     def _verify_config_hash(self):
-        if not self._last_faucet_config_writing_time:
-            return
+        with self._timer_lock:
+            if not self._last_faucet_config_writing_time:
+                return
 
-        elapsed_time = time.time() - self._last_faucet_config_writing_time
-        if elapsed_time < self._config_hash_verification_timeout_sec:
-            return
+            elapsed_time = time.time() - self._last_faucet_config_writing_time
+            if elapsed_time < self._config_hash_verification_timeout_sec:
+                return
 
-        config_info, _, _ = self._get_faucet_config()
-        if config_info['hashes'] != self._last_received_faucet_config_hash:
-            raise Exception(f'Config hash does not match after '
-                            f'{self._config_hash_verification_timeout_sec} seconds')
+            config_info, _, _ = self._get_faucet_config()
+            if config_info['hashes'] != self._last_received_faucet_config_hash:
+                raise Exception(f'Config hash does not match after '
+                                f'{self._config_hash_verification_timeout_sec} seconds')
 
-        self._last_faucet_config_writing_time = None
+            self._last_faucet_config_writing_time = None
 
     def _reset_faucet_config_writing_time(self):
-        self._last_faucet_config_writing_time = time.time()
+        with self._timer_lock:
+            self._last_faucet_config_writing_time = time.time()
 
     def _faucet_events_connect(self):
         self._logger.info('Attempting faucet event sock connection...')
@@ -642,7 +648,7 @@ class Forchestrator(VarzUpdater):
             has_error = True
             detail += '. Faucet disconnected'
 
-        with self._lock:
+        with self._states_lock:
             if self._config_errors:
                 has_error = True
                 detail += '. ' + '. '.join(self._config_errors.values())

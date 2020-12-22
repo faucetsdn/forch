@@ -37,10 +37,10 @@ class FaucetEventOrderTestCase(ForchestratorEventTestBase):
         connection.recv(16)
 
     def _setup_event_server(self):
-        assert self._temp_socket_file
+        assert self._faucet_socket_file
         event_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        print(f'Binding socket on {self._temp_socket_file}')
-        event_socket.bind(self._temp_socket_file)
+        print(f'Binding socket on {self._faucet_socket_file}')
+        event_socket.bind(self._faucet_socket_file)
         handle_connection = functools.partial(self._handle_connection, event_socket)
         self._event_server_thread = threading.Thread(target=handle_connection, daemon=True)
         self._event_server_thread.start()

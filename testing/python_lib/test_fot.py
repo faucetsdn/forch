@@ -174,10 +174,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             ('00:0Z:00:00:00:03', 'failed'),
             ('00:0A:00:00:00:04', 'passed')
         ]
-        expired_device_vlans = [
-            ('00:0X:00:00:00:01', 100),
-            ('00:0B:00:00:00:05', 600),
-            ('00:0B:00:00:00:05', 500),
+        expired_device_placements = [
+            ('00:0X:00:00:00:01', ('t2sw1', 1)),
+            ('00:0B:00:00:00:05', ('t2sw5', 5)),
+            ('00:0B:00:00:00:05', ('t2sw5', 5)),
         ]
         unauthenticated_devices = ['00:0X:00:00:00:01', '00:0A:00:00:00:04']
         reauthenticated_device = {'00:0A:00:00:00:04': {'segment': 'SEG_D'}}
@@ -201,7 +201,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         self._receive_testing_results(testing_results, expected_device_behaviors)
 
         # devices are expired
-        self._expire_devices(expired_device_vlans, expected_device_placements)
+        self._expire_devices(expired_device_placements, expected_device_placements)
 
         # devices are unauthenticated
         self._unauthenticate_devices(unauthenticated_devices, expected_device_behaviors)
@@ -284,12 +284,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
-    def _expire_devices(self, expired_device_vlans, expected_device_placements):
-        for expired_device_vlan in expired_device_vlans:
-            mac = expired_device_vlan[0]
-            expired_vlan = expired_device_vlan[1]
+    def _expire_devices(self, expired_device_placements, expected_device_placements):
+        for expired_device_placement in expired_device_placements:
+            mac = None
+            switch = expired_device_placement[1][0]
+            port = expired_device_placement[1][1]
             self._port_state_manager.handle_device_placement(
-                mac, DevicePlacement(switch='switch', port=1), False, expired_vlan)
+                mac, DevicePlacement(switch=switch, port=port), False)
 
         expected_device_placements.extend([
             # mac, device_placement.connected, static
@@ -353,7 +354,7 @@ class FotConfigTest(FotSequesterTest):
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.2.1'))
 
 
-class FotContainerTest(FotSequesterTest):
+class FotContainerTest(IntegrationTestBase):
     """Test suite for dynamic config changes"""
 
     def __init__(self, *args, **kwargs):
@@ -361,29 +362,40 @@ class FotContainerTest(FotSequesterTest):
         self.stack_options['static_switch'] = True
         self.stack_options['fot'] = True
 
-    def _internal_dhcp(self, on_vlan):
+    def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    self._run_cmd('timeout 10s dhclient', docker_container=container)
+                    self._run_cmd('timeout 20s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
             return run_dhclient
-        tcpdump_text = self.tcpdump_helper('faux-eth0', 'port 67 or port 68', packets=10,
-                                           funcs=[dhclient_method(container='forch-faux-1')],
-                                           timeout=10, docker_host='forch-faux-1')
-        self.assertTrue(re.search("DHCP.*Reply", tcpdump_text))
-        vlan_text = self.tcpdump_helper('data0', 'vlan 272 and port 67', packets=10,
-                                        funcs=[dhclient_method(container='forch-faux-1')],
-                                        timeout=10, docker_host='forch-controller-1')
-        self.assertEqual(on_vlan, bool(re.search("DHCP.*Reply", vlan_text)))
+
+        device_tcpdump_text = self.tcpdump_helper(
+            'faux-eth0', 'port 67 or port 68', packets=10,
+            funcs=[dhclient_method(container=device_container)],
+            timeout=10, docker_host=device_container)
+        vlan_tcpdump_text = self.tcpdump_helper(
+            'data0', 'vlan 272 and port 67', packets=10,
+            funcs=[dhclient_method(container=device_container)],
+            timeout=10, docker_host='forch-controller-1')
+        return device_tcpdump_text, vlan_tcpdump_text
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
-        self._internal_dhcp(False)
-        self._sequester_device()
-        self._internal_dhcp(True)
+        # trigger learning event for faux-1 to make it authenticated and sequestered
+        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False)
+
+        # test DHCP reflection with sequestered device
+        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
+        self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
+        self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
+
+        # test DHCP with unauthenticated device
+        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-3')
+        self.assertFalse(re.search("DHCP.*Reply", device_tcpdump_text))
+        self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
 
 if __name__ == '__main__':

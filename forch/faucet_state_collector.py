@@ -130,6 +130,7 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
+        self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
 
@@ -1024,6 +1025,13 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
+            if not state:
+                port_attr = self._get_port_attributes(name, port)
+                if port_attr and port_attr['type'] == 'access':
+                    if self._placement_callback:
+                        device_placement = DevicePlacement(switch=name, port=port, connected=False)
+                        self._placement_callback(None, device_placement)
+
             self._logger.info('port_state update %s %s %s', name, port, state)
 
     def process_port_change(self, event):
@@ -1116,8 +1124,8 @@ class FaucetStateCollector:
 
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
-                    devices_placement = DevicePlacement(switch=name, port=port, connected=True)
-                    self._placement_callback(mac, devices_placement)
+                    device_placement = DevicePlacement(switch=name, port=port, connected=True)
+                    self._placement_callback(mac, device_placement)
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port)
@@ -1130,10 +1138,6 @@ class FaucetStateCollector:
 
             port_attr = self._get_port_attributes(name, port)
             if port_attr and port_attr['type'] == 'access':
-                if self._placement_callback:
-                    devices_placement = DevicePlacement(switch=name, port=port, connected=False)
-                    self._placement_callback(mac, devices_placement, expired_vlan=expired_vlan)
-
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port, expire=True)
 
@@ -1383,6 +1387,11 @@ class FaucetStateCollector:
 
             if 'lacp' in port_info:
                 ret_attr['type'] = 'egress'
+                return ret_attr
+
+            sequester_port_desc = self._config.orchestration.sequester_config.port_description
+            if sequester_port_desc and sequester_port_desc == port_info.get('description'):
+                ret_attr['type'] = 'sequester'
                 return ret_attr
 
             ret_attr['type'] = 'access'
