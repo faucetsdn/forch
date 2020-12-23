@@ -108,7 +108,7 @@ class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, device_state_manager, varz_updater, testing_segment=None):
+    def __init__(self, device_state_manager=None, varz_updater=None, testing_segment=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
@@ -145,8 +145,7 @@ class PortStateManager:
         if device_placement.connected:
             # if device is learned
             self._placement_to_mac[(device_placement.switch, device_placement.port)] = mac
-            if self._process_device_placement:
-                self._process_device_placement(mac, device_placement, static=static)
+            self._process_device_placement(mac, device_placement, static=static)
 
             if mac not in self._state_machines:
                 self._state_machines[mac] = PortStateMachine(
@@ -169,8 +168,7 @@ class PortStateManager:
         if not eth_src:
             return False, None
 
-        if self._process_device_placement:
-            self._process_device_placement(eth_src, device_placement, static=False)
+        self._process_device_placement(eth_src, device_placement, static=False)
         if eth_src in self._state_machines:
             self._state_machines.pop(eth_src)
 
@@ -264,7 +262,7 @@ class PortStateManager:
         with self._lock:
             macs = list(self._static_device_behaviors.keys())
             for mac in macs:
-                self._update_device_state_varz(mac, vlan=INVALID_VLAN)
+                self._update_static_vlan_varz(mac, INVALID_VLAN)
                 self._handle_deauthenticated_device(mac, static=True)
 
     def _process_device_placement(self, mac, device_placement, static=False):

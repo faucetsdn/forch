@@ -8,14 +8,11 @@ class DeviceStateManager(abc.ABC):
     @abc.abstractmethod
     def process_device_placement(self, eth_src, placement, static=False):
         """process device placement"""
-        pass
 
     @abc.abstractmethod
     def process_device_behavior(self, eth_src, behavior, static=False):
         """process device behavior"""
-        pass
 
     @abc.abstractmethod
-    def get_vlan_from_segment(self, segment):
+    def get_vlan_from_segment(self, vlan):
         """get vlan from segment"""
-        pass
