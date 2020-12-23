@@ -135,8 +135,8 @@ class PortStateManager:
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)
             if static:
-                self._update_device_state_varz(
-                    mac, self._get_vlan_from_segment(device_behavior.segment))
+                self._update_static_vlan_varz(
+                    mac, vlan=self._get_vlan_from_segment(device_behavior.segment))
         else:
             self._handle_deauthenticated_device(mac, static)
 
