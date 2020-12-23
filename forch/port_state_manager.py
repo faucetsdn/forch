@@ -273,9 +273,9 @@ class PortStateManager:
         if self._device_state_manager:
             self._device_state_manager.process_device_behavior(mac, device_behavior, static)
 
-    def _get_vlan_from_segment(self, vlan):
+    def _get_vlan_from_segment(self, segment):
         if self._device_state_manager:
-            return self._device_state_manager.get_vlan_from_segment(vlan)
+            return self._device_state_manager.get_vlan_from_segment(segment)
         return None
 
     def _update_device_state_varz(self, mac, device_state):
