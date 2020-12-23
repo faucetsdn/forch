@@ -133,11 +133,11 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         print(f'Received device behavior for device {mac}: {device_behavior}, {static}')
         self._received_device_behaviors.append((mac, device_behavior.segment, static))
 
-    def _get_vlan_from_segment(self, vlan):
+    def _get_vlan_from_segment(self, segment):
         segments_to_vlans = {
             'SEG_A': 100, 'SEG_B': 200, 'SEG_C': 300, 'SEG_D': 400, 'SEG_E': 500, 'SEG_X': 600,
         }
-        return segments_to_vlans.get(vlan)
+        return segments_to_vlans.get(segment)
 
     def _encapsulate_testing_result(self, mac, port_behavior):
         devices_state_map = {

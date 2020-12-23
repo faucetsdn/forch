@@ -377,7 +377,7 @@ class PortsStateManagerTestBase(UnitTestBase):
     def _process_device_behavior(self):
         pass
 
-    def _get_vlan_from_segment(self, vlan):
+    def _get_vlan_from_segment(self, segment):
         return
 
     def _verify_ports_states(self, expected_states):
@@ -421,7 +421,7 @@ class ForchestratorTestBase(UnitTestBase):
 
 
 class CustomizableDeviceStateManager(DeviceStateManager):
-    """Holder of methods for device state management"""
+    """Holder of customized methods for device state management"""
 
     def __init__(self, device_placement_callback, device_behavior_callback, get_vlan_from_segment):
         self._device_placement_callback = device_placement_callback
@@ -436,6 +436,6 @@ class CustomizableDeviceStateManager(DeviceStateManager):
         if self._device_behavior_callback:
             self._device_behavior_callback(eth_src, behavior, static)
 
-    def get_vlan_from_segment(self, vlan):
+    def get_vlan_from_segment(self, segment):
         if self._get_vlan_from_segment:
-            self._get_vlan_from_segment(vlan)
+            self._get_vlan_from_segment(segment)
