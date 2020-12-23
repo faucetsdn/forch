@@ -15,6 +15,8 @@ from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 from forch.utils import dict_proto, get_logger
 
+_KEEPALIVED_PID_FILE_DEFAULT = '/var/run/keepalived.pid'
+
 _PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
 
 
@@ -34,7 +36,8 @@ class LocalStateCollector:
         self._lock = threading.Lock()
 
         self._target_procs = config.processes
-        self._keepalived_pid_file = config.keepalived_pid_file
+        self._check_vrrp = config.check_vrrp
+        self._keepalived_pid_file = os.getenv('KEEPALIVED_PID_FILE', _KEEPALIVED_PID_FILE_DEFAULT)
         self._connections = config.connections
         self._process_interval = config.scan_interval_sec or 60
 
@@ -47,7 +50,7 @@ class LocalStateCollector:
 
     def initialize(self):
         """Initialize LocalStateCollector"""
-        if not self._keepalived_pid_file:
+        if not self._check_vrrp:
             self._vrrp_state['is_master'] = True
             self._active_state_handler(State.active)
 
@@ -261,7 +264,7 @@ class LocalStateCollector:
     def _check_vrrp_info(self):
         """Get vrrp info"""
         try:
-            if not self._keepalived_pid_file:
+            if not self._check_vrrp:
                 return
             with open(self._keepalived_pid_file) as pid_file:
                 pid = int(pid_file.readline())
