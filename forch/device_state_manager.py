@@ -14,5 +14,5 @@ class DeviceStateManager(abc.ABC):
         """process device behavior"""
 
     @abc.abstractmethod
-    def get_vlan_from_segment(self, vlan):
+    def get_vlan_from_segment(self, segment):
         """get vlan from segment"""
