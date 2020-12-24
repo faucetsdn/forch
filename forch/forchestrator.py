@@ -18,13 +18,12 @@ from forch.cpn_state_collector import CPNStateCollector
 from forch.device_report_server import DeviceReportServer
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
-from forch.forch_metrics import ForchMetrics
+from forch.forch_metrics import ForchMetrics, VarzUpdater
 from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
 from forch.port_state_manager import PortStateManager
 from forch.varz_state_collector import VarzStateCollector
-from forch.varz_updater import VarzUpdater
 from forch.utils import (
     get_logger, proto_dict, yaml_proto, FaucetEventOrderError, MetricsFetchingError)
 

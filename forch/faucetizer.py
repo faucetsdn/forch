@@ -1,5 +1,6 @@
 """Collect Faucet information and generate ACLs"""
 
+import abc
 import argparse
 import copy
 import os
@@ -9,7 +10,6 @@ import tempfile
 import threading
 import yaml
 
-from forch.device_state_manager import DeviceStateManager
 from forch.utils import get_logger, yaml_proto
 
 from forch.proto.devices_state_pb2 import DevicesState, SegmentsToVlans
@@ -23,6 +23,22 @@ DEVICE_BEHAVIOR = 'device_behavior'
 DEVICE_TYPE = 'device_type'
 STATIC_DEVICE = 'static'
 DYNAMIC_DEVICE = 'dynamic'
+
+
+class DeviceStateManager(abc.ABC):
+    """Interface collecting the methods that manage device state"""
+
+    @abc.abstractmethod
+    def process_device_placement(self, eth_src, placement, static=False):
+        """process device placement"""
+
+    @abc.abstractmethod
+    def process_device_behavior(self, eth_src, behavior, static=False):
+        """process device behavior"""
+
+    @abc.abstractmethod
+    def get_vlan_from_segment(self, segment):
+        """get vlan from segment"""
 
 
 class Faucetizer(DeviceStateManager):
