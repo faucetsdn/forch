@@ -9,8 +9,7 @@ import yaml
 import grpc
 
 from forch.device_report_server import DeviceReportServer
-from forch.device_state_manager import DeviceStateManager
-from forch.faucetizer import Faucetizer
+from forch.faucetizer import DeviceStateManager, Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forchestrator import Forchestrator
 from forch.port_state_manager import PortStateManager
