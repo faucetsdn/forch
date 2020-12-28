@@ -1,5 +1,6 @@
 """Collect Faucet information and generate ACLs"""
 
+import abc
 import argparse
 import copy
 import os
@@ -24,7 +25,23 @@ STATIC_DEVICE = 'static'
 DYNAMIC_DEVICE = 'dynamic'
 
 
-class Faucetizer:
+class DeviceStateManager(abc.ABC):
+    """Interface collecting the methods that manage device state"""
+
+    @abc.abstractmethod
+    def process_device_placement(self, eth_src, placement, static=False):
+        """process device placement"""
+
+    @abc.abstractmethod
+    def process_device_behavior(self, eth_src, behavior, static=False):
+        """process device behavior"""
+
+    @abc.abstractmethod
+    def get_vlan_from_segment(self, segment):
+        """get vlan from segment"""
+
+
+class Faucetizer(DeviceStateManager):
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, behavioral_config_file,
