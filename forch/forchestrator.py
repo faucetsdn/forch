@@ -66,6 +66,7 @@ _TARGET_GAUGE_METRICS = (
     'flow_packet_count_port_acl'
 )
 
+ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 
@@ -110,6 +111,7 @@ class Forchestrator(VarzUpdater):
         self._should_ignore_auth_result = False
 
         self._config_errors = {}
+        self._system_errors = {}
         self._faucet_config_summary = None
         self._metrics = None
         self._varz_proxy = None
@@ -648,9 +650,10 @@ class Forchestrator(VarzUpdater):
             detail += '. Faucet disconnected'
 
         with self._states_lock:
-            if self._config_errors:
-                has_error = True
-                detail += '. ' + '. '.join(self._config_errors.values())
+            for errors in (self._config_errors, self._system_errors):
+                if errors:
+                    has_error = True
+                    detail += '. ' + '. '.join(errors.values())
 
         if not detail:
             detail = 'n/a'
@@ -803,10 +806,11 @@ class Forchestrator(VarzUpdater):
         """Clean up relevant internal data in all collectors"""
         self._faucet_collector.cleanup()
 
-    def handle_active_state(self, active_state):
+    def handle_active_state(self, active_state, error=None):
         """Handler for local state collector to handle controller active state"""
         with self._active_state_lock:
             self._active_state = active_state
+            self._system_errors[ACTIVE_STATE] = error
         self._faucet_collector.set_active(active_state)
 
     def get_switch_state(self, path, params):
