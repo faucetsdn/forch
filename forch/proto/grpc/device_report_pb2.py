@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n$forch/proto/grpc/device_report.proto\x1a\x1f\x66orch/proto/devices_state.proto\x1a\"forch/proto/shared_constants.proto2=\n\x0c\x44\x65viceReport\x12-\n\x12ReportDevicesState\x12\r.DevicesState\x1a\x06.Empty\"\x00\x62\x06proto3'
+  serialized_pb=b'\n$forch/proto/grpc/device_report.proto\x1a\x1f\x66orch/proto/devices_state.proto\x1a\"forch/proto/shared_constants.proto2l\n\x0c\x44\x65viceReport\x12-\n\x12ReportDevicesState\x12\r.DevicesState\x1a\x06.Empty\"\x00\x12-\n\x0cGetPortState\x12\x07.Device\x1a\x10.DevicePortEvent\"\x00\x30\x01\x62\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_devices__state__pb2.DESCRIPTOR,forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -39,7 +39,7 @@ _DEVICEREPORT = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=109,
-  serialized_end=170,
+  serialized_end=217,
   methods=[
   _descriptor.MethodDescriptor(
     name='ReportDevicesState',
@@ -48,6 +48,16 @@ _DEVICEREPORT = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=forch_dot_proto_dot_devices__state__pb2._DEVICESSTATE,
     output_type=forch_dot_proto_dot_shared__constants__pb2._EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetPortState',
+    full_name='DeviceReport.GetPortState',
+    index=1,
+    containing_service=None,
+    input_type=forch_dot_proto_dot_devices__state__pb2._DEVICE,
+    output_type=forch_dot_proto_dot_devices__state__pb2._DEVICEPORTEVENT,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

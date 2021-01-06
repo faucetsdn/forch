@@ -1,13 +1,15 @@
 """gRPC server to receive devices state"""
 
 from concurrent import futures
-
+from queue import Queue
+from typing import List, Dict
 import grpc
 
 from forch.utils import get_logger
 
 import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
-from forch.proto.shared_constants_pb2 import Empty
+from forch.proto.shared_constants_pb2 import Empty, PortBehavior
+from forch.proto.devices_state_pb2 import DevicePortEvent
 
 ADDRESS_DEFAULT = '0.0.0.0'
 PORT_DEFAULT = 50051
@@ -21,6 +23,22 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         super().__init__()
         self._on_receiving_result = on_receiving_result
         self._logger = get_logger('drserver')
+        self._port_device_mapping = {}
+        self._port_events_listeners: Dict[str, List[Queue]] = {}
+
+    def process_port_change(self, timestamp, name, port, state):
+        """Process faucet port state events"""
+        mac = self._port_device_mapping.get((name, port))
+        if not mac or mac not in self._port_events_listeners:
+            return
+        event = PortBehavior.PortEvent.up if state else PortBehavior.PortEvent.down
+        port_event = DevicePortEvent(event=event, timestamp=timestamp)
+        for queue in self._port_events_listeners[mac]:
+            queue.put(port_event)
+
+    def process_port_learn(self, name, port, mac):
+        """Process faucet port learn events"""
+        self._port_device_mapping[(name, port)] = mac
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):
@@ -31,11 +49,23 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
 
         self._logger.info(
             'Received DevicesState of %d devices', len(request.device_mac_behaviors))
-
+        # Closes DevicePortEvent streams in GetPortState
+        for mac in request.device_mac_behaviors.keys():
+            for queue in self._port_events_listeners.get(mac, []):
+                queue.put(False)
         self._on_receiving_result(request)
 
         return Empty()
 
+    # pylint: disable=invalid-name
+    def GetPortState(self, request, context):
+        listener_q = Queue()
+        self._port_events_listeners.setdefault(request.mac, []).append(listener_q)
+        while True:
+            item = listener_q.get()
+            if item is False:
+                break
+            yield item
 
 class DeviceReportServer:
     """Devices state server"""
@@ -44,11 +74,19 @@ class DeviceReportServer:
         self._server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS_DEFAULT))
 
-        servicer = DeviceReportServicer(on_receiving_result)
-        device_report_pb2_grpc.add_DeviceReportServicer_to_server(servicer, self._server)
+        self._servicer = DeviceReportServicer(on_receiving_result, )
+        device_report_pb2_grpc.add_DeviceReportServicer_to_server(self._servicer, self._server)
 
         server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
         self._server.add_insecure_port(server_address_port)
+
+    def process_port_change(self, *args):
+        """Process faucet port state events"""
+        self._servicer.process_port_change(*args)
+
+    def process_port_learn(self, *args):
+        """Process faucet port learn events"""
+        self._servicer.process_port_learn(*args)
 
     def start(self):
         """Start the server"""

@@ -3,6 +3,7 @@ wheel
 coverage
 grpcio
 grpcio-tools
+grpcio-testing
 netaddr
 networkx
 pbr>=1.9

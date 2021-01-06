@@ -5,15 +5,21 @@ import threading
 import time
 import unittest
 import yaml
+import grpc
 
 from forch.utils import dict_proto, proto_dict
 
-from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement, DevicesState
-from forch.proto.shared_constants_pb2 import Empty
+from forch.proto.devices_state_pb2 import (
+    DeviceBehavior, DevicePlacement,
+    DevicesState, Device, DevicePortEvent
+)
+from forch.proto.shared_constants_pb2 import Empty, PortBehavior
+from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
 
 from integration_base import IntegrationTestBase
 from unit_base import (
-    DeviceReportServerTestBase, FaucetizerTestBase, PortsStateManagerTestBase
+    DeviceReportServerTestBase, DeviceReportServicerTestBase, FaucetizerTestBase,
+    PortsStateManagerTestBase
 )
 
 
@@ -73,6 +79,14 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
             expected_config, switch='t2sw1', port=1, native_vlan=200, role='red')
         self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
 
+def encapsulate_mac_port_behavior(mac, port_behavior):
+    """Converts to proto object for mac port behavior"""
+    devices_state_map = {
+        'device_mac_behaviors': {
+            mac: {'port_behavior': port_behavior}
+        }
+    }
+    return dict_proto(devices_state_map, DevicesState)
 
 class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
     """Device report server test case"""
@@ -88,16 +102,8 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
             for mac, device_behavior in devices_state_map['device_mac_behaviors'].items():
                 self._received_mac_port_behaviors.append((mac, device_behavior['port_behavior']))
 
-    def _encapsulate_mac_port_behavior(self, mac, port_behavior):
-        devices_state_map = {
-            'device_mac_behaviors': {
-                mac: {'port_behavior': port_behavior}
-            }
-        }
-        return dict_proto(devices_state_map, DevicesState)
-
     def test_receiving_devices_states(self):
-        """Test behavior of the behavior when client sends devices states"""
+        """Test behavior of the server when client sends devices states"""
         expected_mac_port_behaviors = [
             ('00:0X:00:00:00:01', 'unknown'),
             ('00:0Y:00:00:00:02', 'passed'),
@@ -110,7 +116,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
         for mac_port_behavior in expected_mac_port_behaviors:
             print(f'Sending devices state: {mac_port_behavior}')
             future_response = self._client.ReportDevicesState.future(
-                self._encapsulate_mac_port_behavior(*mac_port_behavior))
+                encapsulate_mac_port_behavior(*mac_port_behavior))
             future_responses.append(future_response)
 
         for future_response in future_responses:
@@ -121,6 +127,69 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
 
         self.assertEqual(sorted_received_behaviors, sorted_expected_behaviors)
 
+
+class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
+    """Device report servicer test case (With mock grpc services)"""
+
+    def test_requesting_empty_port_events(self):
+        """Test behavior of the servicer with no port events."""
+
+        device = Device(mac="00:0X:00:00:00:01")
+        method = self._test_server.invoke_unary_stream(
+            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['GetPortState'],
+            invocation_metadata={},
+            request=device, timeout=1
+        )
+
+        mac_port_behavior = encapsulate_mac_port_behavior('00:0X:00:00:00:01', 'passed')
+        print(f'Sending devices state: {mac_port_behavior}')
+        self._test_server.invoke_unary_unary(
+            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['ReportDevicesState'],
+            invocation_metadata={},
+            request=mac_port_behavior, timeout=1
+        )
+        _, code, _ = method.termination()
+        self.assertEqual(code, grpc.StatusCode.OK)
+
+    def test_requesting_port_events(self):
+        """Test behavior of the servicer with port events."""
+
+        device = Device(mac="00:0X:00:00:00:01")
+        method = self._test_server.invoke_unary_stream(
+            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['GetPortState'],
+            invocation_metadata={},
+            request=device, timeout=1
+        )
+        random_port_changes = [
+            ('mock_timestamp1', 'name', '1', False),
+            ('mock_timestamp2', 'name', '1', True),
+            ('mock_timestamp3', 'name', '2', True),
+            ('mock_timestamp4', 'name', '5', False),
+            ('mock_timestamp1', 'name', '1', True),
+        ]
+        for port_change in random_port_changes:
+            self._servicer.process_port_change(*port_change)
+        mac_port_behavior = encapsulate_mac_port_behavior('00:0X:00:00:00:01', 'passed')
+        print(f'Sending devices state: {mac_port_behavior}')
+        self._test_server.invoke_unary_unary(
+            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['ReportDevicesState'],
+            invocation_metadata={},
+            request=mac_port_behavior, timeout=1
+        )
+
+        expected_port_changes = filter(lambda changes: changes[2] == '1', random_port_changes)
+        for expected_port_change in expected_port_changes:
+            response = method.take_response()
+            self.assertEqual(type(response), DevicePortEvent)
+            self.assertEqual(response.timestamp, expected_port_change[0])
+            if expected_port_change[-1]:
+                event = PortBehavior.PortEvent.up
+            else:
+                event = PortBehavior.PortEvent.down
+            self.assertEqual(response.event, event)
+
+        _, code, _ = method.termination()
+        self.assertEqual(code, grpc.StatusCode.OK)
 
 class FotPortStatesTestCase(PortsStateManagerTestBase):
     """Test access port states"""

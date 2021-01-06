@@ -369,11 +369,19 @@
             <ul>
               
                 <li>
+                  <a href="#Device"><span class="badge">M</span>Device</a>
+                </li>
+              
+                <li>
                   <a href="#DeviceBehavior"><span class="badge">M</span>DeviceBehavior</a>
                 </li>
               
                 <li>
                   <a href="#DevicePlacement"><span class="badge">M</span>DevicePlacement</a>
+                </li>
+              
+                <li>
+                  <a href="#DevicePortEvent"><span class="badge">M</span>DevicePortEvent</a>
                 </li>
               
                 <li>
@@ -791,6 +799,10 @@
               
                 <li>
                   <a href="#PortBehavior.Behavior"><span class="badge">E</span>PortBehavior.Behavior</a>
+                </li>
+              
+                <li>
+                  <a href="#PortBehavior.PortEvent"><span class="badge">E</span>PortBehavior.PortEvent</a>
                 </li>
               
                 <li>
@@ -2127,6 +2139,30 @@
       <p></p>
 
       
+        <h3 id="Device">Device</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>mac</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="DeviceBehavior">DeviceBehavior</h3>
         <p></p>
 
@@ -2192,6 +2228,37 @@
                 <tr>
                   <td>connected</td>
                   <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="DevicePortEvent">DevicePortEvent</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>event</td>
+                  <td><a href="#PortBehavior.PortEvent">PortBehavior.PortEvent</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>timestamp</td>
+                  <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -5471,6 +5538,29 @@ or to host_path API to list path </p></td>
                 <td>deauthenticated</td>
                 <td>6</td>
                 <td><p>deauthenticated</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="PortBehavior.PortEvent">PortBehavior.PortEvent</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>down</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>up</td>
+                <td>1</td>
+                <td><p></p></td>
               </tr>
             
           </tbody>

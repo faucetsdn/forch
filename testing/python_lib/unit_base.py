@@ -4,11 +4,12 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest.mock import MagicMock
 import yaml
-
 import grpc
+from grpc_testing import server_from_dictionary, strict_real_time
 
-from forch.device_report_server import DeviceReportServer
+from forch.device_report_server import DeviceReportServer, DeviceReportServicer
 from forch.faucetizer import Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forchestrator import Forchestrator
@@ -18,6 +19,8 @@ from forch.utils import dict_proto
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
+from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
+
 
 _FORCH_LOG_DEFAULT = '/tmp/forch.log'
 
@@ -313,13 +316,35 @@ class DeviceReportServerTestBase(unittest.TestCase):
             self._process_devices_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
 
-    def _process_devices_state(self):
+    def _process_devices_state(self, device_state):
         pass
 
     def tearDown(self):
         """cleanup after each test method finishes"""
         self._server.stop()
 
+
+class DeviceReportServicerTestBase(unittest.TestCase):
+    """Base class for DeviceReportServicer unit test"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+
+    def setUp(self):
+        self._on_receiving_result = MagicMock()
+        self._servicer = DeviceReportServicer(self._on_receiving_result)
+        servicers = {
+            DESCRIPTOR.services_by_name['DeviceReport']: self._servicer
+        }
+        self._test_server = server_from_dictionary(
+            servicers, strict_real_time())
+        port_learns = [
+            ('name', '1', '00:0X:00:00:00:01'),
+            ('name', '2', '00:0Y:00:00:00:02'),
+            ('name', '3', '00:0Z:00:00:00:03')
+        ]
+        for port_learn in port_learns:
+            self._servicer.process_port_learn(*port_learn)
 
 class FaucetStateCollectorTestBase(UnitTestBase):
     """Base class for Faucetizer unit tests"""
