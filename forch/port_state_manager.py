@@ -8,6 +8,8 @@ from forch.proto.shared_constants_pb2 import PortBehavior
 from forch.proto.devices_state_pb2 import DeviceBehavior
 from forch.proto.shared_constants_pb2 import DVAState
 
+INVALID_VLAN = 0
+
 STATE_HANDLERS = {}
 
 
@@ -106,16 +108,14 @@ class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, process_device_placement, process_device_behavior, get_vlan_from_segment,
-                 update_device_state_varz=None, testing_segment=None):
+    def __init__(self, device_state_manager=None, varz_updater=None, testing_segment=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
-        self._process_device_placement = process_device_placement
-        self._process_device_behavior = process_device_behavior
-        self._get_vlan_from_segment = get_vlan_from_segment
-        self._device_state_varz_callback = update_device_state_varz
+        self._device_state_manager = device_state_manager
+        self._varz_updater = varz_updater
+        self._placement_to_mac = {}
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
@@ -134,15 +134,18 @@ class PortStateManager:
         """Handle authentication result"""
         if device_behavior.segment:
             self._handle_authenticated_device(mac, device_behavior, static)
+            if static:
+                self._update_static_vlan_varz(
+                    mac, vlan=self._get_vlan_from_segment(device_behavior.segment))
         else:
             self._handle_deauthenticated_device(mac, static)
 
-    def handle_device_placement(self, mac, device_placement, static=False, expired_vlan=None):
+    def handle_device_placement(self, mac, device_placement, static=False):
         """Handle a learning or expired VLAN for a device"""
         if device_placement.connected:
             # if device is learned
-            if self._process_device_placement:
-                self._process_device_placement(mac, device_placement, static=static)
+            self._placement_to_mac[(device_placement.switch, device_placement.port)] = mac
+            self._process_device_placement(mac, device_placement, static=static)
 
             if mac not in self._state_machines:
                 self._state_machines[mac] = PortStateMachine(
@@ -156,28 +159,22 @@ class PortStateManager:
                     static = mac in self._static_device_behaviors
                     self.handle_device_behavior(mac, device_behavior, static=static)
 
-            return True
+            return True, None
 
-        # if device vlan is expired
-        static_behavior = self._static_device_behaviors.get(mac)
-        dynamic_behavior = self._dynamic_device_behaviors.get(mac)
-        device_behavior = static_behavior or dynamic_behavior
-        if device_behavior and self._get_vlan_from_segment:
-            port_vlan = self._get_vlan_from_segment(device_behavior.segment)
-        else:
-            port_vlan = None
+        # if device port is down
+        eth_src = self._placement_to_mac.pop((device_placement.switch, device_placement.port), None)
 
-        if expired_vlan and port_vlan != expired_vlan:
-            return False
+        # Dont propagate removal of placement if not in cache
+        if not eth_src:
+            return False, None
 
-        if self._process_device_placement:
-            self._process_device_placement(mac, device_placement, static=False)
-        if mac in self._state_machines:
-            self._state_machines.pop(mac)
+        self._process_device_placement(eth_src, device_placement, static=False)
+        if eth_src in self._state_machines:
+            self._state_machines.pop(eth_src)
 
-        self._update_device_state_varz(mac, DVAState.initial)
+        self._update_device_state_varz(eth_src, DVAState.initial)
 
-        return True
+        return True, eth_src
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""
@@ -260,13 +257,31 @@ class PortStateManager:
     def _handle_infracted_state(self, mac):
         self._update_device_state_varz(mac, DVAState.infracted)
 
-    def _update_device_state_varz(self, mac, device_state):
-        if self._device_state_varz_callback:
-            self._device_state_varz_callback(mac, device_state)
-
     def clear_static_device_behaviors(self):
         """Remove all static device behaviors"""
         with self._lock:
             macs = list(self._static_device_behaviors.keys())
             for mac in macs:
+                self._update_static_vlan_varz(mac, INVALID_VLAN)
                 self._handle_deauthenticated_device(mac, static=True)
+
+    def _process_device_placement(self, mac, device_placement, static=False):
+        if self._device_state_manager:
+            self._device_state_manager.process_device_placement(mac, device_placement, static)
+
+    def _process_device_behavior(self, mac, device_behavior, static=False):
+        if self._device_state_manager:
+            self._device_state_manager.process_device_behavior(mac, device_behavior, static)
+
+    def _get_vlan_from_segment(self, segment):
+        if self._device_state_manager:
+            return self._device_state_manager.get_vlan_from_segment(segment)
+        return None
+
+    def _update_device_state_varz(self, mac, device_state):
+        if self._varz_updater:
+            self._varz_updater.update_device_state_varz(mac, device_state)
+
+    def _update_static_vlan_varz(self, mac, vlan):
+        if self._varz_updater:
+            self._varz_updater.update_static_vlan_varz(mac, vlan)

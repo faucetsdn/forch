@@ -78,15 +78,10 @@ class ForchestratorAuthTestCase(ForchestratorTestBase):
             device_behavior = DeviceBehavior(segment=segment, role=role)
             self._forchestrator._port_state_manager.handle_device_behavior(src_mac, device_behavior)
 
-        def get_vlan_from_segment(segment):
-            if segment == 'ACCEPT':
-                return 100
-            return 999
-
         self._forchestrator._authenticator = Authenticator(auth_config, handle_auth_result,
                                                            radius_query_object=Mock())
         self._forchestrator._port_state_manager = PortStateManager(
-            Mock(), Mock(), get_vlan_from_segment, testing_segment='SEQUESTER')
+            Mock(), Mock(), testing_segment='SEQUESTER')
 
     def _get_auth_sm_state(self, mac):
         mac_sm = self._forchestrator._authenticator.sessions.get(mac)

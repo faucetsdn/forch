@@ -10,7 +10,7 @@ import grpc
 from grpc_testing import server_from_dictionary, strict_real_time
 
 from forch.device_report_server import DeviceReportServer, DeviceReportServicer
-from forch.faucetizer import Faucetizer
+from forch.faucetizer import DeviceStateManager, Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forchestrator import Forchestrator
 from forch.port_state_manager import PortStateManager
@@ -386,9 +386,12 @@ class PortsStateManagerTestBase(UnitTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
-        self._port_state_manager = PortStateManager(
+        self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
-            self._get_vlan_from_segment, testing_segment=self.SEQUESTER_SEGMENT)
+            self._get_vlan_from_segment)
+        self._port_state_manager = PortStateManager(
+            device_state_manager=self._device_state_manager,
+            testing_segment=self.SEQUESTER_SEGMENT)
         self._received_device_placements = []
         self._received_device_behaviors = []
 
@@ -398,7 +401,7 @@ class PortsStateManagerTestBase(UnitTestBase):
     def _process_device_behavior(self):
         pass
 
-    def _get_vlan_from_segment(self, vlan):
+    def _get_vlan_from_segment(self, segment):
         return
 
     def _verify_ports_states(self, expected_states):
@@ -439,3 +442,24 @@ class ForchestratorTestBase(UnitTestBase):
     def _initialize_forchestrator(self):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
         self._forchestrator = Forchestrator(forch_config)
+
+
+class CustomizableDeviceStateManager(DeviceStateManager):
+    """Holder of customized methods for device state management"""
+
+    def __init__(self, device_placement_callback, device_behavior_callback, get_vlan_from_segment):
+        self._device_placement_callback = device_placement_callback
+        self._device_behavior_callback = device_behavior_callback
+        self._get_vlan_from_segment = get_vlan_from_segment
+
+    def process_device_placement(self, eth_src, placement, static=False):
+        if self._device_placement_callback:
+            self._device_placement_callback(eth_src, placement, static)
+
+    def process_device_behavior(self, eth_src, behavior, static=False):
+        if self._device_behavior_callback:
+            self._device_behavior_callback(eth_src, behavior, static)
+
+    def get_vlan_from_segment(self, segment):
+        if self._get_vlan_from_segment:
+            self._get_vlan_from_segment(segment)
