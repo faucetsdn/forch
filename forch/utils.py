@@ -1,6 +1,7 @@
 """Utility functions for forch"""
 
 import logging
+from logging.handlers import WatchedFileHandler
 import os
 import yaml
 
@@ -30,20 +31,23 @@ class MetricsFetchingError(Exception):
 
 def get_logger(name, stdout=False):
     """Get a logger"""
-    if stdout:
-        log_handler = logging.StreamHandler()
-    else:
-        log_file_path = os.getenv('FORCH_LOG', _LOG_FILE_DEFAULT)
-        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-        log_handler = logging.FileHandler(log_file_path)
-
     logging_level = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
-    log_handler.setFormatter(logging.Formatter(_LOG_FORMAT, _LOG_DATE_FORMAT))
-    log_handler.setLevel(logging_level)
 
     logger = logging.getLogger(name)
     logger.setLevel(logging_level)
-    logger.addHandler(log_handler)
+
+    if not logger.hasHandlers():
+        if stdout:
+            log_handler = logging.StreamHandler()
+        else:
+            log_file_path = os.getenv('FORCH_LOG', _LOG_FILE_DEFAULT)
+            os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+            log_handler = logging.handlers.WatchedFileHandler(log_file_path)
+
+        log_handler.setFormatter(logging.Formatter(_LOG_FORMAT, _LOG_DATE_FORMAT))
+        log_handler.setLevel(logging_level)
+
+        logger.addHandler(log_handler)
 
     return logger
 
