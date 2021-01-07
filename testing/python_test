@@ -13,7 +13,7 @@ if [ "$1" == coverage ]; then
     shift
 fi
 
-if [ $# == 0 ]; then
+if [ $# == 0 -o $# -gt 2 ]; then
     echo $0 test_name [class_name]
     echo class_name should be the unit test class with an optional method name e.g. FotFaucetizerTestCase.test_device_states 
     false
@@ -21,7 +21,6 @@ fi
 
 TEST_NAME=$1
 CLASS_NAME=$2
-shift
 
 TEST_DIR=testing/python_lib
 TEST_SRC=$TEST_NAME.py

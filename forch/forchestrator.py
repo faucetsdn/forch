@@ -418,22 +418,28 @@ class Forchestrator(VarzUpdater):
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
+            *self._get_device_report_server_event_handlers()
         ]
-        if self._device_report_server:
-            handlers.extend([
-                (
-                    FaucetEvent.PortChange,
-                    lambda event: self._device_report_server.process_port_change(
-                        event.timestamp, event.dp_name, event.port_no,
-                        event.status and event.reason != 'DELETE')
-                ),
-                (
-                    FaucetEvent.L2Learn,
-                    lambda event: self._device_report_server.process_port_learn(
-                        event.dp_name, event.port_no, event.eth_src)
-                ),
-            ])
+
         self._faucet_events.register_handlers(handlers)
+
+    def _get_device_report_server_event_handlers(self):
+        if not self._device_report_server:
+            return []
+
+        return [
+            (
+                FaucetEvent.PortChange,
+                lambda event: self._device_report_server.process_port_change(
+                    event.timestamp, event.dp_name, event.port_no,
+                    event.status and event.reason != 'DELETE')
+            ),
+            (
+                FaucetEvent.L2Learn,
+                lambda event: self._device_report_server.process_port_learn(
+                    event.dp_name, event.port_no, event.eth_src)
+            ),
+        ]
 
     def _get_varz_config(self):
         metrics = self._varz_collector.retry_get_metrics(

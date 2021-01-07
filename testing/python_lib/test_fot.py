@@ -79,6 +79,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
             expected_config, switch='t2sw1', port=1, native_vlan=200, role='red')
         self._update_port_config(expected_config, switch='t2sw2', port=1, native_vlan=300)
 
+
 def encapsulate_mac_port_behavior(mac, port_behavior):
     """Converts to proto object for mac port behavior"""
     devices_state_map = {

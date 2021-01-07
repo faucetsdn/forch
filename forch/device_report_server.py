@@ -2,7 +2,6 @@
 
 from concurrent import futures
 from queue import Queue
-from typing import List, Dict
 import grpc
 
 from forch.utils import get_logger
@@ -24,7 +23,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._on_receiving_result = on_receiving_result
         self._logger = get_logger('drserver')
         self._port_device_mapping = {}
-        self._port_events_listeners: Dict[str, List[Queue]] = {}
+        self._port_events_listeners = {}
 
     def process_port_change(self, timestamp, name, port, state):
         """Process faucet port state events"""
@@ -74,7 +73,7 @@ class DeviceReportServer:
         self._server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS_DEFAULT))
 
-        self._servicer = DeviceReportServicer(on_receiving_result, )
+        self._servicer = DeviceReportServicer(on_receiving_result)
         device_report_pb2_grpc.add_DeviceReportServicer_to_server(self._servicer, self._server)
 
         server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
