@@ -42,7 +42,7 @@ def get_logger(name, stdout=False):
         else:
             log_file_path = os.getenv('FORCH_LOG', _LOG_FILE_DEFAULT)
             os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-            log_handler = logging.handlers.WatchedFileHandler(log_file_path)
+            log_handler = WatchedFileHandler(log_file_path)
 
         log_handler.setFormatter(logging.Formatter(_LOG_FORMAT, _LOG_DATE_FORMAT))
         log_handler.setLevel(logging_level)

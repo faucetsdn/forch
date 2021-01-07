@@ -40,6 +40,7 @@ def show_error(error, path, params):
 def run_forchestrator():
     """main function to start forch"""
     logger = get_logger(_LOGGER_NAME)
+    logger.info('Starting Forchestrator')
 
     config = load_config()
     if not config:
