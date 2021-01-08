@@ -12,4 +12,5 @@ import "forch/proto/shared_constants.proto";
  */
 service DeviceReport {
     rpc ReportDevicesState (DevicesState) returns (Empty) {}
+    rpc GetPortState (Device) returns (stream DevicePortEvent) {}
 }

@@ -4,7 +4,7 @@ aab2863d4ab506ff4790df644cfcf8f4f70e97bc  proto/building_schema.proto
 a25e80c06dc7630cf1babf5161feb3e43aa90181  proto/cpn_config.proto
 3f1365cdc6f9268230ee009999e4dba254b33c12  proto/cpn_state.proto
 33f81938e634f1996f1e46b4295ebecfb4b7cb41  proto/dataplane_state.proto
-15851bf434247f426199c9c6f6fcfde296d847ed  proto/devices_state.proto
+eed9d8f4f4ebeebb10f6b4e56f6dda2d0ae61ee9  proto/devices_state.proto
 08747ea4b72ca28356b0c299c0849875250c4936  proto/faucet_configuration.proto
 22a838c9d693eaceef059c63e765aa2906392661  proto/faucet_event.proto
 cc0a0d90a0395f5d146a8ba3208ae0306bcabcf7  proto/forch_configuration.proto
@@ -12,6 +12,6 @@ cc0a0d90a0395f5d146a8ba3208ae0306bcabcf7  proto/forch_configuration.proto
 877b648b84c4ea9a88131975cfa2cfcb4441b854  proto/list_hosts.proto
 db4d1bf4d1b4ac1a575853833ecbd9571d784203  proto/path_node.proto
 951ec1a68969111827e70e033ab38e3f1d669337  proto/process_state.proto
-56df2f21f9e08c2da6ba4e4de623547d5727e631  proto/shared_constants.proto
+b2b72cbf4d726782c18e94da3950cee366afa3c0  proto/shared_constants.proto
 c4744eba33a044da6a03e0fca9f2089c0ec27774  proto/switch_state.proto
 32bcf4631c20862a730f98dff9c627bc696269e0  proto/system_state.proto

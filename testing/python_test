@@ -13,13 +13,14 @@ if [ "$1" == coverage ]; then
     shift
 fi
 
-if [ $# != 1 ]; then
-    echo $0 [test_name]
+if [ $# == 0 -o $# -gt 2 ]; then
+    echo $0 test_name [class_name]
+    echo class_name should be the unit test class with an optional method name e.g. FotFaucetizerTestCase.test_device_states 
     false
 fi
 
 TEST_NAME=$1
-shift
+CLASS_NAME=$2
 
 TEST_DIR=testing/python_lib
 TEST_SRC=$TEST_NAME.py
@@ -35,9 +36,7 @@ if [ -n "$coverage" ]; then
     $PYTHON erase
 fi
 
-$PYTHON $EXTARGS -m unittest \
-        discover -s $TEST_DIR \
-        -p $TEST_SRC
+$PYTHON $EXTARGS $TEST_DIR/$TEST_SRC $CLASS_NAME
 
 if [ -n "$coverage" ]; then
     $PYTHON combine || true

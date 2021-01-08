@@ -2,6 +2,15 @@ syntax = "proto3";
 
 import "forch/proto/shared_constants.proto";
 
+message Device {
+  string mac = 1;
+}
+
+message DevicePortEvent {
+  PortBehavior.PortEvent event = 1;
+  string timestamp = 2;
+}
+
 message DevicesState {
   map<string, DevicePlacement> device_mac_placements = 1;
   map<string, DeviceBehavior> device_mac_behaviors = 2;
