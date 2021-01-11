@@ -276,7 +276,7 @@ class LocalStateCollector:
             time.sleep(1)
             with open('/tmp/keepalived.data') as stats_file:
                 for line in stats_file:
-                    if not re.search('State = (MASTER|BACKUP|FAUCET)', line):
+                    if not re.search('State = (MASTER|BACKUP|FAULT)', line):
                         continue
                     vrrp_state = line.split('= ')[1]
                     self._vrrp_state.update(self._handle_vrrp_state(vrrp_state))
