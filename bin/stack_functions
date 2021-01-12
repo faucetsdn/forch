@@ -94,6 +94,15 @@ function add_iface {
     sudo ifconfig $iface up
 }
 
+function add_vxlan {
+    br=$1
+    pt=$2
+    ip=$3
+    if=vxlan
+    sudo ovs-vsctl add-port $br $if -- set interface $if ofport_request=$pt -- \
+         set interface $if type=vxlan options:remote_ip=$ip options:key=cntrl_tap
+}
+
 function add_oeth {
     br_a=$1
     pt_a=$2
