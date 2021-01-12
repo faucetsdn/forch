@@ -178,8 +178,6 @@ fi
 
 echo Connecting faux interfaces...
 add_faux t2sw1 1 1 $faux_dhcp
-# Delay startup faux-2 to prevent race condition with vlan assignment
-sleep 10
 add_faux t2sw2 1 2 $faux_dhcp
 add_faux t2sw3 1 3
 
