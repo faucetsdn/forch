@@ -319,6 +319,7 @@ class Faucetizer(DeviceStateManager):
 
             vid = self._calculate_vlan_id(mac, device_behavior, available_testing_vlans,
                                           testing_port_vlans)
+            self._logger.info('Placing %s into vlan %s', mac, vid)
             if not vid:
                 continue
             port_cfg['native_vlan'] = vid
