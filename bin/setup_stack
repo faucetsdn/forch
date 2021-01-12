@@ -187,25 +187,13 @@ tdevices=$((dcount + scount - 3))
 echo Working with $tdevices devices.
 
 echo Letting system settle...
-sleep 60
-
-if [ -z "$remote" ]; then
-    if [ -n "$fot" ]; then
-        echo head of forch-controller-1/faucet.log:
-        head -n 50 inst/forch-controller-1/faucet.log
-        echo head of forch-controller-1/forch.log:
-        head -n 50 inst/forch-controller-1/forch.log
-    else
-        echo head of forch-faucet-1/faucet.log:
-        head inst/forch-faucet-1/faucet.log
-    fi
-    echo
-fi
+sleep 20
 
 if [ -z "$skip_conn_check" ]; then
-    echo Starting connection warm-up for 10s...
+    echo Starting connection warm-up...
+    # Do faux-1 synchronously to prevent race condition with vid assignment.
+    docker exec forch-faux-1 ping -q -c 10 $ip_faux_3 || true
     docker exec forch-faux-0 ping -q -c 10 $ip_faux_2 &
-    docker exec forch-faux-1 ping -q -c 10 $ip_faux_3 &
     docker exec forch-faux-2 ping -q -c 10 $ip_faux_1 &
     docker exec forch-faux-3 ping -q -c 10 $ip_faux_1 &
 
@@ -224,6 +212,19 @@ if [ -z "$skip_conn_check" ]; then
             docker exec forch-faux-$device ping -q -c 1 192.168.1.0
         done
     fi
+fi
+
+if [ -z "$remote" ]; then
+    if [ -n "$fot" ]; then
+        echo head of forch-controller-1/faucet.log:
+        head -n 50 inst/forch-controller-1/faucet.log
+        echo head of forch-controller-1/forch.log:
+        head -n 50 inst/forch-controller-1/forch.log
+    else
+        echo head of forch-faucet-1/faucet.log:
+        head inst/forch-faucet-1/faucet.log
+    fi
+    echo
 fi
 
 rm -rf tcpdump
