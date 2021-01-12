@@ -3,6 +3,9 @@
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 
+PROTOC_VERSION=$(< etc/PROTOC_VERSION)
+echo Using protoc version $PROTOC_VERSION
+
 proto_files=`LC_COLLATE=C ls proto/*.proto`
 
 if [ "$1" == check ]; then
@@ -27,6 +30,7 @@ fi
 (
     export PATH=$PATH:/usr/local/go/bin/
     cd protoc-gen-doc
+    git checkout $PROTOC_VERSION
     script/dist.sh
     tar -xzvf dist/protoc-gen-doc-*.linux-amd64.go*.tar.gz
     mkdir -p bin
