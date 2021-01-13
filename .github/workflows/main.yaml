@@ -47,7 +47,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -64,6 +64,10 @@ jobs:
         run: bin/retry_cmd bin/build_docker controller
       - name: run python tests
         run: testing/python_test test_fot
+      - name: setup stack
+        run: bin/setup_stack skip-conn-check dhcp fot vxlan
+      - name: run integration tests
+        run: bin/run_test_set fot
       - name: setup stack
         run: bin/setup_stack skip-conn-check dhcp fot
       - name: run integration tests

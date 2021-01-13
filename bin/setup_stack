@@ -9,7 +9,8 @@ skip_conn_check=
 no_clean=
 faux_dhcp=
 fot=
-run_opt=
+vxlan=
+switch_type=
 remote=
 container=
 base_port=6001
@@ -53,12 +54,17 @@ if [ "$1" == "no-clean" ]; then
 fi
 
 if [ "$1" == "static_switch" ]; then
-    run_opt=static_switch
+    switch_type=static_switch
     shift
 fi
 
 if [ "$1" == "fot" ]; then
     fot=fot
+    shift
+fi
+
+if [ "$1" == "vxlan" ]; then
+    vxlan=vxlan
     shift
 fi
 
@@ -149,21 +155,31 @@ if [ -z "$remote" ]; then
         mkdir -p $container_inst/faucet_br/faucet
         # TODO: faucet_br should not be under topo/ since it has nothing to do with the topology.
         cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
-        bin/run_controller $local $run_opt $finst $((base_port + finst*2 - 2)) $((8000 + finst)) $((base_port + finst*2 - 1)) $((9000 + finst))
+        bin/run_controller $local $switch_type $vxlan $finst $((base_port + finst*2 - 2)) $((8000 + finst)) $((base_port + finst*2 - 1)) $((9000 + finst))
     else
         bin/run_faucet $local $finst $((base_port + finst*2 - 2)) $((8000 + finst))
         bin/run_faucet $local gauge $finst $((base_port + finst*2 - 1)) $((9000 + finst))
     fi
 fi
 
-echo Connecting faux interfaces...
+echo Connecting upstream corp interface...
 add_faux corp 1 0 dnsmasq
+
+if [ -n "$vxlan" ]; then
+    ipaddr=$(docker inspect --format="{{ .NetworkSettings.Networks.bridge.IPAddress }}" forch-controller-1)
+    echo Connecting vxlan to $ipaddr
+    add_vxlan t1sw1 4 $ipaddr
+elif [ -z "$remote" ]; then
+    echo Enabling tap interface cntrl_tap_1
+    add_iface t1sw1 4 cntrl_tap_1
+else
+    echo Using remote controller connection
+fi
+
+echo Connecting faux interfaces...
 add_faux t2sw1 1 1 $faux_dhcp
 add_faux t2sw2 1 2 $faux_dhcp
 add_faux t2sw3 1 3
-if [ -z "$remote" ]; then
-    add_iface t1sw1 4 cntrl_tap_1
-fi
 
 dcount=${devices:-3}
 scount=${switches:-3}
