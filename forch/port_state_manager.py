@@ -247,14 +247,18 @@ class PortStateManager:
         """Set port to operation vlan"""
         if not self._process_device_behavior:
             return
+
+        static = mac in self._static_device_behaviors
         device_behavior = (
             self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
-        static = mac in self._static_device_behaviors
         assert device_behavior
+
         self._process_device_behavior(mac, device_behavior, static=static)
         self._update_device_state_varz(mac, DVAState.static if static else DVAState.operational)
 
     def _handle_infracted_state(self, mac):
+        static = mac in self._static_device_behaviors
+        self._process_device_behavior(mac, DeviceBehavior(), static=static)
         self._update_device_state_varz(mac, DVAState.infracted)
 
     def clear_static_device_behaviors(self):
