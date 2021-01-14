@@ -92,7 +92,9 @@ class Faucetizer(DeviceStateManager):
             else:
                 removed = device_placements.pop(eth_src, None)
                 if removed:
-                    self._logger.info('Removed %s placement: %s', device_type, eth_src)
+                    self._logger.info(
+                        'Removed %s placement: %s, %s, %s',
+                        device_type, eth_src, removed.switch, removed.port)
 
             self.flush_behavioral_config()
 
@@ -113,7 +115,9 @@ class Faucetizer(DeviceStateManager):
             else:
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
-                    self._logger.info('Removed %s behavior: %s', device_type, eth_src)
+                    self._logger.info(
+                        'Removed %s behavior: %s, %s, %s',
+                        device_type, eth_src, removed.segment, removed.role)
 
             self.flush_behavioral_config()
 
