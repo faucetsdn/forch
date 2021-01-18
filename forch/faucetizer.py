@@ -110,14 +110,16 @@ class Faucetizer(DeviceStateManager):
                 device_behavior = behavior_map.setdefault(DEVICE_BEHAVIOR, DeviceBehavior())
                 device_behavior.CopyFrom(behavior)
                 self._logger.info(
-                    'Received %s behavior: %s, %s, %s',
-                    device_type, eth_src, device_behavior.segment, device_behavior.role)
+                    'Received %s behavior: %s, %s (%d), %s',
+                    device_type, eth_src, device_behavior.segment,
+                    self.get_vlan_from_segment(behavior.segment), device_behavior.role)
             else:
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
                     self._logger.info(
-                        'Removed %s behavior: %s, %s, %s',
-                        device_type, eth_src, removed.segment, removed.role)
+                        'Removed %s behavior: %s, %s (%d), %s',
+                        device_type, eth_src, removed.segment,
+                        self.get_vlan_from_segment(removed.segment), removed.role)
 
             self.flush_behavioral_config()
 
@@ -257,9 +259,11 @@ class Faucetizer(DeviceStateManager):
                 self._logger.error(
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
             else:
-                vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
-                self._testing_device_vlans[device_mac] = vid
-                testing_port_vlans.add(vid)
+                if device_mac not in self._testing_device_vlans:
+                    vid = available_testing_vlans.pop()
+                    self._testing_device_vlans[device_mac] = vid
+                    self._logger.info('Device %s is sequestered on vlan %d', device_mac, vid)
+                testing_port_vlans.add(self._testing_device_vlans[device_mac])
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
