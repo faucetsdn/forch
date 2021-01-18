@@ -117,9 +117,8 @@ class Faucetizer(DeviceStateManager):
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
                     self._logger.info(
-                        'Removed %s behavior: %s, %s (%d), %s',
-                        device_type, eth_src, removed.segment,
-                        self.get_vlan_from_segment(removed.segment), removed.role)
+                        'Removed %s behavior: %s, %s, %s',
+                        device_type, eth_src, removed.segment, removed.role)
 
             self.flush_behavioral_config()
 
