@@ -351,7 +351,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-        expected_device_behaviors.extend([('00:0A:00:00:00:04', 'SEG_D', False)])
+        expected_device_behaviors.extend([
+            ('00:0Z:00:00:00:03', '', False),
+            ('00:0A:00:00:00:04', 'SEG_D', False)
+        ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
     def _expire_devices(self, expired_device_placements, expected_device_placements):
