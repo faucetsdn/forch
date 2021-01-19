@@ -53,5 +53,11 @@ if [ -n "${options[dnsmasq]}" ]; then
     dnsmasq --log-facility=/tmp/dnsmasq.log --log-dhcp
 fi
 
+if [ -n "${options[http]}" ]; then
+    echo Listening on TCP 80...
+#    nc -vlkp 80 &
+    python3 -m http.server &
+fi
+
 echo Blocking for all eternity.
 tail -f /dev/null

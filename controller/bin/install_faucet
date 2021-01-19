@@ -20,4 +20,4 @@ for i in ${BUILDDEPS} ; do
 done
 
 # Smoke test
-faucet -V
+#faucet -V
