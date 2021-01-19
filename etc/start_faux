@@ -55,7 +55,6 @@ fi
 
 if [ -n "${options[http]}" ]; then
     echo Listening on TCP 80...
-#    nc -vlkp 80 &
     python3 -m http.server &
 fi
 
