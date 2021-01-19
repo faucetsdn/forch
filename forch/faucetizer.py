@@ -110,14 +110,14 @@ class Faucetizer(DeviceStateManager):
                 device_behavior = behavior_map.setdefault(DEVICE_BEHAVIOR, DeviceBehavior())
                 device_behavior.CopyFrom(behavior)
                 self._logger.info(
-                    'Received %s behavior: %s, %s (%d), %s',
+                    'Received %s behavior: %s, %s (%s), %s',
                     device_type, eth_src, device_behavior.segment,
                     self.get_vlan_from_segment(behavior.segment), device_behavior.role)
             else:
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
                     self._logger.info(
-                        'Removed %s behavior: %s, %s (%d), %s',
+                        'Removed %s behavior: %s, %s (%s), %s',
                         device_type, eth_src, removed.segment,
                         self.get_vlan_from_segment(removed.segment), removed.role)
 
