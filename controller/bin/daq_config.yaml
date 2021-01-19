@@ -1,6 +1,6 @@
 # DAQ FOT configuration.
 
-include: daq_system_default.yaml
+include: /root/daq/config/system/default.yaml
 
 switch_setup:
   data_intf: data0
