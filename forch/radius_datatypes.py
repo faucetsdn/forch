@@ -69,9 +69,9 @@ class Integer(DataType):
         if raw_data:
             try:
                 bytes_data = raw_data.to_bytes(self.MAX_DATA_LENGTH, "big")
-            except OverflowError:
+            except OverflowError as range_overflow_error:
                 raise ValueError("Integer must be >= 0  and <= 2^32-1, was %d" %
-                                 raw_data)
+                                 raw_data) from range_overflow_error
         self.bytes_data = bytes_data
 
     @classmethod
@@ -103,8 +103,9 @@ class Enum(DataType):
         if raw_data:
             try:
                 bytes_data = raw_data.to_bytes(self.MAX_DATA_LENGTH, "big")
-            except OverflowError:
-                raise ValueError("Integer must be >= 0  and <= 2^32-1, was %d" % raw_data)
+            except OverflowError as range_overflow_error:
+                raise ValueError("Integer must be >= 0  and <= 2^32-1, was %d" %
+                                 raw_data) from range_overflow_error
         self.bytes_data = bytes_data
 
     @classmethod
