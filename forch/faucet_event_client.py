@@ -56,7 +56,7 @@ class FaucetEventClient():
             self.event_socket_connected = True
         except socket.error as socket_error:
             self.event_socket_connected = False
-            raise ConnectionError("Failed to connect because: %s" % socket_error) as socket_error
+            raise ConnectionError("Failed to connect because: %s" % socket_error)
 
     def disconnect(self):
         """Disconnect this event socket"""
