@@ -7,6 +7,13 @@ import unittest
 import yaml
 import grpc
 
+from integration_base import IntegrationTestBase
+
+from unit_base import (
+    DeviceReportServerTestBase, DeviceReportServicerTestBase, FaucetizerTestBase,
+    PortsStateManagerTestBase
+)
+
 from forch.utils import dict_proto, proto_dict
 
 from forch.proto.devices_state_pb2 import (
@@ -15,12 +22,6 @@ from forch.proto.devices_state_pb2 import (
 )
 from forch.proto.shared_constants_pb2 import Empty, PortBehavior
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
-
-from integration_base import IntegrationTestBase
-from unit_base import (
-    DeviceReportServerTestBase, DeviceReportServicerTestBase, FaucetizerTestBase,
-    PortsStateManagerTestBase
-)
 
 
 class FotFaucetizerTestCase(FaucetizerTestBase):
