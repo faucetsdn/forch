@@ -146,9 +146,9 @@ function modify_faux_mac {
     local fnum=$1
     local mac=$2
     if [ -z "$mac" ]; then
-        mac="02:03:04:00:00:0"$fnum
+        mac="02:03:04:00:00:0$fnum"
     fi
-    docker exec forch-faux-$num ip link set faux-eth0 address $mac
+    docker exec forch-faux-$fnum ip link set faux-eth0 address $mac
 }
 
 function diagnose_stack {
