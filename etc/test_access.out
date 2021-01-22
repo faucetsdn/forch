@@ -56,42 +56,42 @@ Starting dva-port-down tests
 @sys_config dva-port-down
 1
 "tail_acl"
-300
-"role_yellow"
+100
+"tail_acl"
 @dataplane_state dva-port-down
-"broken"
+"damaged"
 "unknown"
 "healthy"
 null
-"broken"
+"healthy"
 @switch_state dva-port-down
 200
 "static"
 "allow DHCP"
 "operational"
-300
-"operational"
-"deny ICMP"
+100
+"unauthenticated"
+"allow all"
 0
 @list_hosts dva-port-down
 200
 "static"
 "allow ICMP"
-300
-"operational"
-"Authorized"
-"BOS"
-"yellow"
-0
+null
+null
+null
+null
+null
+null
 Starting varz-port-down test...
 0.0
 5.0
-1.0
+5.0
 0.0
 1
 2.0
 4.0
-4.0
+0.0
 200.0
 %%% port-up
 Starting dva-port-up tests
@@ -101,11 +101,11 @@ Starting dva-port-up tests
 300
 "role_yellow"
 @dataplane_state dva-port-up
-"broken"
+"damaged"
 "unknown"
 "healthy"
 null
-"broken"
+"healthy"
 @switch_state dva-port-up
 200
 "static"
@@ -128,7 +128,7 @@ null
 Starting varz-port-up test...
 0.0
 5.0
-1.0
+5.0
 0.0
 1
 2.0
@@ -140,40 +140,40 @@ Starting dva-mac-flipped tests
 @sys_config dva-mac-flipped
 1
 "tail_acl"
-300
-"role_yellow"
+200
+"role_hello_world.foo.bar#bazqux@quuxquuz123"
 @dataplane_state dva-mac-flipped
-"broken"
+"damaged"
 "unknown"
 "healthy"
 null
-"broken"
+"healthy"
 @switch_state dva-mac-flipped
 200
 "static"
 "allow DHCP"
 "operational"
-300
-"operational"
-"deny ICMP"
+200
+"static"
+"allow ICMP"
 0
 @list_hosts dva-mac-flipped
 200
 "static"
 "allow ICMP"
-300
-"operational"
-"Authorized"
-"BOS"
-"yellow"
-0
+null
+null
+null
+null
+null
+null
 Starting varz-mac-flipped test...
 0.0
 5.0
-1.0
+5.0
 0.0
 1
 2.0
 4.0
-4.0
+0.0
 200.0
