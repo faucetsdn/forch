@@ -139,7 +139,7 @@ function add_faux {
 function set_iface_state {
     local iface=$1
     local state=$2
-    ip link set dev $iface $state
+    sudo ip link set dev $iface $state
 }
 
 function modify_faux_mac {

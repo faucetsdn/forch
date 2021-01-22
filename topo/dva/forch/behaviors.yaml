@@ -3,5 +3,5 @@ device_mac_behaviors:
     segment: INFRA
     role: hello_world.foo.bar#bazqux@quuxquuz123
   "02:03:04:00:00:03":
-    segment: BOS
+    segment: INFRA
     role: hello_world.foo.bar#bazqux@quuxquuz123
