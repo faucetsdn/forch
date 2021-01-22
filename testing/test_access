@@ -140,5 +140,35 @@ test_access vlan-assigned
 test_dva vlan-assigned
 test_forch_varz vlan-assigned
 
+echo %%% port-down | tee -a $TEST_RESULTS
+echo Shutting down port of faux-3...
+set_iface_state faux-3 down
+sleep 5
+send_udp forch-faux-3 "192.168.1.254/67"
+sleep 20
+
+test_dva port-down
+test_forch_varz port-down
+
+echo %%% port-up | tee -a $TEST_RESULTS
+echo Turning on port of faux-3...
+set_iface_state faux-3 up
+sleep 5
+send_udp forch-faux-3 "192.168.1.254/67"
+sleep 20
+
+test_dva port-up
+test_forch_varz port-up
+
+echo %%% mac-flipped | tee -a $TEST_RESULTS
+echo Modifying MAC of faux-3...
+modify_faux_mac 3
+send_udp forch-faux-3 "192.168.1.254/67"
+sleep 20
+
+test_dva mac-flipped
+test_forch_varz mac-flipped
+
+
 kill $send_pid
 stop_and_cleanup_radius

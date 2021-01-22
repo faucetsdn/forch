@@ -2,3 +2,6 @@ device_mac_behaviors:
   "9a:02:57:1e:8f:01":
     segment: INFRA
     role: hello_world.foo.bar#bazqux@quuxquuz123
+  "02:03:04:00:00:03":
+    segment: BOS
+    role: hello_world.foo.bar#bazqux@quuxquuz123
