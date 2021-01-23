@@ -7,9 +7,9 @@ import socket
 import threading
 import unittest
 
-from forch.utils import MetricsFetchingError
-
 from unit_base import ForchestratorEventTestBase
+
+from forch.utils import MetricsFetchingError
 
 
 class FaucetEventOrderTestCase(ForchestratorEventTestBase):

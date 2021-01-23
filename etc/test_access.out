@@ -51,3 +51,129 @@ Starting varz-vlan-assigned test...
 4.0
 4.0
 200.0
+%%% port-down
+Starting dva-port-down tests
+@sys_config dva-port-down
+1
+"tail_acl"
+100
+"tail_acl"
+@dataplane_state dva-port-down
+"damaged"
+"unknown"
+"healthy"
+null
+"healthy"
+@switch_state dva-port-down
+200
+"static"
+"allow DHCP"
+"operational"
+100
+"unauthenticated"
+"allow all"
+0
+@list_hosts dva-port-down
+200
+"static"
+"allow ICMP"
+null
+null
+null
+null
+null
+null
+Starting varz-port-down test...
+0.0
+5.0
+5.0
+0.0
+1
+2.0
+4.0
+0.0
+200.0
+%%% port-up
+Starting dva-port-up tests
+@sys_config dva-port-up
+1
+"tail_acl"
+300
+"role_yellow"
+@dataplane_state dva-port-up
+"damaged"
+"unknown"
+"healthy"
+null
+"healthy"
+@switch_state dva-port-up
+200
+"static"
+"allow DHCP"
+"operational"
+300
+"operational"
+"deny ICMP"
+0
+@list_hosts dva-port-up
+200
+"static"
+"allow ICMP"
+300
+"operational"
+"Authorized"
+"BOS"
+"yellow"
+0
+Starting varz-port-up test...
+0.0
+5.0
+5.0
+0.0
+1
+2.0
+4.0
+4.0
+200.0
+%%% mac-flipped
+Starting dva-mac-flipped tests
+@sys_config dva-mac-flipped
+1
+"tail_acl"
+200
+"role_hello_world.foo.bar#bazqux@quuxquuz123"
+@dataplane_state dva-mac-flipped
+"damaged"
+"unknown"
+"healthy"
+null
+"healthy"
+@switch_state dva-mac-flipped
+200
+"static"
+"allow DHCP"
+"operational"
+200
+"static"
+"allow ICMP"
+0
+@list_hosts dva-mac-flipped
+200
+"static"
+"allow ICMP"
+null
+null
+null
+null
+null
+null
+Starting varz-mac-flipped test...
+0.0
+5.0
+5.0
+0.0
+1
+2.0
+4.0
+0.0
+200.0
