@@ -115,6 +115,7 @@ class FaucetStateCollector:
         self.learned_macs = {}
         self.faucet_config = {}
         self.packet_counts = {}
+        self.radius_results = {}
         self.lock = threading.RLock()
         self._lock = threading.Lock()
         self._logger = get_logger('fstate')
@@ -1122,6 +1123,10 @@ class FaucetStateCollector:
             self._logger.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
             port_attr = self._get_port_attributes(name, port)
 
+            radius_result = self.radius_results.get(mac)
+            if radius_result:
+                mac_entry[MAC_RADIUS_RESULT] = radius_result
+
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
                     device_placement = DevicePlacement(switch=name, port=port, connected=True)
@@ -1314,16 +1319,19 @@ class FaucetStateCollector:
 
     def update_radius_result(self, mac, access, segment=None, role=None):
         """Update RADIUS result information for learned host"""
+        host_radius = {}
+        host_radius[MAC_RADIUS_ACCESS] = access
+        host_radius[MAC_RADIUS_SEGMENT] = segment
+        host_radius[MAC_RADIUS_ROLE] = role
+        self.radius_results[mac] = host_radius
+
         learned_host = self.learned_macs.get(mac)
         if not learned_host:
             # This covers the case where we do a RADIUS request for a static placement
             self._logger.warning(
                 '%s is not a learned mac. Skipping faucet_state_collector update.', mac)
-            return
-        host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
-        host_radius[MAC_RADIUS_ACCESS] = access
-        host_radius[MAC_RADIUS_SEGMENT] = segment
-        host_radius[MAC_RADIUS_ROLE] = role
+        else:
+            learned_host[MAC_RADIUS_RESULT] = host_radius
 
     @_pre_check()
     def get_host_summary(self):
