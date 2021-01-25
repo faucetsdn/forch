@@ -29,7 +29,7 @@ from forch.utils import (
 
 from forch.__version__ import __version__
 
-from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
+from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior, DevicePlacement
 import forch.proto.faucet_event_pb2 as FaucetEvent
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
@@ -380,12 +380,15 @@ class Forchestrator(VarzUpdater):
 
     def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
-        propagate_placement, mac = self._port_state_manager.handle_device_placement(
+        propagate_placement, mac, stale_mac = self._port_state_manager.handle_device_placement(
             eth_src, device_placement, static)
 
         src_mac = mac if mac else eth_src
 
         if self._authenticator and propagate_placement:
+            if stale_mac:
+                self._authenticator.process_device_placement(
+                    stale_mac, DevicePlacement(connected=False))
             self._authenticator.process_device_placement(src_mac, device_placement)
         else:
             self._logger.info(

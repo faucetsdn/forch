@@ -142,8 +142,9 @@ class HttpServer():
         try:
             content = self.read_file(full_path)
             return content
-        except Exception as e:
-            raise HttpException(str(e), http.HTTPStatus.BAD_REQUEST)
+        except Exception as http_exception:
+            raise HttpException(str(http_exception),
+                                http.HTTPStatus.BAD_REQUEST) from http_exception
 
 
     def static_file(self, base_path):
