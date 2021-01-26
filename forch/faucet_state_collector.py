@@ -1126,6 +1126,8 @@ class FaucetStateCollector:
             radius_result = self.radius_results.get(mac)
             if radius_result:
                 mac_entry[MAC_RADIUS_RESULT] = radius_result
+            else:
+                assert not mac_entry.get(MAC_RADIUS_RESULT)
 
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
