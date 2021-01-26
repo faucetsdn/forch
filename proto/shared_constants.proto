@@ -166,6 +166,11 @@ message PortBehavior {
     // deauthenticated
     deauthenticated = 6;
   }
+  
+  enum PortEvent {
+    down = 0;
+    up = 1;
+  }
 }
 
 /*

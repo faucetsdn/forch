@@ -18,7 +18,7 @@ from forch.cpn_state_collector import CPNStateCollector
 from forch.device_report_server import DeviceReportServer
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
-from forch.forch_metrics import ForchMetrics
+from forch.forch_metrics import ForchMetrics, VarzUpdater
 from forch.forch_proxy import ForchProxy
 from forch.heartbeat_scheduler import HeartbeatScheduler
 from forch.local_state_collector import LocalStateCollector
@@ -69,7 +69,7 @@ _TARGET_GAUGE_METRICS = (
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 
-class Forchestrator:
+class Forchestrator(VarzUpdater):
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""
 
@@ -203,19 +203,8 @@ class Forchestrator:
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
-            process_device_placement = self._faucetizer.process_device_placement
-            process_device_behavior = self._faucetizer.process_device_behavior
-            get_vlan_from_segment = self._faucetizer.get_vlan_from_segment
-        else:
-            process_device_placement = None
-            process_device_behavior = None
-            get_vlan_from_segment = None
-
-        update_device_state_varz = (lambda mac, state: self._metrics.update_var(
-            'device_state', state, labels=[mac])) if self._metrics else None
         self._port_state_manager = PortStateManager(
-            process_device_placement, process_device_behavior, get_vlan_from_segment,
-            update_device_state_varz, self._config.orchestration.sequester_config.segment)
+            self._faucetizer, self, self._config.orchestration.sequester_config.segment)
 
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
@@ -283,6 +272,14 @@ class Forchestrator:
 
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
+
+    def update_device_state_varz(self, mac, state):
+        if self._metrics:
+            self._metrics.update_var('device_state', state, labels=[mac])
+
+    def update_static_vlan_varz(self, mac, vlan):
+        if self._metrics:
+            self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
 
     def _calculate_config_files(self):
         orch_config = self._config.orchestration
@@ -407,7 +404,7 @@ class Forchestrator:
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
-        self._faucet_events.register_handlers([
+        handlers = [
             (FaucetEvent.ConfigChange, self._process_config_change),
             (FaucetEvent.DpChange, lambda event: fcoll.process_dp_change(
                 event.timestamp, event.dp_name, None, event.reason == "cold_start")),
@@ -417,11 +414,26 @@ class Forchestrator:
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
             (FaucetEvent.PortChange, fcoll.process_port_change),
+            (FaucetEvent.PortChange, self._device_report_server_process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
+            (FaucetEvent.L2Learn, self._device_report_server_process_port_learn),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
-        ])
+        ]
+
+        self._faucet_events.register_handlers(handlers)
+
+    def _device_report_server_process_port_change(self, event):
+        if self._device_report_server:
+            self._device_report_server.process_port_change(
+                event.timestamp, event.dp_name, event.port_no,
+                event.status and event.reason != 'DELETE')
+
+    def _device_report_server_process_port_learn(self, event):
+        if self._device_report_server:
+            self._device_report_server.process_port_learn(
+                event.dp_name, event.port_no, event.eth_src)
 
     def _get_varz_config(self):
         metrics = self._varz_collector.retry_get_metrics(

@@ -71,7 +71,7 @@ class FaucetEventClient():
         """Register an event handler for the given proto class"""
         message_name = self._convert_to_snake_caps(proto.__name__)
         self._logger.info('Registering handler for event type %s', message_name)
-        self._handlers[message_name] = handler
+        self._handlers[message_name] = self._handlers.get(message_name, []) + [handler]
 
     def register_handlers(self, handlers):
         """Register a list of handler (proto, func) tuples"""
@@ -202,11 +202,10 @@ class FaucetEventClient():
         self._logger.info('Setting event horizon to event #%d', event_horizon)
 
     def _dispatch_faucet_event(self, target, target_event):
-        if target in self._handlers:
+        for handler in self._handlers.get(target, []):
             self._logger.debug('dispatching %s event', target)
-            self._handlers[target](target_event)
-            return True
-        return False
+            handler(target_event)
+        return target in self._handlers
 
     def _should_log_event(self, event):
         return event and os.getenv('FAUCET_EVENT_DEBUG')

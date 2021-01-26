@@ -22,6 +22,11 @@ class DeviceReportStub(object):
                 request_serializer=forch_dot_proto_dot_devices__state__pb2.DevicesState.SerializeToString,
                 response_deserializer=forch_dot_proto_dot_shared__constants__pb2.Empty.FromString,
                 )
+        self.GetPortState = channel.unary_stream(
+                '/DeviceReport/GetPortState',
+                request_serializer=forch_dot_proto_dot_devices__state__pb2.Device.SerializeToString,
+                response_deserializer=forch_dot_proto_dot_devices__state__pb2.DevicePortEvent.FromString,
+                )
 
 
 class DeviceReportServicer(object):
@@ -35,6 +40,12 @@ class DeviceReportServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetPortState(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DeviceReportServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -42,6 +53,11 @@ def add_DeviceReportServicer_to_server(servicer, server):
                     servicer.ReportDevicesState,
                     request_deserializer=forch_dot_proto_dot_devices__state__pb2.DevicesState.FromString,
                     response_serializer=forch_dot_proto_dot_shared__constants__pb2.Empty.SerializeToString,
+            ),
+            'GetPortState': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetPortState,
+                    request_deserializer=forch_dot_proto_dot_devices__state__pb2.Device.FromString,
+                    response_serializer=forch_dot_proto_dot_devices__state__pb2.DevicePortEvent.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -69,5 +85,22 @@ class DeviceReport(object):
         return grpc.experimental.unary_unary(request, target, '/DeviceReport/ReportDevicesState',
             forch_dot_proto_dot_devices__state__pb2.DevicesState.SerializeToString,
             forch_dot_proto_dot_shared__constants__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetPortState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/DeviceReport/GetPortState',
+            forch_dot_proto_dot_devices__state__pb2.Device.SerializeToString,
+            forch_dot_proto_dot_devices__state__pb2.DevicePortEvent.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

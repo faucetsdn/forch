@@ -1,5 +1,6 @@
 """Module to expose varz interface"""
 
+import abc
 import functools
 import threading
 from prometheus_client import Counter, Gauge, Info, generate_latest, REGISTRY
@@ -105,6 +106,10 @@ class ForchMetrics():
 
         self._add_var('device_state', 'device state', Gauge, labels=['mac'])
 
+        self._add_var(
+            'static_mac_vlan', 'MAC addresses with statically assigned vlan', Gauge,
+            labels=['mac'])
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')
@@ -112,3 +117,13 @@ class ForchMetrics():
     def _show_error(self, error, path, params):
         """Display errors"""
         return f"Error creating varz interface: {str(error)}"
+
+
+class VarzUpdater(abc.ABC):
+    """Interface collecting the methods to update forch varzs"""
+
+    def update_device_state_varz(self, mac, state):
+        """Update device state varz"""
+
+    def update_static_vlan_varz(self, mac, vlan):
+        """Update static vlan assignment varz"""

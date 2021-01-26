@@ -4,12 +4,13 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest.mock import MagicMock
 import yaml
-
 import grpc
+from grpc_testing import server_from_dictionary, strict_real_time
 
-from forch.device_report_server import DeviceReportServer
-from forch.faucetizer import Faucetizer
+from forch.device_report_server import DeviceReportServer, DeviceReportServicer
+from forch.faucetizer import DeviceStateManager, Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forchestrator import Forchestrator
 from forch.port_state_manager import PortStateManager
@@ -18,6 +19,8 @@ from forch.utils import dict_proto
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
+from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
+
 
 _FORCH_LOG_DEFAULT = '/tmp/forch.log'
 
@@ -313,13 +316,35 @@ class DeviceReportServerTestBase(unittest.TestCase):
             self._process_devices_state, self.SERVER_ADDRESS, self.SERVER_PORT)
         self._server.start()
 
-    def _process_devices_state(self):
+    def _process_devices_state(self, device_state):
         pass
 
     def tearDown(self):
         """cleanup after each test method finishes"""
         self._server.stop()
 
+
+class DeviceReportServicerTestBase(unittest.TestCase):
+    """Base class for DeviceReportServicer unit test"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+
+    def setUp(self):
+        self._on_receiving_result = MagicMock()
+        self._servicer = DeviceReportServicer(self._on_receiving_result)
+        servicers = {
+            DESCRIPTOR.services_by_name['DeviceReport']: self._servicer
+        }
+        self._test_server = server_from_dictionary(
+            servicers, strict_real_time())
+        port_learns = [
+            ('name', '1', '00:0X:00:00:00:01'),
+            ('name', '2', '00:0Y:00:00:00:02'),
+            ('name', '3', '00:0Z:00:00:00:03')
+        ]
+        for port_learn in port_learns:
+            self._servicer.process_port_learn(*port_learn)
 
 class FaucetStateCollectorTestBase(UnitTestBase):
     """Base class for Faucetizer unit tests"""
@@ -361,9 +386,12 @@ class PortsStateManagerTestBase(UnitTestBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
-        self._port_state_manager = PortStateManager(
+        self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
-            self._get_vlan_from_segment, testing_segment=self.SEQUESTER_SEGMENT)
+            self._get_vlan_from_segment)
+        self._port_state_manager = PortStateManager(
+            device_state_manager=self._device_state_manager,
+            testing_segment=self.SEQUESTER_SEGMENT)
         self._received_device_placements = []
         self._received_device_behaviors = []
 
@@ -373,7 +401,7 @@ class PortsStateManagerTestBase(UnitTestBase):
     def _process_device_behavior(self):
         pass
 
-    def _get_vlan_from_segment(self, vlan):
+    def _get_vlan_from_segment(self, segment):
         return
 
     def _verify_ports_states(self, expected_states):
@@ -414,3 +442,24 @@ class ForchestratorTestBase(UnitTestBase):
     def _initialize_forchestrator(self):
         forch_config = dict_proto(yaml.safe_load(self.FORCH_CONFIG), ForchConfig)
         self._forchestrator = Forchestrator(forch_config)
+
+
+class CustomizableDeviceStateManager(DeviceStateManager):
+    """Holder of customized methods for device state management"""
+
+    def __init__(self, device_placement_callback, device_behavior_callback, get_vlan_from_segment):
+        self._device_placement_callback = device_placement_callback
+        self._device_behavior_callback = device_behavior_callback
+        self._get_vlan_from_segment = get_vlan_from_segment
+
+    def process_device_placement(self, eth_src, placement, static=False):
+        if self._device_placement_callback:
+            self._device_placement_callback(eth_src, placement, static)
+
+    def process_device_behavior(self, eth_src, behavior, static=False):
+        if self._device_behavior_callback:
+            self._device_behavior_callback(eth_src, behavior, static)
+
+    def get_vlan_from_segment(self, segment):
+        if self._get_vlan_from_segment:
+            self._get_vlan_from_segment(segment)
