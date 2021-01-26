@@ -178,7 +178,7 @@ fi
 
 echo Connecting faux interfaces...
 add_faux t2sw1 1 1 $faux_dhcp
-add_faux t2sw2 1 2 $faux_dhcp
+add_faux t2sw2 1 2 $faux_dhcp http
 add_faux t2sw3 1 3
 
 dcount=${devices:-3}
