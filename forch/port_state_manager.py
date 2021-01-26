@@ -5,7 +5,7 @@ import threading
 from forch.utils import get_logger
 
 from forch.proto.shared_constants_pb2 import PortBehavior
-from forch.proto.devices_state_pb2 import DeviceBehavior
+from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement
 from forch.proto.shared_constants_pb2 import DVAState
 
 INVALID_VLAN = 0
@@ -143,30 +143,46 @@ class PortStateManager:
     def handle_device_placement(self, mac, device_placement, static=False):
         """Handle a learning or expired VLAN for a device"""
         if device_placement.connected:
-            # if device is learned
-            self._placement_to_mac[(device_placement.switch, device_placement.port)] = mac
-            self._process_device_placement(mac, device_placement, static=static)
+            return self._handle_learned_device(mac, device_placement, static)
 
-            if mac not in self._state_machines:
-                self._state_machines[mac] = PortStateMachine(
-                    mac, PortStateMachine.UNAUTHENTICATED, self._handle_unauthenticated_state,
-                    self._set_port_sequestered, self._set_port_operational,
-                    self._handle_infracted_state)
+        return self._handle_disconnected_device(device_placement)
 
-                device_behavior = (self._static_device_behaviors.get(mac) or
-                                   self._dynamic_device_behaviors.get(mac))
-                if device_behavior:
-                    static = mac in self._static_device_behaviors
-                    self.handle_device_behavior(mac, device_behavior, static=static)
+    def _handle_learned_device(self, mac, device_placement, static=False):
+        # if device is learned
+        old_mac = self._placement_to_mac.get((device_placement.switch, device_placement.port))
+        stale_mac = old_mac if old_mac and old_mac != mac else None
 
-            return True, None
+        if stale_mac:
+            switch = device_placement.switch
+            port = device_placement.port
+            self._logger.warning(
+                'Cleaning stale device placement: %s, %s, %s', old_mac, switch, port)
+            stale_placement = DevicePlacement(switch=switch, port=port, connected=False)
+            self._handle_disconnected_device(stale_placement)
 
-        # if device port is down
+        self._placement_to_mac[(device_placement.switch, device_placement.port)] = mac
+        self._process_device_placement(mac, device_placement, static=static)
+
+        if mac not in self._state_machines:
+            self._state_machines[mac] = PortStateMachine(
+                mac, PortStateMachine.UNAUTHENTICATED, self._handle_unauthenticated_state,
+                self._set_port_sequestered, self._set_port_operational,
+                self._handle_infracted_state)
+
+            device_behavior = (self._static_device_behaviors.get(mac) or
+                               self._dynamic_device_behaviors.get(mac))
+            if device_behavior:
+                static = mac in self._static_device_behaviors
+                self.handle_device_behavior(mac, device_behavior, static=static)
+
+        return True, None, stale_mac
+
+    def _handle_disconnected_device(self, device_placement):
         eth_src = self._placement_to_mac.pop((device_placement.switch, device_placement.port), None)
 
         # Dont propagate removal of placement if not in cache
         if not eth_src:
-            return False, None
+            return False, None, None
 
         self._process_device_placement(eth_src, device_placement, static=False)
         if eth_src in self._state_machines:
@@ -174,7 +190,7 @@ class PortStateManager:
 
         self._update_device_state_varz(eth_src, DVAState.initial)
 
-        return True, eth_src
+        return True, eth_src, None
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""
