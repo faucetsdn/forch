@@ -102,20 +102,6 @@ function test_forch_varz {
     grep 'static_mac_vlan' <<< $metrics | grep '9a:02:57:1e:8f:01' | awk '{print $2}' | tee -a $TEST_RESULTS
 }
 
-echo %%% initial | tee -a $TEST_RESULTS
-test_access initial
-
-# device are on default VLAN where only DHCP discover/request can go through
-echo %%% minimal-learning | tee -a $TEST_RESULTS
-docker exec forch-faux-1 arp -s 192.168.1.254 02:00:00:00:00:00
-docker exec forch-faux-2 arp -s 192.168.1.254 02:00:00:00:00:00
-docker exec forch-faux-3 arp -s 192.168.1.254 02:00:00:00:00:00
-send_udp forch-faux-1 "192.168.1.254/67" 5
-send_udp forch-faux-2 "192.168.1.254/68" 5
-sleep 10
-test_access minimal-learning
-
-stop_and_cleanup_radius
 start_radius_server
 docker ps
 restart_forch
@@ -150,30 +136,3 @@ sleep 20
 
 test_dva port-down
 test_forch_varz port-down
-
-echo %%% port-up | tee -a $TEST_RESULTS
-echo Turning on port of faux-3...
-set_iface_state faux-3 up
-sleep 5
-send_udp forch-faux-3 "192.168.1.254/67" 5
-sleep 20
-
-test_dva port-up
-test_forch_varz port-up
-
-# let device learnings expire in Faucet
-kill $send_pid
-sleep 300
-
-echo %%% mac-flipped | tee -a $TEST_RESULTS
-echo Modifying MAC of faux-3...
-modify_faux_mac 3
-send_udp forch-faux-1 "192.168.1.254/67" 5
-send_udp forch-faux-3 "192.168.1.254/67" 5
-sleep 20
-
-test_dva mac-flipped
-test_forch_varz mac-flipped
-
-
-stop_and_cleanup_radius
