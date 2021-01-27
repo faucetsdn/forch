@@ -1239,7 +1239,7 @@ class FaucetStateCollector:
     def _update_stack_topo_state_raw(self, timestamp, link_graph, stack_root, dps):
         topo_state = self.topo_state
         with self.lock:
-            self._logger.info('_update_stack_topo_state_raw link_graph: %s stack_root: %s dps: %s')
+            self._logger.info('_update_stack_topo_state_raw link_graph: %s stack_root: %s dps: %s', link_graph, stack_root, dps)
             links_hash = str(link_graph)
             if topo_state.get(LINKS_HASH) != links_hash:
                 topo_state[LINKS_GRAPH] = link_graph
