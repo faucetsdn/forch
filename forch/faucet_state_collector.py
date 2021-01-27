@@ -1329,7 +1329,11 @@ class FaucetStateCollector:
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
         with self.lock:
-            num_hosts = len(self.learned_macs)
+            num_hosts = 0
+            for mac in self.learned_macs:
+                switch, port = self._get_access_switch(mac)
+                if switch and port:
+                    num_hosts += 1
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
@@ -1340,7 +1344,7 @@ class FaucetStateCollector:
             error_msg = 'MAC address cannot be found. Please use list_hosts to get a list of hosts'
             return self._make_summary(State.broken, error_msg)
         for mac, mac_state in self.learned_macs.items():
-            if mac == src_mac:
+            if src_mac and mac == src_mac:
                 continue
             switch, port = self._get_access_switch(mac)
             if not switch or not port:
