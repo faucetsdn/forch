@@ -810,7 +810,8 @@ class Forchestrator(VarzUpdater):
         """Handler for local state collector to handle controller active state"""
         with self._active_state_lock:
             self._active_state = active_state
-            self._system_errors[ACTIVE_STATE] = error
+            if error:
+                self._system_errors[ACTIVE_STATE] = error
         self._faucet_collector.set_active(active_state)
 
     def get_switch_state(self, path, params):
