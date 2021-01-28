@@ -277,8 +277,9 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
+            vid = sample.labels['vid']
             if port:
-                self.process_port_learn(timestamp, dp_name, port, eth_src, None)
+                self.process_port_learn(timestamp, dp_name, port, eth_src, None, vid)
                 ports_learned = True
         if not ports_learned:
             self._logger.info('No learned ports restored.')
