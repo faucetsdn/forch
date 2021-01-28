@@ -1120,7 +1120,7 @@ class FaucetStateCollector:
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
-            self._logger.info('Learned %s at %s:%s as %s on %s', mac, name, port, ip_addr, vid)
+            self._logger.info('Learned %s at %s:%s as %s on vlan %s', mac, name, port, ip_addr, vid)
             port_attr = self._get_port_attributes(name, port)
 
             if port_attr and port_attr['type'] == 'access':
