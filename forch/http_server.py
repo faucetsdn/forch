@@ -29,8 +29,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def __init__(self, context, *args, **kwargs):
         self._context = context
-        super().__init__(*args, **kwargs)
         self._logger = get_logger('httpserv')
+        super().__init__(*args, **kwargs)
 
     # pylint: disable=invalid-name
     def do_GET(self):
