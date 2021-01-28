@@ -278,8 +278,9 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
+            vid = sample.labels['vid']
             if port:
-                self.process_port_learn(timestamp, dp_name, port, eth_src, None)
+                self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
         if not ports_learned:
             self._logger.info('No learned ports restored.')
@@ -1033,7 +1034,8 @@ class FaucetStateCollector:
                         device_placement = DevicePlacement(switch=name, port=port, connected=False)
                         self._placement_callback(None, device_placement)
 
-            self._logger.info('port_state update %s %s %s', name, port, state)
+            vid = port_config.get('native_vlan')
+            self._logger.info('port_state update: %s, %s, %s, %s', name, port, state, vid)
 
     def process_port_change(self, event):
         """Wrapper for process_port_state"""
@@ -1102,7 +1104,7 @@ class FaucetStateCollector:
 
     @_dump_states
     # pylint: disable=too-many-arguments
-    def process_port_learn(self, timestamp, name, port, mac, ip_addr):
+    def process_port_learn(self, timestamp, name, port, mac, vid, ip_addr=None):
         """process port learn event"""
         with self.lock:
             mac_entry = self.learned_macs.setdefault(mac, {})
@@ -1120,7 +1122,8 @@ class FaucetStateCollector:
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
-            self._logger.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
+            self._logger.info(
+                'Learned %s at %s:%s on vlan %s as %s', mac, name, port, vid, ip_addr)
             port_attr = self._get_port_attributes(name, port)
 
             radius_result = self.radius_results.get(mac)
