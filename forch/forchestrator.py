@@ -419,7 +419,8 @@ class Forchestrator(VarzUpdater):
             (FaucetEvent.PortChange, fcoll.process_port_change),
             (FaucetEvent.PortChange, self._device_report_server_process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
-                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
+                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip,
+                event.vid)),
             (FaucetEvent.L2Learn, self._device_report_server_process_port_learn),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
