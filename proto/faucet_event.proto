@@ -186,6 +186,9 @@ message L2Learn {
 
   // eth src IP
   string l3_src_ip = 6;
+
+  // vlan id
+  int32 vid = 7;
 }
 
 /*

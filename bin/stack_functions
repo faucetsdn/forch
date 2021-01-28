@@ -136,6 +136,21 @@ function add_faux {
     declare -g "ip_faux_$fnum"="$ip_address"
 }
 
+function set_iface_state {
+    local iface=$1
+    local state=$2
+    sudo ip link set dev $iface $state
+}
+
+function modify_faux_mac {
+    local fnum=$1
+    local mac=$2
+    if [ -z "$mac" ]; then
+        mac="02:03:04:00:00:0$fnum"
+    fi
+    docker exec forch-faux-$fnum ip link set faux-eth0 address $mac
+}
+
 function diagnose_stack {
     echo Stack health
     for bridge in $(sudo ovs-vsctl list-br); do

@@ -29,7 +29,7 @@ from forch.utils import (
 
 from forch.__version__ import __version__
 
-from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior
+from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior, DevicePlacement
 import forch.proto.faucet_event_pb2 as FaucetEvent
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import SystemState
@@ -66,6 +66,7 @@ _TARGET_GAUGE_METRICS = (
     'flow_packet_count_port_acl'
 )
 
+ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 
@@ -110,6 +111,7 @@ class Forchestrator(VarzUpdater):
         self._should_ignore_auth_result = False
 
         self._config_errors = {}
+        self._system_errors = {}
         self._faucet_config_summary = None
         self._metrics = None
         self._varz_proxy = None
@@ -380,12 +382,15 @@ class Forchestrator(VarzUpdater):
 
     def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
-        propagate_placement, mac = self._port_state_manager.handle_device_placement(
+        propagate_placement, mac, stale_mac = self._port_state_manager.handle_device_placement(
             eth_src, device_placement, static)
 
         src_mac = mac if mac else eth_src
 
         if self._authenticator and propagate_placement:
+            if stale_mac:
+                self._authenticator.process_device_placement(
+                    stale_mac, DevicePlacement(connected=False))
             self._authenticator.process_device_placement(src_mac, device_placement)
         else:
             self._logger.info(
@@ -416,7 +421,8 @@ class Forchestrator(VarzUpdater):
             (FaucetEvent.PortChange, fcoll.process_port_change),
             (FaucetEvent.PortChange, self._device_report_server_process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
-                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.l3_src_ip)),
+                event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid,
+                event.l3_src_ip)),
             (FaucetEvent.L2Learn, self._device_report_server_process_port_learn),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
@@ -663,9 +669,10 @@ class Forchestrator(VarzUpdater):
             detail += '. Faucet disconnected'
 
         with self._states_lock:
-            if self._config_errors:
-                has_error = True
-                detail += '. ' + '. '.join(self._config_errors.values())
+            for errors in (self._config_errors, self._system_errors):
+                if errors:
+                    has_error = True
+                    detail += '. ' + '. '.join(errors.values())
 
         if not detail:
             detail = 'n/a'
@@ -818,10 +825,12 @@ class Forchestrator(VarzUpdater):
         """Clean up relevant internal data in all collectors"""
         self._faucet_collector.cleanup()
 
-    def handle_active_state(self, active_state):
+    def handle_active_state(self, active_state, error=None):
         """Handler for local state collector to handle controller active state"""
         with self._active_state_lock:
             self._active_state = active_state
+            if error:
+                self._system_errors[ACTIVE_STATE] = error
         self._faucet_collector.set_active(active_state)
 
     def get_switch_state(self, path, params):

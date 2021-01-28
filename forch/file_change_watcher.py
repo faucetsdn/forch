@@ -72,17 +72,17 @@ class FileChangeHandler(FileSystemEventHandler):
 
     def on_modified(self, event):
         """When file is modified, check if file content has changed"""
-        super(FileChangeHandler, self).on_modified(event)
+        super().on_modified(event)
         self._handle_file_change(event)
 
     def on_created(self, event):
         """When file is created"""
-        super(FileChangeHandler, self).on_created(event)
+        super().on_created(event)
         self._handle_file_change(event)
 
     def on_deleted(self, event):
         """When file is deleted"""
-        super(FileChangeHandler, self).on_deleted(event)
+        super().on_deleted(event)
         self._handle_file_change(event)
 
     def _handle_file_change(self, event):
