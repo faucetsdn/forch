@@ -279,7 +279,7 @@ class FaucetStateCollector:
             eth_src = sample.labels['eth_src']
             vid = sample.labels['vid']
             if port:
-                self.process_port_learn(timestamp, dp_name, port, eth_src, None, vid)
+                self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
         if not ports_learned:
             self._logger.info('No learned ports restored.')
@@ -1103,7 +1103,7 @@ class FaucetStateCollector:
 
     @_dump_states
     # pylint: disable=too-many-arguments
-    def process_port_learn(self, timestamp, name, port, mac, ip_addr, vid):
+    def process_port_learn(self, timestamp, name, port, mac, vid, ip_addr=None):
         """process port learn event"""
         with self.lock:
             mac_entry = self.learned_macs.setdefault(mac, {})
@@ -1121,7 +1121,8 @@ class FaucetStateCollector:
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
-            self._logger.info('Learned %s at %s:%s as %s on vlan %s', mac, name, port, ip_addr, vid)
+            self._logger.info(
+                'Learned %s at %s:%s on vlan %s as %s', mac, name, port, vid, ip_addr)
             port_attr = self._get_port_attributes(name, port)
 
             if port_attr and port_attr['type'] == 'access':
