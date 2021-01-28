@@ -128,7 +128,7 @@ class Forchestrator(VarzUpdater):
 
     def initialize(self):
         """Initialize forchestrator instance"""
-        self._should_enable_faucetizer = self._calculate_config_files()
+        self._should_enable_faucetizer = self._calculate_orchestration_config()
 
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
@@ -310,8 +310,8 @@ class Forchestrator(VarzUpdater):
             raise Exception(
                 f'Structural config file does not exist: {self._structural_config_file}')
 
-        segments_vlans_file = orch_config.segments_vlans_file
-        self._segments_vlans_file = os.path.join(self._forch_config_dir, segments_vlans_file)
+        self._segments_vlans_file = os.path.join(
+            self._forch_config_dir, orch_config.segments_vlans_file)
         if not os.path.exists(self._segments_vlans_file):
             error_msg = f'Segments-to-vlans file does not exist: {self._segments_vlans_file}.'
             error_msg += ' DVA disabled'
