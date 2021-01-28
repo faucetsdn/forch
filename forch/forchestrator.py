@@ -320,7 +320,7 @@ class Forchestrator(VarzUpdater):
             return False
 
         if not orch_config.tail_acl:
-            error_msg = f'tail_acl configuration is missing. It is mandatory for enabling DVA'
+            error_msg = 'Missing tail_acl configuration for enabling DVA'
             self._config_errors[TAIL_ACL_CONFIG] = error_msg
             self._logger.error(error_msg)
             return False
