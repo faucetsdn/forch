@@ -72,12 +72,10 @@ null
 100
 "unauthenticated"
 "allow all"
-0
 @list_hosts dva-port-down
 200
 "static"
 "allow ICMP"
-null
 null
 null
 null

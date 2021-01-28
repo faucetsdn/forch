@@ -35,6 +35,13 @@ function test_dva {
     fdesc=dva-$1
     fout_dir=$OUT_DIR/$fdesc
     mkdir -p $fout_dir
+    shift
+
+    skip_pkt_count=
+    if [ "$1" == "skip_pkt_count" ]; then
+        skip_pkt_count=y
+        shift
+    fi
 
     echo Starting $fdesc tests | tee -a $TEST_RESULTS
     echo $fout_dir
@@ -67,7 +74,9 @@ function test_dva {
     jq '.switches."nz-kiwi-t2sw3".ports."1".vlan' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".dva_state' $api_result | tee -a $TEST_RESULTS
     jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
-    jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
+    if [ -z "$skip_pkt_count" ]; then
+        jq '.switches."nz-kiwi-t2sw3".ports."1".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
+    fi
 
     api_result=$fout_dir/list_hosts.json
     echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
@@ -79,7 +88,9 @@ function test_dva {
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.access' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.segment' $api_result | tee -a $TEST_RESULTS
     jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.role' $api_result | tee -a $TEST_RESULTS
-    jq '.eth_srcs."9a:02:57:1e:8f:03".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
+    if [ -z "$skip_pkt_count" ]; then
+        jq '.eth_srcs."9a:02:57:1e:8f:03".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
+    fi
 }
 
 function test_forch_varz {
@@ -147,7 +158,7 @@ sleep 5
 send_udp forch-faux-3 "192.168.1.254/67" 5
 sleep 20
 
-test_dva port-down
+test_dva port-down skip_pkt_count
 test_forch_varz port-down
 
 echo %%% port-up | tee -a $TEST_RESULTS
