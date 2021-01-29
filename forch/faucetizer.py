@@ -227,7 +227,8 @@ class Faucetizer(DeviceStateManager):
 
         return behavioral_faucet_config
 
-    def _finalize_host_ports_config(self, behavioral_faucet_config, testing_port_vlans):
+    def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans):
+        testing_port_vlans = new_testing_device_vlans.values()
         testing_port_configured = False
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():
@@ -241,6 +242,8 @@ class Faucetizer(DeviceStateManager):
         if testing_port_vlans and not testing_port_configured:
             self._logger.error('No testing port found')
 
+        self._testing_device_vlans = copy.copy(new_testing_device_vlans)
+
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
             if acl_name in acl_config:
@@ -248,7 +251,7 @@ class Faucetizer(DeviceStateManager):
         return False
 
     def _calculate_vlan_id(self, device_mac, device_behavior, available_testing_vlans,
-                           testing_port_vlans):
+                           new_testing_device_vlans):
         device_segment = device_behavior.segment
         sequester_segment = self._config.sequester_config.segment
         vid = None
@@ -259,8 +262,7 @@ class Faucetizer(DeviceStateManager):
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
             else:
                 vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
-                self._testing_device_vlans[device_mac] = vid
-                testing_port_vlans.add(vid)
+                new_testing_device_vlans[device_mac] = vid
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
@@ -297,11 +299,16 @@ class Faucetizer(DeviceStateManager):
                 'Unauthenticated VLAN is already defined in structural config: %s',
                 self._config.unauthenticated_vlan)
 
+    def _get_faucet_config_vlan(self, faucet_config, switch, port):
+        switch_config = faucet_config.get('dps', {}).get(switch, {})
+        port_config = switch_config.get('interfaces', {}).get(port, {})
+        return port_config.get('native_vlan')
+
     def _faucetize(self):
         behavioral_faucet_config = self._initialize_host_ports()
 
         available_testing_vlans = self._calculate_available_tesing_vlans()
-        testing_port_vlans = set()
+        new_testing_device_vlans = {}
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
@@ -322,9 +329,14 @@ class Faucetizer(DeviceStateManager):
                     mac, device_placement.switch, device_placement.port)
                 continue
 
-            vid = self._calculate_vlan_id(mac, device_behavior, available_testing_vlans,
-                                          testing_port_vlans)
-            self._logger.info('Placing %s into vlan %s', mac, vid)
+            vid = self._calculate_vlan_id(
+                mac, device_behavior, available_testing_vlans, new_testing_device_vlans)
+
+            old_vid = self._get_faucet_config_vlan(
+                self._behavioral_faucet_config, device_placement.switch, device_placement.port)
+            if vid != old_vid:
+                self._logger.info('Placing %s into vlan %s', mac, vid)
+
             if not vid:
                 continue
             port_cfg['native_vlan'] = vid
@@ -338,7 +350,7 @@ class Faucetizer(DeviceStateManager):
 
             self._update_device_dva_state(device_placement, device_behavior, device_type)
 
-        self._finalize_host_ports_config(behavioral_faucet_config, testing_port_vlans)
+        self._finalize_host_ports_config(behavioral_faucet_config, new_testing_device_vlans)
 
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
