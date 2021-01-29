@@ -211,12 +211,7 @@ class Faucetizer(DeviceStateManager):
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
 
-    def _initialize_host_ports(self):
-        if not self._structural_faucet_config:
-            raise Exception('Structural faucet configuration not provided')
-
-        behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
-
+    def _initialize_host_ports(self, behavioral_faucet_config):
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
                 if not self._get_port_type(port_map) == PortType.access:
@@ -242,7 +237,7 @@ class Faucetizer(DeviceStateManager):
         if testing_port_vlans and not testing_port_configured:
             self._logger.error('No testing port found')
 
-        self._testing_device_vlans = copy.copy(new_testing_device_vlans)
+        self._testing_device_vlans = copy.deepcopy(new_testing_device_vlans)
 
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
@@ -299,16 +294,11 @@ class Faucetizer(DeviceStateManager):
                 'Unauthenticated VLAN is already defined in structural config: %s',
                 self._config.unauthenticated_vlan)
 
-    def _get_faucet_config_vlan(self, faucet_config, switch, port):
-        switch_config = faucet_config.get('dps', {}).get(switch, {})
-        port_config = switch_config.get('interfaces', {}).get(port, {})
-        return port_config.get('native_vlan')
-
-    def _faucetize(self):
-        behavioral_faucet_config = self._initialize_host_ports()
-
+    def _update_ports_config(self, behavioral_faucet_config):
         available_testing_vlans = self._calculate_available_tesing_vlans()
         new_testing_device_vlans = {}
+
+        self._initialize_host_ports(behavioral_faucet_config)
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
@@ -351,6 +341,18 @@ class Faucetizer(DeviceStateManager):
             self._update_device_dva_state(device_placement, device_behavior, device_type)
 
         self._finalize_host_ports_config(behavioral_faucet_config, new_testing_device_vlans)
+
+    def _get_faucet_config_vlan(self, faucet_config, switch, port):
+        switch_config = faucet_config.get('dps', {}).get(switch, {})
+        port_config = switch_config.get('interfaces', {}).get(port, {})
+        return port_config.get('native_vlan')
+
+    def _faucetize(self):
+        if not self._structural_faucet_config:
+            raise Exception('Structural faucet configuration not provided')
+
+        behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
+        self._update_ports_config(behavioral_faucet_config)
 
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
