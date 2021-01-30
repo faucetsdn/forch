@@ -187,8 +187,9 @@ class FaucetConfigGenerator():
 
         return FaucetConfig(dps=dps, version=2, include=['uniform.yaml'], vlans=vlans)
 
-    def create_corp_faucet_config(self, setup_vlan):
+    def create_corp_faucet_config(self):
         """Create Faucet config for corp network"""
+        setup_vlan = SETUP_VLAN
         switch = 'corp'
         dps = {}
 
@@ -200,8 +201,6 @@ class FaucetConfigGenerator():
         return FaucetConfig(dps=dps, version=2)
 
 
-# pylint: disable too-many-locals
-# pylint: disable too-many-branches
 def main(argv):
     """main method for standalone run"""
     config_generator = FaucetConfigGenerator()
@@ -211,7 +210,6 @@ def main(argv):
     devices = 1
     topo_type = STACK
     argv = argv[1:]
-    vlan_id = SETUP_VLAN
 
     help_msg = """
     <python3> build_config.py -e <egress_switches> -a <access_switches> -d <devices per switch>
@@ -220,7 +218,7 @@ def main(argv):
 
     try:
         opts, _ = getopt.getopt(
-            argv, 'he:a:d:p:t:v:', ['egress=', 'access=', 'devices=', 'path=', 'type=', 'vlan='])
+            argv, 'he:a:d:p:t:', ['egress=', 'access=', 'devices=', 'path=', 'type='])
     except getopt.GetoptError:
         print(help_msg)
         sys.exit(2)
@@ -238,13 +236,11 @@ def main(argv):
             filepath = arg
         elif opt in ('-t', '--type'):
             topo_type = arg
-        elif opt in ('-v', '--vlan'):
-            vlan_id = int(arg)
 
     if topo_type == FLAT:
         faucet_config = config_generator.create_flat_faucet_config(access, devices)
     elif topo_type == CORP:
-        faucet_config = config_generator.create_corp_faucet_config(vlan_id)
+        faucet_config = config_generator.create_corp_faucet_config()
     elif topo_type == STACK:
         faucet_config = config_generator.create_scale_faucet_config(egress, access, devices)
     else:
