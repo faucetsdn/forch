@@ -200,6 +200,8 @@ class FaucetConfigGenerator():
         return FaucetConfig(dps=dps, version=2)
 
 
+# pylint: disable too-many-locals
+# pylint: disable too-many-branches
 def main(argv):
     """main method for standalone run"""
     config_generator = FaucetConfigGenerator()
