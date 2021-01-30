@@ -71,6 +71,5 @@ monitor_log "Remaining target sets: []"
 
 report_result
 
-docker exec forch-faux-1 ping -c 5 192.168.1.0 || true
-docker exec forch-faux-2 ping -c 5 192.168.1.0 || true
-docker exec forch-faux-3 ping -c 5 192.168.1.0 || true
+docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | tee -a $TEST_RESULTS
+docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | tee -a $TEST_RESULTS
