@@ -112,3 +112,9 @@ vlans:
   500:
     acls_in: [uniform_500]
     description: INFRA
+acls:
+  tail_acl:
+    - rule:
+        description: allow all
+        actions:
+          allow: True

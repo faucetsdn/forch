@@ -13,6 +13,7 @@ orchestration:
   static_device_behavior: behaviors.yaml
   gauge_config_file: gauge.yaml
   segments_vlans_file: segments-to-vlans.yaml
+  tail_acl: tail_acl
   sequester_config:
     segment: FOT
     vlan_start: 272

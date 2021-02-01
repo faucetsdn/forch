@@ -68,6 +68,8 @@ _TARGET_GAUGE_METRICS = (
 
 ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
+SEGMENTS_VLANS_FILE = 'segments_vlans_file'
+TAIL_ACL_CONFIG = 'tail_acl_config'
 
 
 class Forchestrator(VarzUpdater):
@@ -128,7 +130,7 @@ class Forchestrator(VarzUpdater):
 
     def initialize(self):
         """Initialize forchestrator instance"""
-        self._should_enable_faucetizer = self._calculate_config_files()
+        self._should_enable_faucetizer = self._calculate_orchestration_config()
 
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
@@ -283,7 +285,7 @@ class Forchestrator(VarzUpdater):
         if self._metrics:
             self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
 
-    def _calculate_config_files(self):
+    def _calculate_orchestration_config(self):
         orch_config = self._config.orchestration
 
         self._forch_config_dir = os.getenv('FORCH_CONFIG_DIR', _FORCH_CONFIG_DIR_DEFAULT)
@@ -299,22 +301,33 @@ class Forchestrator(VarzUpdater):
         if gauge_config_file:
             self._gauge_config_file = os.path.join(self._forch_config_dir, gauge_config_file)
 
-        segments_vlans_file = orch_config.segments_vlans_file
-        if segments_vlans_file:
-            self._segments_vlans_file = os.path.join(self._forch_config_dir, segments_vlans_file)
-
         structural_config_file = orch_config.structural_config_file
-        if structural_config_file:
-            self._structural_config_file = os.path.join(
-                self._forch_config_dir, structural_config_file)
+        if not structural_config_file:
+            return False
 
-            if not os.path.exists(self._structural_config_file):
-                raise Exception(
-                    f'Structural config file does not exist: {self._structural_config_file}')
+        self._structural_config_file = os.path.join(
+            self._forch_config_dir, structural_config_file)
 
-            return True
+        if not os.path.exists(self._structural_config_file):
+            raise Exception(
+                f'Structural config file does not exist: {self._structural_config_file}')
 
-        return False
+        self._segments_vlans_file = os.path.join(
+            self._forch_config_dir, orch_config.segments_vlans_file)
+        if not os.path.exists(self._segments_vlans_file):
+            error_msg = (
+                f'DVA disabled due to missing segments-to-vlans file: {self._segments_vlans_file}')
+            self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
+            self._logger.error(error_msg)
+            return False
+
+        if not orch_config.tail_acl:
+            error_msg = 'Missing tail_acl configuration for enabling DVA'
+            self._config_errors[TAIL_ACL_CONFIG] = error_msg
+            self._logger.error(error_msg)
+            return False
+
+        return True
 
     def _calculate_sequester_config(self):
         sequester_config = self._config.orchestration.sequester_config
