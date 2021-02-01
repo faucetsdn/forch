@@ -313,8 +313,8 @@ class Forchestrator(VarzUpdater):
         self._segments_vlans_file = os.path.join(
             self._forch_config_dir, orch_config.segments_vlans_file)
         if not os.path.exists(self._segments_vlans_file):
-            error_msg = f'Segments-to-vlans file does not exist: {self._segments_vlans_file}.'
-            error_msg += ' DVA disabled'
+            error_msg = (f'DVA disable due to missing segments-to-vlans file:'
+                         '{self._segments_vlans_file}')
             self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
             self._logger.error(error_msg)
             return False
