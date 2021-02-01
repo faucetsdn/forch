@@ -112,7 +112,7 @@ class Forchestrator(VarzUpdater):
 
         self._config_errors = {}
         self._system_errors = {}
-        self._faucet_config_summary = None
+        self._faucet_config_summary = SystemState.ConfigSummary()
         self._metrics = None
         self._varz_proxy = None
 
