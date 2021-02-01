@@ -517,3 +517,19 @@ function test_varz_value {
     value=$( printf "%.0f" $(wget $query_path -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2}') )
     echo $varz $value | tee -a $TEST_RESULTS
 }
+
+function monitor_log {
+    expected=$1
+    daqlog=$DAQBASE/inst/cmdrun.log
+    while true; do
+        sleep 1
+        test_done=$(cat $daqlog | fgrep "$1" || true)
+        if [ -n "$test_done" ]; then
+            break
+        fi
+    done
+}
+
+function redact {
+    sed -re 's/time [0-9]+ms/XXX/'
+}
