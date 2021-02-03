@@ -33,7 +33,7 @@ results=
 count=0
 for file in forch/*.py testing/python_lib/*.py; do
     echo Checking file $file... | tee -a $RESULTS.$count
-    pylint --rcfile=$PYLINTRC $file >> $RESULTS.$count &
+    pylint --rcfile=$PYLINTRC $file > $RESULTS.$count &
     count=$((count+1))
 done
 
