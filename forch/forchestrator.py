@@ -1,5 +1,6 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
+import abc
 from datetime import datetime
 import functools
 import os
@@ -70,7 +71,19 @@ ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 
 
-class Forchestrator(VarzUpdater):
+class OrchestrationManager(abc.ABC):
+    """Interface collecting the methods that manage orchestration"""
+
+    @abc.abstractmethod
+    def reregister_include_file_watchers(self, old_include_files, new_include_files):
+        """reregister the include file watchers"""
+
+    @abc.abstractmethod
+    def reset_faucet_config_writing_time(self):
+        """reset config writing time"""
+
+
+class Forchestrator(VarzUpdater, OrchestrationManager):
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""
 
@@ -192,7 +205,7 @@ class Forchestrator(VarzUpdater):
             raise MetricsFetchingError('Could not get Faucet varz metrics')
 
         self._register_handlers()
-        self.start()
+        self._start()
         self._initialized = True
 
     def _initialize_orchestration(self):
@@ -225,7 +238,7 @@ class Forchestrator(VarzUpdater):
             return
         self._logger.info('Initializing authenticator')
         self._authenticator = Authenticator(orch_config.auth_config,
-                                            self.handle_auth_result,
+                                            self._handle_auth_result,
                                             metrics=self._metrics)
 
     def _process_static_device_placement(self):
@@ -339,8 +352,7 @@ class Forchestrator(VarzUpdater):
             os.path.dirname(self._structural_config_file))
 
         self._faucetizer = faucetizer.Faucetizer(
-            orch_config, self._structural_config_file, self._behavioral_config_file,
-            self._reregister_include_file_handlers, self._reset_faucet_config_writing_time)
+            orch_config, self._structural_config_file, self._behavioral_config_file, self)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -370,15 +382,12 @@ class Forchestrator(VarzUpdater):
         self._gauge_metrics_scheduler = HeartbeatScheduler(interval_sec=interval_sec)
         self._gauge_metrics_scheduler.add_callback(heartbeat_update_packet_count)
 
-    def _reregister_include_file_handlers(self, old_include_files, new_include_files):
+    def reregister_include_file_watchers(self, old_include_files, new_include_files):
+        """reregister the include file watchers"""
         self._config_file_watcher.unregister_file_callbacks(old_include_files)
         for new_include_file in new_include_files:
             self._config_file_watcher.register_file_callback(
                 new_include_file, self._faucetizer.reload_include_file)
-
-    def initialized(self):
-        """If forch is initialized or not"""
-        return self._initialized
 
     def _process_device_placement(self, eth_src, device_placement, static=False):
         """Call device placement API for faucetizer/authenticator"""
@@ -397,8 +406,7 @@ class Forchestrator(VarzUpdater):
                 'Ignored deauthentication for port %s on switch %s',
                 device_placement.port, device_placement.switch)
 
-    def handle_auth_result(self, mac, access, segment, role):
-        """Method passed as callback to authenticator to forward auth results"""
+    def _handle_auth_result(self, mac, access, segment, role):
         self._faucet_collector.update_radius_result(mac, access, segment, role)
         with self._states_lock:
             if self._should_ignore_auth_result:
@@ -499,7 +507,8 @@ class Forchestrator(VarzUpdater):
 
             self._last_faucet_config_writing_time = None
 
-    def _reset_faucet_config_writing_time(self):
+    def reset_faucet_config_writing_time(self):
+        """reset faucet config writing time"""
         with self._timer_lock:
             self._last_faucet_config_writing_time = time.time()
 
@@ -516,6 +525,10 @@ class Forchestrator(VarzUpdater):
 
     def main_loop(self):
         """Main event processing loop"""
+        if not self._initialized:
+            self._logger.warning('Not properly initialized')
+            return False
+
         self._logger.info('Entering main event loop...')
         try:
             while self._faucet_events:
@@ -535,8 +548,9 @@ class Forchestrator(VarzUpdater):
         except Exception as e:
             self._logger.error("Exception found in main loop: %s", e)
             raise
+        return True
 
-    def start(self):
+    def _start(self):
         """Start forchestrator components"""
         if self._faucetize_scheduler:
             self._faucetize_scheduler.start()

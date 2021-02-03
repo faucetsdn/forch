@@ -453,13 +453,16 @@ class CustomizableDeviceStateManager(DeviceStateManager):
         self._get_vlan_from_segment = get_vlan_from_segment
 
     def process_device_placement(self, eth_src, placement, static=False):
+        """process a device placement"""
         if self._device_placement_callback:
             self._device_placement_callback(eth_src, placement, static)
 
     def process_device_behavior(self, eth_src, behavior, static=False):
+        """process device behavior"""
         if self._device_behavior_callback:
             self._device_behavior_callback(eth_src, behavior, static)
 
     def get_vlan_from_segment(self, segment):
+        """get the vlan for a given segment"""
         if self._get_vlan_from_segment:
             self._get_vlan_from_segment(segment)
