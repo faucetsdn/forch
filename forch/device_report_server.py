@@ -25,9 +25,9 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._port_device_mapping = {}
         self._port_events_listeners = {}
 
-    def process_port_change(self, timestamp, name, port, state):
+    def process_port_change(self, timestamp, dp_name, port, state):
         """Process faucet port state events"""
-        mac = self._port_device_mapping.get((name, port))
+        mac = self._port_device_mapping.get((dp_name, port))
         if not mac or mac not in self._port_events_listeners:
             return
         event = PortBehavior.PortEvent.up if state else PortBehavior.PortEvent.down
@@ -35,9 +35,9 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         for queue in self._port_events_listeners[mac]:
             queue.put(port_event)
 
-    def process_port_learn(self, name, port, mac):
+    def process_port_learn(self, dp_name, port, mac):
         """Process faucet port learn events"""
-        self._port_device_mapping[(name, port)] = mac
+        self._port_device_mapping[(dp_name, port)] = mac
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):

@@ -67,9 +67,7 @@ def run_forchestrator():
     finally:
         http_server.start_server()
 
-    if forchestrator.initialized():
-        forchestrator.main_loop()
-    else:
+    if not forchestrator.main_loop():
         try:
             http_server.join_thread()
         except KeyboardInterrupt:

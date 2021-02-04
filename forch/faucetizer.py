@@ -45,7 +45,7 @@ class Faucetizer(DeviceStateManager):
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, behavioral_config_file,
-                 reregister_include_file_handlers=None, reset_faucet_config_writing_time=None):
+                 orchestration_manager=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
         self._device_behaviors = {}
@@ -65,8 +65,7 @@ class Faucetizer(DeviceStateManager):
         self._all_testing_vlans = None
         self._available_testing_vlans = None
         self._watched_include_files = []
-        self._reregister_include_file_handlers = reregister_include_file_handlers
-        self._reset_faucet_config_writing_time = reset_faucet_config_writing_time
+        self._orchestration_manager = orchestration_manager
         self._lock = threading.RLock()
         self._logger = get_logger('faucetizer')
 
@@ -147,8 +146,8 @@ class Faucetizer(DeviceStateManager):
 
             self._behavioral_include = behavioral_include
 
-            if not self._config.faucetize_interval_sec and self._reregister_include_file_handlers:
-                self._reregister_include_file_handlers(
+            if not self._config.faucetize_interval_sec and self._orchestration_manager:
+                self._orchestration_manager.reregister_include_file_watchers(
                     self._watched_include_files, new_watched_include_files)
             self._watched_include_files = new_watched_include_files
 
@@ -425,8 +424,8 @@ class Faucetizer(DeviceStateManager):
         self._yaml_atomic_dump(self._behavioral_faucet_config, self._behavioral_config_file)
         self._logger.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
-        if self._reset_faucet_config_writing_time:
-            self._reset_faucet_config_writing_time()
+        if self._orchestration_manager:
+            self._orchestration_manager.reset_faucet_config_writing_time()
 
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
