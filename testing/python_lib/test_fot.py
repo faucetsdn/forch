@@ -158,7 +158,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
         )
 
     def _send_port_change_event(self, kind, args):
-        dp_name, port, mac, state, vlan, assigned  = args
+        dp_name, port, mac, state, vlan, assigned = args
         if kind == 'port':
             self._servicer.process_port_change(dp_name, port, state)
         elif kind == 'lern':
