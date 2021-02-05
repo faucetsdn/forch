@@ -11,10 +11,10 @@ TARGET=$1
 shift
 
 if [[ -z $GIT_URL ]]; then
-    GIT_URL=https://github.com/faucetsdn/daq.git
+    GIT_URL=https://github.com/faucetsdn/forch.git
 fi
 
-GIT_PEER=`echo $GIT_URL | sed s/daq/$TARGET/`
+GIT_PEER=`echo $GIT_URL | sed s/forch/$TARGET/`
 echo Using $TARGET target git repo $GIT_PEER
 
 TARGET_REPO=$GIT_PEER
