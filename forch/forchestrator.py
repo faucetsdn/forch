@@ -427,6 +427,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             else:
                 device_behavior = DeviceBehavior(segment=segment, role=role)
                 self._port_state_manager.handle_device_behavior(mac, device_behavior)
+                self._device_report_server_process_port_assign(mac, segment)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
@@ -454,13 +455,18 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def _device_report_server_process_port_change(self, event):
         if self._device_report_server:
             self._device_report_server.process_port_change(
-                event.timestamp, event.dp_name, event.port_no,
+                event.dp_name, event.port_no,
                 event.status and event.reason != 'DELETE')
 
     def _device_report_server_process_port_learn(self, event):
         if self._device_report_server:
             self._device_report_server.process_port_learn(
-                event.dp_name, event.port_no, event.eth_src)
+                event.dp_name, event.port_no, event.eth_src, event.vid)
+
+    def _device_report_server_process_port_assign(self, mac, segment):
+        if self._device_report_server and self._faucetizer:
+            vlan = self._faucetizer.get_vlan_from_segment(segment)
+            self._device_report_server.process_port_assign(mac, vlan)
 
     def _get_varz_config(self):
         metrics = self._varz_collector.retry_get_metrics(

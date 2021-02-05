@@ -7,8 +7,9 @@ message Device {
 }
 
 message DevicePortEvent {
-  PortBehavior.PortEvent event = 1;
-  string timestamp = 2;
+  PortBehavior.PortState state = 1;
+  int32 device_vlan = 3;
+  int32 assigned_vlan = 4;
 }
 
 message DevicesState {

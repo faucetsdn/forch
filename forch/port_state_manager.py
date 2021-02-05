@@ -194,9 +194,6 @@ class PortStateManager:
 
     def _handle_authenticated_device(self, mac, device_behavior, static):
         """Initialize or update the state machine for an authenticated device"""
-        if not self._process_device_behavior:
-            return
-
         with self._lock:
             device_behaviors = (
                 self._static_device_behaviors if static else self._dynamic_device_behaviors)
@@ -213,9 +210,6 @@ class PortStateManager:
 
     def _handle_deauthenticated_device(self, mac, static):
         """Handle an deauthenticated device"""
-        if not self._process_device_behavior:
-            return
-
         with self._lock:
             device_behaviors = (
                 self._static_device_behaviors if static else self._dynamic_device_behaviors)
@@ -253,17 +247,12 @@ class PortStateManager:
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
-        if not self._process_device_behavior:
-            return
         device_behavior = DeviceBehavior(segment=self._testing_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
         self._update_device_state_varz(mac, DVAState.sequestered)
 
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""
-        if not self._process_device_behavior:
-            return
-
         static = mac in self._static_device_behaviors
         device_behavior = (
             self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))

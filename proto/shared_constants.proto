@@ -167,7 +167,7 @@ message PortBehavior {
     deauthenticated = 6;
   }
   
-  enum PortEvent {
+  enum PortState {
     down = 0;
     up = 1;
   }

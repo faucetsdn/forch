@@ -15,6 +15,15 @@ PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10
 
 
+class DeviceEntry:
+    """Utility class for device entries"""
+
+    mac = None
+    vlan = None
+    assigned = None
+    port_up = None
+
+
 class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     """gRPC servicer to receive devices state"""
 
@@ -25,19 +34,44 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._port_device_mapping = {}
         self._port_events_listeners = {}
 
-    def process_port_change(self, timestamp, dp_name, port, state):
-        """Process faucet port state events"""
-        mac = self._port_device_mapping.get((dp_name, port))
-        if not mac or mac not in self._port_events_listeners:
+    def _send_device_port_event(self, device):
+        if not device or device.mac not in self._port_events_listeners:
             return
-        event = PortBehavior.PortEvent.up if state else PortBehavior.PortEvent.down
-        port_event = DevicePortEvent(event=event, timestamp=timestamp)
-        for queue in self._port_events_listeners[mac]:
+        port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
+        port_event = DevicePortEvent(state=port_state, device_vlan=device.vlan,
+                                     assigned_vlan=device.assigned)
+        self._logger.info('TAP sending port event %s %s %s %s %s', device.mac, port_state,
+                          device.vlan, device.assigned, port_event)
+        for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
 
-    def process_port_learn(self, dp_name, port, mac):
+    def process_port_change(self, dp_name, port, state):
+        """Process faucet port state events"""
+        device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
+        device.port_up = state
+        if not state:
+            device.assigned = None
+            device.vlan = None
+        self._send_device_port_event(device)
+
+    def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
-        self._port_device_mapping[(dp_name, port)] = mac
+        device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
+        device.mac = mac
+        device.vlan = vlan
+        device.port_up = True
+        self._send_device_port_event(device)
+
+    def process_port_assign(self, mac, assigned):
+        """Process assigning a device to a vlan"""
+        self._logger.info('TAP assigning %s %s', mac, assigned)
+        for mapping in self._port_device_mapping:
+            device = self._port_device_mapping.get(mapping)
+            if device.mac == mac:
+                device.assigned = assigned
+                self._send_device_port_event(device)
+                return
+        assert False, 'assignment mapping for %s not found' % mac
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):
@@ -86,6 +120,10 @@ class DeviceReportServer:
     def process_port_learn(self, *args):
         """Process faucet port learn events"""
         self._servicer.process_port_learn(*args)
+
+    def process_port_assign(self, *args):
+        """Process faucet port vlan assignment"""
+        self._servicer.process_port_assign(*args)
 
     def start(self):
         """Start the server"""
