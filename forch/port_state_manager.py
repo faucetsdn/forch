@@ -148,7 +148,6 @@ class PortStateManager:
         return self._handle_disconnected_device(device_placement)
 
     def _handle_learned_device(self, mac, device_placement, static=False):
-        # if device is learned
         old_mac = self._placement_to_mac.get((device_placement.switch, device_placement.port))
         stale_mac = old_mac if old_mac and old_mac != mac else None
 
@@ -172,8 +171,8 @@ class PortStateManager:
             device_behavior = (self._static_device_behaviors.get(mac) or
                                self._dynamic_device_behaviors.get(mac))
             if device_behavior:
-                static = mac in self._static_device_behaviors
-                self.handle_device_behavior(mac, device_behavior, static=static)
+                static_behavior = mac in self._static_device_behaviors
+                self.handle_device_behavior(mac, device_behavior, static=static_behavior)
 
         return True, None, stale_mac
 

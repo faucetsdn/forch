@@ -248,11 +248,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not placement_file_name:
             return
         placement_file_path = os.path.join(self._forch_config_dir, placement_file_name)
-        self._reload_static_device_placment(placement_file_path)
+        self._reload_static_device_placement(placement_file_path)
         self._config_file_watcher.register_file_callback(
-            placement_file_path, self._reload_static_device_placment)
+            placement_file_path, self._reload_static_device_placement)
 
-    def _reload_static_device_placment(self, file_path):
+    def _reload_static_device_placement(self, file_path):
         if self._faucetizer:
             self._faucetizer.clear_static_placements()
         devices_state = yaml_proto(file_path, DevicesState)

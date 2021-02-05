@@ -60,17 +60,18 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         device.mac = mac
         device.vlan = vlan
         device.port_up = True
+        device.assigned = self._mac_assignments.get(mac)
         self._send_device_port_event(device)
 
     def process_port_assign(self, mac, assigned):
         """Process assigning a device to a vlan"""
+        self._mac_assignments[mac] = assigned
         for mapping in self._port_device_mapping:
             device = self._port_device_mapping.get(mapping)
             if device.mac == mac:
                 device.assigned = assigned
                 self._send_device_port_event(device)
                 return
-        assert False, 'assignment mapping for %s not found' % mac
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):
