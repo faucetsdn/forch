@@ -40,6 +40,8 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
         port_event = DevicePortEvent(state=port_state, device_vlan=device.vlan,
                                      assigned_vlan=device.assigned)
+        self._logger.info('Sending DevicePortEvent %s %s %s %s', device.mac, port_state,
+                             device.vlan, device.assigned)
         for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
 
