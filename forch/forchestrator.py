@@ -289,6 +289,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
+            self._device_report_server_process_port_assign(mac, device_behavior.segment)
 
     def update_device_state_varz(self, mac, state):
         if self._metrics:
