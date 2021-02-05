@@ -33,6 +33,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._logger = get_logger('drserver')
         self._port_device_mapping = {}
         self._port_events_listeners = {}
+        self._mac_assignments = {}
 
     def _send_device_port_event(self, device):
         if not device or device.mac not in self._port_events_listeners:
