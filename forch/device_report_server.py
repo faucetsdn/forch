@@ -40,8 +40,6 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
         port_event = DevicePortEvent(state=port_state, device_vlan=device.vlan,
                                      assigned_vlan=device.assigned)
-        self._logger.info('TAP sending port event %s %s %s %s %s', device.mac, port_state,
-                          device.vlan, device.assigned, port_event)
         for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
 
@@ -64,7 +62,6 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
 
     def process_port_assign(self, mac, assigned):
         """Process assigning a device to a vlan"""
-        self._logger.info('TAP assigning %s %s', mac, assigned)
         for mapping in self._port_device_mapping:
             device = self._port_device_mapping.get(mapping)
             if device.mac == mac:
