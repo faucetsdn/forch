@@ -103,7 +103,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._start_time = datetime.fromtimestamp(time.time()).isoformat()
         self._faucet_prom_endpoint = None
         self._gauge_prom_endpoint = None
-        self._behavorial_config = None
+        self._behavioral_config = None
 
         self._faucet_collector = None
         self._local_collector = None
@@ -497,8 +497,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._faucet_events.set_event_horizon(event_horizon)
 
     def _restore_faucet_config(self, timestamp, config_hash):
-        config_info, faucet_dps, behavorial_config = self._get_faucet_config()
-        self._behavorial_config = behavorial_config
+        config_info, faucet_dps, behavioral_config = self._get_faucet_config()
+        self._behavioral_config = behavioral_config
         self._update_config_warning_varz()
 
         if config_hash != config_info['hashes']:
@@ -799,7 +799,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             raise
 
     def _is_access(self, dp_name, port):
-        interface = self._behavorial_config['dps'][dp_name]['interfaces'][port]
+        interface = self._behavioral_config['dps'][dp_name]['interfaces'][port]
         return 'native_vlan' in interface
 
     def _validate_config(self, config):
@@ -914,7 +914,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def get_sys_config(self, path, params):
         """Get overall config from faucet config file"""
         try:
-            assert self._behavorial_config, 'behavorial config not initialized'
+            assert self._behavioral_config, 'behavioral config not initialized'
             faucet_config_map = {
                 'behavioral': self._behavioral_config,
                 'warnings': dict(self._faucet_config_summary.warnings)

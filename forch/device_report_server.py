@@ -41,10 +41,16 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
         port_event = DevicePortEvent(state=port_state, device_vlan=device.vlan,
                                      assigned_vlan=device.assigned)
-        self._logger.info('Sending DevicePortEvent %s %s %s %s', device.mac, port_state,
-                             device.vlan, device.assigned)
+        self._logger.info('Sending %d DevicePortEvent %s %s %s %s',
+                          len(self._port_events_listeners[device.mac]), device.mac, port_state,
+                          device.vlan, device.assigned)
         for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
+
+    def _send_initial_reply(self, mac_addr):
+        for device in self._port_device_mapping.values():
+            if device.mac == mac_addr:
+                self._send_device_port_event(device)
 
     def process_port_change(self, dp_name, port, state):
         """Process faucet port state events"""
@@ -94,7 +100,9 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     # pylint: disable=invalid-name
     def GetPortState(self, request, context):
         listener_q = Queue()
+        self._logger.info('Attaching response channel for device %s', request.mac)
         self._port_events_listeners.setdefault(request.mac, []).append(listener_q)
+        self._send_initial_reply(request.mac)
         while True:
             item = listener_q.get()
             if item is False:
