@@ -58,8 +58,7 @@ monitor_log "Remaining target sets: []"
 
 report_vlans
 
-# The fgrep is a temporary hack until DAQ can be updated with a newer version.
-cat $DAQBASE/inst/result.log | fgrep -v 1e8f00 sort | tee -a $TEST_RESULTS
+cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
 
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
