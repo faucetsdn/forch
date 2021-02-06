@@ -2,6 +2,7 @@
 
 from concurrent import futures
 from queue import Queue
+import threading
 import grpc
 
 from forch.utils import get_logger
@@ -34,6 +35,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._port_device_mapping = {}
         self._port_events_listeners = {}
         self._mac_assignments = {}
+        self._lock = threading.Lock()
 
     def _send_device_port_event(self, device):
         if not device or device.mac not in self._port_events_listeners:
@@ -48,13 +50,15 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
             queue.put(port_event)
 
     def _send_initial_reply(self, mac_addr):
-        for device in self._port_device_mapping.values():
-            if device.mac == mac_addr:
-                self._send_device_port_event(device)
+        with self._lock:
+            for device in self._port_device_mapping.values():
+                if device.mac == mac_addr:
+                    self._send_device_port_event(device)
 
     def process_port_change(self, dp_name, port, state):
         """Process faucet port state events"""
-        device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
+        with self._lock:
+            device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
         device.port_up = state
         if not state:
             device.assigned = None
@@ -63,7 +67,8 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
 
     def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
-        device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
+        with self._lock:
+            device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
         device.mac = mac
         device.vlan = vlan
         device.port_up = True
@@ -73,12 +78,13 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     def process_port_assign(self, mac, assigned):
         """Process assigning a device to a vlan"""
         self._mac_assignments[mac] = assigned
-        for mapping in self._port_device_mapping:
-            device = self._port_device_mapping.get(mapping)
-            if device.mac == mac:
-                device.assigned = assigned
-                self._send_device_port_event(device)
-                return
+        with self._lock:
+            for mapping in self._port_device_mapping:
+                device = self._port_device_mapping.get(mapping)
+                if device.mac == mac:
+                    device.assigned = assigned
+                    self._send_device_port_event(device)
+                    return
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):

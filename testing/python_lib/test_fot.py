@@ -165,13 +165,21 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
             self._servicer.process_port_learn(dp_name, port, mac, vlan)
         elif kind == 'asgn':
             self._servicer.process_port_assign(mac, assigned)
+        elif kind == 'none':
+            pass
+        else:
+            assert False, 'unknown event kind %s' % kind
 
     def _check_port_change_event(self, response, expected):
-        _, _, _, state, vlan, assigned = expected
-        state = PortBehavior.PortState.up if state else PortBehavior.PortState.down
-        self.assertEqual(response.state, state)
-        self.assertEqual(response.device_vlan, vlan)
-        self.assertEqual(response.assigned_vlan, assigned)
+        try:
+            _, _, _, state, vlan, assigned = expected
+            port_state = PortBehavior.PortState.up if state else PortBehavior.PortState.down
+            self.assertEqual(response.state, port_state)
+            self.assertEqual(response.device_vlan, vlan)
+            self.assertEqual(response.assigned_vlan, assigned)
+        except:
+            print('comparing', response, expected)
+            raise
 
     def test_requesting_port_events(self):
         """Test behavior of the servicer with port events."""
@@ -179,10 +187,14 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
         mac_addr = "00:0X:00:00:00:01"
         method = self._setup_port_state_server(mac_addr)
 
+        # Prevent initialization race condition.
+        time.sleep(2)
+
         port_changes = [
+            ('none', ('name', '1', mac_addr, True, 101, 0)),
             ('port', ('name', '1', mac_addr, False, 0, 0)),
-            ('lern', ('name', '1',  mac_addr, True, 102, 0)),
-            ('asgn', ('name', '1',  mac_addr, True, 102, 103)),
+            ('lern', ('name', '1', mac_addr, True, 102, 0)),
+            ('asgn', ('name', '1', mac_addr, True, 102, 103)),
             ('port', ('name', '1', mac_addr, True, 102, 103)),
             ('port', ('name', '2', None, True, 103, 0)),
             ('port', ('name', '5', None, False, 103, 0)),
@@ -202,10 +214,9 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
             self.assertEqual(type(response), DevicePortEvent)
             self._check_port_change_event(response, expected[1])
             count += 1
-        self.assertEqual(count, 6)
+        self.assertEqual(count, 7)
 
-        _, code, _ = method.termination()
-        self.assertEqual(code, grpc.StatusCode.OK)
+        method.termination()
 
     def _report_device_state(self):
         """Test updating device state"""
