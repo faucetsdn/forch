@@ -1253,7 +1253,7 @@ class FaucetStateCollector:
         topo_state = self.topo_state
         with self.lock:
             self._logger.info('_update_stack_topo_state_raw link_graph: %s prev hash: %s stack_root: %s dps: %s', link_graph.SerializeToString(), topo_state.get(LINKS_HASH), stack_root, dps)
-            links_hash = link_graph.SerializeToString()
+            links_hash = str(sorted(link_graph))
             self._logger.info('_update_stack_topo_state_raw Anurag links_hash %s', links_hash)
             if topo_state.get(LINKS_HASH) != links_hash:
                 topo_state[LINKS_GRAPH] = link_graph
