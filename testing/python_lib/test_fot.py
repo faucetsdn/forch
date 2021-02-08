@@ -177,9 +177,9 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
             self.assertEqual(response.state, port_state)
             self.assertEqual(response.device_vlan, vlan)
             self.assertEqual(response.assigned_vlan, assigned)
-        except:
+        except Exception as e:
             print('comparing', response, expected)
-            raise
+            raise e
 
     def test_requesting_port_events(self):
         """Test behavior of the servicer with port events."""
