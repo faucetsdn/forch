@@ -27,6 +27,8 @@ cd $ROOT
 
 if [ "$1" == "local" ]; then
     docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
+    docker_volumes+=" -v $ROOT/daq/daq:/root/daq/daq"
+    docker_volumes+=" -v $ROOT:/root/forch"
     local=local
     shift
 fi

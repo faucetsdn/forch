@@ -339,9 +339,9 @@ class DeviceReportServicerTestBase(unittest.TestCase):
         self._test_server = server_from_dictionary(
             servicers, strict_real_time())
         port_learns = [
-            ('name', '1', '00:0X:00:00:00:01'),
-            ('name', '2', '00:0Y:00:00:00:02'),
-            ('name', '3', '00:0Z:00:00:00:03')
+            ('name', '1', '00:0X:00:00:00:01', 101),
+            ('name', '2', '00:0Y:00:00:00:02', 102),
+            ('name', '3', '00:0Z:00:00:00:03', 103)
         ]
         for port_learn in port_learns:
             self._servicer.process_port_learn(*port_learn)
