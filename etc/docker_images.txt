@@ -1,4 +1,4 @@
-forch/controller 923bd4fb0965
-forch/faucet 7423ae38c428
-forch/faux d0723c4d1010
-forch/gauge 21f885744405
+forch/controller 5ac7fac7abd7
+forch/faucet 6cfd9511383c
+forch/faux 87dd52d3d553
+forch/gauge 19a6adc7256a

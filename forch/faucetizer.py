@@ -45,7 +45,7 @@ class Faucetizer(DeviceStateManager):
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, behavioral_config_file,
-                 reregister_include_file_handlers=None, reset_faucet_config_writing_time=None):
+                 orchestration_manager=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
         self._device_behaviors = {}
@@ -65,8 +65,7 @@ class Faucetizer(DeviceStateManager):
         self._all_testing_vlans = None
         self._available_testing_vlans = None
         self._watched_include_files = []
-        self._reregister_include_file_handlers = reregister_include_file_handlers
-        self._reset_faucet_config_writing_time = reset_faucet_config_writing_time
+        self._orchestration_manager = orchestration_manager
         self._lock = threading.RLock()
         self._logger = get_logger('faucetizer')
 
@@ -115,9 +114,10 @@ class Faucetizer(DeviceStateManager):
             else:
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
+                    removed_behavior = removed[DEVICE_BEHAVIOR]
                     self._logger.info(
                         'Removed %s behavior: %s, %s, %s',
-                        device_type, eth_src, removed.segment, removed.role)
+                        device_type, eth_src, removed_behavior.segment, removed_behavior.role)
 
             self.flush_behavioral_config()
 
@@ -146,8 +146,8 @@ class Faucetizer(DeviceStateManager):
 
             self._behavioral_include = behavioral_include
 
-            if not self._config.faucetize_interval_sec and self._reregister_include_file_handlers:
-                self._reregister_include_file_handlers(
+            if not self._config.faucetize_interval_sec and self._orchestration_manager:
+                self._orchestration_manager.reregister_include_file_watchers(
                     self._watched_include_files, new_watched_include_files)
             self._watched_include_files = new_watched_include_files
 
@@ -210,12 +210,7 @@ class Faucetizer(DeviceStateManager):
     def _update_vlan_state(self, switch, port, state):
         self._vlan_states.setdefault(switch, {})[port] = state
 
-    def _initialize_host_ports(self):
-        if not self._structural_faucet_config:
-            raise Exception('Structural faucet configuration not provided')
-
-        behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
-
+    def _initialize_host_ports(self, behavioral_faucet_config):
         for switch, switch_map in behavioral_faucet_config.get('dps', {}).items():
             for port, port_map in switch_map.get('interfaces', {}).items():
                 if not self._get_port_type(port_map) == PortType.access:
@@ -226,7 +221,8 @@ class Faucetizer(DeviceStateManager):
 
         return behavioral_faucet_config
 
-    def _finalize_host_ports_config(self, behavioral_faucet_config, testing_port_vlans):
+    def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans):
+        testing_port_vlans = new_testing_device_vlans.values()
         testing_port_configured = False
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():
@@ -240,6 +236,8 @@ class Faucetizer(DeviceStateManager):
         if testing_port_vlans and not testing_port_configured:
             self._logger.error('No testing port found')
 
+        self._testing_device_vlans = copy.deepcopy(new_testing_device_vlans)
+
     def _has_acl(self, acl_name):
         for acl_config in self._acl_configs.values():
             if acl_name in acl_config:
@@ -247,7 +245,7 @@ class Faucetizer(DeviceStateManager):
         return False
 
     def _calculate_vlan_id(self, device_mac, device_behavior, available_testing_vlans,
-                           testing_port_vlans):
+                           new_testing_device_vlans):
         device_segment = device_behavior.segment
         sequester_segment = self._config.sequester_config.segment
         vid = None
@@ -258,8 +256,7 @@ class Faucetizer(DeviceStateManager):
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
             else:
                 vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
-                self._testing_device_vlans[device_mac] = vid
-                testing_port_vlans.add(vid)
+                new_testing_device_vlans[device_mac] = vid
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
@@ -296,11 +293,11 @@ class Faucetizer(DeviceStateManager):
                 'Unauthenticated VLAN is already defined in structural config: %s',
                 self._config.unauthenticated_vlan)
 
-    def _faucetize(self):
-        behavioral_faucet_config = self._initialize_host_ports()
-
+    def _update_ports_config(self, behavioral_faucet_config):
         available_testing_vlans = self._calculate_available_tesing_vlans()
-        testing_port_vlans = set()
+        new_testing_device_vlans = {}
+
+        self._initialize_host_ports(behavioral_faucet_config)
 
         # static information of a device should overwrite the corresponding dynamic one
         device_placements = {**self._dynamic_devices.device_mac_placements,
@@ -321,9 +318,14 @@ class Faucetizer(DeviceStateManager):
                     mac, device_placement.switch, device_placement.port)
                 continue
 
-            vid = self._calculate_vlan_id(mac, device_behavior, available_testing_vlans,
-                                          testing_port_vlans)
-            self._logger.info('Placing %s into vlan %s', mac, vid)
+            vid = self._calculate_vlan_id(
+                mac, device_behavior, available_testing_vlans, new_testing_device_vlans)
+
+            old_vid = self._get_faucet_config_vlan(
+                self._behavioral_faucet_config, device_placement.switch, device_placement.port)
+            if vid != old_vid:
+                self._logger.info('Placing %s into vlan %s', mac, vid)
+
             if not vid:
                 continue
             port_cfg['native_vlan'] = vid
@@ -337,7 +339,19 @@ class Faucetizer(DeviceStateManager):
 
             self._update_device_dva_state(device_placement, device_behavior, device_type)
 
-        self._finalize_host_ports_config(behavioral_faucet_config, testing_port_vlans)
+        self._finalize_host_ports_config(behavioral_faucet_config, new_testing_device_vlans)
+
+    def _get_faucet_config_vlan(self, faucet_config, switch, port):
+        switch_config = faucet_config.get('dps', {}).get(switch, {})
+        port_config = switch_config.get('interfaces', {}).get(port, {})
+        return port_config.get('native_vlan')
+
+    def _faucetize(self):
+        if not self._structural_faucet_config:
+            raise Exception('Structural faucet configuration not provided')
+
+        behavioral_faucet_config = copy.deepcopy(self._structural_faucet_config)
+        self._update_ports_config(behavioral_faucet_config)
 
         if self._behavioral_include:
             behavioral_faucet_config['include'] = self._behavioral_include
@@ -410,8 +424,8 @@ class Faucetizer(DeviceStateManager):
         self._yaml_atomic_dump(self._behavioral_faucet_config, self._behavioral_config_file)
         self._logger.debug('Wrote behavioral config to %s', self._behavioral_config_file)
 
-        if self._reset_faucet_config_writing_time:
-            self._reset_faucet_config_writing_time()
+        if self._orchestration_manager:
+            self._orchestration_manager.reset_faucet_config_writing_time()
 
     def flush_include_config(self, include_file_name, include_config):
         """Write include configs to file"""
