@@ -370,13 +370,13 @@ Done with stack-orphaned test.
 Running forch-orphaned tests
 @system_state-orphaned
 "nz-kiwi"
-69
+70
 "http://localhost.n:9020"
 "split"
 @dataplane_state-orphaned
 "broken"
 "egress: nz-kiwi-t1sw2:28; broken links: ['nz-kiwi-t1sw1:10@nz-kiwi-t2sw2:50', 'nz-kiwi-t1sw1:11@nz-kiwi-t2sw3:50', 'nz-kiwi-t1sw1:6@nz-kiwi-t1sw2:6', 'nz-kiwi-t1sw1:9@nz-kiwi-t2sw1:50']"
-48
+49
 "active"
 "down"
 10
