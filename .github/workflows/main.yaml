@@ -101,7 +101,6 @@ jobs:
       - name: run test
         run: bin/run_test_set reconfig
 
->>>>>>> 5131c8f06f5d0dfa6f8e016fa830c66c86e3d788
   test_stack:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -123,6 +122,27 @@ jobs:
         run: bin/setup_stack local dhcp dumptcp
       - name: run test
         run: bin/run_test_set stack
+      - name: post-run logs
+        if: ${{ always() }}
+        run: bin/dump_logs full
+
+  test_scale:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        run: bin/setup_remote faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: run test
+        run: testing/python_test test_failscale
       - name: post-run logs
         if: ${{ always() }}
         run: bin/dump_logs full
