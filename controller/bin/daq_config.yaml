@@ -10,6 +10,7 @@ switch_setup:
 run_trigger:
   vlan_start: 272
   vlan_end: 276
+  egress_vlan: 171
 
 device_reporting:
   server_port: 50051
