@@ -2,6 +2,7 @@
 
 from concurrent import futures
 from queue import Queue
+import threading
 import grpc
 
 from forch.utils import get_logger
@@ -15,6 +16,15 @@ PORT_DEFAULT = 50051
 MAX_WORKERS_DEFAULT = 10
 
 
+class DeviceEntry:
+    """Utility class for device entries"""
+
+    mac = None
+    vlan = None
+    assigned = None
+    port_up = None
+
+
 class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     """gRPC servicer to receive devices state"""
 
@@ -24,20 +34,57 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._logger = get_logger('drserver')
         self._port_device_mapping = {}
         self._port_events_listeners = {}
+        self._mac_assignments = {}
+        self._lock = threading.Lock()
 
-    def process_port_change(self, timestamp, dp_name, port, state):
-        """Process faucet port state events"""
-        mac = self._port_device_mapping.get((dp_name, port))
-        if not mac or mac not in self._port_events_listeners:
+    def _send_device_port_event(self, device):
+        if not device or device.mac not in self._port_events_listeners:
             return
-        event = PortBehavior.PortEvent.up if state else PortBehavior.PortEvent.down
-        port_event = DevicePortEvent(event=event, timestamp=timestamp)
-        for queue in self._port_events_listeners[mac]:
+        port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
+        port_event = DevicePortEvent(state=port_state, device_vlan=device.vlan,
+                                     assigned_vlan=device.assigned)
+        self._logger.info('Sending %d DevicePortEvent %s %s %s %s',
+                          len(self._port_events_listeners[device.mac]), device.mac, port_state,
+                          device.vlan, device.assigned)
+        for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
 
-    def process_port_learn(self, dp_name, port, mac):
+    def _send_initial_reply(self, mac_addr):
+        with self._lock:
+            for device in self._port_device_mapping.values():
+                if device.mac == mac_addr:
+                    self._send_device_port_event(device)
+
+    def process_port_change(self, dp_name, port, state):
+        """Process faucet port state events"""
+        with self._lock:
+            device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
+        device.port_up = state
+        if not state:
+            device.assigned = None
+            device.vlan = None
+        self._send_device_port_event(device)
+
+    def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
-        self._port_device_mapping[(dp_name, port)] = mac
+        with self._lock:
+            device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
+        device.mac = mac
+        device.vlan = vlan
+        device.port_up = True
+        device.assigned = self._mac_assignments.get(mac)
+        self._send_device_port_event(device)
+
+    def process_port_assign(self, mac, assigned):
+        """Process assigning a device to a vlan"""
+        self._mac_assignments[mac] = assigned
+        with self._lock:
+            for mapping in self._port_device_mapping:
+                device = self._port_device_mapping.get(mapping)
+                if device.mac == mac:
+                    device.assigned = assigned
+                    self._send_device_port_event(device)
+                    return
 
     # pylint: disable=invalid-name
     def ReportDevicesState(self, request, context):
@@ -59,7 +106,9 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     # pylint: disable=invalid-name
     def GetPortState(self, request, context):
         listener_q = Queue()
+        self._logger.info('Attaching response channel for device %s', request.mac)
         self._port_events_listeners.setdefault(request.mac, []).append(listener_q)
+        self._send_initial_reply(request.mac)
         while True:
             item = listener_q.get()
             if item is False:
@@ -86,6 +135,10 @@ class DeviceReportServer:
     def process_port_learn(self, *args):
         """Process faucet port learn events"""
         self._servicer.process_port_learn(*args)
+
+    def process_port_assign(self, *args):
+        """Process faucet port vlan assignment"""
+        self._servicer.process_port_assign(*args)
 
     def start(self):
         """Start the server"""
