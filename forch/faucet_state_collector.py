@@ -157,7 +157,6 @@ class FaucetStateCollector:
             self._logger.warning('stack_state_links update apply %ds', update_delta)
             self._stack_state_update = 0
             state_data, self._stack_state_data = (self._stack_state_data, None)
-            self._logger.info('heartbeat_update_stack_state Anurag state_data: %s', state_data)
             self._update_stack_topo_state_raw(*state_data)
         else:
             self._logger.warning('stack_state_links update ignore %ds', event_delta)
@@ -1232,7 +1231,6 @@ class FaucetStateCollector:
         stack_root = topo_change.stack_root
         dps = topo_change.dps
         timestamp = topo_change.timestamp
-        self._logger.info('process_stack_topo_change_event Anurag topo_change: %s', topo_change)
         self._update_stack_topo_state(timestamp, link_graph, stack_root, dps)
 
     def _update_stack_topo_state(self, timestamp, link_graph, stack_root, dps):
@@ -1245,7 +1243,6 @@ class FaucetStateCollector:
             self._stack_state_data = (timestamp, link_graph, stack_root, dps)
             self._logger.warning('stack_state_links update save')
             return
-        self._logger.info('_update_stack_topo_state Anurag dps: %s', dps)
 
         self._update_stack_topo_state_raw(timestamp, link_graph, stack_root, dps)
 
@@ -1253,7 +1250,6 @@ class FaucetStateCollector:
         topo_state = self.topo_state
         with self.lock:
             links_hash = str(sorted(link_graph, key=lambda link: link.SerializeToString()))
-            self._logger.info('_update_stack_topo_state_raw Anurag link_graph: %s prev hash: %s stack_root: %s dps: %s', links_hash, topo_state.get(LINKS_HASH), stack_root, dps)
             if topo_state.get(LINKS_HASH) != links_hash:
                 topo_state[LINKS_GRAPH] = link_graph
                 topo_state[LINKS_HASH] = links_hash
