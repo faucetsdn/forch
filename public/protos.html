@@ -175,25 +175,6 @@
         
           
           <li>
-            <a href="#forch%2fproto%2facl_state.proto">forch/proto/acl_state.proto</a>
-            <ul>
-              
-                <li>
-                  <a href="#ACLState"><span class="badge">M</span>ACLState</a>
-                </li>
-              
-                <li>
-                  <a href="#ACLState.RuleState"><span class="badge">M</span>ACLState.RuleState</a>
-                </li>
-              
-              
-              
-              
-            </ul>
-          </li>
-        
-          
-          <li>
             <a href="#forch%2fproto%2fauthentication.proto">forch/proto/authentication.proto</a>
             <ul>
               
@@ -687,6 +668,33 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fnetwork_metric_state.proto">forch/proto/network_metric_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#AclState"><span class="badge">M</span>AclState</a>
+                </li>
+              
+                <li>
+                  <a href="#AclState.RuleState"><span class="badge">M</span>AclState.RuleState</a>
+                </li>
+              
+                <li>
+                  <a href="#VlanAclState"><span class="badge">M</span>VlanAclState</a>
+                </li>
+              
+                <li>
+                  <a href="#VlanState"><span class="badge">M</span>VlanState</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2fpath_node.proto">forch/proto/path_node.proto</a>
             <ul>
               
@@ -875,10 +883,6 @@
                   <a href="#SwitchState.SwitchesEntry"><span class="badge">M</span>SwitchState.SwitchesEntry</a>
                 </li>
               
-                <li>
-                  <a href="#SwitchState.VLANState"><span class="badge">M</span>SwitchState.VLANState</a>
-                </li>
-              
               
               
               
@@ -928,82 +932,6 @@
       </ul>
     </div>
 
-    
-      
-      <div class="file-heading">
-        <h2 id="forch/proto/acl_state.proto">forch/proto/acl_state.proto</h2><a href="#title">Top</a>
-      </div>
-      <p>ACL state</p>
-
-      
-        <h3 id="ACLState">ACLState</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>name</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>acl name </p></td>
-                </tr>
-              
-                <tr>
-                  <td>rules</td>
-                  <td><a href="#ACLState.RuleState">ACLState.RuleState</a></td>
-                  <td>repeated</td>
-                  <td><p>rule states </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="ACLState.RuleState">ACLState.RuleState</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>description</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>rule description </p></td>
-                </tr>
-              
-                <tr>
-                  <td>packet_count</td>
-                  <td><a href="#int32">int32</a></td>
-                  <td></td>
-                  <td><p>count of packets hitting the rule </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-
-      
-
-      
-
-      
     
       
       <div class="file-heading">
@@ -4729,9 +4657,9 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
               
                 <tr>
                   <td>vlan</td>
-                  <td><a href="#int32">int32</a></td>
+                  <td><a href="#VlanState">VlanState</a></td>
                   <td></td>
-                  <td><p>VLAN </p></td>
+                  <td><p>VLAN state </p></td>
                 </tr>
               
                 <tr>
@@ -4743,7 +4671,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#ACLState">ACLState</a></td>
+                  <td><a href="#AclState">AclState</a></td>
                   <td>repeated</td>
                   <td><p>ACLs </p></td>
                 </tr>
@@ -4799,6 +4727,144 @@ or to host_path API to list path </p></td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Role in RADIUS result </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/network_metric_state.proto">forch/proto/network_metric_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>Network metric states</p>
+
+      
+        <h3 id="AclState">AclState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>acl name </p></td>
+                </tr>
+              
+                <tr>
+                  <td>rules</td>
+                  <td><a href="#AclState.RuleState">AclState.RuleState</a></td>
+                  <td>repeated</td>
+                  <td><p>rule states </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="AclState.RuleState">AclState.RuleState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>rule description </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>count of packets hitting the rule </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="VlanAclState">VlanAclState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>acls</td>
+                  <td><a href="#AclState">AclState</a></td>
+                  <td>repeated</td>
+                  <td><p>vlan acls states </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_rate_state</td>
+                  <td><a href="#State.State">State.State</a></td>
+                  <td></td>
+                  <td><p>packet rate state </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="VlanState">VlanState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>vlan_id</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>vlan id </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>packet count </p></td>
                 </tr>
               
             </tbody>
@@ -5828,9 +5894,9 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>vlan</td>
-                  <td><a href="#int32">int32</a></td>
+                  <td><a href="#VlanState">VlanState</a></td>
                   <td></td>
-                  <td><p>native VLAN </p></td>
+                  <td><p>VLAN state </p></td>
                 </tr>
               
                 <tr>
@@ -5842,7 +5908,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>acls</td>
-                  <td><a href="#ACLState">ACLState</a></td>
+                  <td><a href="#AclState">AclState</a></td>
                   <td>repeated</td>
                   <td><p>ACLs </p></td>
                 </tr>
@@ -6226,7 +6292,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>value</td>
-                  <td><a href="#SwitchState.VLANState">SwitchState.VLANState</a></td>
+                  <td><a href="#VlanAclState">VlanAclState</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -6260,37 +6326,6 @@ or to host_path API to list path </p></td>
                   <td><a href="#SwitchState.SwitchNode">SwitchState.SwitchNode</a></td>
                   <td></td>
                   <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="SwitchState.VLANState">SwitchState.VLANState</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>acls</td>
-                  <td><a href="#ACLState">ACLState</a></td>
-                  <td>repeated</td>
-                  <td><p>vlan acls states </p></td>
-                </tr>
-              
-                <tr>
-                  <td>packet_rate_state</td>
-                  <td><a href="#State.State">State.State</a></td>
-                  <td></td>
-                  <td><p>packet rate state </p></td>
                 </tr>
               
             </tbody>

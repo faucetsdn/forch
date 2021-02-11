@@ -641,7 +641,7 @@ class FaucetStateCollector:
 
         self._fill_learned_macs(switch_name, switch_map)
         self._fill_path_to_root(switch_name, switch_map)
-        self._fill_vlan_behavior(switch_name, switch_map, metrics)
+        self._fill_switch_vlan_behavior(switch_name, switch_map, metrics)
 
         return switch_map
 
@@ -706,7 +706,7 @@ class FaucetStateCollector:
         """populate path to root for switch_state"""
         switch_map["root_path"] = self.get_switch_egress_path(switch_name)
 
-    def _fill_vlan_behavior(self, switch_name, switch_map, metrics=None):
+    def _fill_switch_vlan_behavior(self, switch_name, switch_map, metrics=None):
         dp_config = self.faucet_config.get(DPS_CFG, {}).get(switch_name)
         if not dp_config:
             self._logger.warning('Switch not defined in dps config: %s', switch_name)
@@ -740,8 +740,10 @@ class FaucetStateCollector:
             raise Exception('Port not defined in dps config: %s, %s' % (switch_name, port_id))
 
         if port_config.native_vlan:
-            port_map['vlan'] = int(port_config.native_vlan.vid)
             port_map['dva_state'] = self._get_dva_state(switch_name, port_id) or DVAState.initial
+            vlan_samples = metrics['flow_packet_count_vlan'].samples if metrics else None
+            self._fill_port_vlan_behavior(
+                port_map, switch_name, port_id, port_config.native_vlan, vlan_samples)
 
         if port_config.acls_in:
             acl_maps_list = port_map.setdefault('acls', [])
@@ -752,9 +754,9 @@ class FaucetStateCollector:
             else:
                 assert 'flow_packet_count_port_acl' in metrics, 'No port acl metric available'
 
-                samples = metrics['flow_packet_count_port_acl'].samples
+                port_acl_samples = metrics['flow_packet_count_port_acl'].samples
                 self._fill_acls_behavior(
-                    switch_name, acl_maps_list, port_config.acls_in, samples, port_id)
+                    switch_name, acl_maps_list, port_config.acls_in, port_acl_samples, port_id)
 
     # pylint: disable=too-many-arguments
     def _fill_acls_behavior(self, switch_name, acls_map_list, acls_config,
@@ -788,10 +790,33 @@ class FaucetStateCollector:
 
                 if not has_sample:
                     self._logger.debug(
-                        'No metric sample available for switch, port, ACL, rule: %s, %s, %s ,%s',
-                        switch_name, port_id, acl_config._id, cookie_num)
+                        'No ACL metric sample available for switch, port, ACL, rule:'
+                        '%s, %s, %s, %s', switch_name, port_id, acl_config._id, cookie_num)
 
             acls_map_list.append(acl_map)
+
+    def _fill_port_vlan_behavior(self, port_map, switch_name, port_id,
+                                 vlan_config, metric_samples=None):
+        vlan_map = port_map.setdefault('vlan', {})
+        vlan_map['vlan_id'] = int(vlan_config.vid)
+
+        if not metric_samples:
+            return
+
+        vlan_map['packet_count'] = 0
+        has_sample = False
+        for sample in metric_samples:
+            if sample.labels.get('dp_name') != switch_name:
+                continue
+            in_port = sample.labels.get('in_port')
+            if not in_port or int(in_port) != port_id:
+                continue
+            vlan_map['packet_count'] += int(sample.value)
+            has_sample = True
+
+        if not has_sample:
+            self._logger.debug(
+                'No VLAN metric sample available for switch, port: %s, %s', switch_name, port_id)
 
     @staticmethod
     def _make_key(start_dp, start_port, peer_dp, peer_port):

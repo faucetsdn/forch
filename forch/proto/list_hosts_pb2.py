@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from forch.proto import acl_state_pb2 as forch_dot_proto_dot_acl__state__pb2
+from forch.proto import network_metric_state_pb2 as forch_dot_proto_dot_network__metric__state__pb2
 from forch.proto import shared_constants_pb2 as forch_dot_proto_dot_shared__constants__pb2
 
 
@@ -21,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1c\x66orch/proto/list_hosts.proto\x1a\x1b\x66orch/proto/acl_state.proto\x1a\"forch/proto/shared_constants.proto\"\x97\x04\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\xc1\x01\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x10\n\x08host_ips\x18\x03 \x03(\t\x12\x0c\n\x04vlan\x18\x04 \x01(\x05\x12\"\n\tdva_state\x18\x05 \x01(\x0e\x32\x0f.DVAState.State\x12\x17\n\x04\x61\x63ls\x18\x06 \x03(\x0b\x32\t.ACLState\x12\x0b\n\x03url\x18\x07 \x01(\t\x12-\n\rradius_result\x18\x08 \x01(\x0b\x32\x16.HostList.RadiusResult\x1a=\n\x0cRadiusResult\x12\x0e\n\x06\x61\x63\x63\x65ss\x18\x01 \x01(\t\x12\x0f\n\x07segment\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\tb\x06proto3'
+  serialized_pb=b'\n\x1c\x66orch/proto/list_hosts.proto\x1a&forch/proto/network_metric_state.proto\x1a\"forch/proto/shared_constants.proto\"\xa3\x04\n\x08HostList\x12(\n\x08\x65th_srcs\x18\x01 \x03(\x0b\x32\x16.HostList.EthSrcsEntry\x12(\n\x08\x65th_dsts\x18\x02 \x03(\x0b\x32\x16.HostList.EthDstsEntry\x12\x12\n\negress_url\x18\x03 \x01(\t\x12\x18\n\x10system_state_url\x18\x04 \x01(\t\x1a\x42\n\x0c\x45thSrcsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\x42\n\x0c\x45thDstsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.HostList.HostData:\x02\x38\x01\x1a\xcd\x01\n\x08HostData\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x10\n\x08host_ips\x18\x03 \x03(\t\x12\x18\n\x04vlan\x18\x04 \x01(\x0b\x32\n.VlanState\x12\"\n\tdva_state\x18\x05 \x01(\x0e\x32\x0f.DVAState.State\x12\x17\n\x04\x61\x63ls\x18\x06 \x03(\x0b\x32\t.AclState\x12\x0b\n\x03url\x18\x07 \x01(\t\x12-\n\rradius_result\x18\x08 \x01(\x0b\x32\x16.HostList.RadiusResult\x1a=\n\x0cRadiusResult\x12\x0e\n\x06\x61\x63\x63\x65ss\x18\x01 \x01(\t\x12\x0f\n\x07segment\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\tb\x06proto3'
   ,
-  dependencies=[forch_dot_proto_dot_acl__state__pb2.DESCRIPTOR,forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
+  dependencies=[forch_dot_proto_dot_network__metric__state__pb2.DESCRIPTOR,forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
 
 
@@ -62,8 +62,8 @@ _HOSTLIST_ETHSRCSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=240,
-  serialized_end=306,
+  serialized_start=251,
+  serialized_end=317,
 )
 
 _HOSTLIST_ETHDSTSENTRY = _descriptor.Descriptor(
@@ -100,8 +100,8 @@ _HOSTLIST_ETHDSTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=308,
-  serialized_end=374,
+  serialized_start=319,
+  serialized_end=385,
 )
 
 _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
@@ -135,8 +135,8 @@ _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='vlan', full_name='HostList.HostData.vlan', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -180,8 +180,8 @@ _HOSTLIST_HOSTDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=377,
-  serialized_end=570,
+  serialized_start=388,
+  serialized_end=593,
 )
 
 _HOSTLIST_RADIUSRESULT = _descriptor.Descriptor(
@@ -225,8 +225,8 @@ _HOSTLIST_RADIUSRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=572,
-  serialized_end=633,
+  serialized_start=595,
+  serialized_end=656,
 )
 
 _HOSTLIST = _descriptor.Descriptor(
@@ -277,16 +277,17 @@ _HOSTLIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=98,
-  serialized_end=633,
+  serialized_start=109,
+  serialized_end=656,
 )
 
 _HOSTLIST_ETHSRCSENTRY.fields_by_name['value'].message_type = _HOSTLIST_HOSTDATA
 _HOSTLIST_ETHSRCSENTRY.containing_type = _HOSTLIST
 _HOSTLIST_ETHDSTSENTRY.fields_by_name['value'].message_type = _HOSTLIST_HOSTDATA
 _HOSTLIST_ETHDSTSENTRY.containing_type = _HOSTLIST
+_HOSTLIST_HOSTDATA.fields_by_name['vlan'].message_type = forch_dot_proto_dot_network__metric__state__pb2._VLANSTATE
 _HOSTLIST_HOSTDATA.fields_by_name['dva_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._DVASTATE_STATE
-_HOSTLIST_HOSTDATA.fields_by_name['acls'].message_type = forch_dot_proto_dot_acl__state__pb2._ACLSTATE
+_HOSTLIST_HOSTDATA.fields_by_name['acls'].message_type = forch_dot_proto_dot_network__metric__state__pb2._ACLSTATE
 _HOSTLIST_HOSTDATA.fields_by_name['radius_result'].message_type = _HOSTLIST_RADIUSRESULT
 _HOSTLIST_HOSTDATA.containing_type = _HOSTLIST
 _HOSTLIST_RADIUSRESULT.containing_type = _HOSTLIST
