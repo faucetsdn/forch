@@ -367,6 +367,7 @@ class Faucetizer(DeviceStateManager):
     def reload_structural_config(self, structural_config_file=None):
         """Reload structural config from file"""
         structural_config_file = structural_config_file or self._structural_config_file
+        self._logger.info('Reading structural config file: %s', structural_config_file)
         with open(structural_config_file) as file:
             structural_config = yaml.safe_load(file)
             self._process_structural_config(structural_config)

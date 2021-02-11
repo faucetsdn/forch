@@ -132,7 +132,8 @@ class CPNStateCollector:
                 if not last_state or new_state != last_state:
                     state_count = node_state_map.get(NODE_STATE_CHANGE_COUNT, 0) + 1
                     self._logger.info(
-                        'cpn_state #%d host %s is %s', state_count, host_name, new_state)
+                        'cpn_state #%d host %s is %s', state_count, host_name,
+                        State.State.Name(new_state))
                     node_state_map[NODE_STATE] = new_state
                     node_state_map[NODE_STATE_CHANGE_COUNT] = state_count
                     node_state_map[NODE_STATE_CHANGE_TS] = current_time
@@ -203,7 +204,9 @@ class CPNStateCollector:
             self._cpn_state[CPN_STATE_COUNT] = cpn_state_count
             self._cpn_state[CPN_STATE] = new_cpn_state
             self._cpn_state[CPN_STATE_CHANGE_TS] = current_time
-            self._logger.info('cpn_state #%d %s: %s', cpn_state_count, new_cpn_state, use_detail)
+            self._logger.info(
+                'cpn_state #%d %s: %s', cpn_state_count, State.State.Name(new_cpn_state),
+                use_detail)
         self._cpn_state[CPN_STATE_DETAIL] = use_detail
         self._cpn_state[CPN_STATE_UPDATE_TS] = current_time
 
