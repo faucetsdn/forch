@@ -924,6 +924,21 @@
             </ul>
           </li>
         
+          
+          <li>
+            <a href="#forch%2fproto%2fvlan_state.proto">forch/proto/vlan_state.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#VLANState"><span class="badge">M</span>VLANState</a>
+                </li>
+              
+              
+              
+              
+            </ul>
+          </li>
+        
         <li><a href="#scalar-value-types">Scalar Value Types</a></li>
       </ul>
     </div>
@@ -4722,9 +4737,9 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
               
                 <tr>
                   <td>vlan</td>
-                  <td><a href="#int32">int32</a></td>
+                  <td><a href="#VLANState">VLANState</a></td>
                   <td></td>
-                  <td><p>VLAN </p></td>
+                  <td><p>VLAN state </p></td>
                 </tr>
               
                 <tr>
@@ -5821,9 +5836,9 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>vlan</td>
-                  <td><a href="#int32">int32</a></td>
+                  <td><a href="#SwitchState.VLANState">SwitchState.VLANState</a></td>
                   <td></td>
-                  <td><p>native VLAN </p></td>
+                  <td><p>VLAN state </p></td>
                 </tr>
               
                 <tr>
@@ -6634,6 +6649,51 @@ or to host_path API to list path </p></td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>forch version </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/vlan_state.proto">forch/proto/vlan_state.proto</h2><a href="#title">Top</a>
+      </div>
+      <p>VLAN state</p>
+
+      
+        <h3 id="VLANState">VLANState</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>vlan_id</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>vlan id </p></td>
+                </tr>
+              
+                <tr>
+                  <td>packet_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>packet count </p></td>
                 </tr>
               
             </tbody>

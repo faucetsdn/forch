@@ -64,7 +64,8 @@ _TARGET_FAUCET_METRICS = (
 
 _TARGET_GAUGE_METRICS = (
     'flow_packet_count_vlan_acl',
-    'flow_packet_count_port_acl'
+    'flow_packet_count_port_acl',
+    'flow_packet_count_vlan'
 )
 
 ACTIVE_STATE = 'active_state'

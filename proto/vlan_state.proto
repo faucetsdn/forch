@@ -1,0 +1,12 @@
+/*
+ * VLAN state
+ */
+syntax = "proto3";
+
+message VLANState {
+  // vlan id
+  int32 vlan_id = 1;
+
+  // packet count
+  int32 packet_count = 2;
+}

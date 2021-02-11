@@ -5,6 +5,7 @@ syntax = "proto3";
 
 import "forch/proto/acl_state.proto";
 import "forch/proto/shared_constants.proto";
+import "forch/proto/vlan_state.proto";
 
 /*
  * List of hosts
@@ -33,8 +34,8 @@ message HostList {
         // host IPs
         repeated string host_ips = 3;
 
-        // VLAN
-        int32 vlan = 4;
+        // VLAN state
+        VLANState vlan = 4;
 
         // DVA state
         DVAState.State dva_state = 5;

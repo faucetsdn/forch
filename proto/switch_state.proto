@@ -6,6 +6,7 @@ syntax = "proto3";
 import "forch/proto/shared_constants.proto";
 import "forch/proto/path_node.proto";
 import "forch/proto/acl_state.proto";
+import "forch/proto/vlan_state.proto";
 
 /*
  * State of switches
@@ -84,8 +85,8 @@ message SwitchState {
     // Port state
     State.State port_state = 2;
 
-    // native VLAN
-    int32 vlan = 3;
+    // VLAN state
+    VLANState vlan = 3;
 
     // DVA state
     DVAState.State dva_state = 4;
