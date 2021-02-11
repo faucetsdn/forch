@@ -3,7 +3,7 @@
  */
 syntax = "proto3";
 
-message VLANState {
+message VlanState {
   // vlan id
   int32 vlan_id = 1;
 

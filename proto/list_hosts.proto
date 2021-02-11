@@ -35,7 +35,7 @@ message HostList {
         repeated string host_ips = 3;
 
         // VLAN state
-        VLANState vlan = 4;
+        VlanState vlan = 4;
 
         // DVA state
         DVAState.State dva_state = 5;

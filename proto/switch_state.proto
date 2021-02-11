@@ -86,7 +86,7 @@ message SwitchState {
     State.State port_state = 2;
 
     // VLAN state
-    VLANState vlan = 3;
+    VlanState vlan = 3;
 
     // DVA state
     DVAState.State dva_state = 4;
