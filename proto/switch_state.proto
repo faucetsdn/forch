@@ -3,10 +3,9 @@
  */
 syntax = "proto3";
 
-import "forch/proto/shared_constants.proto";
+import "forch/proto/network_metric_state.proto";
 import "forch/proto/path_node.proto";
-import "forch/proto/acl_state.proto";
-import "forch/proto/vlan_state.proto";
+import "forch/proto/shared_constants.proto";
 
 /*
  * State of switches
@@ -92,7 +91,7 @@ message SwitchState {
     DVAState.State dva_state = 4;
 
     // ACLs
-    repeated ACLState acls = 5;
+    repeated AclState acls = 5;
 
     // Port state last change time
     string state_last_change = 6;
@@ -139,13 +138,5 @@ message SwitchState {
 
     // Path
     repeated PathNode path = 3;
-  }
-
-  message VlanAclState {
-    // vlan acls states
-    repeated ACLState acls = 1;
-
-    // packet rate state
-    State.State packet_rate_state = 2;
   }
 }
