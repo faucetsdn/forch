@@ -15,4 +15,4 @@ db4d1bf4d1b4ac1a575853833ecbd9571d784203  proto/path_node.proto
 a514ae223df3ff20e5c50b148115a8ede3212d03  proto/shared_constants.proto
 4d87908a3c94a9d1472bb7ca2a72a716bd09f4f9  proto/switch_state.proto
 32bcf4631c20862a730f98dff9c627bc696269e0  proto/system_state.proto
-c5d20ea4bd762c13b27c3d68cbaf8e7a47aca405  proto/vlan_state.proto
+81ebd884a51542db6690c1279c71be59d8213a0b  proto/vlan_state.proto

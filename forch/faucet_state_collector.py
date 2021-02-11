@@ -29,7 +29,6 @@ LACP_TO_LINK_STATE = {
     LacpState.noact: STATE_UP,
 }
 
-INVALID_PORT_ID=-1
 
 def _dump_states(func):
     """Decorator to dump the current states after the states map is modified"""
@@ -791,9 +790,8 @@ class FaucetStateCollector:
 
                 if not has_sample:
                     self._logger.debug(
-                        'No ACL metric sample available for switch, port, ACL, rule: %s, %s, %s ,'
-                        '%s',
-                        switch_name, port_id, acl_config._id, cookie_num)
+                        'No ACL metric sample available for switch, port, ACL, rule:'
+                        '%s, %s, %s, %s', switch_name, port_id, acl_config._id, cookie_num)
 
             acls_map_list.append(acl_map)
 
