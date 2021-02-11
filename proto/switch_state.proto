@@ -69,7 +69,7 @@ message SwitchState {
     map<string, PortInfo> egress_port_macs = 11;
 
     // States of all VLANs used by this switch, indexed by VLAN id
-    map<int32, VLANState> vlans = 12;
+    map<int32, VlanAclState> vlans = 12;
 
     // Attributes about this switch
     message Attributes {
@@ -141,7 +141,7 @@ message SwitchState {
     repeated PathNode path = 3;
   }
 
-  message VLANState {
+  message VlanAclState {
     // vlan acls states
     repeated ACLState acls = 1;
 

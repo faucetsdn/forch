@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1e\x66orch/proto/switch_state.proto\x1a\"forch/proto/shared_constants.proto\x1a\x1b\x66orch/proto/path_node.proto\x1a\x1b\x66orch/proto/acl_state.proto\x1a\x1c\x66orch/proto/vlan_state.proto\"\xfd\x0e\n\x0bSwitchState\x12\"\n\x0cswitch_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13switch_state_detail\x18\x02 \x01(\t\x12!\n\x19switch_state_change_count\x18\x03 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x04 \x01(\t\x12\x18\n\x10system_state_url\x18\x05 \x01(\t\x12,\n\x08switches\x18\x06 \x03(\x0b\x32\x1a.SwitchState.SwitchesEntry\x12\x19\n\x11switches_restrict\x18\x07 \x01(\t\x1aH\n\rSwitchesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12&\n\x05value\x18\x02 \x01(\x0b\x32\x17.SwitchState.SwitchNode:\x02\x38\x01\x1a\xdc\x07\n\nSwitchNode\x12\x36\n\nattributes\x18\x01 \x01(\x0b\x32\".SwitchState.SwitchNode.Attributes\x12\"\n\x0cswitch_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13restart_event_count\x18\x03 \x01(\x05\x12!\n\x19switch_state_change_count\x18\x04 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x05 \x01(\t\x12\x31\n\x05ports\x18\x06 \x03(\x0b\x32\".SwitchState.SwitchNode.PortsEntry\x12\x16\n\x0eports_restrict\x18\x07 \x01(\x05\x12)\n\troot_path\x18\x08 \x01(\x0b\x32\x16.SwitchState.PathState\x12\x45\n\x10\x61\x63\x63\x65ss_port_macs\x18\t \x03(\x0b\x32+.SwitchState.SwitchNode.AccessPortMacsEntry\x12I\n\x12stacking_port_macs\x18\n \x03(\x0b\x32-.SwitchState.SwitchNode.StackingPortMacsEntry\x12\x45\n\x10\x65gress_port_macs\x18\x0b \x03(\x0b\x32+.SwitchState.SwitchNode.EgressPortMacsEntry\x12\x31\n\x05vlans\x18\x0c \x03(\x0b\x32\".SwitchState.SwitchNode.VlansEntry\x1a?\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.SwitchState.Port:\x02\x38\x01\x1aL\n\x13\x41\x63\x63\x65ssPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aN\n\x15StackingPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aL\n\x13\x45gressPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1a\x44\n\nVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SwitchState.VLANState:\x02\x38\x01\x1a\x1b\n\nAttributes\x12\r\n\x05\x64p_id\x18\x01 \x01(\x03\x1a\xde\x02\n\x04Port\x12\x30\n\nattributes\x18\x01 \x01(\x0b\x32\x1c.SwitchState.Port.Attributes\x12 \n\nport_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12$\n\x04vlan\x18\x03 \x01(\x0b\x32\x16.SwitchState.VLANState\x12\"\n\tdva_state\x18\x04 \x01(\x0e\x32\x0f.DVAState.State\x12\x17\n\x04\x61\x63ls\x18\x05 \x03(\x0b\x32\t.ACLState\x12\x19\n\x11state_last_change\x18\x06 \x01(\t\x12\x1a\n\x12state_change_count\x18\x07 \x01(\x05\x1ah\n\nAttributes\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x11\n\tport_type\x18\x02 \x01(\t\x12\x19\n\x11stack_peer_switch\x18\x03 \x01(\t\x12\x17\n\x0fstack_peer_port\x18\x04 \x01(\x05\x1aI\n\x08PortInfo\x12\x0c\n\x04port\x18\x01 \x01(\x05\x12\x0f\n\x07mac_ips\x18\x02 \x03(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\t\x12\x0b\n\x03url\x18\x04 \x01(\t\x1a\x61\n\tPathState\x12 \n\npath_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x19\n\x11path_state_detail\x18\x02 \x01(\t\x12\x17\n\x04path\x18\x03 \x03(\x0b\x32\t.PathNode\x1aM\n\tVLANState\x12\x17\n\x04\x61\x63ls\x18\x01 \x03(\x0b\x32\t.ACLState\x12\'\n\x11packet_rate_state\x18\x02 \x01(\x0e\x32\x0c.State.Stateb\x06proto3'
+  serialized_pb=b'\n\x1e\x66orch/proto/switch_state.proto\x1a\"forch/proto/shared_constants.proto\x1a\x1b\x66orch/proto/path_node.proto\x1a\x1b\x66orch/proto/acl_state.proto\x1a\x1c\x66orch/proto/vlan_state.proto\"\xf7\x0e\n\x0bSwitchState\x12\"\n\x0cswitch_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13switch_state_detail\x18\x02 \x01(\t\x12!\n\x19switch_state_change_count\x18\x03 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x04 \x01(\t\x12\x18\n\x10system_state_url\x18\x05 \x01(\t\x12,\n\x08switches\x18\x06 \x03(\x0b\x32\x1a.SwitchState.SwitchesEntry\x12\x19\n\x11switches_restrict\x18\x07 \x01(\t\x1aH\n\rSwitchesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12&\n\x05value\x18\x02 \x01(\x0b\x32\x17.SwitchState.SwitchNode:\x02\x38\x01\x1a\xdf\x07\n\nSwitchNode\x12\x36\n\nattributes\x18\x01 \x01(\x0b\x32\".SwitchState.SwitchNode.Attributes\x12\"\n\x0cswitch_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13restart_event_count\x18\x03 \x01(\x05\x12!\n\x19switch_state_change_count\x18\x04 \x01(\x05\x12 \n\x18switch_state_last_change\x18\x05 \x01(\t\x12\x31\n\x05ports\x18\x06 \x03(\x0b\x32\".SwitchState.SwitchNode.PortsEntry\x12\x16\n\x0eports_restrict\x18\x07 \x01(\x05\x12)\n\troot_path\x18\x08 \x01(\x0b\x32\x16.SwitchState.PathState\x12\x45\n\x10\x61\x63\x63\x65ss_port_macs\x18\t \x03(\x0b\x32+.SwitchState.SwitchNode.AccessPortMacsEntry\x12I\n\x12stacking_port_macs\x18\n \x03(\x0b\x32-.SwitchState.SwitchNode.StackingPortMacsEntry\x12\x45\n\x10\x65gress_port_macs\x18\x0b \x03(\x0b\x32+.SwitchState.SwitchNode.EgressPortMacsEntry\x12\x31\n\x05vlans\x18\x0c \x03(\x0b\x32\".SwitchState.SwitchNode.VlansEntry\x1a?\n\nPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.SwitchState.Port:\x02\x38\x01\x1aL\n\x13\x41\x63\x63\x65ssPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aN\n\x15StackingPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aL\n\x13\x45gressPortMacsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.SwitchState.PortInfo:\x02\x38\x01\x1aG\n\nVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.SwitchState.VlanAclState:\x02\x38\x01\x1a\x1b\n\nAttributes\x12\r\n\x05\x64p_id\x18\x01 \x01(\x03\x1a\xd2\x02\n\x04Port\x12\x30\n\nattributes\x18\x01 \x01(\x0b\x32\x1c.SwitchState.Port.Attributes\x12 \n\nport_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x18\n\x04vlan\x18\x03 \x01(\x0b\x32\n.VLANState\x12\"\n\tdva_state\x18\x04 \x01(\x0e\x32\x0f.DVAState.State\x12\x17\n\x04\x61\x63ls\x18\x05 \x03(\x0b\x32\t.ACLState\x12\x19\n\x11state_last_change\x18\x06 \x01(\t\x12\x1a\n\x12state_change_count\x18\x07 \x01(\x05\x1ah\n\nAttributes\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x11\n\tport_type\x18\x02 \x01(\t\x12\x19\n\x11stack_peer_switch\x18\x03 \x01(\t\x12\x17\n\x0fstack_peer_port\x18\x04 \x01(\x05\x1aI\n\x08PortInfo\x12\x0c\n\x04port\x18\x01 \x01(\x05\x12\x0f\n\x07mac_ips\x18\x02 \x03(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\t\x12\x0b\n\x03url\x18\x04 \x01(\t\x1a\x61\n\tPathState\x12 \n\npath_state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x19\n\x11path_state_detail\x18\x02 \x01(\t\x12\x17\n\x04path\x18\x03 \x03(\x0b\x32\t.PathNode\x1aP\n\x0cVlanAclState\x12\x17\n\x04\x61\x63ls\x18\x01 \x03(\x0b\x32\t.ACLState\x12\'\n\x11packet_rate_state\x18\x02 \x01(\x0e\x32\x0c.State.Stateb\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,forch_dot_proto_dot_path__node__pb2.DESCRIPTOR,forch_dot_proto_dot_acl__state__pb2.DESCRIPTOR,forch_dot_proto_dot_vlan__state__pb2.DESCRIPTOR,])
 
@@ -255,7 +255,7 @@ _SWITCHSTATE_SWITCHNODE_VLANSENTRY = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1373,
-  serialized_end=1441,
+  serialized_end=1444,
 )
 
 _SWITCHSTATE_SWITCHNODE_ATTRIBUTES = _descriptor.Descriptor(
@@ -285,8 +285,8 @@ _SWITCHSTATE_SWITCHNODE_ATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1443,
-  serialized_end=1470,
+  serialized_start=1446,
+  serialized_end=1473,
 )
 
 _SWITCHSTATE_SWITCHNODE = _descriptor.Descriptor(
@@ -394,7 +394,7 @@ _SWITCHSTATE_SWITCHNODE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=482,
-  serialized_end=1470,
+  serialized_end=1473,
 )
 
 _SWITCHSTATE_PORT_ATTRIBUTES = _descriptor.Descriptor(
@@ -445,8 +445,8 @@ _SWITCHSTATE_PORT_ATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1719,
-  serialized_end=1823,
+  serialized_start=1710,
+  serialized_end=1814,
 )
 
 _SWITCHSTATE_PORT = _descriptor.Descriptor(
@@ -518,8 +518,8 @@ _SWITCHSTATE_PORT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1473,
-  serialized_end=1823,
+  serialized_start=1476,
+  serialized_end=1814,
 )
 
 _SWITCHSTATE_PORTINFO = _descriptor.Descriptor(
@@ -570,8 +570,8 @@ _SWITCHSTATE_PORTINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1825,
-  serialized_end=1898,
+  serialized_start=1816,
+  serialized_end=1889,
 )
 
 _SWITCHSTATE_PATHSTATE = _descriptor.Descriptor(
@@ -615,27 +615,27 @@ _SWITCHSTATE_PATHSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1900,
-  serialized_end=1997,
+  serialized_start=1891,
+  serialized_end=1988,
 )
 
-_SWITCHSTATE_VLANSTATE = _descriptor.Descriptor(
-  name='VLANState',
-  full_name='SwitchState.VLANState',
+_SWITCHSTATE_VLANACLSTATE = _descriptor.Descriptor(
+  name='VlanAclState',
+  full_name='SwitchState.VlanAclState',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='acls', full_name='SwitchState.VLANState.acls', index=0,
+      name='acls', full_name='SwitchState.VlanAclState.acls', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='packet_rate_state', full_name='SwitchState.VLANState.packet_rate_state', index=1,
+      name='packet_rate_state', full_name='SwitchState.VlanAclState.packet_rate_state', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -653,8 +653,8 @@ _SWITCHSTATE_VLANSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1999,
-  serialized_end=2076,
+  serialized_start=1990,
+  serialized_end=2070,
 )
 
 _SWITCHSTATE = _descriptor.Descriptor(
@@ -717,7 +717,7 @@ _SWITCHSTATE = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_SWITCHSTATE_SWITCHESENTRY, _SWITCHSTATE_SWITCHNODE, _SWITCHSTATE_PORT, _SWITCHSTATE_PORTINFO, _SWITCHSTATE_PATHSTATE, _SWITCHSTATE_VLANSTATE, ],
+  nested_types=[_SWITCHSTATE_SWITCHESENTRY, _SWITCHSTATE_SWITCHNODE, _SWITCHSTATE_PORT, _SWITCHSTATE_PORTINFO, _SWITCHSTATE_PATHSTATE, _SWITCHSTATE_VLANACLSTATE, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -727,7 +727,7 @@ _SWITCHSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=159,
-  serialized_end=2076,
+  serialized_end=2070,
 )
 
 _SWITCHSTATE_SWITCHESENTRY.fields_by_name['value'].message_type = _SWITCHSTATE_SWITCHNODE
@@ -740,7 +740,7 @@ _SWITCHSTATE_SWITCHNODE_STACKINGPORTMACSENTRY.fields_by_name['value'].message_ty
 _SWITCHSTATE_SWITCHNODE_STACKINGPORTMACSENTRY.containing_type = _SWITCHSTATE_SWITCHNODE
 _SWITCHSTATE_SWITCHNODE_EGRESSPORTMACSENTRY.fields_by_name['value'].message_type = _SWITCHSTATE_PORTINFO
 _SWITCHSTATE_SWITCHNODE_EGRESSPORTMACSENTRY.containing_type = _SWITCHSTATE_SWITCHNODE
-_SWITCHSTATE_SWITCHNODE_VLANSENTRY.fields_by_name['value'].message_type = _SWITCHSTATE_VLANSTATE
+_SWITCHSTATE_SWITCHNODE_VLANSENTRY.fields_by_name['value'].message_type = _SWITCHSTATE_VLANACLSTATE
 _SWITCHSTATE_SWITCHNODE_VLANSENTRY.containing_type = _SWITCHSTATE_SWITCHNODE
 _SWITCHSTATE_SWITCHNODE_ATTRIBUTES.containing_type = _SWITCHSTATE_SWITCHNODE
 _SWITCHSTATE_SWITCHNODE.fields_by_name['attributes'].message_type = _SWITCHSTATE_SWITCHNODE_ATTRIBUTES
@@ -755,7 +755,7 @@ _SWITCHSTATE_SWITCHNODE.containing_type = _SWITCHSTATE
 _SWITCHSTATE_PORT_ATTRIBUTES.containing_type = _SWITCHSTATE_PORT
 _SWITCHSTATE_PORT.fields_by_name['attributes'].message_type = _SWITCHSTATE_PORT_ATTRIBUTES
 _SWITCHSTATE_PORT.fields_by_name['port_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
-_SWITCHSTATE_PORT.fields_by_name['vlan'].message_type = _SWITCHSTATE_VLANSTATE
+_SWITCHSTATE_PORT.fields_by_name['vlan'].message_type = forch_dot_proto_dot_vlan__state__pb2._VLANSTATE
 _SWITCHSTATE_PORT.fields_by_name['dva_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._DVASTATE_STATE
 _SWITCHSTATE_PORT.fields_by_name['acls'].message_type = forch_dot_proto_dot_acl__state__pb2._ACLSTATE
 _SWITCHSTATE_PORT.containing_type = _SWITCHSTATE
@@ -763,9 +763,9 @@ _SWITCHSTATE_PORTINFO.containing_type = _SWITCHSTATE
 _SWITCHSTATE_PATHSTATE.fields_by_name['path_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _SWITCHSTATE_PATHSTATE.fields_by_name['path'].message_type = forch_dot_proto_dot_path__node__pb2._PATHNODE
 _SWITCHSTATE_PATHSTATE.containing_type = _SWITCHSTATE
-_SWITCHSTATE_VLANSTATE.fields_by_name['acls'].message_type = forch_dot_proto_dot_acl__state__pb2._ACLSTATE
-_SWITCHSTATE_VLANSTATE.fields_by_name['packet_rate_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
-_SWITCHSTATE_VLANSTATE.containing_type = _SWITCHSTATE
+_SWITCHSTATE_VLANACLSTATE.fields_by_name['acls'].message_type = forch_dot_proto_dot_acl__state__pb2._ACLSTATE
+_SWITCHSTATE_VLANACLSTATE.fields_by_name['packet_rate_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
+_SWITCHSTATE_VLANACLSTATE.containing_type = _SWITCHSTATE
 _SWITCHSTATE.fields_by_name['switch_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _SWITCHSTATE.fields_by_name['switches'].message_type = _SWITCHSTATE_SWITCHESENTRY
 DESCRIPTOR.message_types_by_name['SwitchState'] = _SWITCHSTATE
@@ -857,10 +857,10 @@ SwitchState = _reflection.GeneratedProtocolMessageType('SwitchState', (_message.
     })
   ,
 
-  'VLANState' : _reflection.GeneratedProtocolMessageType('VLANState', (_message.Message,), {
-    'DESCRIPTOR' : _SWITCHSTATE_VLANSTATE,
+  'VlanAclState' : _reflection.GeneratedProtocolMessageType('VlanAclState', (_message.Message,), {
+    'DESCRIPTOR' : _SWITCHSTATE_VLANACLSTATE,
     '__module__' : 'forch.proto.switch_state_pb2'
-    # @@protoc_insertion_point(class_scope:SwitchState.VLANState)
+    # @@protoc_insertion_point(class_scope:SwitchState.VlanAclState)
     })
   ,
   'DESCRIPTOR' : _SWITCHSTATE,
@@ -880,7 +880,7 @@ _sym_db.RegisterMessage(SwitchState.Port)
 _sym_db.RegisterMessage(SwitchState.Port.Attributes)
 _sym_db.RegisterMessage(SwitchState.PortInfo)
 _sym_db.RegisterMessage(SwitchState.PathState)
-_sym_db.RegisterMessage(SwitchState.VLANState)
+_sym_db.RegisterMessage(SwitchState.VlanAclState)
 
 
 _SWITCHSTATE_SWITCHESENTRY._options = None

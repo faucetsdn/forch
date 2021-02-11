@@ -1,5 +1,5 @@
 /*
- * VLAN state
+ * Port VLAN state
  */
 syntax = "proto3";
 

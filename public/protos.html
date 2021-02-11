@@ -802,7 +802,7 @@
                 </li>
               
                 <li>
-                  <a href="#PortBehavior.PortEvent"><span class="badge">E</span>PortBehavior.PortEvent</a>
+                  <a href="#PortBehavior.PortState"><span class="badge">E</span>PortBehavior.PortState</a>
                 </li>
               
                 <li>
@@ -876,7 +876,7 @@
                 </li>
               
                 <li>
-                  <a href="#SwitchState.VLANState"><span class="badge">M</span>SwitchState.VLANState</a>
+                  <a href="#SwitchState.VlanAclState"><span class="badge">M</span>SwitchState.VlanAclState</a>
                 </li>
               
               
@@ -2265,15 +2265,22 @@
             <tbody>
               
                 <tr>
-                  <td>event</td>
-                  <td><a href="#PortBehavior.PortEvent">PortBehavior.PortEvent</a></td>
+                  <td>state</td>
+                  <td><a href="#PortBehavior.PortState">PortBehavior.PortState</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
               
                 <tr>
-                  <td>timestamp</td>
-                  <td><a href="#string">string</a></td>
+                  <td>device_vlan</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>assigned_vlan</td>
+                  <td><a href="#int32">int32</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -5565,7 +5572,7 @@ or to host_path API to list path </p></td>
           </tbody>
         </table>
       
-        <h3 id="PortBehavior.PortEvent">PortBehavior.PortEvent</h3>
+        <h3 id="PortBehavior.PortState">PortBehavior.PortState</h3>
         <p></p>
         <table class="enum-table">
           <thead>
@@ -5836,7 +5843,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>vlan</td>
-                  <td><a href="#SwitchState.VLANState">SwitchState.VLANState</a></td>
+                  <td><a href="#VLANState">VLANState</a></td>
                   <td></td>
                   <td><p>VLAN state </p></td>
                 </tr>
@@ -6234,7 +6241,7 @@ or to host_path API to list path </p></td>
               
                 <tr>
                   <td>value</td>
-                  <td><a href="#SwitchState.VLANState">SwitchState.VLANState</a></td>
+                  <td><a href="#SwitchState.VlanAclState">SwitchState.VlanAclState</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -6277,7 +6284,7 @@ or to host_path API to list path </p></td>
 
         
       
-        <h3 id="SwitchState.VLANState">SwitchState.VLANState</h3>
+        <h3 id="SwitchState.VlanAclState">SwitchState.VlanAclState</h3>
         <p></p>
 
         
@@ -6669,7 +6676,7 @@ or to host_path API to list path </p></td>
       <div class="file-heading">
         <h2 id="forch/proto/vlan_state.proto">forch/proto/vlan_state.proto</h2><a href="#title">Top</a>
       </div>
-      <p>VLAN state</p>
+      <p>Port VLAN state</p>
 
       
         <h3 id="VLANState">VLANState</h3>
