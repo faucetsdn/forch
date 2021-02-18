@@ -150,12 +150,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._metrics = ForchMetrics(self._config.varz_interface)
         self._metrics.start()
 
-        self._initialize_orchestration()
-
         self._varz_collector = VarzStateCollector()
         self._faucet_collector = FaucetStateCollector(
-            self._config, is_faucetizer_enabled=self._should_enable_faucetizer,
-            device_state_reporter=self._device_report_server)
+            self._config, is_faucetizer_enabled=self._should_enable_faucetizer)
         self._faucet_collector.set_placement_callback(self._process_device_placement)
         self._faucet_collector.set_get_gauge_metrics(
             lambda: self._varz_collector.retry_get_metrics(
@@ -182,6 +179,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_GAUGE_PROM_PORT_DEFAULT))
         self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
+
+        self._initialize_orchestration()
 
         self._logger.info('Attaching event channel...')
         self._faucet_events = forch.faucet_event_client.FaucetEventClient(
@@ -230,6 +229,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if sequester_segment:
             self._device_report_server = DeviceReportServer(
                 self._port_state_manager.handle_testing_result, grpc_server_port)
+            self._faucet_collector.set_device_state_reporter(self._device_report_server)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()

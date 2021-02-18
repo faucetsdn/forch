@@ -109,7 +109,7 @@ VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 # pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
-    def __init__(self, config, is_faucetizer_enabled, device_state_reporter=None):
+    def __init__(self, config, is_faucetizer_enabled):
         self.switch_states = {}
         self.topo_state = {}
         self.learned_macs = {}
@@ -131,10 +131,10 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
+        self._device_state_reporter = None
         self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
-        self._device_state_reporter = device_state_reporter
 
     def set_active(self, active_state):
         """Set active state"""
@@ -1483,6 +1483,10 @@ class FaucetStateCollector:
     def set_forch_metrics(self, forch_metrics):
         """set object that handles forch varz metrics exposure"""
         self._forch_metrics = forch_metrics
+
+    def set_device_state_reporter(self, device_state_reporter):
+        """set object that processes and reports device related states"""
+        self._device_state_reporter = device_state_reporter
 
     def _get_lacp_link_state(self, lacp_role, lacp_state):
         """Return forch link state for given  faucet lacp role and state"""
