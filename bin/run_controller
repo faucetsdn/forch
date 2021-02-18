@@ -20,17 +20,26 @@ port_opts=
 local=
 run_mode=
 faucet_id=
+vxlan=
 
+echo run_controller $@
 cd $ROOT
 
 if [ "$1" == "local" ]; then
     docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
+    docker_volumes+=" -v $ROOT/daq/daq:/root/daq/daq"
+    docker_volumes+=" -v $ROOT:/root/forch"
     local=local
     shift
 fi
 
 if [ "$1" == "static_switch" ]; then
     run_mode=static_switch
+    shift
+fi
+
+if [ "$1" == "vxlan" ]; then
+    vxlan=vxlan
     shift
 fi
 
@@ -101,12 +110,17 @@ if [ -n "$prom_pt" ]; then
 fi
 
 if [ -n "$gauge_prom_pt" ]; then
-    gauge_port_opts="-p $gauge_prom_pt:$GAUGE_PROM_TARGET"
+    port_opts+=" -p $gauge_prom_pt:$GAUGE_PROM_TARGET"
     echo $gauge_prom_pt > $INSTDIR/PROM_PORT.$GAUGE_PROM_TARGET
 fi
 
 forch_port="-p 500$faucet_id:9019"
 docker_envs="--env RUN_MODE=$run_mode"
+
+if [[ -n $vxlan ]]; then
+    docker_ip=$(ip addr show docker0 | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p')
+    docker_envs+=" --env VXLAN_IP=$docker_ip"
+fi
 
 docker_volumes+="\
         -v $INSTDIR/faucet_br/faucet:/etc/faucet_br \
@@ -119,15 +133,18 @@ docker_volumes+="\
 
 cid=$(docker run -d --privileged --name $CONTAINER \
              $docker_volumes $docker_envs \
-             -p $ext_ofpt:6653 $forch_port $port_opts $gauge_port_opts -p $gauge_ext_ofpt:6654 $IMAGE)
+             -p $ext_ofpt:6653 $forch_port $port_opts -p $gauge_ext_ofpt:6654 $IMAGE)
 
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
-tap_intf_name=cntrl_tap_$faucet_id
-echo Creating tap interface $tap_intf_name for container pid $pid
-sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
-sudo ip link set $tap_intf_name up
-docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
-docker exec $CONTAINER ip link set data0 up
+
+if [[ -z $vxlan ]]; then
+    tap_intf_name=cntrl_tap_$faucet_id
+    echo Creating tap interface $tap_intf_name for container pid $pid
+    sudo ip link add $tap_intf_name type veth peer name data0 netns $pid
+    sudo ip link set $tap_intf_name up
+    docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
+    docker exec $CONTAINER ip link set data0 up
+fi
 
 echo Container $CONTAINER started as $cid
 

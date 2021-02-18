@@ -1,6 +1,6 @@
 # DAQ FOT configuration.
 
-include: config/system/default.yaml
+include: ../daq/config/system/default.yaml
 
 switch_setup:
   data_intf: data0
@@ -15,4 +15,5 @@ run_trigger:
 device_reporting:
   server_port: 50051
 
-#
+external_subnets:
+  - subnet: 192.168.1.0/24

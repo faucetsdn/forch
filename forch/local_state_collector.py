@@ -1,5 +1,6 @@
 """Collecting the states of the local system"""
 
+import copy
 from datetime import datetime
 import os
 import re
@@ -8,7 +9,6 @@ import threading
 import time
 
 import psutil
-import yaml
 
 from forch.proto.process_state_pb2 import ProcessState
 from forch.proto.shared_constants_pb2 import State
@@ -18,6 +18,10 @@ from forch.utils import dict_proto, get_logger
 _KEEPALIVED_PID_FILE_DEFAULT = '/var/run/keepalived.pid'
 
 _PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
+
+VRRP_MASTER = 'MASTER'
+VRRP_BACKUP = 'BACKUP'
+VRRP_FAULT = 'FAULT'
 
 
 class LocalStateCollector:
@@ -51,7 +55,6 @@ class LocalStateCollector:
     def initialize(self):
         """Initialize LocalStateCollector"""
         if not self._check_vrrp:
-            self._vrrp_state['is_master'] = True
             self._active_state_handler(State.active)
 
         self.start_process_loop()
@@ -266,52 +269,44 @@ class LocalStateCollector:
         try:
             if not self._check_vrrp:
                 return
+
             with open(self._keepalived_pid_file) as pid_file:
                 pid = int(pid_file.readline())
-            os.kill(pid, signal.SIGUSR2)
+            os.kill(pid, signal.SIGUSR1)
             time.sleep(1)
-            with open('/tmp/keepalived.stats') as stats_file:
-                stats_file.readline()
-                stats = yaml.safe_load(stats_file)
-
-                self._vrrp_state.update(self._extract_vrrp_state(stats))
-                active_state = State.active if self._vrrp_state['is_master'] else State.inactive
-                self._active_state_handler(active_state)
+            with open('/tmp/keepalived.data') as stats_file:
+                for line in stats_file:
+                    if not re.search('State = (MASTER|BACKUP|FAULT)', line):
+                        continue
+                    vrrp_state = line.split('= ')[1]
+                    self._vrrp_state.update(self._handle_vrrp_state(vrrp_state))
 
         except Exception as e:
-            self._logger.error("Cannot get VRRP info, setting controller to inactive: %s", e)
-            self._active_state_handler(State.broken)
+            error_msg = f'Cannot get VRRP info, setting controller to inactive: {e}'
+            self._logger.error(error_msg)
+            self._active_state_handler(State.broken, error_msg)
 
-    def _extract_vrrp_state(self, stats):
+    def _handle_vrrp_state(self, vrrp_state):
         """Extract vrrp state from keepalived stats data"""
-        vrrp_map = {'state': State.healthy}
-        vrrp_erros = []
-        old_vrrp_map = self._state.get('vrrp', {})
+        vrrp_map = {'state': vrrp_state}
+        old_vrrp_map = copy.deepcopy(self._vrrp_state)
 
-        became_master = int(stats['Became master'])
-        released_master = int(stats['Released master'])
-        vrrp_map['is_master'] = became_master > released_master
-        vrrp_map['is_master_last_update'] = self._current_time
-        if vrrp_map['is_master'] != old_vrrp_map.get('is_master'):
-            vrrp_map['is_master_last_change'] = self._current_time
-            is_master_change_count = old_vrrp_map.get('is_master_change_count', 0) + 1
-            self._logger.info('is_master #%d: %s', is_master_change_count, vrrp_map['is_master'])
-            vrrp_map['is_master_change_count'] = is_master_change_count
-            if not vrrp_map['is_master']:
-                self._cleanup_handler()
-
-        for error_type in ['Packet Errors', 'Authentication Errors']:
-            for error_key, error_count in stats.get(error_type, {}).items():
-                if int(error_count) > 0:
-                    vrrp_map['state'] = State.broken
-                    vrrp_erros.append(error_key)
-
-        vrrp_map['state_last_update'] = self._current_time
         if vrrp_map['state'] != old_vrrp_map.get('state'):
             vrrp_map['state_last_change'] = self._current_time
-            state_change_count = old_vrrp_map.get('state_change_count', 0) + 1
-            self._logger.info('vrrp_state #%d: %s', state_change_count, vrrp_map['state'])
-            vrrp_map['state_change_count'] = state_change_count
+            vrrp_map['state_change_count'] = old_vrrp_map.get('state', 0) + 1
+            self._logger.info('state #%d: %s', vrrp_map['state_change_count'], vrrp_map['state'])
+
+            if vrrp_state == VRRP_MASTER:
+                self._active_state_handler(State.active)
+            elif vrrp_state == VRRP_BACKUP:
+                self._active_state_handler(State.inactive)
+            elif vrrp_state == VRRP_FAULT:
+                self._active_state_handler(State.broken, 'VRRP is in fault state')
+            else:
+                self._logger.error('Unknown VRRP state: %s', vrrp_state)
+
+            if vrrp_state != VRRP_MASTER:
+                self._cleanup_handler()
 
         return vrrp_map
 

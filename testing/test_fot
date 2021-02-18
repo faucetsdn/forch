@@ -1,20 +1,12 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 source bin/stack_functions
 
 preamble_setup
 
-function monitor_log {
-    runcommand=$1
-    daqlog=$DAQBASE/inst/cmdrun.log
-    while true; do
-        sleep 1
-        test_done=$(cat $daqlog | fgrep "Remaining target sets: []" || true)
-        if [ -n "$test_done" ]; then
-            eval $runcommand
-            break
-        fi
-    done
+function report_vlans {
+    $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
 }
 
 INST_BASE=inst/forch-controller-1
@@ -62,10 +54,11 @@ echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
 # Waiting for DAQ test to complete
-function report_result {
-    $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
-    $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
-    cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
-}
-set +x
-monitor_log report_result
+monitor_log "Remaining target sets: []"
+
+report_vlans
+
+cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
+
+docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
+docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS

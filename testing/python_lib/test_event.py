@@ -7,9 +7,9 @@ import socket
 import threading
 import unittest
 
-from forch.utils import MetricsFetchingError
-
 from unit_base import ForchestratorEventTestBase
+
+from forch.utils import MetricsFetchingError
 
 
 class FaucetEventOrderTestCase(ForchestratorEventTestBase):
@@ -46,12 +46,14 @@ class FaucetEventOrderTestCase(ForchestratorEventTestBase):
         self._event_server_thread.start()
 
     # pylint: disable=invalid-name
+    # pylint: disable=protected-access
     def setUp(self, *args, **kwargs):
         """Set up env and event server"""
         try:
             super().setUp(*args, **kwargs)
         except MetricsFetchingError as error:
             print(f'Expected error during Forchestrator initialization: {error}')
+            self._forchestrator._initialized = True
         os.environ['FAUCET_EVENT_DEBUG'] = '1'
         self._setup_event_server()
 

@@ -51,8 +51,8 @@ class IntegrationTestBase(unittest.TestCase):
             self._run_process_command(command, capture=capture))
         if strict and retcode:
             if capture:
-                print('stdout: \n' + out)
-                print('stderr: \n' + err)
+                print('stdout: \n%s' % out)
+                print('stderr: \n%s' % err)
             raise Exception('Command execution failed: %s' % str(command))
         return retcode, out, err
 

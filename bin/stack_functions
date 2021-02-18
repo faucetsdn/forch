@@ -94,6 +94,15 @@ function add_iface {
     sudo ifconfig $iface up
 }
 
+function add_vxlan {
+    br=$1
+    pt=$2
+    ip=$3
+    if=vxlan
+    sudo ovs-vsctl add-port $br $if -- set interface $if ofport_request=$pt -- \
+         set interface $if type=vxlan options:remote_ip=$ip options:key=cntrl_tap
+}
+
 function add_oeth {
     br_a=$1
     pt_a=$2
@@ -125,6 +134,21 @@ function add_faux {
     done
     echo "Device faux-$fnum has IP $ip_address"
     declare -g "ip_faux_$fnum"="$ip_address"
+}
+
+function set_iface_state {
+    local iface=$1
+    local state=$2
+    sudo ip link set dev $iface $state
+}
+
+function modify_faux_mac {
+    local fnum=$1
+    local mac=$2
+    if [ -z "$mac" ]; then
+        mac="02:03:04:00:00:0$fnum"
+    fi
+    docker exec forch-faux-$fnum ip link set faux-eth0 address $mac
 }
 
 function diagnose_stack {
@@ -492,4 +516,20 @@ function test_varz_value {
     query_path=0.0.0.0:$port/$path
     value=$( printf "%.0f" $(wget $query_path -O- | grep $varz | grep -v 'HELP\|TYPE' | awk '{print $2}') )
     echo $varz $value | tee -a $TEST_RESULTS
+}
+
+function monitor_log {
+    expected=$1
+    daqlog=$DAQBASE/inst/cmdrun.log
+    while true; do
+        sleep 1
+        test_done=$(cat $daqlog | fgrep "$1" || true)
+        if [ -n "$test_done" ]; then
+            break
+        fi
+    done
+}
+
+function redact {
+    sed -re 's/time [0-9]+ms/XXX/'
 }

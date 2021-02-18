@@ -20,7 +20,7 @@ COPY bin/retry_cmd bin/
 ENV CI=true
 
 RUN $AG update && $AG install ash iptables sudo openvswitch-switch openvswitch-common \
-    python3 python3-pip python3.8 python3.8-venv python3.8-dev
+    python3 python3-pip python3.8 python3.8-venv python3.8-dev build-essential
 
 RUN update-alternatives --install /usr/bin/python3 python /usr/bin/python3.8 2
 

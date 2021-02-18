@@ -115,6 +115,7 @@ class FaucetStateCollector:
         self.learned_macs = {}
         self.faucet_config = {}
         self.packet_counts = {}
+        self.radius_results = {}
         self.lock = threading.RLock()
         self._lock = threading.Lock()
         self._logger = get_logger('fstate')
@@ -277,8 +278,9 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
+            vid = sample.labels['vid']
             if port:
-                self.process_port_learn(timestamp, dp_name, port, eth_src, None)
+                self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
         if not ports_learned:
             self._logger.info('No learned ports restored.')
@@ -1032,7 +1034,8 @@ class FaucetStateCollector:
                         device_placement = DevicePlacement(switch=name, port=port, connected=False)
                         self._placement_callback(None, device_placement)
 
-            self._logger.info('port_state update %s %s %s', name, port, state)
+            vid = port_config.get('native_vlan')
+            self._logger.info('port_state update: %s, %s, %s, %s', name, port, state, vid)
 
     def process_port_change(self, event):
         """Wrapper for process_port_state"""
@@ -1101,7 +1104,7 @@ class FaucetStateCollector:
 
     @_dump_states
     # pylint: disable=too-many-arguments
-    def process_port_learn(self, timestamp, name, port, mac, ip_addr):
+    def process_port_learn(self, timestamp, name, port, mac, vid, ip_addr=None):
         """process port learn event"""
         with self.lock:
             mac_entry = self.learned_macs.setdefault(mac, {})
@@ -1119,8 +1122,15 @@ class FaucetStateCollector:
                 .setdefault(LEARNED_MACS, set())\
                 .add(mac)
 
-            self._logger.info('Learned %s at %s:%s as %s', mac, name, port, ip_addr)
+            self._logger.info(
+                'Learned %s at %s:%s on vlan %s as %s', mac, name, port, vid, ip_addr)
             port_attr = self._get_port_attributes(name, port)
+
+            radius_result = self.radius_results.get(mac)
+            if radius_result:
+                mac_entry[MAC_RADIUS_RESULT] = radius_result
+            else:
+                assert not mac_entry.get(MAC_RADIUS_RESULT)
 
             if port_attr and port_attr['type'] == 'access':
                 if self._placement_callback:
@@ -1239,7 +1249,7 @@ class FaucetStateCollector:
     def _update_stack_topo_state_raw(self, timestamp, link_graph, stack_root, dps):
         topo_state = self.topo_state
         with self.lock:
-            links_hash = str(link_graph)
+            links_hash = str(sorted(link_graph, key=lambda link: link.SerializeToString()))
             if topo_state.get(LINKS_HASH) != links_hash:
                 topo_state[LINKS_GRAPH] = link_graph
                 topo_state[LINKS_HASH] = links_hash
@@ -1314,22 +1324,29 @@ class FaucetStateCollector:
 
     def update_radius_result(self, mac, access, segment=None, role=None):
         """Update RADIUS result information for learned host"""
+        host_radius = {}
+        host_radius[MAC_RADIUS_ACCESS] = access
+        host_radius[MAC_RADIUS_SEGMENT] = segment
+        host_radius[MAC_RADIUS_ROLE] = role
+        self.radius_results[mac] = host_radius
+
         learned_host = self.learned_macs.get(mac)
         if not learned_host:
             # This covers the case where we do a RADIUS request for a static placement
             self._logger.warning(
                 '%s is not a learned mac. Skipping faucet_state_collector update.', mac)
-            return
-        host_radius = learned_host.setdefault(MAC_RADIUS_RESULT, {})
-        host_radius[MAC_RADIUS_ACCESS] = access
-        host_radius[MAC_RADIUS_SEGMENT] = segment
-        host_radius[MAC_RADIUS_ROLE] = role
+        else:
+            learned_host[MAC_RADIUS_RESULT] = host_radius
 
     @_pre_check()
     def get_host_summary(self):
         """Get a summary of the learned hosts"""
         with self.lock:
-            num_hosts = len(self.learned_macs)
+            num_hosts = 0
+            for mac in self.learned_macs:
+                switch, port = self._get_access_switch(mac)
+                if switch and port:
+                    num_hosts += 1
         return self._make_summary(State.healthy, f'{num_hosts} learned host MACs')
 
     @_pre_check()
@@ -1340,7 +1357,7 @@ class FaucetStateCollector:
             error_msg = 'MAC address cannot be found. Please use list_hosts to get a list of hosts'
             return self._make_summary(State.broken, error_msg)
         for mac, mac_state in self.learned_macs.items():
-            if mac == src_mac:
+            if src_mac and mac == src_mac:
                 continue
             switch, port = self._get_access_switch(mac)
             if not switch or not port:

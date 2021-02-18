@@ -339,9 +339,9 @@ class DeviceReportServicerTestBase(unittest.TestCase):
         self._test_server = server_from_dictionary(
             servicers, strict_real_time())
         port_learns = [
-            ('name', '1', '00:0X:00:00:00:01'),
-            ('name', '2', '00:0Y:00:00:00:02'),
-            ('name', '3', '00:0Z:00:00:00:03')
+            ('name', '1', '00:0X:00:00:00:01', 101),
+            ('name', '2', '00:0Y:00:00:00:02', 102),
+            ('name', '3', '00:0Z:00:00:00:03', 103)
         ]
         for port_learn in port_learns:
             self._servicer.process_port_learn(*port_learn)
@@ -453,13 +453,16 @@ class CustomizableDeviceStateManager(DeviceStateManager):
         self._get_vlan_from_segment = get_vlan_from_segment
 
     def process_device_placement(self, eth_src, placement, static=False):
+        """process a device placement"""
         if self._device_placement_callback:
             self._device_placement_callback(eth_src, placement, static)
 
     def process_device_behavior(self, eth_src, behavior, static=False):
+        """process device behavior"""
         if self._device_behavior_callback:
             self._device_behavior_callback(eth_src, behavior, static)
 
     def get_vlan_from_segment(self, segment):
+        """get the vlan for a given segment"""
         if self._get_vlan_from_segment:
             self._get_vlan_from_segment(segment)
