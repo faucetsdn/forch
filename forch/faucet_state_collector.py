@@ -109,7 +109,7 @@ VLAN_PACKET_COUNT_METRIC = 'flow_packet_count_vlan'
 # pylint: disable=too-many-public-methods
 class FaucetStateCollector:
     """Processing faucet events and store states in the map"""
-    def __init__(self, config, is_faucetizer_enabled):
+    def __init__(self, config, is_faucetizer_enabled, device_state_reporter=None):
         self.switch_states = {}
         self.topo_state = {}
         self.learned_macs = {}
@@ -134,6 +134,7 @@ class FaucetStateCollector:
         self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
+        self._device_state_reporter = device_state_reporter
 
     def set_active(self, active_state):
         """Set active state"""
@@ -1052,12 +1053,13 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
-            if not state:
-                port_attr = self._get_port_attributes(name, port)
-                if port_attr and port_attr['type'] == 'access':
-                    if self._placement_callback:
-                        device_placement = DevicePlacement(switch=name, port=port, connected=False)
-                        self._placement_callback(None, device_placement)
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access':
+                if not state and self._placement_callback:
+                    device_placement = DevicePlacement(switch=name, port=port, connected=False)
+                    self._placement_callback(None, device_placement)
+                if self._device_state_reporter:
+                    self._device_state_reporter.process_port_state(name, port, state)
 
             vid = port_config.get('native_vlan')
             self._logger.info('port_state update: %s, %s, %s, %s', name, port, state, vid)
@@ -1164,6 +1166,9 @@ class FaucetStateCollector:
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port)
+
+                if self._device_state_reporter:
+                    self._device_state_reporter.process_port_learn(mac, vid)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):

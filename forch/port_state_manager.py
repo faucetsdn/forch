@@ -108,13 +108,15 @@ class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, device_state_manager=None, varz_updater=None, testing_segment=None):
+    def __init__(self, device_state_manager=None, varz_updater=None,
+                 device_state_reporter=None, testing_segment=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
         self._device_state_manager = device_state_manager
         self._varz_updater = varz_updater
+        self._device_state_reporter = device_state_reporter
         self._placement_to_mac = {}
         self._testing_segment = testing_segment
         self._lock = threading.RLock()
@@ -246,6 +248,13 @@ class PortStateManager:
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
+        device_behavior = (
+            self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
+        assert device_behavior
+        operational_vlan = self._get_vlan_from_segment(device_behavior.segment)
+        if self._device_state_reporter:
+            self._device_state_reporter.process_port_assign(mac, operational_vlan)
+
         device_behavior = DeviceBehavior(segment=self._testing_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
         self._update_device_state_varz(mac, DVAState.sequestered)
@@ -284,7 +293,7 @@ class PortStateManager:
     def _get_vlan_from_segment(self, segment):
         if self._device_state_manager:
             return self._device_state_manager.get_vlan_from_segment(segment)
-        return None
+        return INVALID_VLAN
 
     def _update_device_state_varz(self, mac, device_state):
         if self._varz_updater:
