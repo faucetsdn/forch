@@ -248,11 +248,12 @@ class PortStateManager:
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
-        operational_behavior = (
-            self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
-        assert operational_behavior
-        operational_vlan = self._get_vlan_from_segment(operational_behavior.segment)
         if self._device_state_reporter:
+            operational_behavior = (
+                self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
+            assert operational_behavior, f'No operational device behavior available for {mac}'
+            operational_vlan = self._get_vlan_from_segment(operational_behavior.segment)
+            assert operational_vlan, f'No operational vlan available for device {mac}'
             self._device_state_reporter.process_port_assign(mac, operational_vlan)
 
         device_behavior = DeviceBehavior(segment=self._testing_segment)
