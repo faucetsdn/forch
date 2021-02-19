@@ -1168,7 +1168,7 @@ class FaucetStateCollector:
                     self._update_learned_macs_metric(mac, name, port)
 
                 if self._device_state_reporter:
-                    self._device_state_reporter.process_port_learn(mac, vid)
+                    self._device_state_reporter.process_port_learn(name, port, mac, vid)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):

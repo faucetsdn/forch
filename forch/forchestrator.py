@@ -222,14 +222,16 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
-        self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._config.orchestration.sequester_config.segment)
-
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
+        handle_device_result = (
+            lambda result: self._port_state_manager.handle_testing_result(result))
         if sequester_segment:
-            self._device_report_server = DeviceReportServer(
-                self._port_state_manager.handle_testing_result, grpc_server_port)
+            self._device_report_server = DeviceReportServer(handle_device_result, grpc_server_port)
             self._faucet_collector.set_device_state_reporter(self._device_report_server)
+
+        self._port_state_manager = PortStateManager(
+            self._faucetizer, self, self._device_report_server,
+            self._config.orchestration.sequester_config.segment)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
