@@ -223,10 +223,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
-        handle_device_result = (
-            lambda result: self._port_state_manager.handle_testing_result(result))
         if sequester_segment:
-            self._device_report_server = DeviceReportServer(handle_device_result, grpc_server_port)
+            self._device_report_server = DeviceReportServer(
+                self._handle_device_result, grpc_server_port)
             self._faucet_collector.set_device_state_reporter(self._device_report_server)
 
         self._port_state_manager = PortStateManager(
@@ -294,6 +293,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
+
+    def _handle_device_result(self, device_result):
+        self._port_state_manager.handle_testing_result(device_result)
 
     def update_device_state_varz(self, mac, state):
         if self._metrics:
