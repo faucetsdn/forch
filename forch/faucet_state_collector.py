@@ -120,7 +120,6 @@ class FaucetStateCollector:
         self._lock = threading.Lock()
         self._logger = get_logger('fstate')
         self.process_lag_state(time.time(), None, None, False, False)
-        self._active_state = State.initializing
         self._is_faucetizer_enabled = is_faucetizer_enabled
         self._is_state_restored = False
         self._state_restore_error = "Initializing"
@@ -134,11 +133,6 @@ class FaucetStateCollector:
         self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
-
-    def set_active(self, active_state):
-        """Set active state"""
-        with self._lock:
-            self._active_state = active_state
 
     def set_state_restored(self, is_restored, restore_error=None):
         """Set state restore result"""
@@ -224,13 +218,6 @@ class FaucetStateCollector:
         def pre_check(func):
             def wrapped(self, *args, **kwargs):
                 with self._lock:
-                    if self._active_state == State.inactive:
-                        detail = 'This controller is inactive. Please view peer controller.'
-                        return self._make_summary(State.inactive, detail)
-                    if self._active_state != State.active:
-                        state_name = State.State.Name(self._active_state)
-                        detail = f'This controller is {state_name}'
-                        return self._make_summary(self._active_state, detail)
                     if not self._is_state_restored:
                         detail = f'State is not restored: {self._state_restore_error}'
                         return self._make_summary(State.broken, detail)
