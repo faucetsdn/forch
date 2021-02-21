@@ -222,13 +222,15 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
-        self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._config.orchestration.sequester_config.segment)
-
         sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
             self._device_report_server = DeviceReportServer(
-                self._port_state_manager.handle_testing_result, grpc_server_port)
+                self._handle_device_result, grpc_server_port)
+            self._faucet_collector.set_device_state_reporter(self._device_report_server)
+
+        self._port_state_manager = PortStateManager(
+            self._faucetizer, self, self._device_report_server,
+            self._config.orchestration.sequester_config.segment)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -291,7 +293,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
-            self._device_report_server_process_port_assign(mac, device_behavior.segment)
+
+    def _handle_device_result(self, device_result):
+        self._port_state_manager.handle_testing_result(device_result)
 
     def update_device_state_varz(self, mac, state):
         if self._metrics:
@@ -430,7 +434,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             else:
                 device_behavior = DeviceBehavior(segment=segment, role=role)
                 self._port_state_manager.handle_device_behavior(mac, device_behavior)
-                self._device_report_server_process_port_assign(mac, segment)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
@@ -444,32 +447,14 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
             (FaucetEvent.PortChange, fcoll.process_port_change),
-            (FaucetEvent.PortChange, self._device_report_server_process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid,
                 event.l3_src_ip)),
-            (FaucetEvent.L2Learn, self._device_report_server_process_port_learn),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
         ]
 
         self._faucet_events.register_handlers(handlers)
-
-    def _device_report_server_process_port_change(self, event):
-        if self._device_report_server:
-            self._device_report_server.process_port_change(
-                event.dp_name, event.port_no,
-                event.status and event.reason != 'DELETE')
-
-    def _device_report_server_process_port_learn(self, event):
-        if self._device_report_server and self._is_access(event.dp_name, event.port_no):
-            self._device_report_server.process_port_learn(
-                event.dp_name, event.port_no, event.eth_src, event.vid)
-
-    def _device_report_server_process_port_assign(self, mac, segment):
-        if self._device_report_server and self._faucetizer:
-            vlan = self._faucetizer.get_vlan_from_segment(segment)
-            self._device_report_server.process_port_assign(mac, vlan)
 
     def _get_varz_config(self):
         metrics = self._varz_collector.retry_get_metrics(
@@ -793,10 +778,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         except Exception as e:
             self._logger.error('Cannot read faucet config: %s', e)
             raise
-
-    def _is_access(self, dp_name, port):
-        interface = self._behavioral_config['dps'][dp_name]['interfaces'][port]
-        return 'native_vlan' in interface
 
     def _validate_config(self, config):
         warnings = []

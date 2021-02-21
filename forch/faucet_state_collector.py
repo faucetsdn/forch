@@ -130,6 +130,7 @@ class FaucetStateCollector:
         self._stack_state_update = 0
         self._stack_state_data = None
         self._forch_metrics = None
+        self._device_state_reporter = None
         self._config = config
         self._change_coalesce_sec = config.event_client.stack_topo_change_coalesce_sec
         self._packet_per_sec_thresholds = config.dataplane_monitoring.vlan_pkt_per_sec_thresholds
@@ -1039,12 +1040,13 @@ class FaucetStateCollector:
             port_table[PORT_STATE_TS] = datetime.fromtimestamp(timestamp).isoformat()
             port_table[PORT_STATE_COUNT] = port_table.setdefault(PORT_STATE_COUNT, 0) + 1
 
-            if not state:
-                port_attr = self._get_port_attributes(name, port)
-                if port_attr and port_attr['type'] == 'access':
-                    if self._placement_callback:
-                        device_placement = DevicePlacement(switch=name, port=port, connected=False)
-                        self._placement_callback(None, device_placement)
+            port_attr = self._get_port_attributes(name, port)
+            if port_attr and port_attr['type'] == 'access':
+                if not state and self._placement_callback:
+                    device_placement = DevicePlacement(switch=name, port=port, connected=False)
+                    self._placement_callback(None, device_placement)
+                if self._device_state_reporter:
+                    self._device_state_reporter.process_port_state(name, port, state)
 
             vid = port_config.get('native_vlan')
             self._logger.info('port_state update: %s, %s, %s, %s', name, port, state, vid)
@@ -1151,6 +1153,9 @@ class FaucetStateCollector:
 
                 if self._forch_metrics:
                     self._update_learned_macs_metric(mac, name, port)
+
+                if self._device_state_reporter:
+                    self._device_state_reporter.process_port_learn(name, port, mac, vid)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
@@ -1465,6 +1470,10 @@ class FaucetStateCollector:
     def set_forch_metrics(self, forch_metrics):
         """set object that handles forch varz metrics exposure"""
         self._forch_metrics = forch_metrics
+
+    def set_device_state_reporter(self, device_state_reporter):
+        """set object that processes and reports device related states"""
+        self._device_state_reporter = device_state_reporter
 
     def _get_lacp_link_state(self, lacp_role, lacp_state):
         """Return forch link state for given  faucet lacp role and state"""
