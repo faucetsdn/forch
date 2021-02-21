@@ -735,11 +735,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             active_state = self._active_state
             if active_state == State.initializing:
                 return State.initializing, 'Initializing'
-            if active_state == State.inactive:
-                detail = 'This controller is inactive. Please view peer controller.'
-                return State.inactive, detail
-            if active_state != State.active:
-                return State.broken, 'Internal error'
 
         cpn_state = self._cpn_collector.get_cpn_state()
         peer_controller = self._get_peer_controller_name()
@@ -853,7 +848,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._active_state = active_state
             if error:
                 self._system_errors[ACTIVE_STATE] = error
-        self._faucet_collector.set_active(active_state)
+            else:
+                self._system_errors.pop(ACTIVE_STATE, None)
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""

@@ -276,10 +276,12 @@ class LocalStateCollector:
             time.sleep(1)
             with open('/tmp/keepalived.data') as stats_file:
                 for line in stats_file:
-                    if not re.search('State = (MASTER|BACKUP|FAULT)', line):
+                    match = re.search('State = (MASTER|BACKUP|FAULT)', line)
+                    if not match:
                         continue
-                    vrrp_state = line.split('= ')[1]
+                    vrrp_state = match.group(1)
                     self._vrrp_state.update(self._handle_vrrp_state(vrrp_state))
+                    break
 
         except Exception as e:
             error_msg = f'Cannot get VRRP info, setting controller to inactive: {e}'
@@ -293,7 +295,7 @@ class LocalStateCollector:
 
         if vrrp_map['state'] != old_vrrp_map.get('state'):
             vrrp_map['state_last_change'] = self._current_time
-            vrrp_map['state_change_count'] = old_vrrp_map.get('state', 0) + 1
+            vrrp_map['state_change_count'] = old_vrrp_map.get('state_change_count', 0) + 1
             self._logger.info('state #%d: %s', vrrp_map['state_change_count'], vrrp_map['state'])
 
             if vrrp_state == VRRP_MASTER:
