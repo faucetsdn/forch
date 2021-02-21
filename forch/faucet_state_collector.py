@@ -1161,7 +1161,8 @@ class FaucetStateCollector:
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
         """process port expire event"""
         with self.lock:
-            self._logger.info('Learned entry %s at %s:%s expired.', mac, name, port)
+            self._logger.info(
+                'Learned entry %s on vlan %s at %s:%s expired.', mac, expired_vlan, name, port)
 
             port_attr = self._get_port_attributes(name, port)
             if port_attr and port_attr['type'] == 'access':
