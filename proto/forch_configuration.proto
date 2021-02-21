@@ -132,8 +132,9 @@ message OrchestrationConfig {
 
   // encapsulating device sequestration configurations
   message SequesterConfig {
-    // segment. If defined, automatic sequestering is enabled
-    string segment = 1;
+    // Segment of sequestered device. Optional. Specify it to avoid conflict with the operational
+    // segments
+    string sequester_segment = 1;
 
     // start of vlan range
     int32 vlan_start = 2;

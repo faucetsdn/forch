@@ -72,6 +72,7 @@ ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
+SEQUESTER_SEGMENT_DEFAULT = 'SEQUESTER'
 
 
 class OrchestrationManager(abc.ABC):
@@ -213,8 +214,10 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._initialized = True
 
     def _initialize_orchestration(self):
+        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+
         if self._should_enable_faucetizer:
-            self._initialize_faucetizer()
+            self._initialize_faucetizer(sequester_segment)
             self._faucetizer.reload_structural_config()
 
             if self._gauge_config_file:
@@ -222,7 +225,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
-        sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
             self._device_report_server = DeviceReportServer(
                 self._handle_device_result, grpc_server_port)
@@ -230,7 +232,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         self._port_state_manager = PortStateManager(
             self._faucetizer, self, self._device_report_server,
-            self._config.orchestration.sequester_config.segment)
+            sequester_segment)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -350,10 +352,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         return True
 
     def _calculate_sequester_config(self):
+        if not self._config.orchestration.HasField('sequester_config'):
+            return None, None
         sequester_config = self._config.orchestration.sequester_config
-        segment = sequester_config.segment
+        sequester_segment = sequester_config.segment or SEQUESTER_SEGMENT_DEFAULT
         grpc_server_port = sequester_config.grpc_server_port
-        return segment, grpc_server_port
+        return sequester_segment, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
@@ -365,14 +369,15 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 'Structural and behavioral config file cannot be the same: '
                 f'{self._behavioral_config_file}')
 
-    def _initialize_faucetizer(self):
+    def _initialize_faucetizer(self, sequester_segment=None):
         orch_config = self._config.orchestration
 
         self._config_file_watcher = FileChangeWatcher(
             os.path.dirname(self._structural_config_file))
 
         self._faucetizer = faucetizer.Faucetizer(
-            orch_config, self._structural_config_file, self._behavioral_config_file, self)
+            orch_config, self._structural_config_file, self._behavioral_config_file, self,
+            sequester_segment)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)

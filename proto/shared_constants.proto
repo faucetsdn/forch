@@ -82,14 +82,14 @@ message DVAState {
     // unauthenticated
     unauthenticated = 1;
 
-    // static
-    static = 2;
-
     // sequestered
-    sequestered = 3;
+    sequestered = 2;
 
-    // operational
-    operational = 4;
+    // operational state with static vlan assignment
+    static_operational = 3;
+
+    // operational state with dynamic vlan assignment
+    dynamic_operational = 4;
 
     // infracted
     infracted = 5;
