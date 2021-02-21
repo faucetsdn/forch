@@ -132,7 +132,7 @@ message OrchestrationConfig {
 
   // encapsulating device sequestration configurations
   message SequesterConfig {
-    // Segment of sequestered device. Optional. Specify it to avoid conflict with the operational
+    // Segment of sequestered devices. Optional. Specify it to avoid conflict with the operational
     // segments
     string sequester_segment = 1;
 
