@@ -231,8 +231,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._faucet_collector.set_device_state_reporter(self._device_report_server)
 
         self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._device_report_server,
-            sequester_segment)
+            self._faucetizer, self, self._device_report_server, sequester_segment)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
