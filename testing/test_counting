@@ -21,9 +21,9 @@ function test_counting {
     echo $fout_dir
 
     echo dump-flows t2sw1
-    sudo ovs-ofctl dump-flows t2sw1 | fgrep table=0
+    sudo ovs-ofctl dump-flows t2sw1
     echo dump-flows t2sw2
-    sudo ovs-ofctl dump-flows t2sw2 | fgrep table=0
+    sudo ovs-ofctl dump-flows t2sw2
     fetch_forch switch_state
 
     api_result=$fout_dir/switch_state.json
