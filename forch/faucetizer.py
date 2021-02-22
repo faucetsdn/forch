@@ -268,7 +268,7 @@ class Faucetizer(DeviceStateManager):
     def _update_device_dva_state(self, device_placement, device_behavior, device_type):
         if device_type == STATIC_DEVICE:
             dva_state = DVAState.static_operational
-        elif device_behavior.segment == self._config.sequester_config.segment:
+        elif device_behavior.segment == self._sequester_segment:
             dva_state = DVAState.sequestered
         elif device_behavior.segment in self._segments_to_vlans:
             dva_state = DVAState.dynamic_operational
