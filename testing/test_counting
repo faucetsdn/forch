@@ -67,6 +67,8 @@ sudo tcpdump -lnei faux-3 &
 echo Generating ARP and ICMP traffic...
 docker exec forch-faux-3 arp -d 192.168.1.1
 docker exec forch-faux-3 arp -d 192.168.1.2
+docker exec forch-faux-3 ping -c1 192.168.1.252
+sleep 5
 
 # TODO debug
 for i in 1 2 3 4; do
