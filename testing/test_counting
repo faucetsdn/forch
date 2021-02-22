@@ -61,6 +61,7 @@ done
 
 test_counting initial
 
+sudo tcpdump -lnei faux-1 &
 sudo tcpdump -lnei faux-3 &
 
 echo Generating ARP and ICMP traffic...
