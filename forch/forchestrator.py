@@ -354,7 +354,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not self._config.orchestration.HasField('sequester_config'):
             return None, None
         sequester_config = self._config.orchestration.sequester_config
-        sequester_segment = sequester_config.segment or SEQUESTER_SEGMENT_DEFAULT
+        sequester_segment = sequester_config.sequester_segment or SEQUESTER_SEGMENT_DEFAULT
         grpc_server_port = sequester_config.grpc_server_port
         return sequester_segment, grpc_server_port
 
