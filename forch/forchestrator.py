@@ -64,13 +64,15 @@ _TARGET_FAUCET_METRICS = (
 
 _TARGET_GAUGE_METRICS = (
     'flow_packet_count_vlan_acl',
-    'flow_packet_count_port_acl'
+    'flow_packet_count_port_acl',
+    'flow_packet_count_vlan'
 )
 
 ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
+SEQUESTER_SEGMENT_DEFAULT = 'SEQUESTER'
 
 
 class OrchestrationManager(abc.ABC):
@@ -212,8 +214,10 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._initialized = True
 
     def _initialize_orchestration(self):
+        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+
         if self._should_enable_faucetizer:
-            self._initialize_faucetizer()
+            self._initialize_faucetizer(sequester_segment)
             self._faucetizer.reload_structural_config()
 
             if self._gauge_config_file:
@@ -221,13 +225,13 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             if self._segments_vlans_file:
                 self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
-        self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._config.orchestration.sequester_config.segment)
-
-        sequester_segment, grpc_server_port = self._calculate_sequester_config()
         if sequester_segment:
             self._device_report_server = DeviceReportServer(
-                self._port_state_manager.handle_testing_result, grpc_server_port)
+                self._handle_device_result, grpc_server_port)
+            self._faucet_collector.set_device_state_reporter(self._device_report_server)
+
+        self._port_state_manager = PortStateManager(
+            self._faucetizer, self, self._device_report_server, sequester_segment)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -290,7 +294,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         for mac, device_behavior in devices_state.device_mac_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
-            self._device_report_server_process_port_assign(mac, device_behavior.segment)
+
+    def _handle_device_result(self, device_result):
+        self._port_state_manager.handle_testing_result(device_result)
 
     def update_device_state_varz(self, mac, state):
         if self._metrics:
@@ -345,10 +351,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         return True
 
     def _calculate_sequester_config(self):
+        if not self._config.orchestration.HasField('sequester_config'):
+            return None, None
         sequester_config = self._config.orchestration.sequester_config
-        segment = sequester_config.segment
+        sequester_segment = sequester_config.sequester_segment or SEQUESTER_SEGMENT_DEFAULT
         grpc_server_port = sequester_config.grpc_server_port
-        return segment, grpc_server_port
+        return sequester_segment, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
@@ -360,14 +368,15 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 'Structural and behavioral config file cannot be the same: '
                 f'{self._behavioral_config_file}')
 
-    def _initialize_faucetizer(self):
+    def _initialize_faucetizer(self, sequester_segment=None):
         orch_config = self._config.orchestration
 
         self._config_file_watcher = FileChangeWatcher(
             os.path.dirname(self._structural_config_file))
 
         self._faucetizer = faucetizer.Faucetizer(
-            orch_config, self._structural_config_file, self._behavioral_config_file, self)
+            orch_config, self._structural_config_file, self._behavioral_config_file, self,
+            sequester_segment)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
@@ -429,7 +438,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             else:
                 device_behavior = DeviceBehavior(segment=segment, role=role)
                 self._port_state_manager.handle_device_behavior(mac, device_behavior)
-                self._device_report_server_process_port_assign(mac, segment)
 
     def _register_handlers(self):
         fcoll = self._faucet_collector
@@ -443,32 +451,14 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 event.timestamp, event.dp_name, event.port, event.state)),
             (FaucetEvent.StackTopoChange, fcoll.process_stack_topo_change_event),
             (FaucetEvent.PortChange, fcoll.process_port_change),
-            (FaucetEvent.PortChange, self._device_report_server_process_port_change),
             (FaucetEvent.L2Learn, lambda event: fcoll.process_port_learn(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid,
                 event.l3_src_ip)),
-            (FaucetEvent.L2Learn, self._device_report_server_process_port_learn),
             (FaucetEvent.L2Expire, lambda event: fcoll.process_port_expire(
                 event.timestamp, event.dp_name, event.port_no, event.eth_src, event.vid)),
         ]
 
         self._faucet_events.register_handlers(handlers)
-
-    def _device_report_server_process_port_change(self, event):
-        if self._device_report_server:
-            self._device_report_server.process_port_change(
-                event.dp_name, event.port_no,
-                event.status and event.reason != 'DELETE')
-
-    def _device_report_server_process_port_learn(self, event):
-        if self._device_report_server and self._is_access(event.dp_name, event.port_no):
-            self._device_report_server.process_port_learn(
-                event.dp_name, event.port_no, event.eth_src, event.vid)
-
-    def _device_report_server_process_port_assign(self, mac, segment):
-        if self._device_report_server and self._faucetizer:
-            vlan = self._faucetizer.get_vlan_from_segment(segment)
-            self._device_report_server.process_port_assign(mac, vlan)
 
     def _get_varz_config(self):
         metrics = self._varz_collector.retry_get_metrics(
@@ -749,11 +739,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             active_state = self._active_state
             if active_state == State.initializing:
                 return State.initializing, 'Initializing'
-            if active_state == State.inactive:
-                detail = 'This controller is inactive. Please view peer controller.'
-                return State.inactive, detail
-            if active_state != State.active:
-                return State.broken, 'Internal error'
 
         cpn_state = self._cpn_collector.get_cpn_state()
         peer_controller = self._get_peer_controller_name()
@@ -797,10 +782,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         except Exception as e:
             self._logger.error('Cannot read faucet config: %s', e)
             raise
-
-    def _is_access(self, dp_name, port):
-        interface = self._behavioral_config['dps'][dp_name]['interfaces'][port]
-        return 'native_vlan' in interface
 
     def _validate_config(self, config):
         warnings = []
@@ -871,7 +852,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._active_state = active_state
             if error:
                 self._system_errors[ACTIVE_STATE] = error
-        self._faucet_collector.set_active(active_state)
+            else:
+                self._system_errors.pop(ACTIVE_STATE, None)
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""

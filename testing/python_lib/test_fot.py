@@ -31,7 +31,6 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
     orchestration:
       unauthenticated_vlan: 100
       sequester_config:
-        segment: TESTING
         vlan_start: 1500
         vlan_end: 1699
         port_description: TESTING
@@ -160,7 +159,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
     def _send_port_change_event(self, kind, args):
         dp_name, port, mac, state, vlan, assigned = args
         if kind == 'port':
-            self._servicer.process_port_change(dp_name, port, state)
+            self._servicer.process_port_state(dp_name, port, state)
         elif kind == 'lern':
             self._servicer.process_port_learn(dp_name, port, mac, vlan)
         elif kind == 'asgn':

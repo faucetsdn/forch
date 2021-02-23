@@ -1,0 +1,38 @@
+/*
+ * Network metric states
+ */
+syntax = "proto3";
+
+import "forch/proto/shared_constants.proto";
+
+message AclState {
+  // acl name
+  string name = 1;
+
+  // rule states
+  repeated RuleState rules = 2;
+
+  message RuleState {
+    // rule description
+    string description = 1;
+
+    // count of packets hitting the rule
+    int32 packet_count = 3;
+  }
+}
+
+message VlanAclState {
+  // vlan acls states
+  repeated AclState acls = 1;
+
+  // packet rate state
+  State.State packet_rate_state = 2;
+}
+
+message VlanState {
+  // vlan id
+  int32 vlan_id = 1;
+
+  // packet count
+  int32 packet_count = 2;
+}

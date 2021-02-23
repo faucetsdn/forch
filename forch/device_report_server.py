@@ -1,5 +1,6 @@
 """gRPC server to receive devices state"""
 
+import abc
 from concurrent import futures
 from queue import Queue
 import threading
@@ -23,6 +24,22 @@ class DeviceEntry:
     vlan = None
     assigned = None
     port_up = None
+
+
+class DeviceStateReporter(abc.ABC):
+    """Interface reporting device information"""
+
+    @abc.abstractmethod
+    def process_port_state(self, dp_name, port, state):
+        """Process faucet port state events"""
+
+    @abc.abstractmethod
+    def process_port_learn(self, dp_name, port, mac, vlan):
+        """Process faucet port learn events"""
+
+    @abc.abstractmethod
+    def process_port_assign(self, mac, assigned):
+        """Process faucet port vlan assignment"""
 
 
 class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
@@ -55,7 +72,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
                 if device.mac == mac_addr:
                     self._send_device_port_event(device)
 
-    def process_port_change(self, dp_name, port, state):
+    def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
         with self._lock:
             device = self._port_device_mapping.setdefault((dp_name, port), DeviceEntry())
@@ -115,7 +132,8 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
                 break
             yield item
 
-class DeviceReportServer:
+
+class DeviceReportServer(DeviceStateReporter):
     """Devices state server"""
 
     def __init__(self, on_receiving_result, address=None, port=None, max_workers=None):
@@ -128,17 +146,17 @@ class DeviceReportServer:
         server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
         self._server.add_insecure_port(server_address_port)
 
-    def process_port_change(self, *args):
+    def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
-        self._servicer.process_port_change(*args)
+        self._servicer.process_port_state(dp_name, port, state)
 
-    def process_port_learn(self, *args):
+    def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
-        self._servicer.process_port_learn(*args)
+        self._servicer.process_port_learn(dp_name, port, mac, vlan)
 
-    def process_port_assign(self, *args):
+    def process_port_assign(self, mac, assigned):
         """Process faucet port vlan assignment"""
-        self._servicer.process_port_assign(*args)
+        self._servicer.process_port_assign(mac, assigned)
 
     def start(self):
         """Start the server"""

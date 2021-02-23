@@ -3,9 +3,9 @@
  */
 syntax = "proto3";
 
-import "forch/proto/shared_constants.proto";
+import "forch/proto/network_metric_state.proto";
 import "forch/proto/path_node.proto";
-import "forch/proto/acl_state.proto";
+import "forch/proto/shared_constants.proto";
 
 /*
  * State of switches
@@ -68,7 +68,7 @@ message SwitchState {
     map<string, PortInfo> egress_port_macs = 11;
 
     // States of all VLANs used by this switch, indexed by VLAN id
-    map<int32, VLANState> vlans = 12;
+    map<int32, VlanAclState> vlans = 12;
 
     // Attributes about this switch
     message Attributes {
@@ -84,14 +84,14 @@ message SwitchState {
     // Port state
     State.State port_state = 2;
 
-    // native VLAN
-    int32 vlan = 3;
+    // VLAN state
+    VlanState vlan = 3;
 
     // DVA state
     DVAState.State dva_state = 4;
 
     // ACLs
-    repeated ACLState acls = 5;
+    repeated AclState acls = 5;
 
     // Port state last change time
     string state_last_change = 6;
@@ -138,13 +138,5 @@ message SwitchState {
 
     // Path
     repeated PathNode path = 3;
-  }
-
-  message VLANState {
-    // vlan acls states
-    repeated ACLState acls = 1;
-
-    // packet rate state
-    State.State packet_rate_state = 2;
   }
 }

@@ -238,6 +238,8 @@ class FaucetizerTestBase(UnitTestBase):
       SEG_Z: 1700
     """
 
+    SEQUESTER_SEGMENT = 'TESTING'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
@@ -256,7 +258,7 @@ class FaucetizerTestBase(UnitTestBase):
 
         self._faucetizer = Faucetizer(
             forch_config.orchestration, self._structural_config_file,
-            self._behavioral_config_file)
+            self._behavioral_config_file, sequester_segment=self.SEQUESTER_SEGMENT)
         self._faucetizer.reload_structural_config()
         self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
 
@@ -391,7 +393,7 @@ class PortsStateManagerTestBase(UnitTestBase):
             self._get_vlan_from_segment)
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            testing_segment=self.SEQUESTER_SEGMENT)
+            sequester_segment=self.SEQUESTER_SEGMENT)
         self._received_device_placements = []
         self._received_device_behaviors = []
 
