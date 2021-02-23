@@ -31,7 +31,6 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
     orchestration:
       unauthenticated_vlan: 100
       sequester_config:
-        segment: TESTING
         vlan_start: 1500
         vlan_end: 1699
         port_description: TESTING

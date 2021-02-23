@@ -45,7 +45,7 @@ class Faucetizer(DeviceStateManager):
     """Collect Faucet information and generate ACLs"""
     # pylint: disable=too-many-arguments
     def __init__(self, orch_config, structural_config_file, behavioral_config_file,
-                 orchestration_manager=None):
+                 orchestration_manager=None, sequester_segment=None):
         self._static_devices = DevicesState()
         self._dynamic_devices = DevicesState()
         self._device_behaviors = {}
@@ -66,6 +66,7 @@ class Faucetizer(DeviceStateManager):
         self._available_testing_vlans = None
         self._watched_include_files = []
         self._orchestration_manager = orchestration_manager
+        self._sequester_segment = sequester_segment
         self._lock = threading.RLock()
         self._logger = get_logger('faucetizer')
 
@@ -181,7 +182,7 @@ class Faucetizer(DeviceStateManager):
         return base_file_name + INCLUDE_FILE_SUFFIX + ext
 
     def _validate_and_initialize_config(self):
-        if self._config.sequester_config.segment:
+        if self._sequester_segment:
             starting_vlan = self._config.sequester_config.vlan_start
             ending_vlan = self._config.sequester_config.vlan_end
             if not starting_vlan or not ending_vlan:
@@ -201,7 +202,7 @@ class Faucetizer(DeviceStateManager):
         return PortType.access if len(port_properties) == 0 else PortType.other
 
     def _calculate_available_tesing_vlans(self):
-        if not self._config.sequester_config.segment:
+        if not self._sequester_segment:
             return None
         operational_vlans = set(self._segments_to_vlans.values())
         used_testing_vlans = set(self._testing_device_vlans.values())
@@ -247,10 +248,9 @@ class Faucetizer(DeviceStateManager):
     def _calculate_vlan_id(self, device_mac, device_behavior, available_testing_vlans,
                            new_testing_device_vlans):
         device_segment = device_behavior.segment
-        sequester_segment = self._config.sequester_config.segment
         vid = None
 
-        if sequester_segment and device_segment == sequester_segment:
+        if self._sequester_segment and device_segment == self._sequester_segment:
             if device_mac not in self._testing_device_vlans and not available_testing_vlans:
                 self._logger.error(
                     'No available testing VLANs. Used %d VLANs', len(self._testing_device_vlans))
@@ -267,11 +267,11 @@ class Faucetizer(DeviceStateManager):
 
     def _update_device_dva_state(self, device_placement, device_behavior, device_type):
         if device_type == STATIC_DEVICE:
-            dva_state = DVAState.static
-        elif device_behavior.segment == self._config.sequester_config.segment:
+            dva_state = DVAState.static_operational
+        elif device_behavior.segment == self._sequester_segment:
             dva_state = DVAState.sequestered
         elif device_behavior.segment in self._segments_to_vlans:
-            dva_state = DVAState.operational
+            dva_state = DVAState.dynamic_operational
 
         if dva_state:
             self._update_vlan_state(device_placement.switch, device_placement.port, dva_state)

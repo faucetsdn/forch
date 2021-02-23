@@ -24,19 +24,19 @@ null
 "broken"
 @switch_state dva-vlan-assigned
 200
-"static"
+"static_operational"
 "allow DHCP"
-"operational"
+"dynamic_operational"
 300
-"operational"
+"dynamic_operational"
 "deny ICMP"
 0
 @list_hosts dva-vlan-assigned
 200
-"static"
+"static_operational"
 "allow ICMP"
 300
-"operational"
+"dynamic_operational"
 "Authorized"
 "BOS"
 "yellow"
@@ -47,7 +47,7 @@ Starting varz-vlan-assigned test...
 1.0
 0.0
 1
-2.0
+3.0
 4.0
 4.0
 200.0
@@ -66,15 +66,15 @@ null
 "healthy"
 @switch_state dva-port-down
 200
-"static"
+"static_operational"
 "allow DHCP"
-"operational"
+"dynamic_operational"
 100
 "unauthenticated"
 "allow all"
 @list_hosts dva-port-down
 200
-"static"
+"static_operational"
 "allow ICMP"
 null
 null
@@ -87,7 +87,7 @@ Starting varz-port-down test...
 5.0
 0.0
 1
-2.0
+3.0
 4.0
 0.0
 200.0
@@ -106,19 +106,19 @@ null
 "healthy"
 @switch_state dva-port-up
 200
-"static"
+"static_operational"
 "allow DHCP"
-"operational"
+"dynamic_operational"
 300
-"operational"
+"dynamic_operational"
 "deny ICMP"
 0
 @list_hosts dva-port-up
 200
-"static"
+"static_operational"
 "allow ICMP"
 300
-"operational"
+"dynamic_operational"
 "Authorized"
 "BOS"
 "yellow"
@@ -129,7 +129,7 @@ Starting varz-port-up test...
 5.0
 0.0
 1
-2.0
+3.0
 4.0
 4.0
 200.0
@@ -148,16 +148,16 @@ null
 "healthy"
 @switch_state dva-mac-flipped
 200
-"static"
+"static_operational"
 "allow DHCP"
-"operational"
+"dynamic_operational"
 200
-"static"
+"static_operational"
 "allow ICMP"
 0
 @list_hosts dva-mac-flipped
 200
-"static"
+"static_operational"
 "allow ICMP"
 null
 null
@@ -171,7 +171,7 @@ Starting varz-mac-flipped test...
 5.0
 0.0
 1
-2.0
+3.0
 4.0
 0.0
 200.0

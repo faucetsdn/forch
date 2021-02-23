@@ -15,7 +15,6 @@ orchestration:
   segments_vlans_file: segments-to-vlans.yaml
   tail_acl: tail_acl
   sequester_config:
-    segment: FOT
     vlan_start: 272
     vlan_end: 276
     port_description: tap

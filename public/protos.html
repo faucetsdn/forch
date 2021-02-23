@@ -4031,10 +4031,11 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
             <tbody>
               
                 <tr>
-                  <td>segment</td>
+                  <td>sequester_segment</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>segment. If defined, automatic sequestering is enabled </p></td>
+                  <td><p>Segment of sequestered devices. Optional. Specify it to avoid conflict with the operational
+segments </p></td>
                 </tr>
               
                 <tr>
@@ -5462,21 +5463,21 @@ or to host_path API to list path </p></td>
               </tr>
             
               <tr>
-                <td>static</td>
-                <td>2</td>
-                <td><p>static</p></td>
-              </tr>
-            
-              <tr>
                 <td>sequestered</td>
-                <td>3</td>
+                <td>2</td>
                 <td><p>sequestered</p></td>
               </tr>
             
               <tr>
-                <td>operational</td>
+                <td>static_operational</td>
+                <td>3</td>
+                <td><p>operational state with static vlan assignment</p></td>
+              </tr>
+            
+              <tr>
+                <td>dynamic_operational</td>
                 <td>4</td>
-                <td><p>operational</p></td>
+                <td><p>operational state with dynamic vlan assignment</p></td>
               </tr>
             
               <tr>
