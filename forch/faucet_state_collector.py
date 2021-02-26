@@ -1159,7 +1159,8 @@ class FaucetStateCollector:
                     if vid and vid != INVALID_VLAN:
                         self._device_state_reporter.process_port_learn(name, port, mac, vid)
                     else:
-                        self._logger.error('Device %s is not learned with a valid vlan: %d', vid)
+                        self._logger.error(
+                            'Device %s is not learned with a valid vlan: %d', mac, vid)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
