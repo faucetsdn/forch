@@ -266,7 +266,7 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
-            vid = sample.labels['vid']
+            vid = int(sample.labels['vid'])
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
