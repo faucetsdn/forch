@@ -56,6 +56,7 @@ FAUCET_STACK_STATE_BAD = 2
 FAUCET_STACK_STATE_UP = 3
 SWITCH_CONNECTED = "CONNECTED"
 SWITCH_DOWN = "DOWN"
+INVALID_VLAN = 0
 
 DP_ID = "dp_id"
 PORTS = "ports"
@@ -266,7 +267,7 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
-            vid = int(sample.labels.get('vid', 0))
+            vid = int(sample.labels.get('vid', INVALID_VLAN))
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
@@ -1155,7 +1156,7 @@ class FaucetStateCollector:
                     self._update_learned_macs_metric(mac, name, port)
 
                 if self._device_state_reporter:
-                    if vid:
+                    if vid and vid != INVALID_VLAN:
                         self._device_state_reporter.process_port_learn(name, port, mac, vid)
                     else:
                         self._logger.error('Device %s is not learned with a valid vlan: %d', vid)
