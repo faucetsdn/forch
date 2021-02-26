@@ -266,7 +266,7 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
-            vid = int(sample.labels['vid'])
+            vid = int(sample.labels.get('vid', 0))
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
@@ -1155,7 +1155,10 @@ class FaucetStateCollector:
                     self._update_learned_macs_metric(mac, name, port)
 
                 if self._device_state_reporter:
-                    self._device_state_reporter.process_port_learn(name, port, mac, vid)
+                    if vid:
+                        self._device_state_reporter.process_port_learn(name, port, mac, vid)
+                    else:
+                        self._logger.error('Device %s is not learned with a valid vlan: %d', vid)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
