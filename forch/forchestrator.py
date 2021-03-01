@@ -68,7 +68,6 @@ _TARGET_GAUGE_METRICS = (
     'flow_packet_count_vlan'
 )
 
-ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
@@ -716,6 +715,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         states.dataplane_state.CopyFrom(self._faucet_collector.get_dataplane_summary())
         states.switch_state.CopyFrom(self._faucet_collector.get_switch_summary())
         states.list_hosts.CopyFrom(self._faucet_collector.get_host_summary())
+        states.vrrp_state.CopyFrom(self._local_collector.get_vrrp_summary())
         url_base = self._extract_url_base(path)
         for field, value in states.ListFields():
             value.detail_url = f'{url_base}/?{field.name}'
@@ -739,6 +739,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             active_state = self._active_state
             if active_state == State.initializing:
                 return State.initializing, 'Initializing'
+            if active_state == State.inactive:
+                detail = 'This controller is inactive. Please view peer controller.'
+                return State.inactive, detail
 
         cpn_state = self._cpn_collector.get_cpn_state()
         peer_controller = self._get_peer_controller_name()
@@ -846,14 +849,10 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         """Clean up relevant internal data in all collectors"""
         self._faucet_collector.cleanup()
 
-    def handle_active_state(self, active_state, error=None):
+    def handle_active_state(self, active_state):
         """Handler for local state collector to handle controller active state"""
         with self._active_state_lock:
             self._active_state = active_state
-            if error:
-                self._system_errors[ACTIVE_STATE] = error
-            else:
-                self._system_errors.pop(ACTIVE_STATE, None)
 
     def get_switch_state(self, path, params):
         """Get the state of the switches"""
@@ -891,6 +890,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def get_process_state(self, path, params):
         """Get certain processes state on the controller machine"""
         reply = self._local_collector.get_process_state()
+        return self._augment_state_reply(reply, path)
+
+    def get_vrrp_state(self, path, params):
+        """Get VRRP state"""
+        reply = self._local_collector.get_vrrp_state()
         return self._augment_state_reply(reply, path)
 
     def get_sys_config(self, path, params):
