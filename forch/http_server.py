@@ -6,7 +6,6 @@ import json
 import os
 import socketserver
 import threading
-import traceback
 import urllib
 
 from google.protobuf.message import Message
@@ -56,8 +55,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         except Exception as exception:
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
-            self._logger.error('Unhandled exception: %s', exception)
-            traceback.print_tb(exception.__traceback__)
+            self._logger.exception('Unhandled exception: %s', exception)
 
     def _check_url(self):
         """Check if url is illegal"""
