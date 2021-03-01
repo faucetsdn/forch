@@ -101,8 +101,6 @@ class LocalStateCollector:
 
     def _check_process_info(self):
         """Check the raw information of processes"""
-
-        process_state = self._process_state
         process_map = {}
         procs = self._get_target_processes()
         broken = []
@@ -128,32 +126,31 @@ class LocalStateCollector:
                     self._last_error[target_name] = detail
                 broken.append(target_name)
 
-            old_process_map = process_state.get('processes', {}).get(target_name, {})
+            old_process_map = self._process_state.get('processes', {}).get(target_name, {})
             old_state = old_process_map.get('state', State.unknown)
-            new_state = state_map['state']
-            if new_state != old_state:
+            if state_map['state'] != old_state:
                 self._logger.info(
                     'State of process %s changed from %s to %s',
-                    target_name, State.State.Name(old_state), State.State.Name(new_state))
+                    target_name, State.State.Name(old_state), State.State.Name(state_map['state']))
 
-        process_state['processes'] = process_map
-        process_state['process_state_last_update'] = self._current_time
+        self._process_state['processes'] = process_map
+        self._process_state['process_state_last_update'] = self._current_time
 
-        old_state = process_state.get('process_state')
+        old_state = self._process_state.get('process_state')
         state = State.broken if broken else State.healthy
 
-        old_state_detail = process_state.get('process_state_detail')
+        old_state_detail = self._process_state.get('process_state_detail')
         state_detail = 'Processes in broken state: ' + ', '.join(broken) if broken else ''
 
         if state != old_state or state_detail != old_state_detail:
-            state_change_count = process_state.get('process_state_change_count', 0) + 1
+            state_change_count = self._process_state.get('process_state_change_count', 0) + 1
             self._logger.info(
                 'process_state #%d is %s: %s', state_change_count, State.State.Name(state),
                 state_detail)
-            process_state['process_state'] = state
-            process_state['process_state_detail'] = state_detail
-            process_state['process_state_change_count'] = state_change_count
-            process_state['process_state_last_change'] = self._current_time
+            self._process_state['process_state'] = state
+            self._process_state['process_state_detail'] = state_detail
+            self._process_state['process_state_change_count'] = state_change_count
+            self._process_state['process_state_last_change'] = self._current_time
 
     def _get_target_processes(self):
         """Get target processes"""
