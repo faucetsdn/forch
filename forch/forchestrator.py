@@ -71,7 +71,7 @@ _TARGET_GAUGE_METRICS = (
 ACTIVE_STATE = 'active_state'
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
-ACL_CONFIG = 'acl_config'
+TAIL_ACL_CONFIG = 'tail_acl_config'
 SEQUESTER_SEGMENT_DEFAULT = 'SEQUESTER'
 
 
@@ -223,12 +223,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
             tail_acl = self._config.orchestration.tail_acl
             if tail_acl and not self._faucetizer.validate_tail_acl_config(tail_acl):
-                error_msg = f'DVA auth was disabled due to missing ACL for tail_acl config'
+                error_msg = 'DVA auth was disabled due to missing ACL for tail_acl config'
                 self._logger.error(error_msg)
                 with self._states_lock:
                     self._should_ignore_static_behavior = True
                     self._should_ignore_auth_result = True
-                    self._config_errors[ACL_CONFIG] = error_msg
+                    self._config_errors[TAIL_ACL_CONFIG] = error_msg
 
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
