@@ -294,7 +294,7 @@ class PortStateManager:
 
     def _get_vlan_from_segment(self, segment):
         if self._device_state_manager:
-            return self._device_state_manager.get_vlan_from_segment(segment)
+            return self._device_state_manager.get_vlan_from_segment(segment) or INVALID_VLAN
         return INVALID_VLAN
 
     def _update_device_state_varz(self, mac, device_state):

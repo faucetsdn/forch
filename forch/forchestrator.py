@@ -125,6 +125,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._active_state_lock = threading.Lock()
 
         self._should_enable_faucetizer = False
+        self._should_ignore_static_behavior = False
         self._should_ignore_auth_result = False
 
         self._config_errors = {}
@@ -219,10 +220,26 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._initialize_faucetizer(sequester_segment)
             self._faucetizer.reload_structural_config()
 
+            if not self._faucetizer.tail_acl_config_valid():
+                error_msg = 'All auth was disabled due to missing ACL for tail_acl config'
+                self._logger.error(error_msg)
+                with self._states_lock:
+                    self._should_ignore_static_behavior = True
+                    self._should_ignore_auth_result = True
+                    self._config_errors[TAIL_ACL_CONFIG] = error_msg
+
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
             if self._segments_vlans_file:
-                self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
+                try:
+                    self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
+                except Exception as error:
+                    error_msg = ('All auth was disabled due to error when reading '
+                                 'segments-to-vlans file')
+                    self._should_ignore_static_behavior = True
+                    self._should_ignore_auth_result = True
+                    self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
+                    self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
         if sequester_segment:
             self._device_report_server = DeviceReportServer(
@@ -264,6 +281,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._process_device_placement(eth_src, device_placement, static=True)
 
     def _process_static_device_behavior(self):
+        if self._should_ignore_static_behavior:
+            return
+
         behaviors_file_name = self._config.orchestration.static_device_behavior
         if not behaviors_file_name:
             return
@@ -278,7 +298,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         try:
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
-            msg = f'Authentication disabled: could not load static behavior file {file_path}'
+            msg = f'Dynamic auth disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
             with self._states_lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
@@ -332,20 +352,14 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             raise Exception(
                 f'Structural config file does not exist: {self._structural_config_file}')
 
-        self._segments_vlans_file = os.path.join(
-            self._forch_config_dir, orch_config.segments_vlans_file)
-        if not os.path.exists(self._segments_vlans_file):
-            error_msg = (
-                f'DVA disabled due to missing segments-to-vlans file: {self._segments_vlans_file}')
-            self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
-            self._logger.error(error_msg)
-            return False
-
-        if not orch_config.tail_acl:
-            error_msg = 'Missing tail_acl configuration for enabling DVA'
-            self._config_errors[TAIL_ACL_CONFIG] = error_msg
-            self._logger.error(error_msg)
-            return False
+        if orch_config.segments_vlans_file:
+            self._segments_vlans_file = os.path.join(
+                self._forch_config_dir, orch_config.segments_vlans_file)
+        else:
+            with self._states_lock:
+                self._should_ignore_static_behavior = True
+                self._should_ignore_auth_result = True
+                self._logger.info('All auth was disabled as segments_vlans_file is not configured')
 
         return True
 
