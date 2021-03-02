@@ -223,7 +223,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
             tail_acl = self._config.orchestration.tail_acl
             if tail_acl and not self._faucetizer.validate_tail_acl_config(tail_acl):
-                error_msg = 'DVA auth was disabled due to missing ACL for tail_acl config'
+                error_msg = 'All auth was disabled due to missing ACL for tail_acl config'
                 self._logger.error(error_msg)
                 with self._states_lock:
                     self._should_ignore_static_behavior = True
@@ -236,7 +236,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 try:
                     self._faucetizer.reload_segments_to_vlans(self._segments_vlans_file)
                 except Exception as error:
-                    error_msg = ('DVA auth was disabled due to error when reading '
+                    error_msg = ('All auth was disabled due to error when reading '
                                  'segments-to-vlans file')
                     self._should_ignore_static_behavior = True
                     self._should_ignore_auth_result = True
@@ -300,7 +300,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         try:
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
-            msg = f'Authentication disabled: could not load static behavior file {file_path}'
+            msg = f'Dynamic auth disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
             with self._states_lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg

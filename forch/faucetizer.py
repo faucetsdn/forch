@@ -225,7 +225,8 @@ class Faucetizer(DeviceStateManager):
     def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans):
         testing_port_vlans = new_testing_device_vlans.values()
         testing_port_configured = False
-        has_tail_acl = self._config.tail_acl and self._has_acl(self._config.tail_acl)
+        tail_acl = self._config.tail_acl
+        has_tail_acl = tail_acl and self.validate_tail_acl_config(tail_acl)
 
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():

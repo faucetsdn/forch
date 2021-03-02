@@ -412,16 +412,52 @@ class FaucetizerMissingTailACLDefinitionTestCase(FaucetizerTestBase):
             description: HOST
             max_hosts: 1
     acls:
+      uniform_100:
+        - rule:
+            actions:
+              allow: False
       tail_acl:
         - rule:
             actions:
               allow: True
     """
 
+    FAUCET_BEHAVIORAL_CONFIG = """
+    dps:
+      t2sw1:
+        dp_id: 121
+        interfaces:
+          1:
+            description: HOST
+            max_hosts: 1
+            native_vlan: 100
+    acls:
+      uniform_100:
+        - rule:
+            cookie: 1
+            actions:
+              allow: False
+      tail_acl:
+        - rule:
+            cookie: 2
+            actions:
+              allow: True
+    """
+
+    def setUp(self):
+        """setup fixture for each test method"""
+        self._setup_config_files()
+        self._initialize_faucetizer()
+
+    def tearDown(self):
+        """cleanup after each test method finishes"""
+        self._faucetizer = None
+        self._cleanup_config_files()
+
     def test_no_tail_acl_definition(self):
         """test faucetizer behavior when no ACL is defined for tail_acl"""
-        self._setup_config_files()
-        self.assertRaises(Exception, self._initialize_faucetizer)
+        self._faucetizer.reload_structural_config()
+        self._verify_behavioral_config(self._get_base_behavioral_config())
 
 
 if __name__ == '__main__':
