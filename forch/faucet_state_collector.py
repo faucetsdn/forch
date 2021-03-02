@@ -1174,7 +1174,7 @@ class FaucetStateCollector:
             if mac in switch_learned_macs:
                 switch_learned_macs.remove(mac)
             else:
-                self._logger.warning('Entry %s does not exist in learned macs dict', mac)
+                self._logger.debug('Entry %s does not exist in learned macs dict', mac)
 
             if name in self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH, {}):
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)
