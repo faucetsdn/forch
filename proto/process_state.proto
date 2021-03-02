@@ -135,3 +135,23 @@ message ProcessState {
     string established = 1;
   }
 }
+
+/*
+ * Summary of VRRP State
+ */
+message VrrpState {
+  // VRRP state
+  string vrrp_state = 1;
+
+  // Description of any problems
+  string vrrp_state_detail = 2;
+
+  // Last time the state was changed
+  string vrrp_state_last_change = 3;
+
+  // Number of times state has changed
+  int32 vrrp_state_change_count = 4;
+
+  // Link to top-level system state
+  string system_state_url = 5;
+}

@@ -122,6 +122,10 @@ class Faucetizer(DeviceStateManager):
 
             self.flush_behavioral_config()
 
+    def tail_acl_config_valid(self):
+        """Validate tail_acl config"""
+        return not self._config.tail_acl or self._has_acl(self._config.tail_acl)
+
     def _process_structural_config(self, faucet_config):
         """Process faucet config when structural faucet config changes"""
         with self._lock:
@@ -140,10 +144,6 @@ class Faucetizer(DeviceStateManager):
 
             structural_acls_config = copy.deepcopy(self._structural_faucet_config.get('acls'))
             self._augment_acls_config(structural_acls_config, self._structural_config_file, )
-
-            tail_acl_name = self._config.tail_acl
-            if tail_acl_name and not self._has_acl(tail_acl_name):
-                raise Exception('No ACL is defined for tail ACL %s' % tail_acl_name)
 
             self._behavioral_include = behavioral_include
 
@@ -225,13 +225,15 @@ class Faucetizer(DeviceStateManager):
     def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans):
         testing_port_vlans = new_testing_device_vlans.values()
         testing_port_configured = False
+        apply_tail_acl = self._config.tail_acl and self.tail_acl_config_valid()
+
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():
                 port_type = self._get_port_type(port_map)
                 if port_type == PortType.testing and testing_port_vlans:
                     port_map.setdefault('tagged_vlans', []).extend(testing_port_vlans)
                     testing_port_configured = True
-                if self._get_port_type(port_map) == PortType.access and self._config.tail_acl:
+                if self._get_port_type(port_map) == PortType.access and apply_tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
 
         if testing_port_vlans and not testing_port_configured:
