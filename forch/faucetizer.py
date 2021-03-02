@@ -122,7 +122,7 @@ class Faucetizer(DeviceStateManager):
 
             self.flush_behavioral_config()
 
-    def validate_tail_acl_config(self):
+    def tail_acl_config_valid(self):
         """Validate tail_acl config"""
         return not self._config.tail_acl or self._has_acl(self._config.tail_acl)
 
@@ -225,7 +225,7 @@ class Faucetizer(DeviceStateManager):
     def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans):
         testing_port_vlans = new_testing_device_vlans.values()
         testing_port_configured = False
-        should_apply_tail_acl = self._config.tail_acl and self.validate_tail_acl_config()
+        apply_tail_acl = self._config.tail_acl and self.tail_acl_config_valid()
 
         for switch_map in behavioral_faucet_config.get('dps', {}).values():
             for port_map in switch_map.get('interfaces', {}).values():
@@ -233,7 +233,7 @@ class Faucetizer(DeviceStateManager):
                 if port_type == PortType.testing and testing_port_vlans:
                     port_map.setdefault('tagged_vlans', []).extend(testing_port_vlans)
                     testing_port_configured = True
-                if self._get_port_type(port_map) == PortType.access and should_apply_tail_acl:
+                if self._get_port_type(port_map) == PortType.access and apply_tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
 
         if testing_port_vlans and not testing_port_configured:
