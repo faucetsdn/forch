@@ -736,10 +736,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _get_controller_state(self):
         with self._active_state_lock:
-            active_state = self._active_state
-            if active_state == State.initializing:
+            if self._active_state == State.initializing:
                 return State.initializing, 'Initializing'
-            elif active_state == State.inactive:
+            if self._active_state == State.inactive:
                 detail = 'This controller is inactive. Please view peer controller.'
                 return State.inactive, detail
 
