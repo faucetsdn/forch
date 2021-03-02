@@ -324,7 +324,7 @@ class LocalStateCollector:
             error_detail = f'Cannot get VRRP info: {e}'
 
         finally:
-            self._vrrp_state = self._handle_vrrp_state(vrrp_state, error_detail)
+            self._vrrp_state.update(self._handle_vrrp_state(vrrp_state, error_detail))
 
     def _handle_vrrp_state(self, vrrp_state, error_detail=None):
         """Extract vrrp state from keepalived stats data"""
@@ -343,8 +343,10 @@ class LocalStateCollector:
                 error_detail)
 
             if vrrp_state == VRRP_MASTER:
+                vrrp_map['vrrp_state_detail'] = None
                 self._active_state_handler(State.active)
             elif vrrp_state == VRRP_BACKUP:
+                vrrp_map['vrrp_state_detail'] = None
                 self._active_state_handler(State.inactive)
             elif vrrp_state == VRRP_FAULT:
                 vrrp_map['vrrp_state_detail'] = 'VRRP is in fault state'
