@@ -60,6 +60,9 @@ message SystemState {
 
     // Host listing summary
     StateSummary list_hosts = 5;
+
+    // VRRP state summary
+    StateSummary vrrp_state = 6;
   }
 
   /*

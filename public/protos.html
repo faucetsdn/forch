@@ -753,6 +753,10 @@
                   <a href="#ProcessState.ProcessesEntry"><span class="badge">M</span>ProcessState.ProcessesEntry</a>
                 </li>
               
+                <li>
+                  <a href="#VrrpState"><span class="badge">M</span>VrrpState</a>
+                </li>
+              
               
               
               
@@ -5377,6 +5381,58 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="VrrpState">VrrpState</h3>
+        <p>Summary of VRRP State</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>vrrp_state</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>VRRP state </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vrrp_state_detail</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Description of any problems </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vrrp_state_last_change</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Last time the state was changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vrrp_state_change_count</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Number of times state has changed </p></td>
+                </tr>
+              
+                <tr>
+                  <td>system_state_url</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Link to top-level system state </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
 
       
 
@@ -6646,6 +6702,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#StateSummary">StateSummary</a></td>
                   <td></td>
                   <td><p>Host listing summary </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vrrp_state</td>
+                  <td><a href="#StateSummary">StateSummary</a></td>
+                  <td></td>
+                  <td><p>VRRP state summary </p></td>
                 </tr>
               
             </tbody>

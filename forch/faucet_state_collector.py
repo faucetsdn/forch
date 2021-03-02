@@ -1049,7 +1049,8 @@ class FaucetStateCollector:
                     self._device_state_reporter.process_port_state(name, port, state)
 
             vid = port_config.get('native_vlan')
-            self._logger.info('port_state update: %s, %s, %s, %s', name, port, state, vid)
+            self._logger.info(
+                'port_state update: %s: %s, Up: %s, VLAN: %s', name, port, state, vid)
 
     def process_port_change(self, event):
         """Wrapper for process_port_state"""
@@ -1173,7 +1174,7 @@ class FaucetStateCollector:
             if mac in switch_learned_macs:
                 switch_learned_macs.remove(mac)
             else:
-                self._logger.warning('Entry %s does not exist in learned macs dict', mac)
+                self._logger.debug('Entry %s does not exist in learned macs dict', mac)
 
             if name in self.learned_macs.get(mac, {}).get(MAC_LEARNING_SWITCH, {}):
                 self.learned_macs[mac][MAC_LEARNING_SWITCH].pop(name)

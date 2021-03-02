@@ -55,7 +55,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         except Exception as exception:
             self.send_response(http.HTTPStatus.INTERNAL_SERVER_ERROR)
             self.end_headers()
-            self._logger.error('Unhandled exception: %s', exception)
+            self._logger.exception('Unhandled exception: %s', exception)
 
     def _check_url(self):
         """Check if url is illegal"""

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xa8\n\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x12\x34\n\x0b\x63onnections\x18\x08 \x01(\x0b\x32\x1f.ProcessState.ConnectionSummary\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xb8\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x13\n\x0b\x63pu_percent\x18\t \x01(\x02\x12\x30\n\x0ememory_info_mb\x18\n \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x1a\x89\x02\n\x11\x43onnectionSummary\x12\r\n\x05state\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x44\n\x0blocal_ports\x18\x06 \x03(\x0b\x32/.ProcessState.ConnectionSummary.LocalPortsEntry\x1aO\n\x0fLocalPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ConnectionInfo:\x02\x38\x01\x1a\xcd\x01\n\x0e\x43onnectionInfo\x12\x15\n\rprocess_entry\x18\x01 \x01(\t\x12M\n\x11\x66oreign_addresses\x18\x02 \x03(\x0b\x32\x32.ProcessState.ConnectionInfo.ForeignAddressesEntry\x1aU\n\x15\x46oreignAddressesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ForeignAddress:\x02\x38\x01\x1a%\n\x0e\x46oreignAddress\x12\x13\n\x0b\x65stablished\x18\x01 \x01(\tb\x06proto3'
+  serialized_pb=b'\n\x1f\x66orch/proto/process_state.proto\x1a\"forch/proto/shared_constants.proto\"\xa8\n\n\x0cProcessState\x12/\n\tprocesses\x18\x01 \x03(\x0b\x32\x1c.ProcessState.ProcessesEntry\x12#\n\rprocess_state\x18\x02 \x01(\x0e\x32\x0c.State.State\x12\x1c\n\x14process_state_detail\x18\x03 \x01(\t\x12\"\n\x1aprocess_state_change_count\x18\x04 \x01(\x05\x12!\n\x19process_state_last_update\x18\x05 \x01(\t\x12!\n\x19process_state_last_change\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\t\x12\x34\n\x0b\x63onnections\x18\x08 \x01(\x0b\x32\x1f.ProcessState.ConnectionSummary\x1aK\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessState.ProcessData:\x02\x38\x01\x1a\xb8\x02\n\x0bProcessData\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x10\n\x08\x63md_line\x18\x03 \x01(\t\x12\x13\n\x0b\x63reate_time\x18\x04 \x01(\t\x12 \n\x18\x63reate_time_change_count\x18\x05 \x01(\x05\x12\x1f\n\x17\x63reate_time_last_update\x18\x06 \x01(\t\x12\x1f\n\x17\x63reate_time_last_change\x18\x07 \x01(\t\x12*\n\x0b\x63pu_times_s\x18\x08 \x01(\x0b\x32\x15.ProcessState.CpuTime\x12\x13\n\x0b\x63pu_percent\x18\t \x01(\x02\x12\x30\n\x0ememory_info_mb\x18\n \x01(\x0b\x32\x18.ProcessState.MemoryInfo\x1a\x37\n\x07\x43puTime\x12\x0c\n\x04user\x18\x01 \x01(\x02\x12\x0e\n\x06system\x18\x02 \x01(\x02\x12\x0e\n\x06iowait\x18\x03 \x01(\x02\x1a&\n\nMemoryInfo\x12\x0b\n\x03rss\x18\x01 \x01(\x02\x12\x0b\n\x03vms\x18\x02 \x01(\x02\x1a\x89\x02\n\x11\x43onnectionSummary\x12\r\n\x05state\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x44\n\x0blocal_ports\x18\x06 \x03(\x0b\x32/.ProcessState.ConnectionSummary.LocalPortsEntry\x1aO\n\x0fLocalPortsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ConnectionInfo:\x02\x38\x01\x1a\xcd\x01\n\x0e\x43onnectionInfo\x12\x15\n\rprocess_entry\x18\x01 \x01(\t\x12M\n\x11\x66oreign_addresses\x18\x02 \x03(\x0b\x32\x32.ProcessState.ConnectionInfo.ForeignAddressesEntry\x1aU\n\x15\x46oreignAddressesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12+\n\x05value\x18\x02 \x01(\x0b\x32\x1c.ProcessState.ForeignAddress:\x02\x38\x01\x1a%\n\x0e\x46oreignAddress\x12\x13\n\x0b\x65stablished\x18\x01 \x01(\t\"\x95\x01\n\tVrrpState\x12\x12\n\nvrrp_state\x18\x01 \x01(\t\x12\x19\n\x11vrrp_state_detail\x18\x02 \x01(\t\x12\x1e\n\x16vrrp_state_last_change\x18\x03 \x01(\t\x12\x1f\n\x17vrrp_state_change_count\x18\x04 \x01(\x05\x12\x18\n\x10system_state_url\x18\x05 \x01(\tb\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -533,6 +533,66 @@ _PROCESSSTATE = _descriptor.Descriptor(
   serialized_end=1392,
 )
 
+
+_VRRPSTATE = _descriptor.Descriptor(
+  name='VrrpState',
+  full_name='VrrpState',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='vrrp_state', full_name='VrrpState.vrrp_state', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='vrrp_state_detail', full_name='VrrpState.vrrp_state_detail', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='vrrp_state_last_change', full_name='VrrpState.vrrp_state_last_change', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='vrrp_state_change_count', full_name='VrrpState.vrrp_state_change_count', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='system_state_url', full_name='VrrpState.system_state_url', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1395,
+  serialized_end=1544,
+)
+
 _PROCESSSTATE_PROCESSESENTRY.fields_by_name['value'].message_type = _PROCESSSTATE_PROCESSDATA
 _PROCESSSTATE_PROCESSESENTRY.containing_type = _PROCESSSTATE
 _PROCESSSTATE_PROCESSDATA.fields_by_name['state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
@@ -554,6 +614,7 @@ _PROCESSSTATE.fields_by_name['processes'].message_type = _PROCESSSTATE_PROCESSES
 _PROCESSSTATE.fields_by_name['process_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
 _PROCESSSTATE.fields_by_name['connections'].message_type = _PROCESSSTATE_CONNECTIONSUMMARY
 DESCRIPTOR.message_types_by_name['ProcessState'] = _PROCESSSTATE
+DESCRIPTOR.message_types_by_name['VrrpState'] = _VRRPSTATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ProcessState = _reflection.GeneratedProtocolMessageType('ProcessState', (_message.Message,), {
@@ -634,6 +695,13 @@ _sym_db.RegisterMessage(ProcessState.ConnectionSummary.LocalPortsEntry)
 _sym_db.RegisterMessage(ProcessState.ConnectionInfo)
 _sym_db.RegisterMessage(ProcessState.ConnectionInfo.ForeignAddressesEntry)
 _sym_db.RegisterMessage(ProcessState.ForeignAddress)
+
+VrrpState = _reflection.GeneratedProtocolMessageType('VrrpState', (_message.Message,), {
+  'DESCRIPTOR' : _VRRPSTATE,
+  '__module__' : 'forch.proto.process_state_pb2'
+  # @@protoc_insertion_point(class_scope:VrrpState)
+  })
+_sym_db.RegisterMessage(VrrpState)
 
 
 _PROCESSSTATE_PROCESSESENTRY._options = None

@@ -59,6 +59,7 @@ def run_forchestrator():
         http_server.map_request('process_state', forchestrator.get_process_state)
         http_server.map_request('host_path', forchestrator.get_host_path)
         http_server.map_request('list_hosts', forchestrator.get_list_hosts)
+        http_server.map_request('vrrp_state', forchestrator.get_vrrp_state)
         http_server.map_request('sys_config', forchestrator.get_sys_config)
         http_server.map_request('', http_server.static_file(''))
     except Exception as e:
