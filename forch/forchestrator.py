@@ -221,8 +221,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._initialize_faucetizer(sequester_segment)
             self._faucetizer.reload_structural_config()
 
-            tail_acl = self._config.orchestration.tail_acl
-            if tail_acl and not self._faucetizer.validate_tail_acl_config(tail_acl):
+            if not self._faucetizer.validate_tail_acl_config():
                 error_msg = 'All auth was disabled due to missing ACL for tail_acl config'
                 self._logger.error(error_msg)
                 with self._states_lock:
