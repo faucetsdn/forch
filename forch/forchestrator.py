@@ -221,7 +221,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._initialize_faucetizer(sequester_segment)
             self._faucetizer.reload_structural_config()
 
-            if not self._faucetizer.validate_tail_acl_config():
+            if not self._faucetizer.tail_acl_config_valid():
                 error_msg = 'All auth was disabled due to missing ACL for tail_acl config'
                 self._logger.error(error_msg)
                 with self._states_lock:
@@ -360,7 +360,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             with self._states_lock:
                 self._should_ignore_static_behavior = True
                 self._should_ignore_auth_result = True
-                self._logger.info('DVA auth was disabled as segments_vlans_file is not configured')
+                self._logger.info('All auth was disabled as segments_vlans_file is not configured')
 
         return True
 
