@@ -57,7 +57,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
     def _get_port_event(self, device):
         port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
         return DevicePortEvent(state=port_state, device_vlan=device.vlan,
-                                     assigned_vlan=device.assigned)
+                               assigned_vlan=device.assigned)
 
     def _get_device(self, mac_addr):
         for device in self._port_device_mapping.values():
@@ -70,8 +70,8 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
             return
         port_event = self._get_port_event(device)
         self._logger.info('Sending %d DevicePortEvent %s %s %s %s',
-                          len(self._port_events_listeners[device.mac]), device.mac, port_event.state,
-                          device.vlan, device.assigned)
+                          len(self._port_events_listeners[device.mac]), device.mac,
+                          port_event.state, device.vlan, device.assigned)
         for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
 
