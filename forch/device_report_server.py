@@ -54,23 +54,27 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         self._mac_assignments = {}
         self._lock = threading.Lock()
 
+    def _get_port_event(self, device):
+        port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
+        return DevicePortEvent(state=port_state, device_vlan=device.vlan,
+                               assigned_vlan=device.assigned)
+
+    def _get_device(self, mac_addr):
+        for device in self._port_device_mapping.values():
+            if device.mac == mac_addr:
+                return device
+        return None
+
     def _send_device_port_event(self, device):
         if not device or device.mac not in self._port_events_listeners:
             return
-        port_state = PortBehavior.PortState.up if device.port_up else PortBehavior.PortState.down
-        port_event = DevicePortEvent(state=port_state, device_vlan=device.vlan,
-                                     assigned_vlan=device.assigned)
+        port_event = self._get_port_event(device)
         self._logger.info('Sending %d DevicePortEvent %s %s %s %s',
-                          len(self._port_events_listeners[device.mac]), device.mac, port_state,
-                          device.vlan, device.assigned)
+                          len(self._port_events_listeners[device.mac]), device.mac,
+                          # pylint: disable=no-member
+                          port_event.state, device.vlan, device.assigned)
         for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
-
-    def _send_initial_reply(self, mac_addr):
-        with self._lock:
-            for device in self._port_device_mapping.values():
-                if device.mac == mac_addr:
-                    self._send_device_port_event(device)
 
     def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
@@ -125,12 +129,15 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         listener_q = Queue()
         self._logger.info('Attaching response channel for device %s', request.mac)
         self._port_events_listeners.setdefault(request.mac, []).append(listener_q)
-        self._send_initial_reply(request.mac)
+        device = self._get_device(request.mac)
+        if device:
+            yield self._get_port_event(device)
         while True:
             item = listener_q.get()
             if item is False:
                 break
             yield item
+        self._port_events_listeners[request.mac].remove(listener_q)
 
 
 class DeviceReportServer(DeviceStateReporter):
