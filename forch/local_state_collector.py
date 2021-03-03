@@ -10,7 +10,7 @@ import time
 
 import psutil
 
-from forch.proto.process_state_pb2 import ProcessState
+from forch.proto.process_state_pb2 import ProcessState, VrrpState
 from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 from forch.utils import dict_proto, get_logger
@@ -22,16 +22,15 @@ _PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
 VRRP_MASTER = 'MASTER'
 VRRP_BACKUP = 'BACKUP'
 VRRP_FAULT = 'FAULT'
+VRRP_ERROR = 'ERROR'
 
 
 class LocalStateCollector:
     """Storing local system states"""
 
     def __init__(self, config, cleanup_handler, active_state_handler, metrics):
-        self._state = {'processes': {}, 'vrrp': {}}
-        self._process_state = self._state['processes']
-        self._process_state['connections'] = {}
-        self._vrrp_state = self._state['vrrp']
+        self._process_state = {'connections': {}}
+        self._vrrp_state = {}
         self._last_error = {}
         self._current_time = None
         self._conn_state = None
@@ -75,10 +74,33 @@ class LocalStateCollector:
         with self._lock:
             return dict_proto(self._process_state, ProcessState)
 
+    def get_vrrp_summary(self):
+        """Return a summary of VRRP states"""
+        vrrp_state = self.get_vrrp_state()
+
+        if not self._check_vrrp:
+            summary_state = State.healthy
+        elif not vrrp_state.vrrp_state:
+            summary_state = State.initializing
+        elif vrrp_state.vrrp_state == VRRP_MASTER or vrrp_state.vrrp_state == VRRP_BACKUP:
+            summary_state = State.healthy
+        else:
+            summary_state = State.broken
+
+        return dict_proto({
+            'state': summary_state,
+            'detail': vrrp_state.vrrp_state_detail,
+            'change_count': vrrp_state.vrrp_state_change_count,
+            'last_change': vrrp_state.vrrp_state_last_change
+        }, StateSummary)
+
+    def get_vrrp_state(self):
+        """Get VRRP states"""
+        with self._lock:
+            return dict_proto(self._vrrp_state, VrrpState)
+
     def _check_process_info(self):
         """Check the raw information of processes"""
-
-        process_state = self._process_state
         process_map = {}
         procs = self._get_target_processes()
         broken = []
@@ -90,36 +112,45 @@ class LocalStateCollector:
             target_count = self._target_procs[target_name].count or 1
             state, detail = self._extract_process_state(target_name, target_count, proc_list)
             state_map['detail'] = detail
+
             if state:
                 state_map['state'] = State.healthy
                 self._metrics.update_var('process_state', 1, labels=[target_name])
                 state_map.update(state)
                 self._last_error.pop(target_name, None)
-                continue
-            state_map['state'] = State.broken
-            self._metrics.update_var('process_state', 0, labels=[target_name])
-            if detail != self._last_error.get(target_name):
-                self._logger.error(detail)
-                self._last_error[target_name] = detail
-            broken.append(target_name)
+            else:
+                state_map['state'] = State.broken
+                self._metrics.update_var('process_state', 0, labels=[target_name])
+                if detail != self._last_error.get(target_name):
+                    self._logger.error(detail)
+                    self._last_error[target_name] = detail
+                broken.append(target_name)
 
-        process_state['processes'] = process_map
-        process_state['process_state_last_update'] = self._current_time
+            old_process_map = self._process_state.get('processes', {}).get(target_name, {})
+            old_state = old_process_map.get('state', State.unknown)
+            if state_map['state'] != old_state:
+                self._logger.info(
+                    'State of process %s changed from %s to %s',
+                    target_name, State.State.Name(old_state), State.State.Name(state_map['state']))
 
-        old_state = process_state.get('process_state')
+        self._process_state['processes'] = process_map
+        self._process_state['process_state_last_update'] = self._current_time
+
+        old_state = self._process_state.get('process_state')
         state = State.broken if broken else State.healthy
 
-        old_state_detail = process_state.get('process_state_detail')
+        old_state_detail = self._process_state.get('process_state_detail')
         state_detail = 'Processes in broken state: ' + ', '.join(broken) if broken else ''
 
         if state != old_state or state_detail != old_state_detail:
-            state_change_count = process_state.get('process_state_change_count', 0) + 1
+            state_change_count = self._process_state.get('process_state_change_count', 0) + 1
             self._logger.info(
-                'process_state #%d is %s: %s', state_change_count, state, state_detail)
-            process_state['process_state'] = state
-            process_state['process_state_detail'] = state_detail
-            process_state['process_state_change_count'] = state_change_count
-            process_state['process_state_last_change'] = self._current_time
+                'process_state #%d is %s: %s', state_change_count, State.State.Name(state),
+                state_detail)
+            self._process_state['process_state'] = state
+            self._process_state['process_state_detail'] = state_detail
+            self._process_state['process_state_change_count'] = state_change_count
+            self._process_state['process_state_last_change'] = self._current_time
 
     def _get_target_processes(self):
         """Get target processes"""
@@ -266,6 +297,8 @@ class LocalStateCollector:
 
     def _check_vrrp_info(self):
         """Get vrrp info"""
+        vrrp_state = None
+        error_detail = None
         try:
             if not self._check_vrrp:
                 return
@@ -280,30 +313,47 @@ class LocalStateCollector:
                     if not match:
                         continue
                     vrrp_state = match.group(1)
-                    self._vrrp_state.update(self._handle_vrrp_state(vrrp_state))
                     break
 
+            if not vrrp_state:
+                vrrp_state = VRRP_ERROR
+                error_detail = 'Could not find matching states'
+
         except Exception as e:
-            error_msg = f'Cannot get VRRP info, setting controller to inactive: {e}'
-            self._logger.error(error_msg)
-            self._active_state_handler(State.broken, error_msg)
+            vrrp_state = VRRP_ERROR
+            error_detail = f'Cannot get VRRP info: {e}'
 
-    def _handle_vrrp_state(self, vrrp_state):
+        finally:
+            self._vrrp_state.update(self._handle_vrrp_state(vrrp_state, error_detail))
+
+    def _handle_vrrp_state(self, vrrp_state, error_detail=None):
         """Extract vrrp state from keepalived stats data"""
-        vrrp_map = {'state': vrrp_state}
+        vrrp_map = {'vrrp_state': vrrp_state}
         old_vrrp_map = copy.deepcopy(self._vrrp_state)
+        old_vrrp_state = old_vrrp_map.get('vrrp_state')
+        old_vrrp_state_detail = old_vrrp_map.get('vrrp_state_detail')
 
-        if vrrp_map['state'] != old_vrrp_map.get('state'):
-            vrrp_map['state_last_change'] = self._current_time
-            vrrp_map['state_change_count'] = old_vrrp_map.get('state_change_count', 0) + 1
-            self._logger.info('state #%d: %s', vrrp_map['state_change_count'], vrrp_map['state'])
+        if vrrp_state != old_vrrp_state or error_detail != old_vrrp_state_detail:
+            vrrp_map['vrrp_state_last_change'] = self._current_time
+            state_change_count = old_vrrp_map.get('vrrp_state_change_count', 0) + 1
+            vrrp_map['vrrp_state_change_count'] = state_change_count
+
+            self._logger.info(
+                'VRRP state #%d: %s, %s', vrrp_map['vrrp_state_change_count'], vrrp_state,
+                error_detail)
 
             if vrrp_state == VRRP_MASTER:
+                vrrp_map['vrrp_state_detail'] = None
                 self._active_state_handler(State.active)
             elif vrrp_state == VRRP_BACKUP:
+                vrrp_map['vrrp_state_detail'] = None
                 self._active_state_handler(State.inactive)
             elif vrrp_state == VRRP_FAULT:
-                self._active_state_handler(State.broken, 'VRRP is in fault state')
+                vrrp_map['vrrp_state_detail'] = 'VRRP is in fault state'
+                self._active_state_handler(State.broken)
+            elif vrrp_state == VRRP_ERROR:
+                vrrp_map['vrrp_state_detail'] = error_detail
+                self._active_state_handler(State.broken)
             else:
                 self._logger.error('Unknown VRRP state: %s', vrrp_state)
 
