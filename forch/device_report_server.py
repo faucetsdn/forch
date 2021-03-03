@@ -71,6 +71,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
         port_event = self._get_port_event(device)
         self._logger.info('Sending %d DevicePortEvent %s %s %s %s',
                           len(self._port_events_listeners[device.mac]), device.mac,
+                          # pylint: disable=no-member
                           port_event.state, device.vlan, device.assigned)
         for queue in self._port_events_listeners[device.mac]:
             queue.put(port_event)
