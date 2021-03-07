@@ -117,6 +117,10 @@ class AuthStateMachine():
                         self._metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
                     self._logger.debug('RADIUS request timed out for %s', self.src_mac)
-                else:
+                elif self._current_state == self.ACCEPT or self._current_state == self.UNAUTH:
                     self._state_transition(self.REQUEST)
+                else:
+                    self._logger.error(
+                        'Unknown auth state %s for MAC %s', self._current_state, self._src_mac)
+                    self._state_transition(self.UNAUTH)
                     self._auth_callback(self.src_mac, self.UNAUTH, None, None)
