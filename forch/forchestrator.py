@@ -296,6 +296,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._port_state_manager.clear_static_device_behaviors()
 
         try:
+            self._logger.info('Reading static device behavior file: %s', file_path)
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
             msg = f'Dynamic auth disabled: could not load static behavior file {file_path}'
@@ -816,7 +817,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 is_stack = 1 if 'stack' in if_obj else 0
                 is_access = 1 if 'native_vlan' in if_obj else 0
                 is_tap = 1 if if_obj['description'] == 'tap' else 0
-                is_mirror = 1 if if_obj['description'] == 'mirror' else 0
+                is_mirror = 1 if if_obj['description'].lower() == 'mirror' else 0
                 if (is_egress + is_stack + is_access + is_tap + is_mirror) != 1:
                     warnings.append((if_key, 'misconfigured interface config: %d %d %d %d %d' %
                                      (is_egress, is_stack, is_access, is_tap, is_mirror)))
