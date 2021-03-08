@@ -111,9 +111,10 @@ class AuthStateMachine():
     def handle_sm_timer(self):
         """
         Handle timer timeout and check.trigger timeout behavior of states:
-        * REQUEST state == request timeout ==> REQUEST state + send request + deauthenticate
-        * ACCEPT state == auth timeout ==> REQUEST state + send request
-        * UNAUTH state == any timeout ==> REQUEST state + send request
+        * REQUEST state --request timeout--> REQUEST state + send request + deauthenticate
+        * ACCEPT state --auth timeout--> REQUEST state + send request
+        * UNAUTH state --any timeout--> REQUEST state + send request
+        * Unknown state --any timeout--> UNAUTH state + send request + deauthenticate
         """
         with self._transition_lock:
             if time.time() > self._current_timeout:
