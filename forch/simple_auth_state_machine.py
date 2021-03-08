@@ -1,4 +1,12 @@
-"""Module that implements MAB state machine"""""
+"""
+Module that implements MAB state machine
+
+There are three authentication states for a device:
+
+UNAUTH:  unauthenticated state
+REQUEST: RADIUS request is sent on behalf of this device and no response is received yet
+ACCEPT:  device is authenticated by the RADIUS server
+"""
 
 from threading import Lock
 import time
@@ -101,7 +109,15 @@ class AuthStateMachine():
             self._auth_callback(self.src_mac, self.UNAUTH, None, None)
 
     def handle_sm_timer(self):
-        """Handle timer timeout and check.trigger timeout behavior of states"""
+        """
+        Handle timer timeout and check.trigger timeout behavior of states:
+        * If the device is in request state and the RADIUS request times out, device will be
+          deauthenticated.
+        * If device is in authenticated state and the authentication times out, Forch
+          reauthenticates the device without deauthenticating it firstly.
+        * If device is in unauthenticated state, Forch does not deauthenticate it again,
+          since device has already been deauthenticated previously
+        """
         with self._transition_lock:
             if time.time() > self._current_timeout:
                 if self._retry_backoff:
@@ -113,14 +129,15 @@ class AuthStateMachine():
                 backoff_time = backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
+                    self._auth_callback(self.src_mac, self.UNAUTH, None, None)
                     if self._metrics:
                         self._metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
-                    self._logger.debug('RADIUS request timed out for %s', self.src_mac)
+                    self._logger.error('RADIUS request timed out for %s', self.src_mac)
                 elif self._current_state == self.ACCEPT or self._current_state == self.UNAUTH:
                     self._state_transition(self.REQUEST)
                 else:
                     self._logger.error(
-                        'Unknown auth state %s for MAC %s', self._current_state, self._src_mac)
+                        'Unknown auth state %s for MAC %s', self._current_state, self.src_mac)
                     self._state_transition(self.UNAUTH)
                     self._auth_callback(self.src_mac, self.UNAUTH, None, None)
