@@ -111,12 +111,9 @@ class AuthStateMachine():
     def handle_sm_timer(self):
         """
         Handle timer timeout and check.trigger timeout behavior of states:
-        * If the device is in request state and the RADIUS request times out, device will be
-          deauthenticated.
-        * If device is in authenticated state and the authentication times out, Forch
-          reauthenticates the device without deauthenticating it firstly.
-        * If device is in unauthenticated state, Forch does not deauthenticate it again,
-          since device has already been deauthenticated previously
+        * REQUEST state == request timeout ==> REQUEST state + send request + deauthenticate
+        * ACCEPT state == auth timeout ==> REQUEST state + send request
+        * UNAUTH state == any timeout ==> REQUEST state + send request
         """
         with self._transition_lock:
             if time.time() > self._current_timeout:
