@@ -129,7 +129,8 @@ class AuthStateMachine():
                 backoff_time = backoff * self._query_timeout_sec
                 self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
-                    self._auth_callback(self.src_mac, self.UNAUTH, None, None)
+                    if self._retry_backoff:
+                        self._auth_callback(self.src_mac, self.UNAUTH, None, None)
                     if self._metrics:
                         self._metrics.inc_var('radius_query_timeouts')
                     self._increment_retries()
