@@ -17,7 +17,7 @@ orchestration:
   sequester_config:
     vlan_start: 272
     vlan_end: 276
-    port_description: tap
+    port_description: TAP
 proxy_server:
   targets:
     faucet:
