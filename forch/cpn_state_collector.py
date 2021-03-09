@@ -59,7 +59,7 @@ class CPNStateCollector:
         cpn_dir_name = os.getenv('FORCH_CONFIG_DIR')
         cpn_file_name = os.path.join(cpn_dir_name, 'cpn.yaml')
         current_time = datetime.now().isoformat()
-        self._logger.info("Loading CPN config file: %s", cpn_file_name)
+        self._logger.info("Reading CPN config file: %s", cpn_file_name)
         try:
             cpn_data = yaml_proto(cpn_file_name, CpnConfig)
             cpn_nodes = cpn_data.cpn_nodes

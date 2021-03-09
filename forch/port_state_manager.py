@@ -125,27 +125,30 @@ class PortStateManager:
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
         with self._lock:
+            mac_lower = mac.lower()
             static_port_behavior = device_behavior.port_behavior
             if static_port_behavior:
-                self._static_port_behaviors[mac] = static_port_behavior
+                self._static_port_behaviors[mac_lower] = static_port_behavior
 
             if device_behavior.segment:
-                self.handle_device_behavior(mac, device_behavior, static=True)
+                self.handle_device_behavior(mac_lower, device_behavior, static=True)
 
     def handle_device_behavior(self, mac, device_behavior, static=False):
         """Handle authentication result"""
+        mac_lower = mac.lower()
         if device_behavior.segment:
-            self._handle_authenticated_device(mac, device_behavior, static)
+            self._handle_authenticated_device(mac_lower, device_behavior, static)
             if static:
                 self._update_static_vlan_varz(
-                    mac, vlan=self._get_vlan_from_segment(device_behavior.segment))
+                    mac_lower, vlan=self._get_vlan_from_segment(device_behavior.segment))
         else:
-            self._handle_deauthenticated_device(mac, static)
+            self._handle_deauthenticated_device(mac_lower, static)
 
     def handle_device_placement(self, mac, device_placement, static=False):
         """Handle a learning or expired VLAN for a device"""
         if device_placement.connected:
-            return self._handle_learned_device(mac, device_placement, static)
+            mac_lower = mac.lower()
+            return self._handle_learned_device(mac_lower, device_placement, static)
 
         return self._handle_disconnected_device(device_placement)
 
@@ -232,7 +235,8 @@ class PortStateManager:
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
         for mac, device_behavior in testing_result.device_mac_behaviors.items():
-            self._handle_port_behavior(mac, device_behavior.port_behavior)
+            mac_lower = mac.lower()
+            self._handle_port_behavior(mac_lower, device_behavior.port_behavior)
 
     def _handle_port_behavior(self, mac, port_behavior):
         with self._lock:

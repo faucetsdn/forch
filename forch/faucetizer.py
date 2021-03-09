@@ -376,6 +376,7 @@ class Faucetizer(DeviceStateManager):
 
     def reload_and_flush_gauge_config(self, gauge_config_file):
         """Reload gauge config file and rewrite to faucet config directory"""
+        self._logger.info('Reading Gauge config file: %s', gauge_config_file)
         with open(gauge_config_file) as file:
             gauge_config = yaml.safe_load(file)
 
@@ -401,6 +402,7 @@ class Faucetizer(DeviceStateManager):
 
     def reload_segments_to_vlans(self, file_path):
         """Reload file that contains the mappings from segments to vlans"""
+        self._logger.info('Reading segments-to-vlans file: %s', file_path)
         self._segments_to_vlans = yaml_proto(file_path, SegmentsToVlans).segments_to_vlans
 
         operational_vlans = set(self._segments_to_vlans.values())
