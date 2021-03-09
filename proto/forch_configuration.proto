@@ -102,7 +102,7 @@ message OrchestrationConfig {
     // Heartbeat in seconds
     int32 heartbeat_sec = 2;
 
-    // Max Radius backoff count
+    // Max Radius retry count
     int32 max_radius_retries = 3;
 
     // Query timeout in seconds
