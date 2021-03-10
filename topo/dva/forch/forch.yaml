@@ -21,7 +21,7 @@ orchestration:
       server_port: 1812
       radius_secret_helper: 'echo SECRET'
     heartbeat_sec: 5
-    max_radius_backoff: 10
+    max_radius_retries: 10
     query_timeout_sec: 15
     reject_timeout_sec: 360
     auth_timeout_sec: 3559
