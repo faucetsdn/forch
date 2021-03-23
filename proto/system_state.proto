@@ -36,6 +36,9 @@ message SystemState {
   // Last state update time
   string system_state_last_update = 9;
 
+  // Authentication state
+  SysAuthState.State authentication_state = 12;
+
   // Summary of the system state components
   SummarySources summary_sources = 10;
 

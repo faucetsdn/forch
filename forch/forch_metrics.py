@@ -110,6 +110,10 @@ class ForchMetrics():
             'static_mac_vlan', 'MAC addresses with statically assigned vlan', Gauge,
             labels=['mac'])
 
+        self._add_var(
+            'system_initialization', 'Initialization state of the system', Gauge,
+            labels=['authentication'])
+
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
         return generate_latest(self._reg).decode('utf-8')

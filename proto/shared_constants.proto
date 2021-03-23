@@ -97,6 +97,25 @@ message DVAState {
 }
 
 /*
+ * Authentication state of system
+ */
+message SysAuthState {
+  enum State {
+    // disabled
+    disabled = 0;
+
+    // static authentication only
+    static_only = 1;
+
+    // dynamic authentication only
+    dynamic_only = 2;
+
+    // both static and dynamic authentication are enabled
+    all = 3;
+  }
+}
+
+/*
  * LACP Roles
  */
 message LacpRole {
