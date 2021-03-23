@@ -14,4 +14,4 @@ db4d1bf4d1b4ac1a575853833ecbd9571d784203  proto/path_node.proto
 255a8c039f0487faa2632df22efff854285c6297  proto/process_state.proto
 f3bb0051984880c1dfa952e153a6f24feaf2baab  proto/shared_constants.proto
 f2907589bfb18d4b1622b9d658899c11b56d3b86  proto/switch_state.proto
-4ea913ce99af49df9c46e97955b8d11934eee6d9  proto/system_state.proto
+e33df2fd7a49cefe0a30622340186fe1ca5e8ca3  proto/system_state.proto

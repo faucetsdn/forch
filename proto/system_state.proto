@@ -37,13 +37,13 @@ message SystemState {
   string system_state_last_update = 9;
 
   // Authentication state
-  SysAuthState.State authentication_state = 12;
+  SysAuthState.State authentication_state = 10;
 
   // Summary of the system state components
-  SummarySources summary_sources = 10;
+  SummarySources summary_sources = 11;
 
   // Summary of configuration info
-  ConfigSummary config_summary = 11;
+  ConfigSummary config_summary = 12;
 
   /*
    * Summary collection of system state
