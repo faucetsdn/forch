@@ -863,7 +863,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def _get_sys_auth_state(self):
         static_auth_enabled = (self._config.orchestration.static_device_behavior and
                                not self._should_ignore_static_behavior and
-                               not self._config_errors[STATIC_BEHAVIORAL_FILE])
+                               not self._config_errors.get(STATIC_BEHAVIORAL_FILE))
         dynamic_auth_enabled = (self._authenticator and not self._should_ignore_auth_result)
         if static_auth_enabled and dynamic_auth_enabled:
             sys_auth_state = SysAuthState.all
