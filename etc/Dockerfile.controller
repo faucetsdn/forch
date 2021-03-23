@@ -35,4 +35,6 @@ RUN bin/install_forch && rm -rf forch/.git
 COPY daq/ daq/
 RUN daq/bin/setup_dev simple && rm -rf daq/.git
 
+COPY controller/daq_site_config /site
+
 CMD ["bin/controller_go"]

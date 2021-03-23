@@ -40,6 +40,7 @@ else
 
     ip route add $IPADDR/16 via $GATEWAY dev $IFACE
     ip route add default via $GATEWAY
+    ping $GATEWAY &
 fi
 
 ip addr
