@@ -531,5 +531,5 @@ function monitor_log {
 }
 
 function redact {
-    sed -re 's/time [0-9]+ms/XXX/'
+    sed -re 's/time [0-9]+ms/XXX/' -re 's/\+[0-9]+ errors/XX errors/'
 }
