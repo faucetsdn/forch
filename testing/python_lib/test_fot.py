@@ -473,6 +473,7 @@ class FotContainerTest(IntegrationTestBase):
         super().__init__(*args, **kwargs)
         self.stack_options['static_switch'] = True
         self.stack_options['fot'] = True
+        self.stack_options['dhcp'] = True
 
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
@@ -502,6 +503,7 @@ class FotContainerTest(IntegrationTestBase):
         # test DHCP reflection with sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
+        print("*" * 100 + "\n", vlan_tcpdump_text)
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
         # test DHCP with unauthenticated device
