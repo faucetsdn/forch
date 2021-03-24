@@ -40,6 +40,9 @@ else
 
     ip route add $IPADDR/16 via $GATEWAY dev $IFACE
     ip route add default via $GATEWAY
+fi
+
+if [ -n "${option[ping]}" ]; then
     ping -c 10 $GATEWAY &
 fi
 
