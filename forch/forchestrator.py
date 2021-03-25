@@ -32,7 +32,7 @@ from forch.__version__ import __version__
 
 from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior, DevicePlacement
 import forch.proto.faucet_event_pb2 as FaucetEvent
-from forch.proto.shared_constants_pb2 import State, SysAuthState
+from forch.proto.shared_constants_pb2 import State, AuthMode
 from forch.proto.system_state_pb2 import SystemState
 
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
@@ -866,13 +866,13 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                                not self._config_errors.get(STATIC_BEHAVIORAL_FILE))
         dynamic_auth_enabled = (self._authenticator and not self._should_ignore_auth_result)
         if static_auth_enabled and dynamic_auth_enabled:
-            sys_auth_mode = SysAuthState.all
+            sys_auth_mode = AuthMode.all
         elif static_auth_enabled:
-            sys_auth_mode = SysAuthState.static_only
+            sys_auth_mode = AuthMode.static_only
         elif dynamic_auth_enabled:
-            sys_auth_mode = SysAuthState.dynamic_only
+            sys_auth_mode = AuthMode.dynamic_only
         else:
-            sys_auth_mode = SysAuthState.disabled
+            sys_auth_mode = AuthMode.disabled
 
         return sys_auth_mode
 
