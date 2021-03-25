@@ -112,7 +112,7 @@ class ForchMetrics():
 
         self._add_var(
             'system_initialization', 'Initialization state of the system', Gauge,
-            labels=['authentication'])
+            labels=['auth_mode'])
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""

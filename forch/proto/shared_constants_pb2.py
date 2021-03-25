@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\"\x86\x01\n\x08\x44VAState\"z\n\x05State\x12\x0b\n\x07initial\x10\x00\x12\x13\n\x0funauthenticated\x10\x01\x12\x0f\n\x0bsequestered\x10\x02\x12\x16\n\x12static_operational\x10\x03\x12\x17\n\x13\x64ynamic_operational\x10\x04\x12\r\n\tinfracted\x10\x05\"Q\n\x0cSysAuthState\"A\n\x05State\x12\x0c\n\x08\x64isabled\x10\x00\x12\x0f\n\x0bstatic_only\x10\x01\x12\x10\n\x0c\x64ynamic_only\x10\x02\x12\x07\n\x03\x61ll\x10\x03\"a\n\x08LacpRole\"U\n\x08LacpRole\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x0e\n\nunselected\x10\x01\x12\x0c\n\x08selected\x10\x02\x12\x0b\n\x07standby\x10\x03\"C\n\x08PortType\"7\n\x04Type\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x61\x63\x63\x65ss\x10\x01\x12\x0b\n\x07testing\x10\x02\x12\t\n\x05other\x10\x03\"\xa4\x01\n\x0cPortBehavior\"u\n\x08\x42\x65havior\x12\x0b\n\x07unknown\x10\x00\x12\x11\n\rauthenticated\x10\x01\x12\x0b\n\x07\x63leared\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\n\n\x06passed\x10\x04\x12\n\n\x06\x66\x61iled\x10\x05\x12\x13\n\x0f\x64\x65\x61uthenticated\x10\x06\"\x1d\n\tPortState\x12\x08\n\x04\x64own\x10\x00\x12\x06\n\x02up\x10\x01\"\x07\n\x05\x45mptyb\x06proto3'
+  serialized_pb=b'\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\"\x86\x01\n\x08\x44VAState\"z\n\x05State\x12\x0b\n\x07initial\x10\x00\x12\x13\n\x0funauthenticated\x10\x01\x12\x0f\n\x0bsequestered\x10\x02\x12\x16\n\x12static_operational\x10\x03\x12\x17\n\x13\x64ynamic_operational\x10\x04\x12\r\n\tinfracted\x10\x05\"L\n\x08\x41uthMode\"@\n\x04Mode\x12\x0c\n\x08\x64isabled\x10\x00\x12\x0f\n\x0bstatic_only\x10\x01\x12\x10\n\x0c\x64ynamic_only\x10\x02\x12\x07\n\x03\x61ll\x10\x03\"a\n\x08LacpRole\"U\n\x08LacpRole\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x0e\n\nunselected\x10\x01\x12\x0c\n\x08selected\x10\x02\x12\x0b\n\x07standby\x10\x03\"C\n\x08PortType\"7\n\x04Type\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x61\x63\x63\x65ss\x10\x01\x12\x0b\n\x07testing\x10\x02\x12\t\n\x05other\x10\x03\"\xa4\x01\n\x0cPortBehavior\"u\n\x08\x42\x65havior\x12\x0b\n\x07unknown\x10\x00\x12\x11\n\rauthenticated\x10\x01\x12\x0b\n\x07\x63leared\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\n\n\x06passed\x10\x04\x12\n\n\x06\x66\x61iled\x10\x05\x12\x13\n\x0f\x64\x65\x61uthenticated\x10\x06\"\x1d\n\tPortState\x12\x08\n\x04\x64own\x10\x00\x12\x06\n\x02up\x10\x01\"\x07\n\x05\x45mptyb\x06proto3'
 )
 
 
@@ -174,9 +174,9 @@ _DVASTATE_STATE = _descriptor.EnumDescriptor(
 )
 _sym_db.RegisterEnumDescriptor(_DVASTATE_STATE)
 
-_SYSAUTHSTATE_STATE = _descriptor.EnumDescriptor(
-  name='State',
-  full_name='SysAuthState.State',
+_AUTHMODE_MODE = _descriptor.EnumDescriptor(
+  name='Mode',
+  full_name='AuthMode.Mode',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -204,10 +204,10 @@ _SYSAUTHSTATE_STATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=426,
-  serialized_end=491,
+  serialized_start=422,
+  serialized_end=486,
 )
-_sym_db.RegisterEnumDescriptor(_SYSAUTHSTATE_STATE)
+_sym_db.RegisterEnumDescriptor(_AUTHMODE_MODE)
 
 _LACPROLE_LACPROLE = _descriptor.EnumDescriptor(
   name='LacpRole',
@@ -244,8 +244,8 @@ _LACPROLE_LACPROLE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=505,
-  serialized_end=590,
+  serialized_start=500,
+  serialized_end=585,
 )
 _sym_db.RegisterEnumDescriptor(_LACPROLE_LACPROLE)
 
@@ -279,8 +279,8 @@ _PORTTYPE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=604,
-  serialized_end=659,
+  serialized_start=599,
+  serialized_end=654,
 )
 _sym_db.RegisterEnumDescriptor(_PORTTYPE_TYPE)
 
@@ -329,8 +329,8 @@ _PORTBEHAVIOR_BEHAVIOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=678,
-  serialized_end=795,
+  serialized_start=673,
+  serialized_end=790,
 )
 _sym_db.RegisterEnumDescriptor(_PORTBEHAVIOR_BEHAVIOR)
 
@@ -354,8 +354,8 @@ _PORTBEHAVIOR_PORTSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=797,
-  serialized_end=826,
+  serialized_start=792,
+  serialized_end=821,
 )
 _sym_db.RegisterEnumDescriptor(_PORTBEHAVIOR_PORTSTATE)
 
@@ -438,9 +438,9 @@ _DVASTATE = _descriptor.Descriptor(
 )
 
 
-_SYSAUTHSTATE = _descriptor.Descriptor(
-  name='SysAuthState',
-  full_name='SysAuthState',
+_AUTHMODE = _descriptor.Descriptor(
+  name='AuthMode',
+  full_name='AuthMode',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -451,7 +451,7 @@ _SYSAUTHSTATE = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _SYSAUTHSTATE_STATE,
+    _AUTHMODE_MODE,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -460,7 +460,7 @@ _SYSAUTHSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=410,
-  serialized_end=491,
+  serialized_end=486,
 )
 
 
@@ -485,8 +485,8 @@ _LACPROLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=493,
-  serialized_end=590,
+  serialized_start=488,
+  serialized_end=585,
 )
 
 
@@ -511,8 +511,8 @@ _PORTTYPE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=592,
-  serialized_end=659,
+  serialized_start=587,
+  serialized_end=654,
 )
 
 
@@ -538,8 +538,8 @@ _PORTBEHAVIOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=662,
-  serialized_end=826,
+  serialized_start=657,
+  serialized_end=821,
 )
 
 
@@ -563,14 +563,14 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=828,
-  serialized_end=835,
+  serialized_start=823,
+  serialized_end=830,
 )
 
 _STATE_STATE.containing_type = _STATE
 _LACPSTATE_LACPSTATE.containing_type = _LACPSTATE
 _DVASTATE_STATE.containing_type = _DVASTATE
-_SYSAUTHSTATE_STATE.containing_type = _SYSAUTHSTATE
+_AUTHMODE_MODE.containing_type = _AUTHMODE
 _LACPROLE_LACPROLE.containing_type = _LACPROLE
 _PORTTYPE_TYPE.containing_type = _PORTTYPE
 _PORTBEHAVIOR_BEHAVIOR.containing_type = _PORTBEHAVIOR
@@ -578,7 +578,7 @@ _PORTBEHAVIOR_PORTSTATE.containing_type = _PORTBEHAVIOR
 DESCRIPTOR.message_types_by_name['State'] = _STATE
 DESCRIPTOR.message_types_by_name['LacpState'] = _LACPSTATE
 DESCRIPTOR.message_types_by_name['DVAState'] = _DVASTATE
-DESCRIPTOR.message_types_by_name['SysAuthState'] = _SYSAUTHSTATE
+DESCRIPTOR.message_types_by_name['AuthMode'] = _AUTHMODE
 DESCRIPTOR.message_types_by_name['LacpRole'] = _LACPROLE
 DESCRIPTOR.message_types_by_name['PortType'] = _PORTTYPE
 DESCRIPTOR.message_types_by_name['PortBehavior'] = _PORTBEHAVIOR
@@ -606,12 +606,12 @@ DVAState = _reflection.GeneratedProtocolMessageType('DVAState', (_message.Messag
   })
 _sym_db.RegisterMessage(DVAState)
 
-SysAuthState = _reflection.GeneratedProtocolMessageType('SysAuthState', (_message.Message,), {
-  'DESCRIPTOR' : _SYSAUTHSTATE,
+AuthMode = _reflection.GeneratedProtocolMessageType('AuthMode', (_message.Message,), {
+  'DESCRIPTOR' : _AUTHMODE,
   '__module__' : 'forch.proto.shared_constants_pb2'
-  # @@protoc_insertion_point(class_scope:SysAuthState)
+  # @@protoc_insertion_point(class_scope:AuthMode)
   })
-_sym_db.RegisterMessage(SysAuthState)
+_sym_db.RegisterMessage(AuthMode)
 
 LacpRole = _reflection.GeneratedProtocolMessageType('LacpRole', (_message.Message,), {
   'DESCRIPTOR' : _LACPROLE,

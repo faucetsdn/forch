@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1e\x66orch/proto/system_state.proto\x1a\"forch/proto/shared_constants.proto\"\xc3\x07\n\x0bSystemState\x12\x11\n\tsite_name\x18\x01 \x01(\t\x12\'\n\x08versions\x18\x02 \x01(\x0b\x32\x15.SystemState.Versions\x12\x17\n\x0f\x63ontroller_name\x18\x03 \x01(\t\x12\x1b\n\x13peer_controller_url\x18\x04 \x01(\t\x12\"\n\x0csystem_state\x18\x05 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13system_state_detail\x18\x06 \x01(\t\x12!\n\x19system_state_change_count\x18\x07 \x01(\x05\x12 \n\x18system_state_last_change\x18\x08 \x01(\t\x12 \n\x18system_state_last_update\x18\t \x01(\t\x12\x31\n\x14\x61uthentication_state\x18\n \x01(\x0e\x32\x13.SysAuthState.State\x12\x34\n\x0fsummary_sources\x18\x0b \x01(\x0b\x32\x1b.SystemState.SummarySources\x12\x32\n\x0e\x63onfig_summary\x18\x0c \x01(\x0b\x32\x1a.SystemState.ConfigSummary\x1a\xeb\x01\n\x0eSummarySources\x12 \n\tcpn_state\x18\x01 \x01(\x0b\x32\r.StateSummary\x12$\n\rprocess_state\x18\x02 \x01(\x0b\x32\r.StateSummary\x12&\n\x0f\x64\x61taplane_state\x18\x03 \x01(\x0b\x32\r.StateSummary\x12#\n\x0cswitch_state\x18\x04 \x01(\x0b\x32\r.StateSummary\x12!\n\nlist_hosts\x18\x05 \x01(\x0b\x32\r.StateSummary\x12!\n\nvrrp_state\x18\x06 \x01(\x0b\x32\r.StateSummary\x1a)\n\x08Versions\x12\x0e\n\x06\x66\x61ucet\x18\x01 \x01(\t\x12\r\n\x05\x66orch\x18\x02 \x01(\t\x1a\xe3\x01\n\rConfigSummary\x12\x36\n\x06hashes\x18\x01 \x03(\x0b\x32&.SystemState.ConfigSummary.HashesEntry\x12:\n\x08warnings\x18\x02 \x03(\x0b\x32(.SystemState.ConfigSummary.WarningsEntry\x1a-\n\x0bHashesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a/\n\rWarningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa9\x01\n\x0cStateSummary\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x12\n\ndetail_url\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\tb\x06proto3'
+  serialized_pb=b'\n\x1e\x66orch/proto/system_state.proto\x1a\"forch/proto/shared_constants.proto\"\xbd\x07\n\x0bSystemState\x12\x11\n\tsite_name\x18\x01 \x01(\t\x12\'\n\x08versions\x18\x02 \x01(\x0b\x32\x15.SystemState.Versions\x12\x17\n\x0f\x63ontroller_name\x18\x03 \x01(\t\x12\x1b\n\x13peer_controller_url\x18\x04 \x01(\t\x12\"\n\x0csystem_state\x18\x05 \x01(\x0e\x32\x0c.State.State\x12\x1b\n\x13system_state_detail\x18\x06 \x01(\t\x12!\n\x19system_state_change_count\x18\x07 \x01(\x05\x12 \n\x18system_state_last_change\x18\x08 \x01(\t\x12 \n\x18system_state_last_update\x18\t \x01(\t\x12+\n\x13\x61uthentication_mode\x18\n \x01(\x0e\x32\x0e.AuthMode.Mode\x12\x34\n\x0fsummary_sources\x18\x0b \x01(\x0b\x32\x1b.SystemState.SummarySources\x12\x32\n\x0e\x63onfig_summary\x18\x0c \x01(\x0b\x32\x1a.SystemState.ConfigSummary\x1a\xeb\x01\n\x0eSummarySources\x12 \n\tcpn_state\x18\x01 \x01(\x0b\x32\r.StateSummary\x12$\n\rprocess_state\x18\x02 \x01(\x0b\x32\r.StateSummary\x12&\n\x0f\x64\x61taplane_state\x18\x03 \x01(\x0b\x32\r.StateSummary\x12#\n\x0cswitch_state\x18\x04 \x01(\x0b\x32\r.StateSummary\x12!\n\nlist_hosts\x18\x05 \x01(\x0b\x32\r.StateSummary\x12!\n\nvrrp_state\x18\x06 \x01(\x0b\x32\r.StateSummary\x1a)\n\x08Versions\x12\x0e\n\x06\x66\x61ucet\x18\x01 \x01(\t\x12\r\n\x05\x66orch\x18\x02 \x01(\t\x1a\xe3\x01\n\rConfigSummary\x12\x36\n\x06hashes\x18\x01 \x03(\x0b\x32&.SystemState.ConfigSummary.HashesEntry\x12:\n\x08warnings\x18\x02 \x03(\x0b\x32(.SystemState.ConfigSummary.WarningsEntry\x1a-\n\x0bHashesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a/\n\rWarningsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa9\x01\n\x0cStateSummary\x12\x1b\n\x05state\x18\x01 \x01(\x0e\x32\x0c.State.State\x12\x0e\n\x06\x64\x65tail\x18\x02 \x01(\t\x12\x14\n\x0c\x63hange_count\x18\x03 \x01(\x05\x12\x13\n\x0blast_update\x18\x04 \x01(\t\x12\x13\n\x0blast_change\x18\x05 \x01(\t\x12\x12\n\ndetail_url\x18\x06 \x01(\t\x12\x18\n\x10system_state_url\x18\x07 \x01(\tb\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -89,8 +89,8 @@ _SYSTEMSTATE_SUMMARYSOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=526,
-  serialized_end=761,
+  serialized_start=520,
+  serialized_end=755,
 )
 
 _SYSTEMSTATE_VERSIONS = _descriptor.Descriptor(
@@ -127,8 +127,8 @@ _SYSTEMSTATE_VERSIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=763,
-  serialized_end=804,
+  serialized_start=757,
+  serialized_end=798,
 )
 
 _SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY = _descriptor.Descriptor(
@@ -165,8 +165,8 @@ _SYSTEMSTATE_CONFIGSUMMARY_HASHESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=940,
-  serialized_end=985,
+  serialized_start=934,
+  serialized_end=979,
 )
 
 _SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY = _descriptor.Descriptor(
@@ -203,8 +203,8 @@ _SYSTEMSTATE_CONFIGSUMMARY_WARNINGSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=987,
-  serialized_end=1034,
+  serialized_start=981,
+  serialized_end=1028,
 )
 
 _SYSTEMSTATE_CONFIGSUMMARY = _descriptor.Descriptor(
@@ -241,8 +241,8 @@ _SYSTEMSTATE_CONFIGSUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=807,
-  serialized_end=1034,
+  serialized_start=801,
+  serialized_end=1028,
 )
 
 _SYSTEMSTATE = _descriptor.Descriptor(
@@ -317,7 +317,7 @@ _SYSTEMSTATE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='authentication_state', full_name='SystemState.authentication_state', index=9,
+      name='authentication_mode', full_name='SystemState.authentication_mode', index=9,
       number=10, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -350,7 +350,7 @@ _SYSTEMSTATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=71,
-  serialized_end=1034,
+  serialized_end=1028,
 )
 
 
@@ -423,8 +423,8 @@ _STATESUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1037,
-  serialized_end=1206,
+  serialized_start=1031,
+  serialized_end=1200,
 )
 
 _SYSTEMSTATE_SUMMARYSOURCES.fields_by_name['cpn_state'].message_type = _STATESUMMARY
@@ -442,7 +442,7 @@ _SYSTEMSTATE_CONFIGSUMMARY.fields_by_name['warnings'].message_type = _SYSTEMSTAT
 _SYSTEMSTATE_CONFIGSUMMARY.containing_type = _SYSTEMSTATE
 _SYSTEMSTATE.fields_by_name['versions'].message_type = _SYSTEMSTATE_VERSIONS
 _SYSTEMSTATE.fields_by_name['system_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE
-_SYSTEMSTATE.fields_by_name['authentication_state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._SYSAUTHSTATE_STATE
+_SYSTEMSTATE.fields_by_name['authentication_mode'].enum_type = forch_dot_proto_dot_shared__constants__pb2._AUTHMODE_MODE
 _SYSTEMSTATE.fields_by_name['summary_sources'].message_type = _SYSTEMSTATE_SUMMARYSOURCES
 _SYSTEMSTATE.fields_by_name['config_summary'].message_type = _SYSTEMSTATE_CONFIGSUMMARY
 _STATESUMMARY.fields_by_name['state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._STATE_STATE

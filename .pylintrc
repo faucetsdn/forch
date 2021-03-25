@@ -6,7 +6,7 @@ max-line-length=100
 ignored-classes=
     State, SystemState, CpnState, CpnConfig, SummarySources, ConfigSummary,
     FaucetEvent, ProcessState, DataplaneState, SwitchState, PortType,
-    BuildingSchema, LacpState, LacpRole, AuthResult, DVAState, SysAuthState,
+    BuildingSchema, LacpState, LacpRole, AuthResult, DVAState, AuthMode,
     DevicesState, DevicePlacement, DeviceBehavior, SegmentsToVlans,
     ForchConfig, SiteConfig, OrchestrationConfig, AuthConfig, HttpConfig,
     PortBehavior

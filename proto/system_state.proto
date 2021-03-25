@@ -37,7 +37,7 @@ message SystemState {
   string system_state_last_update = 9;
 
   // Authentication state
-  SysAuthState.State authentication_state = 10;
+  AuthMode.Mode authentication_mode = 10;
 
   // Summary of the system state components
   SummarySources summary_sources = 11;

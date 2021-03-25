@@ -657,7 +657,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.site.name or 'unknown'
         system_state.controller_name = self._get_controller_name()
-        system_state.authentication_state = self._get_sys_auth_state()
+        system_state.authentication_mode = self._get_sys_auth_mode()
         system_state.config_summary.CopyFrom(self._faucet_config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
         return system_state
@@ -860,29 +860,29 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         return ryu_config
 
-    def _get_sys_auth_state(self):
+    def _get_sys_auth_mode(self):
         static_auth_enabled = (self._config.orchestration.static_device_behavior and
                                not self._should_ignore_static_behavior and
                                not self._config_errors.get(STATIC_BEHAVIORAL_FILE))
         dynamic_auth_enabled = (self._authenticator and not self._should_ignore_auth_result)
         if static_auth_enabled and dynamic_auth_enabled:
-            sys_auth_state = SysAuthState.all
+            sys_auth_mode = SysAuthState.all
         elif static_auth_enabled:
-            sys_auth_state = SysAuthState.static_only
+            sys_auth_mode = SysAuthState.static_only
         elif dynamic_auth_enabled:
-            sys_auth_state = SysAuthState.dynamic_only
+            sys_auth_mode = SysAuthState.dynamic_only
         else:
-            sys_auth_state = SysAuthState.disabled
+            sys_auth_mode = SysAuthState.disabled
 
-        return sys_auth_state
+        return sys_auth_mode
 
     def update_initialization_varz(self):
         """Update Forch initialization Varz"""
         if not self._metrics:
             return
 
-        sys_auth_state = self._get_sys_auth_state()
-        self._metrics.update_var('system_initialization', self._initialized, [sys_auth_state])
+        sys_auth_mode = self._get_sys_auth_mode()
+        self._metrics.update_var('system_initialization', self._initialized, [sys_auth_mode])
 
     def cleanup(self):
         """Clean up relevant internal data in all collectors"""

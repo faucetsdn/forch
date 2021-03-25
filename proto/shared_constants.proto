@@ -97,10 +97,10 @@ message DVAState {
 }
 
 /*
- * Authentication state of system
+ * Authentication mode of system
  */
-message SysAuthState {
-  enum State {
+message AuthMode {
+  enum Mode {
     // disabled
     disabled = 0;
 
