@@ -24,15 +24,19 @@ RUN $AG update && $AG install ash iptables sudo openvswitch-switch openvswitch-c
 
 RUN update-alternatives --install /usr/bin/python3 python /usr/bin/python3.8 2
 
-COPY controller/bin/ bin/
 
+COPY controller/bin/install_faucet bin/
 COPY faucet/ faucet/
 RUN bin/install_faucet && rm -rf faucet/.git
 
+COPY controller/bin/install_forch bin/
 COPY . forch/
 RUN bin/install_forch && rm -rf forch/.git
 
 COPY daq/ daq/
 RUN daq/bin/setup_dev simple && rm -rf daq/.git
+
+# Don't copy this earlier to optimize build.
+COPY controller/bin bin/
 
 CMD ["bin/controller_go"]
