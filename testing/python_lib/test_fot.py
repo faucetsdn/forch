@@ -473,6 +473,7 @@ class FotContainerTest(IntegrationTestBase):
         super().__init__(*args, **kwargs)
         self.stack_options['static_switch'] = True
         self.stack_options['fot'] = True
+        self.stack_options['dhcp'] = True
 
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):

@@ -147,6 +147,9 @@ message OrchestrationConfig {
 
     // port on which the grpc server receives testing result
     int32 grpc_server_port = 5;
+
+    // DUT will return to operational state if no DeviceReport is received within this timeout.
+    int32 sequester_timeout_sec = 6;
   }
 }
 

@@ -72,7 +72,7 @@ STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
 SEQUESTER_SEGMENT_DEFAULT = 'SEQUESTER'
-
+SEQUESTER_TIMEOUT_DEFAULT = 20 * 60
 
 class OrchestrationManager(abc.ABC):
     """Interface collecting the methods that manage orchestration"""
@@ -214,7 +214,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._initialized = True
 
     def _initialize_orchestration(self):
-        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+        sequester_segment, sequester_timeout, grpc_server_port = self._calculate_sequester_config()
 
         if self._should_enable_faucetizer:
             self._initialize_faucetizer(sequester_segment)
@@ -247,7 +247,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._faucet_collector.set_device_state_reporter(self._device_report_server)
 
         self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._device_report_server, sequester_segment)
+            self._faucetizer, self, self._device_report_server,
+            sequester_segment=sequester_segment, sequester_timeout=sequester_timeout)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -369,8 +370,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             return None, None
         sequester_config = self._config.orchestration.sequester_config
         sequester_segment = sequester_config.sequester_segment or SEQUESTER_SEGMENT_DEFAULT
+        sequester_timeout = sequester_config.sequester_timeout_sec or SEQUESTER_TIMEOUT_DEFAULT
         grpc_server_port = sequester_config.grpc_server_port
-        return sequester_segment, grpc_server_port
+        return sequester_segment, sequester_timeout, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
