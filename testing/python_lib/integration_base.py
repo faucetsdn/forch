@@ -75,7 +75,7 @@ class IntegrationTestBase(unittest.TestCase):
         stack_args.extend(['skip-conn-check'] if options.get('skip-conn-check') else [])
         stack_args.extend(['dhcp'] if options.get('dhcp') else [])
         stack_args.extend(['no-clean'] if options.get('no-clean') else [])
-        stack_args.extend(['static_switch'] if options.get('static_switch') else [])
+        stack_args.extend(['no-test'] if options.get('no-test') else [])
         stack_args.extend(['fot'] if options.get('fot') else [])
         mode = options.get('mode')
         stack_args.extend([mode] if mode else [])
