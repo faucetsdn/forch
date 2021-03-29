@@ -38,7 +38,7 @@ echo Done with daq startup tests.
 # Check Forch has successfuly started
 fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
 
-# Waiting for DAQ test to complete
+# Waiting for DAQ tests to start
 monitor_daq_log "Setting port set 1 to vlan 272"
 monitor_daq_log "Setting port set 2 to vlan 273"
 
@@ -48,6 +48,9 @@ docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
 vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
+
+monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:01: passed"
+monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
 
 report_vlans
 
