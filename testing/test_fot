@@ -15,12 +15,6 @@ FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
 
-echo Controller startup log
-docker logs forch-controller-1
-
-echo DAQ log
-cat $DAQBASE/inst/cmdrun.log
-
 echo DAQ spot checks
 
 # Basic process startup.
@@ -40,11 +34,13 @@ fgrep "System port 1 on dpid 1 is active True" $DAQBASE/inst/cmdrun.log
 
 echo Done with daq startup tests.
 
-sleep 20
-
 # Forch startup checks
 # Check Forch has successfuly started
 fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
+
+# Waiting for DAQ test to complete
+monitor_daq_log "Setting port set 1 to vlan 272"
+monitor_daq_log "Setting port set 2 to vlan 273"
 
 docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
 docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
@@ -52,9 +48,6 @@ docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
 vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
-
-# Waiting for DAQ test to complete
-monitor_log "Remaining target sets: []"
 
 report_vlans
 
