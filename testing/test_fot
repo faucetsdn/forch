@@ -49,6 +49,10 @@ vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
+monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:01: passed"
+monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
+monitor_daq_log "Remaining target sets: []"
+
 report_vlans
 
 cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
