@@ -10,7 +10,7 @@ no_clean=
 faux_dhcp=
 fot=
 vxlan=
-switch_type=
+no_test=
 remote=
 container=
 base_port=6001
@@ -53,8 +53,8 @@ if [ "$1" == "no-clean" ]; then
     shift
 fi
 
-if [ "$1" == "static_switch" ]; then
-    switch_type=static_switch
+if [ "$1" == "no-test" ]; then
+    no_test=no-test
     shift
 fi
 
@@ -155,7 +155,7 @@ if [ -z "$remote" ]; then
         mkdir -p $container_inst/faucet_br/faucet
         # TODO: faucet_br should not be under topo/ since it has nothing to do with the topology.
         cp -r topo/$mode/faucet_br/* $container_inst/faucet_br/faucet/
-        bin/run_controller $local $switch_type $vxlan $finst $((base_port + finst*2 - 2)) $((8000 + finst)) $((base_port + finst*2 - 1)) $((9000 + finst))
+        bin/run_controller $local $no_test $vxlan $finst $((base_port + finst*2 - 2)) $((8000 + finst)) $((base_port + finst*2 - 1)) $((9000 + finst))
     else
         bin/run_faucet $local $finst $((base_port + finst*2 - 2)) $((8000 + finst))
         bin/run_faucet $local gauge $finst $((base_port + finst*2 - 1)) $((9000 + finst))
@@ -179,7 +179,11 @@ fi
 echo Connecting faux interfaces...
 add_faux t2sw1 1 1 $faux_dhcp
 add_faux t2sw2 1 2 $faux_dhcp http
-add_faux t2sw3 1 3
+if [ -n "$fot" ]; then
+    add_faux t2sw3 1 3 ping
+else
+    add_faux t2sw3 1 3
+fi
 
 dcount=${devices:-3}
 scount=${switches:-3}

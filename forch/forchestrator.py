@@ -32,7 +32,7 @@ from forch.__version__ import __version__
 
 from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior, DevicePlacement
 import forch.proto.faucet_event_pb2 as FaucetEvent
-from forch.proto.shared_constants_pb2 import State
+from forch.proto.shared_constants_pb2 import State, AuthMode
 from forch.proto.system_state_pb2 import SystemState
 
 _STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
@@ -300,7 +300,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._logger.info('Reading static device behavior file: %s', file_path)
             devices_state = yaml_proto(file_path, DevicesState)
         except Exception as error:
-            msg = f'Dynamic auth disabled: could not load static behavior file {file_path}'
+            msg = f'All auth was disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
             with self._states_lock:
                 self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
@@ -659,6 +659,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         system_state.summary_sources.CopyFrom(self._get_system_summary(path))
         system_state.site_name = self._config.site.name or 'unknown'
         system_state.controller_name = self._get_controller_name()
+        system_state.authentication_mode = self._get_sys_auth_mode()
         system_state.config_summary.CopyFrom(self._faucet_config_summary)
         self._distill_summary(system_state.summary_sources, system_state)
         return system_state
@@ -860,6 +861,30 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             ryu_config[param] = value
 
         return ryu_config
+
+    def _get_sys_auth_mode(self):
+        static_auth_enabled = (self._config.orchestration.static_device_behavior and
+                               not self._should_ignore_static_behavior and
+                               not self._config_errors.get(STATIC_BEHAVIORAL_FILE))
+        dynamic_auth_enabled = (self._authenticator and not self._should_ignore_auth_result)
+        if static_auth_enabled and dynamic_auth_enabled:
+            sys_auth_mode = AuthMode.all
+        elif static_auth_enabled:
+            sys_auth_mode = AuthMode.static_only
+        elif dynamic_auth_enabled:
+            sys_auth_mode = AuthMode.dynamic_only
+        else:
+            sys_auth_mode = AuthMode.disabled
+
+        return sys_auth_mode
+
+    def update_initialization_varz(self):
+        """Update Forch initialization Varz"""
+        if not self._metrics:
+            return
+
+        sys_auth_mode = self._get_sys_auth_mode()
+        self._metrics.update_var('system_initialization', self._initialized, [sys_auth_mode])
 
     def cleanup(self):
         """Clean up relevant internal data in all collectors"""

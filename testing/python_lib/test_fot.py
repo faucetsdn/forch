@@ -471,28 +471,31 @@ class FotContainerTest(IntegrationTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stack_options['static_switch'] = True
+        self.stack_options['no-test'] = True
         self.stack_options['fot'] = True
         self.stack_options['dhcp'] = True
+        self.stack_options['devices'] = 4
 
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    self._run_cmd('timeout 20s dhclient', docker_container=container)
+                    self._run_cmd('timeout 60s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
             return run_dhclient
 
         device_tcpdump_text = self.tcpdump_helper(
-            'faux-eth0', 'port 67 or port 68', packets=10,
+            'faux-eth0', 'src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
-            timeout=10, docker_host=device_container)
+            timeout=60, docker_host=device_container)
+
         vlan_tcpdump_text = self.tcpdump_helper(
-            'data0', 'vlan 272 and port 67', packets=10,
+            'data0', 'vlan 272 and src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
-            timeout=10, docker_host='forch-controller-1')
+            timeout=60, docker_host='forch-controller-1')
+
         return device_tcpdump_text, vlan_tcpdump_text
 
     def test_dhcp_reflection(self):
@@ -506,7 +509,7 @@ class FotContainerTest(IntegrationTestBase):
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
         # test DHCP with unauthenticated device
-        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-3')
+        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
         self.assertFalse(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 

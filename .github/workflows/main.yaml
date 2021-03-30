@@ -47,7 +47,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -77,7 +77,10 @@ jobs:
       - name: post-run logs
         if: ${{ always() }}
         run: |
+          echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
+          echo %%%%%%%%%%%%% DAQ startup logs
+          cat inst/forch-controller-1/daq/inst/cmdrun.log
 
   test_reconfig:
     runs-on: ubuntu-latest
