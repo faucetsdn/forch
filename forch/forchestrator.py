@@ -367,7 +367,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _calculate_sequester_config(self):
         if not self._config.orchestration.HasField('sequester_config'):
-            return None, None
+            return None, None, None
         sequester_config = self._config.orchestration.sequester_config
         sequester_segment = sequester_config.sequester_segment or SEQUESTER_SEGMENT_DEFAULT
         sequester_timeout = sequester_config.sequester_timeout_sec or SEQUESTER_TIMEOUT_DEFAULT
