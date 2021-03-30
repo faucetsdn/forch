@@ -8,7 +8,7 @@ dps:
       priority: 1
     interfaces:
       4:
-        description: tap
+        description: TAP
         tagged_vlans: [272]
       6:
         description: "to t1sw2 port 6"

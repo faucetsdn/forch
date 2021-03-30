@@ -769,6 +769,10 @@
             <ul>
               
                 <li>
+                  <a href="#AuthMode"><span class="badge">M</span>AuthMode</a>
+                </li>
+              
+                <li>
                   <a href="#DVAState"><span class="badge">M</span>DVAState</a>
                 </li>
               
@@ -796,6 +800,10 @@
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
+              
+                <li>
+                  <a href="#AuthMode.Mode"><span class="badge">E</span>AuthMode.Mode</a>
+                </li>
               
                 <li>
                   <a href="#DVAState.State"><span class="badge">E</span>DVAState.State</a>
@@ -3945,10 +3953,10 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                 </tr>
               
                 <tr>
-                  <td>max_radius_backoff</td>
+                  <td>max_radius_retries</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>Max Radius backoff count </p></td>
+                  <td><p>Max Radius retry count </p></td>
                 </tr>
               
                 <tr>
@@ -5447,6 +5455,13 @@ or to host_path API to list path </p></td>
       <p>constants</p>
 
       
+        <h3 id="AuthMode">AuthMode</h3>
+        <p>Authentication mode of system</p>
+
+        
+
+        
+      
         <h3 id="DVAState">DVAState</h3>
         <p>DVA State</p>
 
@@ -5497,6 +5512,41 @@ or to host_path API to list path </p></td>
         
       
 
+      
+        <h3 id="AuthMode.Mode">AuthMode.Mode</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>disabled</td>
+                <td>0</td>
+                <td><p>disabled</p></td>
+              </tr>
+            
+              <tr>
+                <td>static_only</td>
+                <td>1</td>
+                <td><p>static authentication only</p></td>
+              </tr>
+            
+              <tr>
+                <td>dynamic_only</td>
+                <td>2</td>
+                <td><p>dynamic authentication only</p></td>
+              </tr>
+            
+              <tr>
+                <td>all</td>
+                <td>3</td>
+                <td><p>both static and dynamic authentication are enabled</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
       
         <h3 id="DVAState.State">DVAState.State</h3>
         <p>Enumeration of DVA states</p>
@@ -6543,6 +6593,13 @@ or to host_path API to list path </p></td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Last state update time </p></td>
+                </tr>
+              
+                <tr>
+                  <td>authentication_mode</td>
+                  <td><a href="#AuthMode.Mode">AuthMode.Mode</a></td>
+                  <td></td>
+                  <td><p>Authentication state </p></td>
                 </tr>
               
                 <tr>

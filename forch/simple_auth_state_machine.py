@@ -1,4 +1,12 @@
-"""Module that implements MAB state machine"""""
+"""
+Module that implements MAB state machine
+
+There are three authentication states for a device:
+
+UNAUTH:  unauthenticated state
+REQUEST: RADIUS request is sent on behalf of this device and no response is received yet
+ACCEPT:  device is authenticated by the RADIUS server
+"""
 
 from threading import Lock
 import time
@@ -12,7 +20,7 @@ class AuthStateMachine():
     UNAUTH = "Unauthorized"
     REQUEST = "RADIUS Request"
     ACCEPT = "Authorized"
-    MAX_RADIUS_BACKOFF = 5
+    MAX_RADIUS_RETRIES = 5
     QUERY_TIMEOUT_SEC = 10
     REJECT_TIMEOUT_SEC = 300
     AUTH_TIMEOUT_SEC = 3600
@@ -25,9 +33,9 @@ class AuthStateMachine():
         self._auth_callback = auth_callback
         self._radius_query_callback = radius_query_callback
         self._current_state = None
-        self._retry_backoff = 0
+        self._radius_retries = 0
         self._current_timeout = 0
-        self._max_radius_backoff = auth_config.max_radius_backoff or self.MAX_RADIUS_BACKOFF
+        self._max_radius_retries = auth_config.max_radius_retries or self.MAX_RADIUS_RETRIES
         self._query_timeout_sec = auth_config.query_timeout_sec or self.QUERY_TIMEOUT_SEC
         self._rej_timeout_sec = auth_config.reject_timeout_sec or self.REJECT_TIMEOUT_SEC
         self._auth_timeout_sec = auth_config.auth_timeout_sec or self.AUTH_TIMEOUT_SEC
@@ -37,8 +45,11 @@ class AuthStateMachine():
 
         self._reset_state_machine()
 
-    def _increment_retries(self):
-        self._retry_backoff += 1
+    def _increment_radius_retries(self):
+        self._radius_retries += 1
+
+    def _calculate_backoff_sec(self):
+        return self._radius_retries * self._query_timeout_sec
 
     def _state_transition(self, target, expected=None):
         if expected is not None:
@@ -49,7 +60,7 @@ class AuthStateMachine():
 
     def _reset_state_machine(self):
         self._state_transition(self.UNAUTH)
-        self._retry_backoff = 0
+        self._radius_retries = 0
         self._current_timeout = time.time() + self._rej_timeout_sec
 
     def get_state(self):
@@ -66,9 +77,7 @@ class AuthStateMachine():
                 self._reset_state_machine()
             self._state_transition(self.REQUEST, self.UNAUTH)
             self._radius_query_callback(self.src_mac, self.port_id)
-            backoff = min(self._retry_backoff, self._max_radius_backoff)
-            backoff_time = backoff * self._query_timeout_sec
-            self._current_timeout = time.time() + backoff_time
+            self._current_timeout = time.time() + self._calculate_backoff_sec()
 
     def host_expired(self):
         """Host expired"""
@@ -85,7 +94,7 @@ class AuthStateMachine():
                 return
             self._state_transition(self.ACCEPT, self.REQUEST)
             self._current_timeout = time.time() + self._auth_timeout_sec
-            self._retry_backoff = 0
+            self._radius_retries = 0
             self._auth_callback(self.src_mac, self.ACCEPT, segment, role)
 
     def received_radius_reject(self):
@@ -95,28 +104,44 @@ class AuthStateMachine():
                 self._logger.warning(
                     'Unexpected RADIUS response for %s, Ignoring it.', self.src_mac)
                 return
-            self._state_transition(self.UNAUTH, self.REQUEST)
-            self._current_timeout = time.time() + self._rej_timeout_sec
-            self._retry_backoff = 0
+            self._reset_state_machine()
             self._auth_callback(self.src_mac, self.UNAUTH, None, None)
 
     def handle_sm_timer(self):
-        """Handle timer timeout and check.trigger timeout behavior of states"""
+        """
+        Handle timer timeout behavior of states:
+        * REQUEST: request timeout & retries < max_retries  => REQUEST + send request
+        * REQUEST: request timeout & retries == max_retries => UNAUTH  + deauthenticate
+        * ACCEPT:  auth timeout => REQUEST + send request
+        * UNAUTH:  any timeout  => REQUEST + send request
+        * Unknown: any timeout  => UNAUTH  + deauthenticate
+        """
         with self._transition_lock:
             if time.time() > self._current_timeout:
-                if self._retry_backoff:
-                    self._logger.debug(
-                        'Retrying RADIUS request for src_mac %s. Retry #%s', self.src_mac,
-                        self._retry_backoff)
-                self._radius_query_callback(self.src_mac, self.port_id)
-                backoff = min(self._retry_backoff, self._max_radius_backoff)
-                backoff_time = backoff * self._query_timeout_sec
-                self._current_timeout = time.time() + backoff_time
                 if self._current_state == self.REQUEST:
+                    self._logger.error('RADIUS request timed out for %s', self.src_mac)
+                    if self._radius_retries:
+                        if self._radius_retries < self._max_radius_retries:
+                            self._increment_radius_retries()
+                            self._resend_radius_request()
+                        else:
+                            self._reset_state_machine()
+                            self._auth_callback(self.src_mac, self.UNAUTH, None, None)
                     if self._metrics:
                         self._metrics.inc_var('radius_query_timeouts')
-                    self._increment_retries()
-                    self._logger.debug('RADIUS request timed out for %s', self.src_mac)
-                else:
+                elif self._current_state == self.ACCEPT or self._current_state == self.UNAUTH:
                     self._state_transition(self.REQUEST)
+                    self._resend_radius_request()
+                else:
+                    self._logger.error(
+                        'Unknown auth state %s for MAC %s', self._current_state, self.src_mac)
+                    self._reset_state_machine()
                     self._auth_callback(self.src_mac, self.UNAUTH, None, None)
+
+    def _resend_radius_request(self):
+        if self._radius_retries:
+            self._logger.debug(
+                'Retrying RADIUS request for src_mac %s. Retry #%s', self.src_mac,
+                self._radius_retries)
+        self._radius_query_callback(self.src_mac, self.port_id)
+        self._current_timeout = time.time() + self._calculate_backoff_sec()

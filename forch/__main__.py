@@ -67,6 +67,7 @@ def run_forchestrator():
         http_server.map_request('', functools.partial(show_error, e))
     finally:
         http_server.start_server()
+        forchestrator.update_initialization_varz()
 
     if not forchestrator.main_loop():
         try:

@@ -265,21 +265,21 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         dynamic_device_placements = {
             '00:0X:00:00:00:01': {'switch': 't2sw1', 'port': 1, 'connected': True},
             '00:0A:00:00:00:04': {'switch': 't2sw4', 'port': 4, 'connected': True},
-            '00:0B:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True}
+            '00:0b:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True}
         }
         static_device_behaviors = {
-            '00:0X:00:00:00:01': {'segment': 'SEG_A', 'port_behavior': 'cleared'},
+            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'port_behavior': 'cleared'},
             '00:0Y:00:00:00:02': {'port_behavior': 'cleared'}
         }
         authentication_results = {
             '00:0X:00:00:00:01': {'segment': 'SEG_X'},
             '00:0Z:00:00:00:03': {'segment': 'SEG_C'},
-            '00:0A:00:00:00:04': {'segment': 'SEG_D'},
+            '00:0a:00:00:00:04': {'segment': 'SEG_D'},
             '00:0B:00:00:00:05': {'segment': 'SEG_E'}
         }
         testing_results = [
             ('00:0X:00:00:00:01', 'failed'),
-            ('00:0Y:00:00:00:02', 'passed'),
+            ('00:0y:00:00:00:02', 'passed'),
             ('00:0Z:00:00:00:03', 'failed'),
             ('00:0A:00:00:00:04', 'passed')
         ]
@@ -325,8 +325,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
 
         expected_device_placements.extend([
             # mac, connected, static
-            ('00:0Y:00:00:00:02', True, True),
-            ('00:0Z:00:00:00:03', True, True),
+            ('00:0y:00:00:00:02', True, True),
+            ('00:0z:00:00:00:03', True, True),
         ])
         self._verify_received_device_placements(expected_device_placements)
 
@@ -336,8 +336,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
 
         expected_states = {
-            '00:0Y:00:00:00:02': self.UNAUTHENTICATED,
-            '00:0Z:00:00:00:03': self.UNAUTHENTICATED
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.UNAUTHENTICATED
         }
         self._verify_ports_states(expected_states)
 
@@ -347,9 +347,9 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
                 device_placement_map, DevicePlacement), static=False)
 
         expected_device_placements.extend([
-            ('00:0X:00:00:00:01', True, False),
-            ('00:0A:00:00:00:04', True, False),
-            ('00:0B:00:00:00:05', True, False)
+            ('00:0x:00:00:00:01', True, False),
+            ('00:0a:00:00:00:04', True, False),
+            ('00:0b:00:00:00:05', True, False)
         ])
         self._verify_received_device_placements(expected_device_placements)
 
@@ -359,20 +359,20 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
 
         expected_states = {
-            '00:0X:00:00:00:01': self.OPERATIONAL,
-            '00:0Y:00:00:00:02': self.UNAUTHENTICATED,
-            '00:0Z:00:00:00:03': self.SEQUESTERED,
-            '00:0A:00:00:00:04': self.SEQUESTERED,
-            '00:0B:00:00:00:05': self.SEQUESTERED
+            '00:0x:00:00:00:01': self.OPERATIONAL,
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.SEQUESTERED,
+            '00:0a:00:00:00:04': self.SEQUESTERED,
+            '00:0b:00:00:00:05': self.SEQUESTERED
         }
         self._verify_ports_states(expected_states)
 
         expected_device_behaviors.extend([
-            ('00:0X:00:00:00:01', 'SEG_A', True),
-            ('00:0X:00:00:00:01', 'SEG_A', True),
-            ('00:0Z:00:00:00:03', 'TESTING', False),
-            ('00:0A:00:00:00:04', 'TESTING', False),
-            ('00:0B:00:00:00:05', 'TESTING', False)
+            ('00:0x:00:00:00:01', 'SEG_A', True),
+            ('00:0x:00:00:00:01', 'SEG_A', True),
+            ('00:0z:00:00:00:03', 'TESTING', False),
+            ('00:0a:00:00:00:04', 'TESTING', False),
+            ('00:0b:00:00:00:05', 'TESTING', False)
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
@@ -382,17 +382,17 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
                 self._encapsulate_testing_result(*testing_result))
 
         expected_states = {
-            '00:0X:00:00:00:01': self.OPERATIONAL,
-            '00:0Y:00:00:00:02': self.UNAUTHENTICATED,
-            '00:0Z:00:00:00:03': self.INFRACTED,
-            '00:0A:00:00:00:04': self.OPERATIONAL,
-            '00:0B:00:00:00:05': self.SEQUESTERED
+            '00:0x:00:00:00:01': self.OPERATIONAL,
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.INFRACTED,
+            '00:0a:00:00:00:04': self.OPERATIONAL,
+            '00:0b:00:00:00:05': self.SEQUESTERED
         }
         self._verify_ports_states(expected_states)
 
         expected_device_behaviors.extend([
-            ('00:0Z:00:00:00:03', '', False),
-            ('00:0A:00:00:00:04', 'SEG_D', False)
+            ('00:0z:00:00:00:03', '', False),
+            ('00:0a:00:00:00:04', 'SEG_D', False)
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
@@ -406,8 +406,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
 
         expected_device_placements.extend([
             # mac, device_placement.connected, static
-            ('00:0X:00:00:00:01', False, False),
-            ('00:0B:00:00:00:05', False, False)
+            ('00:0x:00:00:00:01', False, False),
+            ('00:0b:00:00:00:05', False, False)
         ])
         self._verify_received_device_placements(expected_device_placements)
 
@@ -416,13 +416,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             self._port_state_manager.handle_device_behavior(mac, DeviceBehavior())
 
         expected_states = {
-            '00:0Y:00:00:00:02': self.UNAUTHENTICATED,
-            '00:0Z:00:00:00:03': self.INFRACTED,
-            '00:0A:00:00:00:04': self.UNAUTHENTICATED
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.INFRACTED,
+            '00:0a:00:00:00:04': self.UNAUTHENTICATED
         }
         self._verify_ports_states(expected_states)
 
-        expected_device_behaviors.extend([('00:0A:00:00:00:04', '', False)])
+        expected_device_behaviors.extend([('00:0a:00:00:00:04', '', False)])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
     def _reauthenticate_devices(self, reauthenticated_device, expected_device_behaviors):
@@ -431,13 +431,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
 
         expected_states = {
-            '00:0Y:00:00:00:02': self.UNAUTHENTICATED,
-            '00:0Z:00:00:00:03': self.INFRACTED,
-            '00:0A:00:00:00:04': self.SEQUESTERED
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.INFRACTED,
+            '00:0a:00:00:00:04': self.SEQUESTERED
         }
         self._verify_ports_states(expected_states)
 
-        expected_device_behaviors.extend([('00:0A:00:00:00:04', 'TESTING', False)])
+        expected_device_behaviors.extend([('00:0a:00:00:00:04', 'TESTING', False)])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
 
@@ -471,7 +471,7 @@ class FotContainerTest(IntegrationTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.stack_options['static_switch'] = True
+        self.stack_options['no-test'] = True
         self.stack_options['fot'] = True
 
     def _internal_dhcp(self, device_container):
@@ -479,19 +479,21 @@ class FotContainerTest(IntegrationTestBase):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    self._run_cmd('timeout 20s dhclient', docker_container=container)
+                    self._run_cmd('timeout 60s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
             return run_dhclient
 
         device_tcpdump_text = self.tcpdump_helper(
-            'faux-eth0', 'port 67 or port 68', packets=10,
+            'faux-eth0', 'src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
-            timeout=10, docker_host=device_container)
+            timeout=60, docker_host=device_container)
+
         vlan_tcpdump_text = self.tcpdump_helper(
-            'data0', 'vlan 272 and port 67', packets=10,
+            'data0', 'vlan 272 and src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
-            timeout=10, docker_host='forch-controller-1')
+            timeout=60, docker_host='forch-controller-1')
+
         return device_tcpdump_text, vlan_tcpdump_text
 
     def test_dhcp_reflection(self):

@@ -87,7 +87,7 @@ class FaucetConfigGenerator():
                 description='egress', tagged_vlans=tagged_vlans)
 
     def _add_tap_interface(self, interfaces, tap_vlan):
-        interfaces[TAP_PORT] = Interface(description='tap', tagged_vlans=[tap_vlan])
+        interfaces[TAP_PORT] = Interface(description='TAP', tagged_vlans=[tap_vlan])
 
     def _add_flat_link_interfaces(self, interfaces, dps, dp_index):
         if dp_index < len(dps) - 1:

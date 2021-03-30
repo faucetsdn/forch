@@ -77,7 +77,10 @@ jobs:
       - name: post-run logs
         if: ${{ always() }}
         run: |
+          echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
+          echo %%%%%%%%%%%%% DAQ startup logs
+          cat inst/forch-controller-1/daq/inst/cmdrun.log
 
   test_reconfig:
     runs-on: ubuntu-latest

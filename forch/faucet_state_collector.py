@@ -56,6 +56,7 @@ FAUCET_STACK_STATE_BAD = 2
 FAUCET_STACK_STATE_UP = 3
 SWITCH_CONNECTED = "CONNECTED"
 SWITCH_DOWN = "DOWN"
+INVALID_VLAN = 0
 
 DP_ID = "dp_id"
 PORTS = "ports"
@@ -266,7 +267,7 @@ class FaucetStateCollector:
             dp_name = sample.labels['dp_name']
             port = int(sample.value)
             eth_src = sample.labels['eth_src']
-            vid = sample.labels['vid']
+            vid = int(sample.labels.get('vid', INVALID_VLAN))
             if port:
                 self.process_port_learn(timestamp, dp_name, port, eth_src, vid)
                 ports_learned = True
@@ -1156,7 +1157,11 @@ class FaucetStateCollector:
                     self._update_learned_macs_metric(mac, name, port)
 
                 if self._device_state_reporter:
-                    self._device_state_reporter.process_port_learn(name, port, mac, vid)
+                    if vid and vid != INVALID_VLAN:
+                        self._device_state_reporter.process_port_learn(name, port, mac, vid)
+                    else:
+                        self._logger.error(
+                            'Device %s is not learned with a valid vlan: %d', mac, vid)
 
     @_dump_states
     def process_port_expire(self, timestamp, name, port, mac, expired_vlan=None):
@@ -1181,7 +1186,7 @@ class FaucetStateCollector:
                 if not self.learned_macs[mac][MAC_LEARNING_SWITCH]:
                     self.learned_macs.pop(mac)
             else:
-                self._logger.warning('Entry %s does not exist in learned macs set', mac)
+                self._logger.debug('Entry %s does not exist in learned macs set', mac)
 
     @_dump_states
     def process_dp_config_change(self, timestamp, dp_name, restart_type, dp_id):
