@@ -38,7 +38,7 @@ echo Done with daq startup tests.
 # Check Forch has successfuly started
 fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
 
-# Waiting for DAQ tests to start
+# Waiting for DAQ test to complete
 monitor_daq_log "Setting port set 1 to vlan 272"
 monitor_daq_log "Setting port set 2 to vlan 273"
 
@@ -51,6 +51,7 @@ echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
 monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:01: passed"
 monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
+monitor_daq_log "Remaining target sets: []"
 
 report_vlans
 

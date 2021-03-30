@@ -2,7 +2,9 @@ testing/test_fot
 Starting Forchestrator
 1
 1
-272
-273
-5 packets transmitted, 0 received, XX errors, 100% packet loss, XXX
+171
+100
+9a02571e8f01: []
+9a02571e8f02: []
+5 packets transmitted, 5 received, 0% packet loss, XXX
 5 packets transmitted, 0 received, XX errors, 100% packet loss, XXX
