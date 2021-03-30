@@ -68,7 +68,7 @@ class Faucetizer(DeviceStateManager):
         self._orchestration_manager = orchestration_manager
         self._sequester_segment = sequester_segment
         self._lock = threading.RLock()
-        self._logger = get_logger('faucetizer')
+        self._logger = get_logger('ftizer')
 
         self._validate_and_initialize_config()
 

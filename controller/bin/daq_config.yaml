@@ -1,11 +1,15 @@
 # DAQ FOT configuration.
 
-include: ../daq/config/system/default.yaml
+include: ${DAQ_LIB}/config/system/default.yaml
+
+base_conf: ${DAQ_LIB}/resources/setups/orchestration/base_config.json
 
 switch_setup:
   data_intf: data0
   lo_port: 3984
+  varz_port: 5678
   model: EXT_STACK
+  native: True
 
 run_trigger:
   vlan_start: 272

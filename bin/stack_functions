@@ -518,7 +518,7 @@ function test_varz_value {
     echo $varz $value | tee -a $TEST_RESULTS
 }
 
-function monitor_log {
+function monitor_daq_log {
     expected=$1
     daqlog=$DAQBASE/inst/cmdrun.log
     while true; do
@@ -531,5 +531,6 @@ function monitor_log {
 }
 
 function redact {
-    sed -re 's/time [0-9]+ms/XXX/' -re 's/\+[0-9]+ errors/XX errors/'
+    sed -re 's/time [0-9]+ms/XXX/' \
+        -re 's/\+[0-9]+ errors/XX errors/'
 }
