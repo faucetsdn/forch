@@ -277,9 +277,10 @@ class PortStateManager:
         self._process_device_behavior(mac, device_behavior, static=False)
         self._update_device_state_varz(mac, DVAState.sequestered)
         if self._sequester_timeout:
-            handler = lambda: self._handle_sequestering_timeout(mac.lower())
-            self._logger.info('Setting Device %s sequester timeout at %s', mac,
-                datetime.now() + timedelta(seconds=self._sequester_timeout))
+            def handler():
+                self._handle_sequestering_timeout(mac.lower())
+            timeout = datetime.now() + timedelta(seconds=self._sequester_timeout)
+            self._logger.info('Setting Device %s sequester timeout at %s', mac, timeout)
             self._sequester_timer[mac.lower()] = threading.Timer(self._sequester_timeout, handler)
             self._sequester_timer[mac.lower()].start()
 
