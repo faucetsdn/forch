@@ -72,7 +72,7 @@ STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
 SEQUESTER_SEGMENT_DEFAULT = 'SEQUESTER'
-SEQUESTER_TIMEOUT_DEFAULT = 20 * 60
+SEQUESTER_TIMEOUT_SEC_DEFAULT = 20 * 60
 
 class OrchestrationManager(abc.ABC):
     """Interface collecting the methods that manage orchestration"""
@@ -370,7 +370,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             return None, None, None
         sequester_config = self._config.orchestration.sequester_config
         sequester_segment = sequester_config.sequester_segment or SEQUESTER_SEGMENT_DEFAULT
-        sequester_timeout = sequester_config.sequester_timeout_sec or SEQUESTER_TIMEOUT_DEFAULT
+        sequester_timeout = sequester_config.sequester_timeout_sec or SEQUESTER_TIMEOUT_SEC_DEFAULT
         grpc_server_port = sequester_config.grpc_server_port
         return sequester_segment, sequester_timeout, grpc_server_port
 

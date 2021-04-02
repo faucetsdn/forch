@@ -1,6 +1,7 @@
 """Module that manages the testing states of the access ports"""
 
 import threading
+from datetime import datetime, timedelta
 
 from forch.utils import get_logger
 
@@ -277,7 +278,10 @@ class PortStateManager:
         self._update_device_state_varz(mac, DVAState.sequestered)
         if self._sequester_timeout:
             handler = lambda: self._handle_sequestering_timeout(mac.lower())
+            self._logger.info('Setting Device %s sequester timeout at %s', mac,
+                datetime.now() + timedelta(seconds=self._sequester_timeout))
             self._sequester_timer[mac.lower()] = threading.Timer(self._sequester_timeout, handler)
+            self._sequester_timer[mac.lower()].start()
 
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""
