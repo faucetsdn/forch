@@ -81,7 +81,7 @@ sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \
     FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
-    daq/cmd/start ../bin/daq_config.yaml ../$DAQ_CONFIG $no_test > daq/inst/cmdrun.log 2>&1 &
+    daq/cmd/start ../bin/daq_config.yaml ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
 
 echo Blocking forever...
 tail -f /dev/null

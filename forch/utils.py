@@ -9,8 +9,8 @@ from google.protobuf import json_format, text_format
 
 _LOG_FORMAT = '%(asctime)s %(name)-10s %(levelname)-8s %(message)s'
 _LOG_DATE_FORMAT = '%b %d %H:%M:%S'
-_LOG_LEVEL_DEFAULT = 'INFO'
-_LOG_FILE_DEFAULT = '/var/log/faucet/forch.log'
+_DEFAULT_LOG_LEVEL = 'INFO'
+_DEFAULT_LOG_FILE = '/var/log/faucet/forch.log'
 
 
 class MessageParseError(Exception):
@@ -31,7 +31,7 @@ class MetricsFetchingError(Exception):
 
 def get_logger(name, stdout=False):
     """Get a logger"""
-    logging_level = os.getenv('FORCH_LOG_LEVEL', _LOG_LEVEL_DEFAULT)
+    logging_level = os.getenv('FORCH_LOG_LEVEL', _DEFAULT_LOG_LEVEL)
 
     logger = logging.getLogger(name)
     logger.setLevel(logging_level)
@@ -40,7 +40,7 @@ def get_logger(name, stdout=False):
         if stdout:
             log_handler = logging.StreamHandler()
         else:
-            log_file_path = os.getenv('FORCH_LOG', _LOG_FILE_DEFAULT)
+            log_file_path = os.getenv('FORCH_LOG', _DEFAULT_LOG_FILE)
             os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
             log_handler = WatchedFileHandler(log_file_path)
 

@@ -15,7 +15,7 @@ from forch.proto.shared_constants_pb2 import State
 from forch.proto.system_state_pb2 import StateSummary
 from forch.utils import dict_proto, get_logger
 
-_KEEPALIVED_PID_FILE_DEFAULT = '/var/run/keepalived.pid'
+_DEFAULT_KEEPALIVED_PID_FILE = '/var/run/keepalived.pid'
 
 _PROC_ATTRS = ['cmdline', 'cpu_times', 'cpu_percent', 'memory_info']
 
@@ -40,7 +40,7 @@ class LocalStateCollector:
 
         self._target_procs = config.processes
         self._check_vrrp = config.check_vrrp
-        self._keepalived_pid_file = os.getenv('KEEPALIVED_PID_FILE', _KEEPALIVED_PID_FILE_DEFAULT)
+        self._keepalived_pid_file = os.getenv('KEEPALIVED_PID_FILE', _DEFAULT_KEEPALIVED_PID_FILE)
         self._connections = config.connections
         self._process_interval = config.scan_interval_sec or 60
 
