@@ -12,9 +12,9 @@ import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
 from forch.proto.shared_constants_pb2 import Empty, PortBehavior
 from forch.proto.devices_state_pb2 import DevicePortEvent
 
-ADDRESS_DEFAULT = '0.0.0.0'
-PORT_DEFAULT = 50051
-MAX_WORKERS_DEFAULT = 10
+DEFAULT_ADDRESS = '0.0.0.0'
+DEFAULT_PORT = 50051
+DEFAULT_MAX_WORKERS = 10
 
 
 class DeviceEntry:
@@ -145,12 +145,12 @@ class DeviceReportServer(DeviceStateReporter):
 
     def __init__(self, on_receiving_result, address=None, port=None, max_workers=None):
         self._server = grpc.server(
-            futures.ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS_DEFAULT))
+            futures.ThreadPoolExecutor(max_workers=max_workers or DEFAULT_MAX_WORKERS))
 
         self._servicer = DeviceReportServicer(on_receiving_result)
         device_report_pb2_grpc.add_DeviceReportServicer_to_server(self._servicer, self._server)
 
-        server_address_port = f'{address or ADDRESS_DEFAULT}:{port or PORT_DEFAULT}'
+        server_address_port = f'{address or DEFAULT_ADDRESS}:{port or DEFAULT_PORT}'
         self._server.add_insecure_port(server_address_port)
 
     def process_port_state(self, dp_name, port, state):

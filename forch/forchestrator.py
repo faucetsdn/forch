@@ -35,16 +35,16 @@ import forch.proto.faucet_event_pb2 as FaucetEvent
 from forch.proto.shared_constants_pb2 import State, AuthMode
 from forch.proto.system_state_pb2 import SystemState
 
-_STRUCTURAL_CONFIG_DEFAULT = 'faucet.yaml'
-_BEHAVIORAL_CONFIG_DEFAULT = 'faucet.yaml'
-_FORCH_CONFIG_DIR_DEFAULT = '/etc/forch'
-_FAUCET_CONFIG_DIR_DEFAULT = '/etc/faucet'
+_DEFAULT_STRUCTURAL_CONFIG = 'faucet.yaml'
+_DEFAULT_BEHAVIORAL_CONFIG = 'faucet.yaml'
+_DEFAULT_FORCH_CONFIG_DIR = '/etc/forch'
+_DEFAULT_FAUCET_CONFIG_DIR = '/etc/faucet'
 _DEFAULT_PORT = 9019
 _FAUCET_PROM_HOST = '127.0.0.1'
-_FAUCET_PROM_PORT_DEFAULT = 9302
+_DEFAULT_FAUCET_PROM_PORT = 9302
 _GAUGE_PROM_HOST = '127.0.0.1'
-_GAUGE_PROM_PORT_DEFAULT = 9303
-_CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT = 30
+_DEFAULT_GAUGE_PROM_PORT = 9303
+_DEFAULT_CONFIG_HASH_VERIFICATION_TIMEOUT_SEC = 30
 
 _TARGET_FAUCET_METRICS = (
     'port_status',
@@ -71,8 +71,8 @@ _TARGET_GAUGE_METRICS = (
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
-SEQUESTER_SEGMENT_DEFAULT = 'SEQUESTER'
-
+DEFAULT_SEQUESTER_SEGMENT = 'SEQUESTER'
+DEFAULT_SEQUESTER_TIMEOUT_SEC = 20 * 60
 
 class OrchestrationManager(abc.ABC):
     """Interface collecting the methods that manage orchestration"""
@@ -138,7 +138,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._last_received_faucet_config_hash = None
         self._config_hash_verification_timeout_sec = (
             self._config.event_client.config_hash_verification_timeout_sec or
-            _CONFIG_HASH_VERIFICATION_TIMEOUT_SEC_DEFAULT)
+            _DEFAULT_CONFIG_HASH_VERIFICATION_TIMEOUT_SEC)
 
         self._states_lock = threading.Lock()
         self._timer_lock = threading.Lock()
@@ -175,10 +175,10 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._config.process, self.cleanup, self.handle_active_state, metrics=self._metrics)
         self._cpn_collector = CPNStateCollector(self._config.cpn_monitoring)
 
-        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', str(_FAUCET_PROM_PORT_DEFAULT))
+        faucet_prom_port = os.getenv('FAUCET_PROM_PORT', str(_DEFAULT_FAUCET_PROM_PORT))
         self._faucet_prom_endpoint = f"http://{_FAUCET_PROM_HOST}:{faucet_prom_port}"
 
-        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_GAUGE_PROM_PORT_DEFAULT))
+        gauge_prom_port = os.getenv('GAUGE_PROM_PORT', str(_DEFAULT_GAUGE_PROM_PORT))
         self._gauge_prom_endpoint = f"http://{_GAUGE_PROM_HOST}:{gauge_prom_port}"
 
         self._initialize_orchestration()
@@ -214,7 +214,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._initialized = True
 
     def _initialize_orchestration(self):
-        sequester_segment, grpc_server_port = self._calculate_sequester_config()
+        sequester_segment, sequester_timeout, grpc_server_port = self._calculate_sequester_config()
 
         if self._should_enable_faucetizer:
             self._initialize_faucetizer(sequester_segment)
@@ -247,7 +247,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._faucet_collector.set_device_state_reporter(self._device_report_server)
 
         self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._device_report_server, sequester_segment)
+            self._faucetizer, self, self._device_report_server,
+            sequester_segment=sequester_segment, sequester_timeout=sequester_timeout)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -329,12 +330,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def _calculate_orchestration_config(self):
         orch_config = self._config.orchestration
 
-        self._forch_config_dir = os.getenv('FORCH_CONFIG_DIR', _FORCH_CONFIG_DIR_DEFAULT)
-        self._faucet_config_dir = os.getenv('FAUCET_CONFIG_DIR', _FAUCET_CONFIG_DIR_DEFAULT)
+        self._forch_config_dir = os.getenv('FORCH_CONFIG_DIR', _DEFAULT_FORCH_CONFIG_DIR)
+        self._faucet_config_dir = os.getenv('FAUCET_CONFIG_DIR', _DEFAULT_FAUCET_CONFIG_DIR)
 
         behavioral_config_file = (orch_config.behavioral_config_file or
                                   os.getenv('FAUCET_CONFIG_FILE') or
-                                  _BEHAVIORAL_CONFIG_DEFAULT)
+                                  _DEFAULT_BEHAVIORAL_CONFIG)
         self._behavioral_config_file = os.path.join(
             self._faucet_config_dir, behavioral_config_file)
 
@@ -366,11 +367,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _calculate_sequester_config(self):
         if not self._config.orchestration.HasField('sequester_config'):
-            return None, None
+            return None, None, None
         sequester_config = self._config.orchestration.sequester_config
-        sequester_segment = sequester_config.sequester_segment or SEQUESTER_SEGMENT_DEFAULT
+        sequester_segment = sequester_config.sequester_segment or DEFAULT_SEQUESTER_SEGMENT
+        sequester_timeout = sequester_config.sequester_timeout_sec or DEFAULT_SEQUESTER_TIMEOUT_SEC
         grpc_server_port = sequester_config.grpc_server_port
-        return sequester_segment, grpc_server_port
+        return sequester_segment, sequester_timeout, grpc_server_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):

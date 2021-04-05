@@ -22,7 +22,7 @@ from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
 
 
-_FORCH_LOG_DEFAULT = '/tmp/forch.log'
+_DEFAULT_FORCH_LOG = '/tmp/forch.log'
 
 
 class UnitTestBase(unittest.TestCase):
@@ -75,7 +75,7 @@ class ForchestratorEventTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._forchestrator = None
 
     def _setup_env(self):
@@ -242,7 +242,7 @@ class FaucetizerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._faucetizer = None
         self._segments_vlans_file = None
 
@@ -305,7 +305,7 @@ class DeviceReportServerTestBase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._server = None
         self._client = None
 
@@ -330,7 +330,7 @@ class DeviceReportServicerTestBase(unittest.TestCase):
     """Base class for DeviceReportServicer unit test"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
 
     def setUp(self):
         self._on_receiving_result = MagicMock()
@@ -358,7 +358,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._faucet_state_collector = None
 
     def setUp(self):
@@ -387,7 +387,7 @@ class PortsStateManagerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment)
@@ -430,7 +430,7 @@ class ForchestratorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._forchestrator = None
 
     def setUp(self):

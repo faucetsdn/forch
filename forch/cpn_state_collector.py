@@ -29,9 +29,9 @@ CPN_STATE_COUNT = 'state_count'
 CPN_STATE_UPDATE_TS = 'state_update'
 CPN_STATE_CHANGE_TS = 'state_change'
 
-MIN_CONSECUTIVE_PING_HEALTHY_DEFAULT = 3
-MIN_CONSECUTIVE_PING_DOWN_DEFAULT = 5
-PING_INTERVAL_DEFAULT = 2
+DEFAULT_MIN_CONSECUTIVE_PING_HEALTHY = 3
+DEFAULT_MIN_CONSECUTIVE_PING_DOWN = 5
+DEFAULT_PING_INTERVAL = 2
 
 PING_SUMMARY_REGEX = {'transmitted': r'\d+(?= packets transmitted)',
                       'received': r'\d+(?= received)',
@@ -46,10 +46,10 @@ class CPNStateCollector:
         self._node_states = {}
         self._hosts_ip = {}
         self._min_consecutive_healthy = (
-            config.min_consecutive_ping_healthy or MIN_CONSECUTIVE_PING_HEALTHY_DEFAULT)
+            config.min_consecutive_ping_healthy or DEFAULT_MIN_CONSECUTIVE_PING_HEALTHY)
         self._min_consecutive_down = (
-            config.min_consecutive_ping_down or MIN_CONSECUTIVE_PING_DOWN_DEFAULT)
-        self.ping_interval = config.ping_interval or PING_INTERVAL_DEFAULT
+            config.min_consecutive_ping_down or DEFAULT_MIN_CONSECUTIVE_PING_DOWN)
+        self.ping_interval = config.ping_interval or DEFAULT_PING_INTERVAL
         self._lock = threading.Lock()
         self._ping_manager = None
         self._logger = get_logger('cstate')

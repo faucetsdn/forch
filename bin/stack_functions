@@ -518,16 +518,28 @@ function test_varz_value {
     echo $varz $value | tee -a $TEST_RESULTS
 }
 
-function monitor_daq_log {
+function monitor_log {
     expected=$1
-    daqlog=$DAQBASE/inst/cmdrun.log
+    log=$2
     while true; do
         sleep 1
-        test_done=$(cat $daqlog | fgrep "$1" || true)
+        test_done=$(cat $log | fgrep "$expected" || true)
         if [ -n "$test_done" ]; then
             break
         fi
     done
+}
+
+function monitor_daq_log {
+    expected=$1
+    daqlog=$DAQBASE/inst/cmdrun.log
+    monitor_log "$expected" "$daqlog"
+}
+
+function monitor_forch_log {
+    expected=$1
+    forchlog=$INST_BASE/forch.log
+    monitor_log "$expected" "$forchlog"
 }
 
 function redact {

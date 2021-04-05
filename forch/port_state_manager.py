@@ -1,6 +1,7 @@
 """Module that manages the testing states of the access ports"""
 
 import threading
+from datetime import datetime, timedelta
 
 from forch.utils import get_logger
 
@@ -109,7 +110,7 @@ class PortStateManager:
 
     # pylint: disable=too-many-arguments
     def __init__(self, device_state_manager=None, varz_updater=None,
-                 device_state_reporter=None, sequester_segment=None):
+                 device_state_reporter=None, sequester_segment=None, sequester_timeout=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
@@ -119,6 +120,8 @@ class PortStateManager:
         self._device_state_reporter = device_state_reporter
         self._placement_to_mac = {}
         self._sequester_segment = sequester_segment
+        self._sequester_timeout = sequester_timeout
+        self._sequester_timer = {}
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
 
@@ -236,6 +239,9 @@ class PortStateManager:
         """Update the state machine for a device according to the testing result"""
         for mac, device_behavior in testing_result.device_mac_behaviors.items():
             mac_lower = mac.lower()
+            if mac_lower in self._sequester_timer:
+                self._sequester_timer[mac_lower].cancel()
+                del self._sequester_timer[mac_lower]
             self._handle_port_behavior(mac_lower, device_behavior.port_behavior)
 
     def _handle_port_behavior(self, mac, port_behavior):
@@ -250,6 +256,13 @@ class PortStateManager:
     def _handle_unauthenticated_state(self, mac):
         self._update_device_state_varz(mac, DVAState.unauthenticated)
 
+    def _handle_sequestering_timeout(self, mac):
+        if mac in self._sequester_timer:
+            del self._sequester_timer[mac]
+        self._logger.error('Device %s sequestering timedout after %ss.', mac,
+                           self._sequester_timeout)
+        self._handle_port_behavior(mac, PortBehavior.Behavior.failed)
+
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
         if self._device_state_reporter:
@@ -263,6 +276,13 @@ class PortStateManager:
         device_behavior = DeviceBehavior(segment=self._sequester_segment)
         self._process_device_behavior(mac, device_behavior, static=False)
         self._update_device_state_varz(mac, DVAState.sequestered)
+        if self._sequester_timeout:
+            def handler():
+                self._handle_sequestering_timeout(mac.lower())
+            timeout = datetime.now() + timedelta(seconds=self._sequester_timeout)
+            self._logger.info('Setting Device %s sequester timeout at %s', mac, timeout)
+            self._sequester_timer[mac.lower()] = threading.Timer(self._sequester_timeout, handler)
+            self._sequester_timer[mac.lower()].start()
 
     def _set_port_operational(self, mac):
         """Set port to operation vlan"""

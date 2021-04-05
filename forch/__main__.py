@@ -13,7 +13,7 @@ from forch.utils import get_logger, yaml_proto
 
 from forch.__version__ import __version__
 
-_FORCH_CONFIG_DEFAULT = 'forch.yaml'
+_DEFAULT_FORCH_CONFIG = 'forch.yaml'
 _LOGGER_NAME = 'main'
 
 
@@ -22,7 +22,7 @@ def load_config():
     logger = get_logger(_LOGGER_NAME)
 
     config_root = os.getenv('FORCH_CONFIG_DIR', '.')
-    config_file = os.getenv('FORCH_CONFIG_FILE', _FORCH_CONFIG_DEFAULT)
+    config_file = os.getenv('FORCH_CONFIG_FILE', _DEFAULT_FORCH_CONFIG)
     config_path = os.path.join(config_root, config_file)
     logger.info('Reading config file %s', os.path.abspath(config_path))
     try:
