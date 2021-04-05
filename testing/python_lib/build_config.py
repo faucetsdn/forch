@@ -16,7 +16,7 @@ TEST_VLAN = 272
 FLAT_LINK_PORT_START = 6
 T1_STACK_PORT_START = 100
 T2_STACK_PORT_START = 50
-ACCESS_PORT_START_DEFAULT = 101
+DEFAULT_ACCESS_PORT_START = 101
 FLAT_ACCESS_PORT_START = 1
 TAP_PORT = 4
 FAUCET_EGRESS_PORT = 28
@@ -69,7 +69,7 @@ class FaucetConfigGenerator():
 
         # add access interfaces
         access_ports = kwargs.get('access_ports')
-        access_port_start = kwargs.get('access_port_start', ACCESS_PORT_START_DEFAULT)
+        access_port_start = kwargs.get('access_port_start', DEFAULT_ACCESS_PORT_START)
         native_vlan = kwargs.get('native_vlan')
         port_acl = kwargs.get('port_acl')
         if access_ports:
