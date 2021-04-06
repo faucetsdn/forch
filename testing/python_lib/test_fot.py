@@ -265,7 +265,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         dynamic_device_placements = {
             '00:0X:00:00:00:01': {'switch': 't2sw1', 'port': 1, 'connected': True},
             '00:0A:00:00:00:04': {'switch': 't2sw4', 'port': 4, 'connected': True},
-            '00:0b:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True}
+            '00:0b:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True},
+            '00:0b:00:00:00:06': {'switch': 't2sw5', 'port': 6, 'connected': True}
         }
         static_device_behaviors = {
             '00:0x:00:00:00:01': {'segment': 'SEG_A', 'port_behavior': 'cleared'},
@@ -275,7 +276,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0X:00:00:00:01': {'segment': 'SEG_X'},
             '00:0Z:00:00:00:03': {'segment': 'SEG_C'},
             '00:0a:00:00:00:04': {'segment': 'SEG_D'},
-            '00:0B:00:00:00:05': {'segment': 'SEG_E'}
+            '00:0B:00:00:00:05': {'segment': 'SEG_E'},
+            '00:0B:00:00:00:06': {'segment': 'SEG_E'}
         }
         testing_results = [
             ('00:0X:00:00:00:01', 'failed'),
@@ -349,7 +351,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_device_placements.extend([
             ('00:0x:00:00:00:01', True, False),
             ('00:0a:00:00:00:04', True, False),
-            ('00:0b:00:00:00:05', True, False)
+            ('00:0b:00:00:00:05', True, False),
+            ('00:0b:00:00:00:06', True, False)
         ])
         self._verify_received_device_placements(expected_device_placements)
 
@@ -363,7 +366,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0y:00:00:00:02': self.UNAUTHENTICATED,
             '00:0z:00:00:00:03': self.SEQUESTERED,
             '00:0a:00:00:00:04': self.SEQUESTERED,
-            '00:0b:00:00:00:05': self.SEQUESTERED
+            '00:0b:00:00:00:05': self.SEQUESTERED,
+            '00:0b:00:00:00:06': self.OPERATIONAL # Not in allowed list
         }
         self._verify_ports_states(expected_states)
 
@@ -372,7 +376,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             ('00:0x:00:00:00:01', 'SEG_A', True),
             ('00:0z:00:00:00:03', 'TESTING', False),
             ('00:0a:00:00:00:04', 'TESTING', False),
-            ('00:0b:00:00:00:05', 'TESTING', False)
+            ('00:0b:00:00:00:05', 'TESTING', False),
+            ('00:0b:00:00:00:06', 'SEG_E', False)
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
@@ -386,7 +391,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0y:00:00:00:02': self.UNAUTHENTICATED,
             '00:0z:00:00:00:03': self.INFRACTED,
             '00:0a:00:00:00:04': self.OPERATIONAL,
-            '00:0b:00:00:00:05': self.SEQUESTERED
+            '00:0b:00:00:00:05': self.SEQUESTERED,
+            '00:0b:00:00:00:06': self.OPERATIONAL
         }
         self._verify_ports_states(expected_states)
 
@@ -418,7 +424,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_states = {
             '00:0y:00:00:00:02': self.UNAUTHENTICATED,
             '00:0z:00:00:00:03': self.INFRACTED,
-            '00:0a:00:00:00:04': self.UNAUTHENTICATED
+            '00:0a:00:00:00:04': self.UNAUTHENTICATED,
+            '00:0b:00:00:00:06': self.OPERATIONAL
         }
         self._verify_ports_states(expected_states)
 
@@ -433,7 +440,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_states = {
             '00:0y:00:00:00:02': self.UNAUTHENTICATED,
             '00:0z:00:00:00:03': self.INFRACTED,
-            '00:0a:00:00:00:04': self.SEQUESTERED
+            '00:0a:00:00:00:04': self.SEQUESTERED,
+            '00:0b:00:00:00:06': self.OPERATIONAL
         }
         self._verify_ports_states(expected_states)
 

@@ -20,6 +20,8 @@ def _register_state_handler(state_name):
         return func
     return register
 
+def _clean_mac(mac):
+    return mac.replace(":", "").lower()
 
 class PortStateMachine:
     """State machine class that manages testing states of an access port"""
@@ -107,10 +109,13 @@ class PortStateMachine:
 
 class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
+    _sequester_segment = None
+    _sequester_timeout = None
+    _sequester_allowed_list = []
 
     # pylint: disable=too-many-arguments
     def __init__(self, device_state_manager=None, varz_updater=None,
-                 device_state_reporter=None, sequester_segment=None, sequester_timeout=None):
+                 device_state_reporter=None, sequester_config=None):
         self._state_machines = {}
         self._static_port_behaviors = {}
         self._static_device_behaviors = {}
@@ -119,8 +124,11 @@ class PortStateManager:
         self._varz_updater = varz_updater
         self._device_state_reporter = device_state_reporter
         self._placement_to_mac = {}
-        self._sequester_segment = sequester_segment
-        self._sequester_timeout = sequester_timeout
+        if sequester_config:
+            self._sequester_segment = sequester_config.sequester_segment
+            self._sequester_timeout = sequester_config.sequester_timeout_sec
+            allowed_list = [_clean_mac(mac) for mac in sequester_config.allowed_list]
+            self._sequester_allowed_list = allowed_list
         self._sequester_timer = {}
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
@@ -207,7 +215,8 @@ class PortStateManager:
             device_behaviors.setdefault(mac, DeviceBehavior()).CopyFrom(device_behavior)
 
             static_port_behavior = self._static_port_behaviors.get(mac)
-            if not self._sequester_segment or static_port_behavior == PortBehavior.cleared:
+            sequestering_allowed = _clean_mac(mac) in self._sequester_allowed_list
+            if not sequestering_allowed or static_port_behavior == PortBehavior.cleared:
                 port_behavior = PortBehavior.cleared
             else:
                 port_behavior = PortBehavior.sequestered

@@ -17,7 +17,7 @@ from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
-from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.proto.forch_configuration_pb2 import ForchConfig, OrchestrationConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
 
@@ -391,9 +391,18 @@ class PortsStateManagerTestBase(UnitTestBase):
         self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment)
+        allowed_list = ['00:0X:00:00:00:01',
+                        '00:0Y:00:00:00:02',
+                        '00:0Z:00:00:00:03',
+                        '00:0A:00:00:00:04',
+                        '00:0B:00:00:00:05'
+        ]
+        config = OrchestrationConfig.SequesterConfig(allowed_list=allowed_list)
+        config.sequester_segment = self.SEQUESTER_SEGMENT
+
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            sequester_segment=self.SEQUESTER_SEGMENT)
+            sequester_config=config)
         self._received_device_placements = []
         self._received_device_behaviors = []
 

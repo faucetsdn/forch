@@ -150,6 +150,9 @@ message OrchestrationConfig {
 
     // DUT will return to operational state if no DeviceReport is received within this timeout.
     int32 sequester_timeout_sec = 6;
+
+    // List of device macs that will be sequestered for testing
+    repeated string allowed_list = 7;
   }
 }
 

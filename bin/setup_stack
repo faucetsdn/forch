@@ -177,13 +177,14 @@ else
 fi
 
 echo Connecting faux interfaces...
+faux_ping=
+if [ -n "$fot" ]; then
+    faux_ping="ping"
+fi
+
 add_faux t2sw1 1 1 $faux_dhcp
 add_faux t2sw2 1 2 $faux_dhcp http
-if [ -n "$fot" ]; then
-    add_faux t2sw3 1 3 ping
-else
-    add_faux t2sw3 1 3
-fi
+add_faux t2sw3 1 3 $faux_ping
 
 dcount=${devices:-3}
 scount=${switches:-3}
@@ -191,7 +192,7 @@ scount=${switches:-3}
 if [ -n "$devices" ]; then
     for fnum in $(seq 4 $devices); do
         echo Adding extra device num $fnum
-        add_faux t2sw1 $fnum $fnum
+        add_faux t2sw1 $fnum $fnum $faux_ping
     done
 fi
 

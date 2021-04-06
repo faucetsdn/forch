@@ -19,6 +19,10 @@ orchestration:
     vlan_end: 276
     port_description: TAP
     sequester_timeout_sec: 360
+    allowed_list:
+      - 9a:02:57:1e:8f:01
+      - 9a:02:57:1e:8f:02
+      - 9a:02:57:1e:8f:03
 proxy_server:
   targets:
     faucet:
