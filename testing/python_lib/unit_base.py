@@ -396,7 +396,7 @@ class PortsStateManagerTestBase(UnitTestBase):
                         '00:0Z:00:00:00:03',
                         '00:0A:00:00:00:04',
                         '00:0B:00:00:00:05'
-                       ]
+                        ]
         config = OrchestrationConfig.SequesterConfig(allowed_list=allowed_list)
         config.sequester_segment = self.SEQUESTER_SEGMENT
 
