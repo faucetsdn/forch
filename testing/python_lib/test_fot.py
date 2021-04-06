@@ -367,7 +367,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0z:00:00:00:03': self.SEQUESTERED,
             '00:0a:00:00:00:04': self.SEQUESTERED,
             '00:0b:00:00:00:05': self.SEQUESTERED,
-            '00:0b:00:00:00:06': self.OPERATIONAL # Not in allowed list
+            '00:0b:00:00:00:06': self.OPERATIONAL  # Not in allowed list
         }
         self._verify_ports_states(expected_states)
 

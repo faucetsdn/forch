@@ -242,7 +242,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                     self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
                     self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
-        if  sequester_config.sequester_segment:
+        if sequester_config.sequester_segment:
             self._device_report_server = DeviceReportServer(
                 self._handle_device_result, sequester_config.grpc_server_port)
             self._faucet_collector.set_device_state_reporter(self._device_report_server)

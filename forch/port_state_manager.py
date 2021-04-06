@@ -20,6 +20,7 @@ def _register_state_handler(state_name):
         return func
     return register
 
+
 def _clean_mac(mac):
     return mac.replace(":", "").lower()
 
