@@ -17,6 +17,7 @@ import forch.faucetizer as faucetizer
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
 from forch.device_report_server import DeviceReportServer
+from forch.device_report_client import DeviceReportClient
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics, VarzUpdater
@@ -74,6 +75,7 @@ TAIL_ACL_CONFIG = 'tail_acl_config'
 DEFAULT_SEQUESTER_SEGMENT = 'SEQUESTER'
 DEFAULT_SEQUESTER_TIMEOUT_SEC = 20 * 60
 
+
 class OrchestrationManager(abc.ABC):
     """Interface collecting the methods that manage orchestration"""
 
@@ -86,6 +88,22 @@ class OrchestrationManager(abc.ABC):
         """reset config writing time"""
 
 
+class DeviceStateReporter(abc.ABC):
+    """Interface reporting device information"""
+
+    @abc.abstractmethod
+    def process_port_state(self, dp_name, port, state):
+        """Process faucet port state events"""
+
+    @abc.abstractmethod
+    def process_port_learn(self, dp_name, port, mac, vlan):
+        """Process faucet port learn events"""
+
+    @abc.abstractmethod
+    def process_port_assign(self, mac, assigned):
+        """Process faucet port vlan assignment"""
+
+        
 class Forchestrator(VarzUpdater, OrchestrationManager):
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""
@@ -214,7 +232,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._initialized = True
 
     def _initialize_orchestration(self):
-        sequester_segment, sequester_timeout, grpc_server_port = self._calculate_sequester_config()
+        sequester_segment, sequester_timeout = self._calculate_sequester_config()
 
         if self._should_enable_faucetizer:
             self._initialize_faucetizer(sequester_segment)
@@ -242,7 +260,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                     self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
         if sequester_segment:
-            self._device_report_handler = self._create_device_report_handler(grpc_server_port)
+            self._device_report_handler = self._create_device_report_handler()
             self._faucet_collector.set_device_state_reporter(self._device_report_handler)
 
         self._port_state_manager = PortStateManager(
@@ -255,8 +273,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
 
-    def _create_device_report_handler(self, grpc_server_port):
-        return DeviceReportServer(self._handle_device_result, grpc_server_port)
+    def _create_device_report_handler(self):
+        service_address, service_port = self._get_testing_service_config()
+        if service_address:
+            return DeviceReportClient(self._handle_device_result, service_address, service_port)
+        return DeviceReportServer(self._handle_device_result, service_port)
 
     def _attempt_authenticator_initialise(self):
         orch_config = self._config.orchestration
@@ -369,12 +390,17 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _calculate_sequester_config(self):
         if not self._config.orchestration.HasField('sequester_config'):
-            return None, None, None
+            return None, None
         sequester_config = self._config.orchestration.sequester_config
         sequester_segment = sequester_config.sequester_segment or DEFAULT_SEQUESTER_SEGMENT
         sequester_timeout = sequester_config.sequester_timeout_sec or DEFAULT_SEQUESTER_TIMEOUT_SEC
-        grpc_server_port = sequester_config.grpc_server_port
-        return sequester_segment, sequester_timeout, grpc_server_port
+        return sequester_segment, sequester_timeout
+
+    def _get_testing_service_config(self):
+        if not self._config.orchestration.HasField('sequester_config'):
+            return None, None
+        sequester_config = self._config.orchestration.sequester_config
+        return sequester_config.service_address, sequester_config.service_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):

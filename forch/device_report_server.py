@@ -1,11 +1,11 @@
 """gRPC server to receive devices state"""
 
-import abc
 from concurrent import futures
 from queue import Queue
 import threading
 import grpc
 
+from forch.forchestrator import DeviceStateReporter
 from forch.utils import get_logger
 
 import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc
@@ -24,22 +24,6 @@ class DeviceEntry:
     vlan = None
     assigned = None
     port_up = None
-
-
-class DeviceStateReporter(abc.ABC):
-    """Interface reporting device information"""
-
-    @abc.abstractmethod
-    def process_port_state(self, dp_name, port, state):
-        """Process faucet port state events"""
-
-    @abc.abstractmethod
-    def process_port_learn(self, dp_name, port, mac, vlan):
-        """Process faucet port learn events"""
-
-    @abc.abstractmethod
-    def process_port_assign(self, mac, assigned):
-        """Process faucet port vlan assignment"""
 
 
 class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
