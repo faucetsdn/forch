@@ -222,7 +222,8 @@ class Faucetizer(DeviceStateManager):
 
         return behavioral_faucet_config
 
-    def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans):
+    def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans,
+                                    assigned_vlans):
         testing_port_vlans = new_testing_device_vlans.values()
         testing_port_configured = False
         apply_tail_acl = self._config.tail_acl and self.tail_acl_config_valid()
@@ -231,7 +232,8 @@ class Faucetizer(DeviceStateManager):
             for port_map in switch_map.get('interfaces', {}).values():
                 port_type = self._get_port_type(port_map)
                 if port_type == PortType.testing and testing_port_vlans:
-                    port_map.setdefault('tagged_vlans', []).extend(testing_port_vlans)
+                    port_map.setdefault('tagged_vlans', []).extend(
+                        testing_port_vlans + assigned_vlans)
                     testing_port_configured = True
                 if self._get_port_type(port_map) == PortType.access and apply_tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
@@ -250,7 +252,9 @@ class Faucetizer(DeviceStateManager):
     def _calculate_vlan_id(self, device_mac, device_behavior, available_testing_vlans,
                            new_testing_device_vlans):
         device_segment = device_behavior.segment
+        assigned_segment = device_behavior.assigned_segment
         vid = None
+        assigned_vid = None
 
         if self._sequester_segment and device_segment == self._sequester_segment:
             if device_mac not in self._testing_device_vlans and not available_testing_vlans:
@@ -259,13 +263,15 @@ class Faucetizer(DeviceStateManager):
             else:
                 vid = self._testing_device_vlans.get(device_mac) or available_testing_vlans.pop()
                 new_testing_device_vlans[device_mac] = vid
+                if assigned_segment:
+                    assigned_vid = self._segments_to_vlans[assigned_segment]
         elif device_segment in self._segments_to_vlans:
             vid = self._segments_to_vlans[device_segment]
         else:
             self._logger.warning(
                 'Device segment does not have a matching vlan: %s, %s', device_mac, device_segment)
 
-        return vid
+        return vid, assigned_vid
 
     def _update_device_dva_state(self, device_placement, device_behavior, device_type):
         if device_type == STATIC_DEVICE:
@@ -298,6 +304,7 @@ class Faucetizer(DeviceStateManager):
     def _update_ports_config(self, behavioral_faucet_config):
         available_testing_vlans = self._calculate_available_tesing_vlans()
         new_testing_device_vlans = {}
+        assigned_vlans = set()
 
         self._initialize_host_ports(behavioral_faucet_config)
 
@@ -320,17 +327,18 @@ class Faucetizer(DeviceStateManager):
                     mac, device_placement.switch, device_placement.port)
                 continue
 
-            vid = self._calculate_vlan_id(
+            device_vid, assigned_vid = self._calculate_vlan_id(
                 mac, device_behavior, available_testing_vlans, new_testing_device_vlans)
+            assigned_vlans.add(assigned_vid)
 
-            old_vid = self._get_faucet_config_vlan(
+            old_device_vid = self._get_faucet_config_vlan(
                 self._behavioral_faucet_config, device_placement.switch, device_placement.port)
-            if vid != old_vid:
-                self._logger.info('Placing %s into vlan %s', mac, vid)
+            if device_vid != old_device_vid:
+                self._logger.info('Placing %s into vlan %s', mac, device_vid)
 
-            if not vid:
+            if not device_vid:
                 continue
-            port_cfg['native_vlan'] = vid
+            port_cfg['native_vlan'] = device_vid
 
             if device_behavior.role:
                 acl_name = f'role_{device_behavior.role}'
@@ -341,7 +349,8 @@ class Faucetizer(DeviceStateManager):
 
             self._update_device_dva_state(device_placement, device_behavior, device_type)
 
-        self._finalize_host_ports_config(behavioral_faucet_config, new_testing_device_vlans)
+        self._finalize_host_ports_config(
+            behavioral_faucet_config, new_testing_device_vlans, list(assigned_vlans))
 
     def _get_faucet_config_vlan(self, faucet_config, switch, port):
         switch_config = faucet_config.get('dps', {}).get(switch, {})
