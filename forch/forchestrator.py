@@ -117,7 +117,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._config_file_watcher = None
         self._faucet_state_scheduler = None
         self._gauge_metrics_scheduler = None
-        self._device_report_server = None
+        self._device_report_handler = None
         self._port_state_manager = None
 
         self._initialized = False
@@ -242,12 +242,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                     self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
         if sequester_segment:
-            self._device_report_server = DeviceReportServer(
-                self._handle_device_result, grpc_server_port)
-            self._faucet_collector.set_device_state_reporter(self._device_report_server)
+            self._device_report_handler = self._create_device_report_handler(grpc_server_port)
+            self._faucet_collector.set_device_state_reporter(self._device_report_handler)
 
         self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._device_report_server,
+            self._faucetizer, self, self._device_report_handler,
             sequester_segment=sequester_segment, sequester_timeout=sequester_timeout)
 
         self._attempt_authenticator_initialise()
@@ -255,6 +254,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
+
+    def _create_device_report_handler(self, grpc_server_port):
+        return DeviceReportServer(self._handle_device_result, grpc_server_port)
 
     def _attempt_authenticator_initialise(self):
         orch_config = self._config.orchestration
@@ -590,8 +592,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._gauge_metrics_scheduler.start()
         if self._metrics:
             self._metrics.update_var('forch_version', {'version': __version__})
-        if self._device_report_server:
-            self._device_report_server.start()
+        if self._device_report_handler:
+            self._device_report_handler.start()
 
     def stop(self):
         """Stop forchestrator components"""
@@ -607,8 +609,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._metrics.stop()
         if self._varz_proxy:
             self._varz_proxy.stop()
-        if self._device_report_server:
-            self._device_report_server.stop()
+        if self._device_report_handler:
+            self._device_report_handler.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers
