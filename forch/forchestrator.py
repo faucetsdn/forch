@@ -1,6 +1,5 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
-import abc
 from datetime import datetime
 import functools
 import os
@@ -11,6 +10,7 @@ from google.protobuf.message import Message
 
 from faucet import config_parser
 
+from forch.base_classes import OrchestrationManager
 import forch.faucet_event_client
 import forch.faucetizer as faucetizer
 
@@ -76,34 +76,6 @@ DEFAULT_SEQUESTER_SEGMENT = 'SEQUESTER'
 DEFAULT_SEQUESTER_TIMEOUT_SEC = 20 * 60
 
 
-class OrchestrationManager(abc.ABC):
-    """Interface collecting the methods that manage orchestration"""
-
-    @abc.abstractmethod
-    def reregister_include_file_watchers(self, old_include_files, new_include_files):
-        """reregister the include file watchers"""
-
-    @abc.abstractmethod
-    def reset_faucet_config_writing_time(self):
-        """reset config writing time"""
-
-
-class DeviceStateReporter(abc.ABC):
-    """Interface reporting device information"""
-
-    @abc.abstractmethod
-    def process_port_state(self, dp_name, port, state):
-        """Process faucet port state events"""
-
-    @abc.abstractmethod
-    def process_port_learn(self, dp_name, port, mac, vlan):
-        """Process faucet port learn events"""
-
-    @abc.abstractmethod
-    def process_port_assign(self, mac, assigned):
-        """Process faucet port vlan assignment"""
-
-        
 class Forchestrator(VarzUpdater, OrchestrationManager):
     """Main class encompassing faucet orchestrator components for dynamically
     controlling faucet ACLs at runtime"""

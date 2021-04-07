@@ -5,7 +5,7 @@ from queue import Queue
 import threading
 import grpc
 
-from forch.forchestrator import DeviceStateReporter
+from forch.base_classes import DeviceStateReporter
 from forch.utils import get_logger
 
 import forch.proto.grpc.device_report_pb2_grpc as device_report_pb2_grpc

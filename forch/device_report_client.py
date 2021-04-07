@@ -2,7 +2,7 @@
 
 import grpc
 
-from forch.forchestrator import DeviceStateReporter
+from forch.base_classes import DeviceStateReporter
 
 from daq.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 
