@@ -2,9 +2,9 @@
 
 import grpc
 
-from forch.base_classes import DeviceStateReporter
+from daq.proto.session_server_pb2_grpc import SessionServerStub
 
-from daq.proto.grpc.device_report_pb2_grpc import DeviceReportStub
+from forch.base_classes import DeviceStateReporter
 
 
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
@@ -22,7 +22,7 @@ class DeviceReportClient(DeviceStateReporter):
 
     def _initialize_stub(self, sever_address, server_port):
         channel = grpc.insecure_channel(f'{sever_address}:{server_port}')
-        self._stub = DeviceReportStub(channel)
+        self._stub = SessionServerStub(channel)
 
     def start(self):
         """Start a client connection"""
