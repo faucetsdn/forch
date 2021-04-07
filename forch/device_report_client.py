@@ -2,7 +2,10 @@
 
 import grpc
 
-from daq.proto.session_server_pb2_grpc import SessionServerStub
+try:
+    from daq.proto.session_server_pb2_grpc import SessionServerStub
+except ImportError:
+    pass
 
 from forch.base_classes import DeviceStateReporter
 
