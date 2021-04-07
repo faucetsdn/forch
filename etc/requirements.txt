@@ -1,9 +1,7 @@
-setuptools
-wheel
 coverage
 grpcio
-grpcio-tools
 grpcio-testing
+grpcio-tools
 netaddr
 networkx
 pbr>=1.9
@@ -15,5 +13,7 @@ pytricia
 pyyaml
 requests
 ryu==4.32
+setuptools
 watchdog
+wheel
 yq
