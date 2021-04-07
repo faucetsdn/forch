@@ -77,6 +77,8 @@ jobs:
       - name: post-run logs
         if: ${{ always() }}
         run: |
+          echo %%%%%%%%%%%%% Container build logs
+          more build/docker_*.log | cat || true
           echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ startup logs
