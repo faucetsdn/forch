@@ -392,8 +392,8 @@ class PortsStateManagerTestBase(UnitTestBase):
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment)
         config = OrchestrationConfig.SequesterConfig(
-          sequester_segment=self.SEQUESTER_SEGMENT,
-          default_auto_sequestering='enabled')
+            sequester_segment=self.SEQUESTER_SEGMENT,
+            default_auto_sequestering='enabled')
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
             sequester_config=config)

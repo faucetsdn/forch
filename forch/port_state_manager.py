@@ -137,7 +137,8 @@ class PortStateManager:
         with self._lock:
             mac_lower = mac.lower()
             auto_sequester = (device_behavior.auto_sequestering
-                if device_behavior.auto_sequestering else self._default_auto_sequestering)
+                              if device_behavior.auto_sequestering
+                              else self._default_auto_sequestering)
 
             self._auto_sequester[mac_lower] = auto_sequester
             if device_behavior.segment:
