@@ -35,6 +35,7 @@ from forch.proto.devices_state_pb2 import DevicesState, DeviceBehavior, DevicePl
 import forch.proto.faucet_event_pb2 as FaucetEvent
 from forch.proto.shared_constants_pb2 import State, AuthMode
 from forch.proto.system_state_pb2 import SystemState
+from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 _DEFAULT_STRUCTURAL_CONFIG = 'faucet.yaml'
 _DEFAULT_BEHAVIORAL_CONFIG = 'faucet.yaml'
@@ -204,10 +205,14 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._initialized = True
 
     def _initialize_orchestration(self):
+<<<<<<< HEAD
         sequester_segment, sequester_timeout = self._calculate_sequester_config()
+=======
+        sequester_config = self._calculate_sequester_config()
+>>>>>>> faucet/master
 
         if self._should_enable_faucetizer:
-            self._initialize_faucetizer(sequester_segment)
+            self._initialize_faucetizer(sequester_config.sequester_segment)
             self._faucetizer.reload_structural_config()
 
             if not self._faucetizer.tail_acl_config_valid():
@@ -231,6 +236,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                     self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
                     self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
+<<<<<<< HEAD
         if sequester_segment:
             self._device_report_handler = self._create_device_report_handler()
             self._faucet_collector.set_device_state_reporter(self._device_report_handler)
@@ -238,6 +244,16 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._port_state_manager = PortStateManager(
             self._faucetizer, self, self._device_report_handler,
             sequester_segment=sequester_segment, sequester_timeout=sequester_timeout)
+=======
+        if sequester_config.sequester_segment:
+            self._device_report_server = DeviceReportServer(
+                self._handle_device_result, sequester_config.grpc_server_port)
+            self._faucet_collector.set_device_state_reporter(self._device_report_server)
+
+        self._port_state_manager = PortStateManager(
+            self._faucetizer, self, self._device_report_server,
+            sequester_config=sequester_config)
+>>>>>>> faucet/master
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -362,6 +378,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _calculate_sequester_config(self):
         if not self._config.orchestration.HasField('sequester_config'):
+<<<<<<< HEAD
             return None, None
         sequester_config = self._config.orchestration.sequester_config
         sequester_segment = sequester_config.sequester_segment or DEFAULT_SEQUESTER_SEGMENT
@@ -373,6 +390,13 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             return None, None
         sequester_config = self._config.orchestration.sequester_config
         return sequester_config.service_address, sequester_config.service_port
+=======
+            return OrchestrationConfig.SequesterConfig()
+        config = self._config.orchestration.sequester_config
+        config.sequester_segment = config.sequester_segment or DEFAULT_SEQUESTER_SEGMENT
+        config.sequester_timeout_sec = config.sequester_timeout_sec or DEFAULT_SEQUESTER_TIMEOUT_SEC
+        return config
+>>>>>>> faucet/master
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):

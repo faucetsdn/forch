@@ -3,6 +3,8 @@
  */
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
 // TODO fill up sections one by one
 /*
  * Forch configuration
@@ -152,6 +154,9 @@ message OrchestrationConfig {
 
     // DUT will return to operational state if no DeviceReport is received within this timeout.
     int32 sequester_timeout_sec = 7;
+
+    // Default value for DeviceBehavior.auto_sequestering
+    PortBehavior.AutoSequestering default_auto_sequestering = 8;
   }
 }
 
