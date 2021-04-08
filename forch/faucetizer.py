@@ -234,6 +234,7 @@ class Faucetizer(DeviceStateManager):
                 if port_type == PortType.testing and testing_port_vlans:
                     port_map.setdefault('tagged_vlans', []).extend(
                         testing_port_vlans + assigned_vlans)
+                    port_map.pop('output_only', None)
                     testing_port_configured = True
                 if self._get_port_type(port_map) == PortType.access and apply_tail_acl:
                     port_map.setdefault('acls_in', []).append(self._config.tail_acl)
