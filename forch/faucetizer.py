@@ -224,7 +224,7 @@ class Faucetizer(DeviceStateManager):
 
     def _finalize_host_ports_config(self, behavioral_faucet_config, new_testing_device_vlans,
                                     assigned_vlans):
-        testing_port_vlans = new_testing_device_vlans.values()
+        testing_port_vlans = list(new_testing_device_vlans.values())
         testing_port_configured = False
         apply_tail_acl = self._config.tail_acl and self.tail_acl_config_valid()
 
