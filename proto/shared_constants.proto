@@ -190,6 +190,12 @@ message PortBehavior {
     down = 0;
     up = 1;
   }
+
+  enum AutoSequestering {
+    default = 0;
+    true = 1;
+    false = 2;
+  }
 }
 
 /*

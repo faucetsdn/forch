@@ -17,6 +17,8 @@ YQ=venv/bin/yq
 
 echo DAQ spot checks
 
+docker exec forch-faux-4 ping -c10 192.168.1.0
+
 # Basic process startup.
 fgrep "Loading base module config" $DAQBASE/inst/cmdrun.log
 
@@ -56,6 +58,7 @@ monitor_daq_log "Target device 9a02571e8f03 test hold running"
 report_vlans
 
 monitor_forch_log "Device 9a:02:57:1e:8f:03 is entering infracted state"
+monitor_forch_log "Device 9a:02:57:1e:8f:04 is entering operational state from unauthenticated state"
 
 docker stop forch-faux-3 # to cause an error so daq terminates
 monitor_daq_log "Remaining target sets: []"

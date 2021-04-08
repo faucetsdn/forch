@@ -818,6 +818,10 @@
                 </li>
               
                 <li>
+                  <a href="#PortBehavior.AutoSequestering"><span class="badge">E</span>PortBehavior.AutoSequestering</a>
+                </li>
+              
+                <li>
                   <a href="#PortBehavior.Behavior"><span class="badge">E</span>PortBehavior.Behavior</a>
                 </li>
               
@@ -2130,6 +2134,13 @@
                 <tr>
                   <td>port_behavior</td>
                   <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>auto_sequestering</td>
+                  <td><a href="#PortBehavior.AutoSequestering">PortBehavior.AutoSequestering</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -4085,6 +4096,13 @@ segments </p></td>
                   <td><p>DUT will return to operational state if no DeviceReport is received within this timeout. </p></td>
                 </tr>
               
+                <tr>
+                  <td>default_auto_sequestering</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p>Default value for DeviceBehavior.auto_sequestering </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -5679,6 +5697,35 @@ or to host_path API to list path </p></td>
                 <td>noact</td>
                 <td>5</td>
                 <td><p>noact: port is up, but not active</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="PortBehavior.AutoSequestering">PortBehavior.AutoSequestering</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>default</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>true</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>false</td>
+                <td>2</td>
+                <td><p></p></td>
               </tr>
             
           </tbody>
