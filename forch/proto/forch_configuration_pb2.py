@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from forch.proto import shared_constants_pb2 as forch_dot_proto_dot_shared__constants__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,8 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\"\xef\x02\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\x12,\n\x0evarz_interface\x18\x06 \x01(\x0b\x32\x14.VarzInterfaceConfig\x12(\n\x0cproxy_server\x18\x07 \x01(\x0b\x32\x12.ProxyServerConfig\x12\x32\n\x14\x64\x61taplane_monitoring\x18\x08 \x01(\x0b\x32\x14.DataplaneMonitoring\x12&\n\x0e\x63pn_monitoring\x18\t \x01(\x0b\x32\x0e.CpnMonitoring\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\x91\x07\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1c\n\x14unauthenticated_vlan\x18\x08 \x01(\x05\x12\x10\n\x08tail_acl\x18\t \x01(\t\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x19\n\x11gauge_config_file\x18\n \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x12>\n\x10sequester_config\x18\x0b \x01(\x0b\x32$.OrchestrationConfig.SequesterConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RadiusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_retries\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1ag\n\nRadiusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x1c\n\x14radius_secret_helper\x18\x03 \x01(\t\x12\x13\n\x0bsource_port\x18\x04 \x01(\x05\x1a\xc8\x01\n\x0fSequesterConfig\x12\x19\n\x11sequester_segment\x18\x01 \x01(\t\x12\x12\n\nvlan_start\x18\x02 \x01(\x05\x12\x10\n\x08vlan_end\x18\x03 \x01(\x05\x12\x18\n\x10port_description\x18\x04 \x01(\t\x12\x18\n\x10grpc_server_port\x18\x05 \x01(\x05\x12\x1d\n\x15sequester_timeout_sec\x18\x06 \x01(\x05\x12!\n\x19\x64\x65\x66\x61ult_auto_sequestering\x18\x07 \x01(\x08\"\xaa\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\x46\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x12\x1d\n\x15\x63pu_percent_threshold\x18\x03 \x01(\x02\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\"\x84\x01\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x12&\n\x1estack_topo_change_coalesce_sec\x18\x02 \x01(\x05\x12,\n$config_hash_verification_timeout_sec\x18\x03 \x01(\x05\"(\n\x13VarzInterfaceConfig\x12\x11\n\tvarz_port\x18\x01 \x01(\x05\"\x97\x01\n\x11ProxyServerConfig\x12\x12\n\nproxy_port\x18\x01 \x01(\x05\x12\x30\n\x07targets\x18\x02 \x03(\x0b\x32\x1f.ProxyServerConfig.TargetsEntry\x1a<\n\x0cTargetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.ProxyTarget:\x02\x38\x01\"\x1b\n\x0bProxyTarget\x12\x0c\n\x04port\x18\x01 \x01(\x05\"\xd1\x01\n\x13\x44\x61taplaneMonitoring\x12\"\n\x1agauge_metrics_interval_sec\x18\x01 \x01(\x05\x12V\n\x1bvlan_pkt_per_sec_thresholds\x18\x02 \x03(\x0b\x32\x31.DataplaneMonitoring.VlanPktPerSecThresholdsEntry\x1a>\n\x1cVlanPktPerSecThresholdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"o\n\rCpnMonitoring\x12\x15\n\rping_interval\x18\x01 \x01(\x05\x12$\n\x1cmin_consecutive_ping_healthy\x18\x02 \x01(\x05\x12!\n\x19min_consecutive_ping_down\x18\x03 \x01(\x05\x62\x06proto3')
-)
+  serialized_pb=_b('\n%forch/proto/forch_configuration.proto\x1a\"forch/proto/shared_constants.proto\"\xef\x02\n\x0b\x46orchConfig\x12\x19\n\x04site\x18\x01 \x01(\x0b\x32\x0b.SiteConfig\x12+\n\rorchestration\x18\x02 \x01(\x0b\x32\x14.OrchestrationConfig\x12\x1f\n\x07process\x18\x03 \x01(\x0b\x32\x0e.ProcessConfig\x12\x19\n\x04http\x18\x04 \x01(\x0b\x32\x0b.HttpConfig\x12(\n\x0c\x65vent_client\x18\x05 \x01(\x0b\x32\x12.EventClientConfig\x12,\n\x0evarz_interface\x18\x06 \x01(\x0b\x32\x14.VarzInterfaceConfig\x12(\n\x0cproxy_server\x18\x07 \x01(\x0b\x32\x12.ProxyServerConfig\x12\x32\n\x14\x64\x61taplane_monitoring\x18\x08 \x01(\x0b\x32\x14.DataplaneMonitoring\x12&\n\x0e\x63pn_monitoring\x18\t \x01(\x0b\x32\x0e.CpnMonitoring\"\xc3\x01\n\nSiteConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x0b\x63ontrollers\x18\x02 \x03(\x0b\x32\x1c.SiteConfig.ControllersEntry\x1aJ\n\x10\x43ontrollersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.SiteConfig.Controller:\x02\x38\x01\x1a(\n\nController\x12\x0c\n\x04\x66qdn\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"\xb1\x07\n\x13OrchestrationConfig\x12\x1e\n\x16structural_config_file\x18\x01 \x01(\t\x12\x1c\n\x14unauthenticated_vlan\x18\x08 \x01(\x05\x12\x10\n\x08tail_acl\x18\t \x01(\t\x12\x1e\n\x16\x62\x65havioral_config_file\x18\x02 \x01(\t\x12\x1f\n\x17static_device_placement\x18\x03 \x01(\t\x12\x1e\n\x16static_device_behavior\x18\x04 \x01(\t\x12\x1b\n\x13segments_vlans_file\x18\x05 \x01(\t\x12\x19\n\x11gauge_config_file\x18\n \x01(\t\x12\x1e\n\x16\x66\x61ucetize_interval_sec\x18\x06 \x01(\x05\x12\x34\n\x0b\x61uth_config\x18\x07 \x01(\x0b\x32\x1f.OrchestrationConfig.AuthConfig\x12>\n\x10sequester_config\x18\x0b \x01(\x0b\x32$.OrchestrationConfig.SequesterConfig\x1a\xc6\x01\n\nAuthConfig\x12\x34\n\x0bradius_info\x18\x01 \x01(\x0b\x32\x1f.OrchestrationConfig.RadiusInfo\x12\x15\n\rheartbeat_sec\x18\x02 \x01(\x05\x12\x1a\n\x12max_radius_retries\x18\x03 \x01(\x05\x12\x19\n\x11query_timeout_sec\x18\x04 \x01(\x05\x12\x1a\n\x12reject_timeout_sec\x18\x05 \x01(\x05\x12\x18\n\x10\x61uth_timeout_sec\x18\x06 \x01(\x05\x1ag\n\nRadiusInfo\x12\x11\n\tserver_ip\x18\x01 \x01(\t\x12\x13\n\x0bserver_port\x18\x02 \x01(\x05\x12\x1c\n\x14radius_secret_helper\x18\x03 \x01(\t\x12\x13\n\x0bsource_port\x18\x04 \x01(\x05\x1a\xe8\x01\n\x0fSequesterConfig\x12\x19\n\x11sequester_segment\x18\x01 \x01(\t\x12\x12\n\nvlan_start\x18\x02 \x01(\x05\x12\x10\n\x08vlan_end\x18\x03 \x01(\x05\x12\x18\n\x10port_description\x18\x04 \x01(\t\x12\x18\n\x10grpc_server_port\x18\x05 \x01(\x05\x12\x1d\n\x15sequester_timeout_sec\x18\x06 \x01(\x05\x12\x41\n\x19\x64\x65\x66\x61ult_auto_sequestering\x18\x07 \x01(\x0e\x32\x1e.PortBehavior.AutoSequestering\"\xaa\x03\n\rProcessConfig\x12\x19\n\x11scan_interval_sec\x18\x01 \x01(\x05\x12\x12\n\ncheck_vrrp\x18\x02 \x01(\x08\x12\x30\n\tprocesses\x18\x03 \x03(\x0b\x32\x1d.ProcessConfig.ProcessesEntry\x12\x34\n\x0b\x63onnections\x18\x04 \x03(\x0b\x32\x1f.ProcessConfig.ConnectionsEntry\x1aH\n\x0eProcessesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.ProcessConfig.Process:\x02\x38\x01\x1aM\n\x10\x43onnectionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.ProcessConfig.Connection:\x02\x38\x01\x1a\x46\n\x07Process\x12\r\n\x05regex\x18\x01 \x01(\t\x12\r\n\x05\x63ount\x18\x02 \x01(\x05\x12\x1d\n\x15\x63pu_percent_threshold\x18\x03 \x01(\x02\x1a!\n\nConnection\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\"\x1f\n\nHttpConfig\x12\x11\n\thttp_root\x18\x01 \x01(\t\"\x84\x01\n\x11\x45ventClientConfig\x12\x19\n\x11port_debounce_sec\x18\x01 \x01(\x05\x12&\n\x1estack_topo_change_coalesce_sec\x18\x02 \x01(\x05\x12,\n$config_hash_verification_timeout_sec\x18\x03 \x01(\x05\"(\n\x13VarzInterfaceConfig\x12\x11\n\tvarz_port\x18\x01 \x01(\x05\"\x97\x01\n\x11ProxyServerConfig\x12\x12\n\nproxy_port\x18\x01 \x01(\x05\x12\x30\n\x07targets\x18\x02 \x03(\x0b\x32\x1f.ProxyServerConfig.TargetsEntry\x1a<\n\x0cTargetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.ProxyTarget:\x02\x38\x01\"\x1b\n\x0bProxyTarget\x12\x0c\n\x04port\x18\x01 \x01(\x05\"\xd1\x01\n\x13\x44\x61taplaneMonitoring\x12\"\n\x1agauge_metrics_interval_sec\x18\x01 \x01(\x05\x12V\n\x1bvlan_pkt_per_sec_thresholds\x18\x02 \x03(\x0b\x32\x31.DataplaneMonitoring.VlanPktPerSecThresholdsEntry\x1a>\n\x1cVlanPktPerSecThresholdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"o\n\rCpnMonitoring\x12\x15\n\rping_interval\x18\x01 \x01(\x05\x12$\n\x1cmin_consecutive_ping_healthy\x18\x02 \x01(\x05\x12!\n\x19min_consecutive_ping_down\x18\x03 \x01(\x05\x62\x06proto3')
+  ,
+  dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
 
 
@@ -107,8 +109,8 @@ _FORCHCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=42,
-  serialized_end=409,
+  serialized_start=78,
+  serialized_end=445,
 )
 
 
@@ -145,8 +147,8 @@ _SITECONFIG_CONTROLLERSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=491,
-  serialized_end=565,
+  serialized_start=527,
+  serialized_end=601,
 )
 
 _SITECONFIG_CONTROLLER = _descriptor.Descriptor(
@@ -182,8 +184,8 @@ _SITECONFIG_CONTROLLER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=567,
-  serialized_end=607,
+  serialized_start=603,
+  serialized_end=643,
 )
 
 _SITECONFIG = _descriptor.Descriptor(
@@ -219,8 +221,8 @@ _SITECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=412,
-  serialized_end=607,
+  serialized_start=448,
+  serialized_end=643,
 )
 
 
@@ -285,8 +287,8 @@ _ORCHESTRATIONCONFIG_AUTHCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1017,
-  serialized_end=1215,
+  serialized_start=1053,
+  serialized_end=1251,
 )
 
 _ORCHESTRATIONCONFIG_RADIUSINFO = _descriptor.Descriptor(
@@ -336,8 +338,8 @@ _ORCHESTRATIONCONFIG_RADIUSINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1217,
-  serialized_end=1320,
+  serialized_start=1253,
+  serialized_end=1356,
 )
 
 _ORCHESTRATIONCONFIG_SEQUESTERCONFIG = _descriptor.Descriptor(
@@ -391,8 +393,8 @@ _ORCHESTRATIONCONFIG_SEQUESTERCONFIG = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='default_auto_sequestering', full_name='OrchestrationConfig.SequesterConfig.default_auto_sequestering', index=6,
-      number=7, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      number=7, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -408,8 +410,8 @@ _ORCHESTRATIONCONFIG_SEQUESTERCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1323,
-  serialized_end=1523,
+  serialized_start=1359,
+  serialized_end=1591,
 )
 
 _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
@@ -508,8 +510,8 @@ _ORCHESTRATIONCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=610,
-  serialized_end=1523,
+  serialized_start=646,
+  serialized_end=1591,
 )
 
 
@@ -546,8 +548,8 @@ _PROCESSCONFIG_PROCESSESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1694,
-  serialized_end=1766,
+  serialized_start=1762,
+  serialized_end=1834,
 )
 
 _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
@@ -583,8 +585,8 @@ _PROCESSCONFIG_CONNECTIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1768,
-  serialized_end=1845,
+  serialized_start=1836,
+  serialized_end=1913,
 )
 
 _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
@@ -627,8 +629,8 @@ _PROCESSCONFIG_PROCESS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1847,
-  serialized_end=1917,
+  serialized_start=1915,
+  serialized_end=1985,
 )
 
 _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
@@ -657,8 +659,8 @@ _PROCESSCONFIG_CONNECTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1919,
-  serialized_end=1952,
+  serialized_start=1987,
+  serialized_end=2020,
 )
 
 _PROCESSCONFIG = _descriptor.Descriptor(
@@ -708,8 +710,8 @@ _PROCESSCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1526,
-  serialized_end=1952,
+  serialized_start=1594,
+  serialized_end=2020,
 )
 
 
@@ -739,8 +741,8 @@ _HTTPCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1954,
-  serialized_end=1985,
+  serialized_start=2022,
+  serialized_end=2053,
 )
 
 
@@ -784,8 +786,8 @@ _EVENTCLIENTCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1988,
-  serialized_end=2120,
+  serialized_start=2056,
+  serialized_end=2188,
 )
 
 
@@ -815,8 +817,8 @@ _VARZINTERFACECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2122,
-  serialized_end=2162,
+  serialized_start=2190,
+  serialized_end=2230,
 )
 
 
@@ -853,8 +855,8 @@ _PROXYSERVERCONFIG_TARGETSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2256,
-  serialized_end=2316,
+  serialized_start=2324,
+  serialized_end=2384,
 )
 
 _PROXYSERVERCONFIG = _descriptor.Descriptor(
@@ -890,8 +892,8 @@ _PROXYSERVERCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2165,
-  serialized_end=2316,
+  serialized_start=2233,
+  serialized_end=2384,
 )
 
 
@@ -921,8 +923,8 @@ _PROXYTARGET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2318,
-  serialized_end=2345,
+  serialized_start=2386,
+  serialized_end=2413,
 )
 
 
@@ -959,8 +961,8 @@ _DATAPLANEMONITORING_VLANPKTPERSECTHRESHOLDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2495,
-  serialized_end=2557,
+  serialized_start=2563,
+  serialized_end=2625,
 )
 
 _DATAPLANEMONITORING = _descriptor.Descriptor(
@@ -996,8 +998,8 @@ _DATAPLANEMONITORING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2348,
-  serialized_end=2557,
+  serialized_start=2416,
+  serialized_end=2625,
 )
 
 
@@ -1041,8 +1043,8 @@ _CPNMONITORING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2559,
-  serialized_end=2670,
+  serialized_start=2627,
+  serialized_end=2738,
 )
 
 _FORCHCONFIG.fields_by_name['site'].message_type = _SITECONFIG
@@ -1061,6 +1063,7 @@ _SITECONFIG.fields_by_name['controllers'].message_type = _SITECONFIG_CONTROLLERS
 _ORCHESTRATIONCONFIG_AUTHCONFIG.fields_by_name['radius_info'].message_type = _ORCHESTRATIONCONFIG_RADIUSINFO
 _ORCHESTRATIONCONFIG_AUTHCONFIG.containing_type = _ORCHESTRATIONCONFIG
 _ORCHESTRATIONCONFIG_RADIUSINFO.containing_type = _ORCHESTRATIONCONFIG
+_ORCHESTRATIONCONFIG_SEQUESTERCONFIG.fields_by_name['default_auto_sequestering'].enum_type = forch_dot_proto_dot_shared__constants__pb2._PORTBEHAVIOR_AUTOSEQUESTERING
 _ORCHESTRATIONCONFIG_SEQUESTERCONFIG.containing_type = _ORCHESTRATIONCONFIG
 _ORCHESTRATIONCONFIG.fields_by_name['auth_config'].message_type = _ORCHESTRATIONCONFIG_AUTHCONFIG
 _ORCHESTRATIONCONFIG.fields_by_name['sequester_config'].message_type = _ORCHESTRATIONCONFIG_SEQUESTERCONFIG

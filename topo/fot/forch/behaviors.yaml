@@ -1,12 +1,12 @@
 device_mac_behaviors:
   "9a:02:57:1e:8f:01":
     segment: INFRA
-    auto_sequestering: true
+    auto_sequestering: enabled
   "9a:02:57:1e:8f:02":
     segment: INFRA
-    auto_sequestering: true
+    auto_sequestering: enabled
   "9a:02:57:1e:8f:03":
     segment: INFRA
-    auto_sequestering: true
+    auto_sequestering: enabled
   "9a:02:57:1e:8f:04":
     segment: INFRA

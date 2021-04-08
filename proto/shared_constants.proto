@@ -193,8 +193,8 @@ message PortBehavior {
 
   enum AutoSequestering {
     default = 0;
-    true = 1;
-    false = 2;
+    enabled = 1;
+    disabled = 2;
   }
 }
 

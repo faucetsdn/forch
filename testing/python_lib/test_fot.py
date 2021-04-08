@@ -268,8 +268,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0b:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True}
         }
         static_device_behaviors = {
-            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'auto_sequestering': 'false'},
-            '00:0Y:00:00:00:02': {'auto_sequestering': 'false'}
+            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'auto_sequestering': 'disabled'},
+            '00:0Y:00:00:00:02': {'auto_sequestering': 'disabled'}
         }
         authentication_results = {
             '00:0X:00:00:00:01': {'segment': 'SEG_X'},

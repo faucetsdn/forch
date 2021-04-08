@@ -3,6 +3,8 @@
  */
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
 // TODO fill up sections one by one
 /*
  * Forch configuration
@@ -152,7 +154,7 @@ message OrchestrationConfig {
     int32 sequester_timeout_sec = 6;
 
     // Default value for DeviceBehavior.auto_sequestering
-    bool default_auto_sequestering = 7;
+    PortBehavior.AutoSequestering default_auto_sequestering = 7;
   }
 }
 
