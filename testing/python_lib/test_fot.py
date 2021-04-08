@@ -268,8 +268,8 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0b:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True}
         }
         static_device_behaviors = {
-            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'port_behavior': 'cleared'},
-            '00:0Y:00:00:00:02': {'port_behavior': 'cleared'}
+            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'auto_sequestering': 'disabled'},
+            '00:0Y:00:00:00:02': {'auto_sequestering': 'disabled'}
         }
         authentication_results = {
             '00:0X:00:00:00:01': {'segment': 'SEG_X'},
@@ -474,7 +474,7 @@ class FotContainerTest(IntegrationTestBase):
         self.stack_options['no-test'] = True
         self.stack_options['fot'] = True
         self.stack_options['dhcp'] = True
-        self.stack_options['devices'] = 4
+        self.stack_options['devices'] = 5
 
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
@@ -509,7 +509,7 @@ class FotContainerTest(IntegrationTestBase):
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
         # test DHCP with unauthenticated device
-        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
+        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-5')
         self.assertFalse(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 

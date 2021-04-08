@@ -26,7 +26,10 @@ message DevicePlacement {
 message DeviceBehavior {
   string segment = 1;
   string role = 2;
-  PortBehavior.Behavior port_behavior = 3;
+  oneof behavior {
+    PortBehavior.Behavior port_behavior = 3;
+    PortBehavior.AutoSequestering auto_sequestering = 4;
+  }
 }
 
 message SegmentsToVlans {
