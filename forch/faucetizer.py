@@ -110,8 +110,9 @@ class Faucetizer(DeviceStateManager):
                 device_behavior = behavior_map.setdefault(DEVICE_BEHAVIOR, DeviceBehavior())
                 device_behavior.CopyFrom(behavior)
                 self._logger.info(
-                    'Received %s behavior: %s, %s, %s',
-                    device_type, eth_src, device_behavior.segment, device_behavior.role)
+                    'Received %s behavior: %s, %s (assigned: %s), %s',
+                    device_type, eth_src, device_behavior.segment, 
+                    device_behavior.assigned_segment, device_behavior.role)
             else:
                 removed = self._device_behaviors.pop(eth_src, None)
                 if removed:
