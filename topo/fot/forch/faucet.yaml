@@ -9,6 +9,7 @@ dps:
     interfaces:
       4:
         description: TAP
+        tagged_vlans: [171]
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}
