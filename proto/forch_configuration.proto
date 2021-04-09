@@ -3,6 +3,8 @@
  */
 syntax = "proto3";
 
+import "forch/proto/shared_constants.proto";
+
 // TODO fill up sections one by one
 /*
  * Forch configuration
@@ -132,8 +134,7 @@ message OrchestrationConfig {
 
   // encapsulating device sequestration configurations
   message SequesterConfig {
-    // Segment of sequestered devices. Optional. Specify it to avoid conflict with the operational
-    // segments
+    // Optional segment of sequestered devices. Specify to avoid conflict with operational segments.
     string sequester_segment = 1;
 
     // start of vlan range
@@ -145,11 +146,17 @@ message OrchestrationConfig {
     // identifier of testing host port in the port description
     string port_description = 4;
 
-    // port on which the grpc server receives testing result
-    int32 grpc_server_port = 5;
+    // port of server for device results service.
+    int32 service_port = 5;
+
+    // target server address of results service.
+    int32 service_address = 6;
 
     // DUT will return to operational state if no DeviceReport is received within this timeout.
-    int32 sequester_timeout_sec = 6;
+    int32 sequester_timeout_sec = 7;
+
+    // Default value for DeviceBehavior.auto_sequestering
+    PortBehavior.AutoSequestering default_auto_sequestering = 8;
   }
 }
 

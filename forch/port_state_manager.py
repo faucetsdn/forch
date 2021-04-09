@@ -107,32 +107,40 @@ class PortStateMachine:
 
 class PortStateManager:
     """Manages the states of the access ports for orchestrated testing"""
+    _sequester_segment = None
+    _sequester_timeout = None
+    _default_auto_sequestering = PortBehavior.AutoSequestering.disabled
 
     # pylint: disable=too-many-arguments
     def __init__(self, device_state_manager=None, varz_updater=None,
-                 device_state_reporter=None, sequester_segment=None, sequester_timeout=None):
+                 device_state_reporter=None, sequester_config=None):
         self._state_machines = {}
-        self._static_port_behaviors = {}
+        self._auto_sequester = {}
         self._static_device_behaviors = {}
         self._dynamic_device_behaviors = {}
         self._device_state_manager = device_state_manager
         self._varz_updater = varz_updater
         self._device_state_reporter = device_state_reporter
         self._placement_to_mac = {}
-        self._sequester_segment = sequester_segment
-        self._sequester_timeout = sequester_timeout
         self._sequester_timer = {}
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
+        if sequester_config:
+            self._sequester_segment = sequester_config.sequester_segment
+            self._sequester_timeout = sequester_config.sequester_timeout_sec
+            if sequester_config.default_auto_sequestering:
+                self._default_auto_sequestering = sequester_config.default_auto_sequestering
+
 
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
         with self._lock:
             mac_lower = mac.lower()
-            static_port_behavior = device_behavior.port_behavior
-            if static_port_behavior:
-                self._static_port_behaviors[mac_lower] = static_port_behavior
+            auto_sequester = (device_behavior.auto_sequestering
+                              if device_behavior.auto_sequestering
+                              else self._default_auto_sequestering)
 
+            self._auto_sequester[mac_lower] = auto_sequester
             if device_behavior.segment:
                 self.handle_device_behavior(mac_lower, device_behavior, static=True)
 
@@ -206,8 +214,9 @@ class PortStateManager:
                 self._static_device_behaviors if static else self._dynamic_device_behaviors)
             device_behaviors.setdefault(mac, DeviceBehavior()).CopyFrom(device_behavior)
 
-            static_port_behavior = self._static_port_behaviors.get(mac)
-            if not self._sequester_segment or static_port_behavior == PortBehavior.cleared:
+            auto_sequester = self._auto_sequester.get(mac, self._default_auto_sequestering)
+            sequester_enabled = auto_sequester == PortBehavior.AutoSequestering.enabled
+            if not self._sequester_segment or not sequester_enabled:
                 port_behavior = PortBehavior.cleared
             else:
                 port_behavior = PortBehavior.sequestered
