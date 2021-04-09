@@ -1,6 +1,5 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
-import abc
 from datetime import datetime
 import functools
 import os
@@ -11,12 +10,14 @@ from google.protobuf.message import Message
 
 from faucet import config_parser
 
+from forch.base_classes import OrchestrationManager
 import forch.faucet_event_client
 import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
 from forch.device_report_server import DeviceReportServer
+from forch.device_report_client import DeviceReportClient
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics, VarzUpdater
@@ -75,17 +76,6 @@ TAIL_ACL_CONFIG = 'tail_acl_config'
 DEFAULT_SEQUESTER_SEGMENT = 'SEQUESTER'
 DEFAULT_SEQUESTER_TIMEOUT_SEC = 20 * 60
 
-class OrchestrationManager(abc.ABC):
-    """Interface collecting the methods that manage orchestration"""
-
-    @abc.abstractmethod
-    def reregister_include_file_watchers(self, old_include_files, new_include_files):
-        """reregister the include file watchers"""
-
-    @abc.abstractmethod
-    def reset_faucet_config_writing_time(self):
-        """reset config writing time"""
-
 
 class Forchestrator(VarzUpdater, OrchestrationManager):
     """Main class encompassing faucet orchestrator components for dynamically
@@ -118,7 +108,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._config_file_watcher = None
         self._faucet_state_scheduler = None
         self._gauge_metrics_scheduler = None
-        self._device_report_server = None
+        self._device_report_handler = None
         self._port_state_manager = None
 
         self._initialized = False
@@ -243,12 +233,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                     self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
         if sequester_config.sequester_segment:
-            self._device_report_server = DeviceReportServer(
-                self._handle_device_result, sequester_config.grpc_server_port)
-            self._faucet_collector.set_device_state_reporter(self._device_report_server)
+            self._device_report_handler = self._create_device_report_handler()
+            self._faucet_collector.set_device_state_reporter(self._device_report_handler)
 
         self._port_state_manager = PortStateManager(
-            self._faucetizer, self, self._device_report_server,
+            self._faucetizer, self, self._device_report_handler,
             sequester_config=sequester_config)
 
         self._attempt_authenticator_initialise()
@@ -256,6 +245,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._process_static_device_behavior()
         if self._faucetizer:
             self._faucetizer.flush_behavioral_config(force=True)
+
+    def _create_device_report_handler(self):
+        service_address, service_port = self._get_testing_service_config()
+        if service_address:
+            return DeviceReportClient(self._handle_device_result, service_address, service_port)
+        return DeviceReportServer(self._handle_device_result, service_port)
 
     def _attempt_authenticator_initialise(self):
         orch_config = self._config.orchestration
@@ -373,6 +368,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         config.sequester_segment = config.sequester_segment or DEFAULT_SEQUESTER_SEGMENT
         config.sequester_timeout_sec = config.sequester_timeout_sec or DEFAULT_SEQUESTER_TIMEOUT_SEC
         return config
+
+    def _get_testing_service_config(self):
+        if not self._config.orchestration.HasField('sequester_config'):
+            return None, None
+        sequester_config = self._config.orchestration.sequester_config
+        return sequester_config.service_address, sequester_config.service_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):
@@ -590,8 +591,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._gauge_metrics_scheduler.start()
         if self._metrics:
             self._metrics.update_var('forch_version', {'version': __version__})
-        if self._device_report_server:
-            self._device_report_server.start()
+        if self._device_report_handler:
+            self._device_report_handler.start()
 
     def stop(self):
         """Stop forchestrator components"""
@@ -607,8 +608,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._metrics.stop()
         if self._varz_proxy:
             self._varz_proxy.stop()
-        if self._device_report_server:
-            self._device_report_server.stop()
+        if self._device_report_handler:
+            self._device_report_handler.stop()
 
     def _get_controller_info(self, target):
         controllers = self._config.site.controllers

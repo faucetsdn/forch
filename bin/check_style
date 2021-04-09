@@ -12,13 +12,7 @@ if [ -z "$VIRTUAL_ENV" -a -d venv ]; then
     source venv/bin/activate
 fi
 
-PY_LIB=$VIRTUAL_ENV/lib/python3.8/site-packages/
 export PYTHONPATH=forch:$PYTHONPATH
-
-if [ ! -d $PY_LIB ]; then
-    echo Missing expected python env directory $PY_LIB
-    false
-fi
 
 pip3 freeze
 

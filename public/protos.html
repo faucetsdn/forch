@@ -4057,8 +4057,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td>sequester_segment</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Segment of sequestered devices. Optional. Specify it to avoid conflict with the operational
-segments </p></td>
+                  <td><p>Optional segment of sequestered devices. Specify to avoid conflict with operational segments. </p></td>
                 </tr>
               
                 <tr>
@@ -4083,10 +4082,17 @@ segments </p></td>
                 </tr>
               
                 <tr>
-                  <td>grpc_server_port</td>
+                  <td>service_port</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>port on which the grpc server receives testing result </p></td>
+                  <td><p>port of server for device results service. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>service_address</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>target server address of results service. </p></td>
                 </tr>
               
                 <tr>
