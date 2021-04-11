@@ -348,11 +348,13 @@ class Faucetizer(DeviceStateManager):
             device_vlan, assigned_vlan = self._calculate_vlan_id(
                 mac, device_behavior, available_testing_vlans, new_testing_device_vlans)
 
-            if self._update_port_config(port_cfg, device_vlan, device_behavior.role):
+            if device_vlan:
                 old_device_vlan = self._get_faucet_config_vlan(
                     self._behavioral_faucet_config, device_placement.switch, device_placement.port)
                 if device_vlan != old_device_vlan:
                     self._logger.info('Placing %s into vlan %s', mac, device_vlan)
+
+                self._update_port_config(port_cfg, device_vlan, device_behavior.role)
 
                 if assigned_vlan:
                     assigned_vlans.add(assigned_vlan)
