@@ -20,6 +20,7 @@ orchestration:
     port_description: TAP
     sequester_timeout_sec: 360
     default_auto_sequestering: disabled
+    service_address: '127.0.0.1'
 proxy_server:
   targets:
     faucet:
