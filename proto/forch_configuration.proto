@@ -150,7 +150,7 @@ message OrchestrationConfig {
     int32 service_port = 5;
 
     // target server address of results service.
-    int32 service_address = 6;
+    string service_address = 6;
 
     // DUT will return to operational state if no DeviceReport is received within this timeout.
     int32 sequester_timeout_sec = 7;
