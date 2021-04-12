@@ -25,6 +25,7 @@ message DevicePlacement {
 
 message DeviceBehavior {
   string segment = 1;
+  string assigned_segment = 5;
   string role = 2;
   oneof behavior {
     PortBehavior.Behavior port_behavior = 3;
