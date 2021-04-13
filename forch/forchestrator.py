@@ -315,7 +315,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
     def _handle_device_result(self, device_result):
+        self._logger.info('TAP1')
         self._port_state_manager.handle_testing_result(device_result)
+        self._logger.info('TAP2')
 
     def update_device_state_varz(self, mac, state):
         if self._metrics:

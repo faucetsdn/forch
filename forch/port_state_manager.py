@@ -246,14 +246,17 @@ class PortStateManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
+        self._logger.info('TAP1')
         for mac, device_behavior in testing_result.device_mac_behaviors.items():
             mac_lower = mac.lower()
             if mac_lower in self._sequester_timer:
                 self._sequester_timer[mac_lower].cancel()
                 del self._sequester_timer[mac_lower]
             self._handle_port_behavior(mac_lower, device_behavior.port_behavior)
+        self._logger.info('TAP2')
 
     def _handle_port_behavior(self, mac, port_behavior):
+        self._logger.info('starting _handle_port_behavior %s', mac)
         with self._lock:
             state_machine = self._state_machines.get(mac)
             if not state_machine:
@@ -261,6 +264,7 @@ class PortStateManager:
                     'No state machine defined for device %s before receiving testing result', mac)
                 return
             state_machine.handle_port_behavior(port_behavior)
+        self._logger.info('leaving _handle_port_behavior %s', mac)
 
     def _handle_unauthenticated_state(self, mac):
         self._update_device_state_varz(mac, DVAState.unauthenticated)
