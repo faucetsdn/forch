@@ -65,8 +65,8 @@ class PortStateMachine:
 
         if not next_state:
             self._logger.warning(
-                'Cannot find next state for device %s in state %s for port behavior %s',
-                self._mac, self._current_state, port_behavior)
+                'Invalid port behavior %s from state %s for device %s',
+                PortBehavior.Behavior.Name(port_behavior), self._current_state, self._mac)
             return
 
         self._logger.info(
@@ -246,14 +246,12 @@ class PortStateManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
-        self._logger.info('TAP1')
         for mac, device_behavior in testing_result.device_mac_behaviors.items():
             mac_lower = mac.lower()
             if mac_lower in self._sequester_timer:
                 self._sequester_timer[mac_lower].cancel()
                 del self._sequester_timer[mac_lower]
             self._handle_port_behavior(mac_lower, device_behavior.port_behavior)
-        self._logger.info('TAP2')
 
     def _handle_port_behavior(self, mac, port_behavior):
         self._logger.info('starting _handle_port_behavior %s', mac)

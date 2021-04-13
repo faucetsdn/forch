@@ -17,6 +17,7 @@ try:
 
     PORT_BEHAVIOR_SESSION_RESULT = {
         SessionResult.ResultCode.ERROR: PortBehavior.unknown,
+        SessionResult.ResultCode.STARTED: PortBehavior.authenticated,
         SessionResult.ResultCode.PASSED: PortBehavior.passed,
         SessionResult.ResultCode.FAILED: PortBehavior.failed
     }
@@ -73,13 +74,13 @@ class DeviceReportClient(DeviceStateReporter):
         return '%s:%s' % (dp_name, port)
 
     def _convert_and_handle(self, mac, progress):
-        result_code = progress.result and progress.result.code
+        result_code = progress.result.code
         if result_code:
-            assert not progress.endpoint, 'endpoint and result_code defined'
+            assert not progress.endpoint.ip, 'endpoint.ip and result.code defined'
             port_behavior = PORT_BEHAVIOR_SESSION_RESULT[result_code]
-            device_behavior = DeviceBehavior(port_behavior=port_behavior)
+            #device_behavior = DeviceBehavior(port_behavior=port_behavior)
             devices_state = DevicesState()
-            devices_state.device_mac_behaviors.put(mac, device_behavior)
+            devices_state.device_mac_behaviors[mac].port_behavior = port_behavior
             self._result_handler(devices_state)
 
     def _process_progress(self, mac, progresses):
