@@ -34,7 +34,7 @@ class DeviceReportClient(DeviceStateReporter):
         self._dp_mac_map = {}
         self._mac_sessions = {}
         self._mac_device_vlan_map = {}
-        self._mac_native_vlan_map = {}
+        self._mac_assigned_vlan_map = {}
 
     def start(self):
         """Initiate a client connection"""
@@ -48,7 +48,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params = SessionParams()
         session_params.device_mac = mac
         session_params.device_vlan = vlan
-        session_params.native_vlan = assigned
+        session_params.assigned_vlan = assigned
         progresses = self._stub.StartSession(session_params,
                                              timeout=self._rpc_timeout_sec)
         thread = threading.Thread(target=lambda : self._process_progress(mac, progresses))
@@ -72,17 +72,17 @@ class DeviceReportClient(DeviceStateReporter):
 
     def _process_session_ready(self, mac):
         device_vlan = self._mac_device_vlan_map.get(mac)
-        native_vlan = self._mac_native_vlan_map.get(mac)
-        LOGGER.info('device %s ready on %s/%s', mac, device_vlan, native_vlan)
-        if device_vlan and native_vlan:
+        assigned_vlan = self._mac_assigned_vlan_map.get(mac)
+        LOGGER.info('device %s ready on %s/%s', mac, device_vlan, assigned_vlan)
+        if device_vlan and assigned_vlan:
             assert not self._mac_sessions.get(mac), 'session already started'
-            self._mac_sessions[mac] = self._connect(mac, device_vlan, native_vlan)
+            self._mac_sessions[mac] = self._connect(mac, device_vlan, assigned_vlan)
 
     def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
         dp_key = self._dp_key(dp_name, port)
         LOGGER.info('process_port_learn %s %s %s', dp_key, mac, vlan)
-        self._mac_native_vlan_map[mac] = vlan
+        self._mac_assigned_vlan_map[mac] = vlan
         self._dp_mac_map[dp_key] = mac
         self._process_session_ready(mac)
 
