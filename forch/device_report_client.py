@@ -24,8 +24,8 @@ DEFAULT_RPC_TIMEOUT_SEC = 10
 class DeviceReportClient(DeviceStateReporter):
     """gRPC client to send device result"""
 
-    def __init__(self, result_handler, server_address, server_port):
-        LOGGER.info('Initializing DeviceReportClient')
+    def __init__(self, result_handler, server_address, server_port, unauth_vlan):
+        LOGGER.info('Initializing DeviceReportClient %s', unauth_vlan)
         address = server_address or DEFAULT_SERVER_ADDRESS
         port = server_port or DEFAULT_SERVER_PORT
         channel = grpc.insecure_channel(f'{address}:{port}')
@@ -35,6 +35,7 @@ class DeviceReportClient(DeviceStateReporter):
         self._mac_sessions = {}
         self._mac_device_vlan_map = {}
         self._mac_assigned_vlan_map = {}
+        self._unauth_vlan = unauth_vlan
 
     def start(self):
         """Initiate a client connection"""
@@ -45,6 +46,7 @@ class DeviceReportClient(DeviceStateReporter):
         LOGGER.info('stopping client')
 
     def _connect(self, mac, vlan, assigned):
+        LOGGER.info('connecting %s to %s/%s', mac, vlan, assigned)
         session_params = SessionParams()
         session_params.device_mac = mac
         session_params.device_vlan = vlan
@@ -74,7 +76,8 @@ class DeviceReportClient(DeviceStateReporter):
         device_vlan = self._mac_device_vlan_map.get(mac)
         assigned_vlan = self._mac_assigned_vlan_map.get(mac)
         LOGGER.info('device %s ready on %s/%s', mac, device_vlan, assigned_vlan)
-        if device_vlan and assigned_vlan:
+        if device_vlan and assigned_vlan and assigned_vlan != self._unauth_vlan:
+            LOGGER.info('device %s conditions met', mac)
             assert not self._mac_sessions.get(mac), 'session already started'
             self._mac_sessions[mac] = self._connect(mac, device_vlan, assigned_vlan)
 

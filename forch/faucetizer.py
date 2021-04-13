@@ -498,7 +498,7 @@ def parse_args(raw_args):
     parser.add_argument('-c', '--config-input', type=str, default='faucet.yaml',
                         help='structural faucet config input')
     parser.add_argument('-f', '--forch-config', type=str, default='forch.yaml',
-                        help='unauthenticated_vlan')
+                        help='forch config file')
     parser.add_argument('-o', '--output', type=str, default='faucet.yaml',
                         help='behavioral faucet config output')
     return parser.parse_args(raw_args)

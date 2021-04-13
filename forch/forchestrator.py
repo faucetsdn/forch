@@ -249,7 +249,9 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def _create_device_report_handler(self):
         service_address, service_port = self._get_testing_service_config()
         if service_address:
-            return DeviceReportClient(self._handle_device_result, service_address, service_port)
+            unauth_vlan = self._config.orchestration.unauthenticated_vlan
+            return DeviceReportClient(self._handle_device_result, service_address,
+                                      service_port, unauth_vlan)
         return DeviceReportServer(self._handle_device_result, service_port)
 
     def _attempt_authenticator_initialise(self):
