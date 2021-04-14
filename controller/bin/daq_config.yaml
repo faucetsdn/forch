@@ -17,7 +17,7 @@ run_trigger:
 
 device_reporting:
   server_port: 50051
-  server_address: '127.0.0.1'
+  server_address: 127.0.0.1
 
 external_subnets:
   - subnet: 192.168.1.0/24
