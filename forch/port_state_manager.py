@@ -254,7 +254,6 @@ class PortStateManager:
             self._handle_port_behavior(mac_lower, device_behavior.port_behavior)
 
     def _handle_port_behavior(self, mac, port_behavior):
-        self._logger.info('starting _handle_port_behavior %s', mac)
         with self._lock:
             state_machine = self._state_machines.get(mac)
             if not state_machine:
@@ -262,7 +261,6 @@ class PortStateManager:
                     'No state machine defined for device %s before receiving testing result', mac)
                 return
             state_machine.handle_port_behavior(port_behavior)
-        self._logger.info('leaving _handle_port_behavior %s', mac)
 
     def _handle_unauthenticated_state(self, mac):
         self._update_device_state_varz(mac, DVAState.unauthenticated)
