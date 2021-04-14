@@ -450,13 +450,15 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
             sequester_segment=self.SEQUESTER_SEGMENT,
             default_auto_sequestering='enabled',
             test_result_device_state=[
-                OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition(result="FAILED", device_state="operational")
+                OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition(result="FAILED",
+                    device_state="operational")
             ])
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
             sequester_config=config)
 
         # All devices that were in infracted would be in operational state
+        # pylint: disable=invalid-name
         self.INFRACTED = self.OPERATIONAL
 
     def _receive_testing_results(self, testing_results, expected_device_behaviors):

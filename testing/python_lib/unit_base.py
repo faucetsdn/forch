@@ -20,7 +20,7 @@ from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig, OrchestrationConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
-from forch.proto.shared_constants_pb2 import DVAState, SessionResult
+from forch.proto.shared_constants_pb2 import DVAState
 
 
 _DEFAULT_FORCH_LOG = '/tmp/forch.log'

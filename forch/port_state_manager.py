@@ -29,7 +29,8 @@ class PortStateMachine:
     OPERATIONAL = DVAState.State.operational
     INFRACTED = DVAState.State.infracted
 
-    _TRANSITIONS = {
+    # pylint: disable=no-member
+    _transactions = {
         UNAUTHENTICATED: {
             PortBehavior.Behavior: {
                 PortBehavior.Behavior.cleared: OPERATIONAL,
@@ -67,7 +68,7 @@ class PortStateMachine:
         self._state_callbacks = state_callbacks
         self._logger = get_logger('portsm')
         if state_overwrites:
-            self._TRANSITIONS = self._resolve_transitions(state_overwrites)
+            self._transactions = self._resolve_transitions(state_overwrites)
         self._handle_current_state()
 
     def handle_port_behavior(self, port_behavior):
@@ -83,7 +84,7 @@ class PortStateMachine:
         return self._current_state
 
     def _transition(self, event, event_type):
-        next_state = self._TRANSITIONS.get(self._current_state, {}).get(event_type, {}).get(event)
+        next_state = self._transactions.get(self._current_state, {}).get(event_type, {}).get(event)
 
         if not next_state:
             self._logger.warning(
@@ -163,6 +164,7 @@ class PortStateManager:
                 dict_maps = [(entry.result, entry.device_state)
                              for entry in sequester_config.test_result_device_state]
                 test_result_device_state_map = dict(dict_maps)
+                # pylint: disable=no-member
                 self._state_overwrites = {
                     DVAState.State.sequestered: {
                         SessionResult.ResultCode: test_result_device_state_map
@@ -300,6 +302,7 @@ class PortStateManager:
                 del self._sequester_timer[mac_lower]
 
             # TODO: Remove this conversion when session results are being sent from DAQ
+            # pylint: disable=no-member
             if device_behavior.port_behavior == PortBehavior.Behavior.passed:
                 self._handle_session_result(mac_lower, SessionResult.ResultCode.PASSED)
             elif device_behavior.port_behavior == PortBehavior.Behavior.failed:
@@ -322,6 +325,7 @@ class PortStateManager:
             del self._sequester_timer[mac]
         self._logger.error('Device %s sequestering timedout after %ss.', mac,
                            self._sequester_timeout)
+        # pylint: disable=no-member
         self._handle_session_result(mac, SessionResult.ResultCode.FAILED)
 
     def _set_port_sequestered(self, mac):
