@@ -59,7 +59,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.device_vlan = vlan
         session_params.assigned_vlan = assigned
         progresses = self._stub.StartSession(session_params)
-        thread = threading.Thread(target=lambda : self._process_progress(mac, progresses))
+        thread = threading.Thread(target=lambda: self._process_progress(mac, progresses))
         thread.start()
         return thread
 
