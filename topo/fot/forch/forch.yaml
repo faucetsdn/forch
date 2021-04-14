@@ -20,6 +20,11 @@ orchestration:
     port_description: TAP
     sequester_timeout_sec: 360
     default_auto_sequestering: disabled
+    test_result_device_state:
+      - result: FAILED
+        device_state: infracted
+      - result: PASSED
+        device_state: operational
 proxy_server:
   targets:
     faucet:

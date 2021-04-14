@@ -93,6 +93,10 @@ message DVAState {
 
     // infracted
     infracted = 5;
+
+    // operational
+    // TODO.
+    operational = 6;
   }
 }
 
@@ -156,6 +160,26 @@ message PortType {
 
     // other
     other = 3;
+  }
+}
+
+/*
+ * TestResult
+ * TODO: Replace this enum with SessionResult in DAQ.
+ */
+
+/*
+ * Session result codes.
+ */
+message SessionResult {
+  SessionResult.ResultCode code = 1;
+
+  enum ResultCode {
+    PENDING = 0;
+    STARTED = 1;
+    ERROR = 2;
+    PASSED = 3;
+    FAILED = 4;
   }
 }
 

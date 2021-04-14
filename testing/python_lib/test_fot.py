@@ -13,7 +13,7 @@ from unit_base import (
     DeviceReportServerTestBase, DeviceReportServicerTestBase, FaucetizerTestBase,
     PortsStateManagerTestBase
 )
-
+from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto, proto_dict
 
 from forch.proto.devices_state_pb2 import (
@@ -22,7 +22,7 @@ from forch.proto.devices_state_pb2 import (
 )
 from forch.proto.shared_constants_pb2 import Empty, PortBehavior
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
-
+from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 class FotFaucetizerTestCase(FaucetizerTestBase):
     """Faucetizer test"""
@@ -88,6 +88,7 @@ def encapsulate_mac_port_behavior(mac, port_behavior):
         }
     }
     return dict_proto(devices_state_map, DevicesState)
+
 
 class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
     """Device report server test case"""
@@ -438,6 +439,44 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         self._verify_ports_states(expected_states)
 
         expected_device_behaviors.extend([('00:0a:00:00:00:04', 'TESTING', False)])
+        self._verify_received_device_behaviors(expected_device_behaviors)
+
+
+class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
+    """Test access port states with overrides"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        config = OrchestrationConfig.SequesterConfig(
+            sequester_segment=self.SEQUESTER_SEGMENT,
+            default_auto_sequestering='enabled',
+            test_result_device_state=[
+                OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition(result="FAILED", device_state="operational")
+            ])
+        self._port_state_manager = PortStateManager(
+            device_state_manager=self._device_state_manager,
+            sequester_config=config)
+
+        # All devices that were in infracted would be in operational state
+        self.INFRACTED = self.OPERATIONAL
+
+    def _receive_testing_results(self, testing_results, expected_device_behaviors):
+        for testing_result in testing_results:
+            self._port_state_manager.handle_testing_result(
+                self._encapsulate_testing_result(*testing_result))
+
+        expected_states = {
+            '00:0x:00:00:00:01': self.OPERATIONAL,
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.OPERATIONAL,
+            '00:0a:00:00:00:04': self.OPERATIONAL,
+            '00:0b:00:00:00:05': self.SEQUESTERED
+        }
+        self._verify_ports_states(expected_states)
+
+        expected_device_behaviors.extend([
+            ('00:0z:00:00:00:03', 'SEG_C', False),
+            ('00:0a:00:00:00:04', 'SEG_D', False)
+        ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
 

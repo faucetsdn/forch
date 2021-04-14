@@ -20,6 +20,7 @@ from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig, OrchestrationConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
+from forch.proto.shared_constants_pb2 import DVAState, SessionResult
 
 
 _DEFAULT_FORCH_LOG = '/tmp/forch.log'
@@ -378,11 +379,10 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 class PortsStateManagerTestBase(UnitTestBase):
     """Base class for PortsStateManager"""
 
-    UNAUTHENTICATED = 'unauthenticated'
-    AUTHENTICATED = 'authenticated'
-    SEQUESTERED = 'sequestered'
-    OPERATIONAL = 'operational'
-    INFRACTED = 'infracted'
+    UNAUTHENTICATED = DVAState.unauthenticated
+    SEQUESTERED = DVAState.sequestered
+    OPERATIONAL = DVAState.operational
+    INFRACTED = DVAState.infracted
     SEQUESTER_SEGMENT = 'TESTING'
 
     def __init__(self, *args, **kwargs):
