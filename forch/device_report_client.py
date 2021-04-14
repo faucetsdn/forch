@@ -1,10 +1,10 @@
 """Server to handle incoming session requests"""
 
-import grpc
 import threading
+import grpc
 
 from forch.proto.shared_constants_pb2 import PortBehavior
-from forch.proto.devices_state_pb2 import DeviceBehavior, DevicesState
+from forch.proto.devices_state_pb2 import DevicesState
 from forch.base_classes import DeviceStateReporter
 from forch.utils import get_logger
 
@@ -60,7 +60,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.assigned_vlan = assigned
         progresses = self._stub.StartSession(session_params)
         thread = threading.Thread(target=lambda : self._process_progress(mac, progresses))
-        thread.start();
+        thread.start()
         return thread
 
     def _dp_key(self, dp_name, port):
@@ -94,8 +94,6 @@ class DeviceReportClient(DeviceStateReporter):
 
     def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
-        with self._lock:
-            dp_key = self._dp_key(dp_name, port)
 
     def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
