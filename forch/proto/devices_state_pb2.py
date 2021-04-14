@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1f\x66orch/proto/devices_state.proto\x1a\"forch/proto/shared_constants.proto\"\x15\n\x06\x44\x65vice\x12\x0b\n\x03mac\x18\x01 \x01(\t\"e\n\x0f\x44\x65vicePortEvent\x12&\n\x05state\x18\x01 \x01(\x0e\x32\x17.PortBehavior.PortState\x12\x13\n\x0b\x64\x65vice_vlan\x18\x03 \x01(\x05\x12\x15\n\rassigned_vlan\x18\x04 \x01(\x05\"\xb4\x02\n\x0c\x44\x65vicesState\x12\x45\n\x15\x64\x65vice_mac_placements\x18\x01 \x03(\x0b\x32&.DevicesState.DeviceMacPlacementsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aL\n\x18\x44\x65viceMacPlacementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"\xa9\x01\n\x0e\x44\x65viceBehavior\x12\x0f\n\x07segment\x18\x01 \x01(\t\x12\x0c\n\x04role\x18\x02 \x01(\t\x12/\n\rport_behavior\x18\x03 \x01(\x0e\x32\x16.PortBehavior.BehaviorH\x00\x12;\n\x11\x61uto_sequestering\x18\x04 \x01(\x0e\x32\x1e.PortBehavior.AutoSequesteringH\x00\x42\n\n\x08\x62\x65havior\"\x8b\x01\n\x0fSegmentsToVlans\x12@\n\x11segments_to_vlans\x18\x01 \x03(\x0b\x32%.SegmentsToVlans.SegmentsToVlansEntry\x1a\x36\n\x14SegmentsToVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x62\x06proto3'
+  serialized_pb=b'\n\x1f\x66orch/proto/devices_state.proto\x1a\"forch/proto/shared_constants.proto\"\x15\n\x06\x44\x65vice\x12\x0b\n\x03mac\x18\x01 \x01(\t\"e\n\x0f\x44\x65vicePortEvent\x12&\n\x05state\x18\x01 \x01(\x0e\x32\x17.PortBehavior.PortState\x12\x13\n\x0b\x64\x65vice_vlan\x18\x03 \x01(\x05\x12\x15\n\rassigned_vlan\x18\x04 \x01(\x05\"\xb4\x02\n\x0c\x44\x65vicesState\x12\x45\n\x15\x64\x65vice_mac_placements\x18\x01 \x03(\x0b\x32&.DevicesState.DeviceMacPlacementsEntry\x12\x43\n\x14\x64\x65vice_mac_behaviors\x18\x02 \x03(\x0b\x32%.DevicesState.DeviceMacBehaviorsEntry\x1aL\n\x18\x44\x65viceMacPlacementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.DevicePlacement:\x02\x38\x01\x1aJ\n\x17\x44\x65viceMacBehaviorsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DeviceBehavior:\x02\x38\x01\"B\n\x0f\x44\x65vicePlacement\x12\x0e\n\x06switch\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\x12\x11\n\tconnected\x18\x03 \x01(\x08\"\xc3\x01\n\x0e\x44\x65viceBehavior\x12\x0f\n\x07segment\x18\x01 \x01(\t\x12\x18\n\x10\x61ssigned_segment\x18\x05 \x01(\t\x12\x0c\n\x04role\x18\x02 \x01(\t\x12/\n\rport_behavior\x18\x03 \x01(\x0e\x32\x16.PortBehavior.BehaviorH\x00\x12;\n\x11\x61uto_sequestering\x18\x04 \x01(\x0e\x32\x1e.PortBehavior.AutoSequesteringH\x00\x42\n\n\x08\x62\x65havior\"\x8b\x01\n\x0fSegmentsToVlans\x12@\n\x11segments_to_vlans\x18\x01 \x03(\x0b\x32%.SegmentsToVlans.SegmentsToVlansEntry\x1a\x36\n\x14SegmentsToVlansEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x62\x06proto3'
   ,
   dependencies=[forch_dot_proto_dot_shared__constants__pb2.DESCRIPTOR,])
 
@@ -282,21 +282,28 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='role', full_name='DeviceBehavior.role', index=1,
+      name='assigned_segment', full_name='DeviceBehavior.assigned_segment', index=1,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='role', full_name='DeviceBehavior.role', index=2,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='port_behavior', full_name='DeviceBehavior.port_behavior', index=2,
+      name='port_behavior', full_name='DeviceBehavior.port_behavior', index=3,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='auto_sequestering', full_name='DeviceBehavior.auto_sequestering', index=3,
+      name='auto_sequestering', full_name='DeviceBehavior.auto_sequestering', index=4,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -320,7 +327,7 @@ _DEVICEBEHAVIOR = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=577,
-  serialized_end=746,
+  serialized_end=772,
 )
 
 
@@ -358,8 +365,8 @@ _SEGMENTSTOVLANS_SEGMENTSTOVLANSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=834,
-  serialized_end=888,
+  serialized_start=860,
+  serialized_end=914,
 )
 
 _SEGMENTSTOVLANS = _descriptor.Descriptor(
@@ -389,8 +396,8 @@ _SEGMENTSTOVLANS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=749,
-  serialized_end=888,
+  serialized_start=775,
+  serialized_end=914,
 )
 
 _DEVICEPORTEVENT.fields_by_name['state'].enum_type = forch_dot_proto_dot_shared__constants__pb2._PORTBEHAVIOR_PORTSTATE
