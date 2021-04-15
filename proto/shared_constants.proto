@@ -164,14 +164,9 @@ message PortType {
 }
 
 /*
- * TestResult
- * TODO: Replace this enum with SessionResult in DAQ.
- */
-
-/*
  * Session result codes.
  */
-message SessionResult {
+message TestResult {
   enum ResultCode {
     PENDING = 0;
     STARTED = 1;
