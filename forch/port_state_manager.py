@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 
 from forch.utils import get_logger
 
-from forch.proto.shared_constants_pb2 import PortBehavior
+from forch.proto.shared_constants_pb2 import PortBehavior, DVAState, SessionResult
 from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement
-from forch.proto.shared_constants_pb2 import DVAState
 
 INVALID_VLAN = 0
 
@@ -22,63 +21,94 @@ def _register_state_handler(state_name):
 
 
 class PortStateMachine:
+
     """State machine class that manages testing states of an access port"""
 
-    UNAUTHENTICATED = 'unauthenticated'
-    AUTHENTICATED = 'authenticated'
-    SEQUESTERED = 'sequestered'
-    OPERATIONAL = 'operational'
-    INFRACTED = 'infracted'
+    UNAUTHENTICATED = DVAState.State.unauthenticated
+    SEQUESTERED = DVAState.State.sequestered
+    OPERATIONAL = DVAState.State.operational
+    INFRACTED = DVAState.State.infracted
 
-    TRANSITIONS = {
+    # pylint: disable=no-member
+    _transitions = {
         UNAUTHENTICATED: {
-            PortBehavior.cleared: OPERATIONAL,
-            PortBehavior.sequestered: SEQUESTERED,
+            PortBehavior.Behavior: {
+                PortBehavior.Behavior.cleared: OPERATIONAL,
+                PortBehavior.Behavior.sequestered: SEQUESTERED,
+            }
         },
         SEQUESTERED: {
-            PortBehavior.passed: OPERATIONAL,
-            PortBehavior.failed: INFRACTED,
-            PortBehavior.deauthenticated: UNAUTHENTICATED,
+            PortBehavior.Behavior: {
+                PortBehavior.Behavior.deauthenticated: UNAUTHENTICATED
+            },
+            SessionResult.ResultCode: {
+                SessionResult.ResultCode.PASSED: OPERATIONAL,
+                SessionResult.ResultCode.FAILED: INFRACTED,
+            }
         },
         OPERATIONAL: {
-            PortBehavior.cleared: OPERATIONAL,
-            PortBehavior.deauthenticated: UNAUTHENTICATED,
+            PortBehavior.Behavior: {
+                PortBehavior.Behavior.cleared: OPERATIONAL,
+                PortBehavior.Behavior.deauthenticated: UNAUTHENTICATED
+            }
         },
     }
 
+    class StateCallbacks:
+        """Wrapper for state machine callbacks"""
+        unauthenticated_state = None
+        sequester_state = None
+        operational_state = None
+        infracted_state = None
+
     # pylint: disable=too-many-arguments
-    def __init__(self, mac, initial_state, unauthenticated_state_callback, sequester_state_callback,
-                 operational_state_callback, infracted_state_callback):
+    def __init__(self, mac, initial_state, state_callbacks: StateCallbacks, state_overwrites=None):
         self._mac = mac
         self._current_state = initial_state
-        self._unauthenticated_state_callback = unauthenticated_state_callback
-        self._sequester_state_callback = sequester_state_callback
-        self._operational_state_callback = operational_state_callback
-        self._infracted_state_callback = infracted_state_callback
+        self._state_callbacks = state_callbacks
         self._logger = get_logger('portsm')
-
+        if state_overwrites:
+            self._transitions = self._resolve_transitions(state_overwrites)
         self._handle_current_state()
 
     def handle_port_behavior(self, port_behavior):
         """Handle port behavior"""
-        next_state = self.TRANSITIONS.get(self._current_state, {}).get(port_behavior, {})
+        self._transition(port_behavior, PortBehavior.Behavior)
 
-        if not next_state:
-            self._logger.warning(
-                'Cannot find next state for device %s in state %s for port behavior %s',
-                self._mac, self._current_state, port_behavior)
-            return
-
-        self._logger.info(
-            'Device %s is entering %s state from %s state',
-            self._mac, next_state, self._current_state)
-
-        self._current_state = next_state
-        self._handle_current_state()
+    def handle_session_result(self, session_result):
+        """Handle session result"""
+        self._transition(session_result, SessionResult.ResultCode)
 
     def get_current_state(self):
         """Get current state of the port"""
         return self._current_state
+
+    def _transition(self, event, event_type):
+        next_state = self._transitions.get(self._current_state, {}).get(event_type, {}).get(event)
+
+        if not next_state:
+            self._logger.warning(
+                'Cannot find next state for device %s in state %s for event %s: %s',
+                self._mac, DVAState.State.Name(self._current_state),
+                event_type.DESCRIPTOR.name, event_type.Name(event))
+            return
+
+        self._logger.info(
+            'Device %s is entering %s state from %s state',
+            self._mac, DVAState.State.Name(next_state), DVAState.State.Name(self._current_state))
+
+        self._current_state = next_state
+        self._handle_current_state()
+
+    def _resolve_transitions(self, state_overwrites):
+        def merge(original, overwrites):
+            for key, value in overwrites.items():
+                if isinstance(value, dict):
+                    original[key] = merge(original.get(key, dict()), value)
+                else:
+                    original[key] = value
+            return original
+        return merge(self._transitions, state_overwrites)
 
     def _handle_current_state(self):
         if self._current_state in STATE_HANDLERS:
@@ -87,22 +117,22 @@ class PortStateMachine:
     @_register_state_handler(state_name=UNAUTHENTICATED)
     def _handle_unauthenticated_state(self):
         self._logger.info('Handling unauthenticated state for device %s', self._mac)
-        self._unauthenticated_state_callback(self._mac)
+        self._state_callbacks.unauthenticated_state(self._mac)
 
     @_register_state_handler(state_name=SEQUESTERED)
     def _handle_sequestered_state(self):
         self._logger.info('Handling sequestered state for device %s', self._mac)
-        self._sequester_state_callback(self._mac)
+        self._state_callbacks.sequester_state(self._mac)
 
     @_register_state_handler(state_name=OPERATIONAL)
     def _handle_operational_state(self):
         self._logger.info('Handling operational state for device %s', self._mac)
-        self._operational_state_callback(self._mac)
+        self._state_callbacks.operational_state(self._mac)
 
     @_register_state_handler(state_name=INFRACTED)
     def _handle_infracted_state(self):
         self._logger.info('Handling infracted state for device %s', self._mac)
-        self._infracted_state_callback(self._mac)
+        self._state_callbacks.infracted_state(self._mac)
 
 
 class PortStateManager:
@@ -125,9 +155,21 @@ class PortStateManager:
         self._sequester_timer = {}
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
+        self._state_callbacks = self._build_state_callbacks()
+        self._state_overwrites = {}
         if sequester_config:
             self._sequester_segment = sequester_config.sequester_segment
             self._sequester_timeout = sequester_config.sequester_timeout_sec
+            if sequester_config.test_result_device_states:
+                dict_maps = [(entry.test_result, entry.device_state)
+                             for entry in sequester_config.test_result_device_states]
+                test_result_device_states_map = dict(dict_maps)
+                # pylint: disable=no-member
+                self._state_overwrites = {
+                    DVAState.State.sequestered: {
+                        SessionResult.ResultCode: test_result_device_states_map
+                    }
+                }
             if sequester_config.default_auto_sequestering:
                 self._default_auto_sequestering = sequester_config.default_auto_sequestering
 
@@ -163,6 +205,14 @@ class PortStateManager:
 
         return self._handle_disconnected_device(device_placement)
 
+    def _build_state_callbacks(self):
+        callbacks = PortStateMachine.StateCallbacks()
+        callbacks.unauthenticated_state = self._handle_unauthenticated_state
+        callbacks.sequester_state = self._set_port_sequestered
+        callbacks.operational_state = self._set_port_operational
+        callbacks.infracted_state = self._handle_infracted_state
+        return callbacks
+
     def _handle_learned_device(self, mac, device_placement, static=False):
         old_mac = self._placement_to_mac.get((device_placement.switch, device_placement.port))
         stale_mac = old_mac if old_mac and old_mac != mac else None
@@ -180,9 +230,8 @@ class PortStateManager:
 
         if mac not in self._state_machines:
             self._state_machines[mac] = PortStateMachine(
-                mac, PortStateMachine.UNAUTHENTICATED, self._handle_unauthenticated_state,
-                self._set_port_sequestered, self._set_port_operational,
-                self._handle_infracted_state)
+                mac, PortStateMachine.UNAUTHENTICATED, self._state_callbacks,
+                state_overwrites=self._state_overwrites)
 
             device_behavior = (self._static_device_behaviors.get(mac) or
                                self._dynamic_device_behaviors.get(mac))
@@ -251,16 +300,22 @@ class PortStateManager:
             if mac_lower in self._sequester_timer:
                 self._sequester_timer[mac_lower].cancel()
                 del self._sequester_timer[mac_lower]
-            self._handle_port_behavior(mac_lower, device_behavior.port_behavior)
 
-    def _handle_port_behavior(self, mac, port_behavior):
+            # TODO: Remove this conversion when session results are being sent from DAQ
+            # pylint: disable=no-member
+            if device_behavior.port_behavior == PortBehavior.Behavior.passed:
+                self._handle_session_result(mac_lower, SessionResult.ResultCode.PASSED)
+            elif device_behavior.port_behavior == PortBehavior.Behavior.failed:
+                self._handle_session_result(mac_lower, SessionResult.ResultCode.FAILED)
+
+    def _handle_session_result(self, mac, session_result):
         with self._lock:
             state_machine = self._state_machines.get(mac)
             if not state_machine:
                 self._logger.error(
                     'No state machine defined for device %s before receiving testing result', mac)
                 return
-            state_machine.handle_port_behavior(port_behavior)
+            state_machine.handle_session_result(session_result)
 
     def _handle_unauthenticated_state(self, mac):
         self._update_device_state_varz(mac, DVAState.unauthenticated)
@@ -270,7 +325,8 @@ class PortStateManager:
             del self._sequester_timer[mac]
         self._logger.error('Device %s sequestering timedout after %ss.', mac,
                            self._sequester_timeout)
-        self._handle_port_behavior(mac, PortBehavior.Behavior.failed)
+        # pylint: disable=no-member
+        self._handle_session_result(mac, SessionResult.ResultCode.FAILED)
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""

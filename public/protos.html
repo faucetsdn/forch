@@ -567,6 +567,10 @@
                 </li>
               
                 <li>
+                  <a href="#OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition"><span class="badge">M</span>OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition</a>
+                </li>
+              
+                <li>
                   <a href="#ProcessConfig"><span class="badge">M</span>ProcessConfig</a>
                 </li>
               
@@ -797,6 +801,10 @@
                 </li>
               
                 <li>
+                  <a href="#SessionResult"><span class="badge">M</span>SessionResult</a>
+                </li>
+              
+                <li>
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
@@ -831,6 +839,10 @@
               
                 <li>
                   <a href="#PortType.Type"><span class="badge">E</span>PortType.Type</a>
+                </li>
+              
+                <li>
+                  <a href="#SessionResult.ResultCode"><span class="badge">E</span>SessionResult.ResultCode</a>
                 </li>
               
                 <li>
@@ -4116,6 +4128,44 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td><p>Default value for DeviceBehavior.auto_sequestering </p></td>
                 </tr>
               
+                <tr>
+                  <td>test_result_device_states</td>
+                  <td><a href="#OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition">OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition</a></td>
+                  <td>repeated</td>
+                  <td><p>Specify resulting device states from test results </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition">OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>test_result</td>
+                  <td><a href="#SessionResult.ResultCode">SessionResult.ResultCode</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>device_state</td>
+                  <td><a href="#DVAState.State">DVAState.State</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -5542,6 +5592,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="SessionResult">SessionResult</h3>
+        <p>Session result codes.</p>
+
+        
+
+        
+      
         <h3 id="State">State</h3>
         <p>States</p>
 
@@ -5628,6 +5685,13 @@ or to host_path API to list path </p></td>
                 <td>infracted</td>
                 <td>5</td>
                 <td><p>infracted</p></td>
+              </tr>
+            
+              <tr>
+                <td>operational</td>
+                <td>6</td>
+                <td><p>operational
+TODO.</p></td>
               </tr>
             
           </tbody>
@@ -5850,6 +5914,47 @@ or to host_path API to list path </p></td>
                 <td>other</td>
                 <td>3</td>
                 <td><p>other</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="SessionResult.ResultCode">SessionResult.ResultCode</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>PENDING</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>STARTED</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>ERROR</td>
+                <td>2</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>PASSED</td>
+                <td>3</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>FAILED</td>
+                <td>4</td>
+                <td><p></p></td>
               </tr>
             
           </tbody>

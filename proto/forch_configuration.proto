@@ -157,6 +157,14 @@ message OrchestrationConfig {
 
     // Default value for DeviceBehavior.auto_sequestering
     PortBehavior.AutoSequestering default_auto_sequestering = 8;
+
+    message TestResultDeviceStateTransition {
+      SessionResult.ResultCode test_result = 1;
+      DVAState.State device_state = 2;
+    }
+
+    // Specify resulting device states from test results
+    repeated TestResultDeviceStateTransition test_result_device_states = 9;
   }
 }
 
