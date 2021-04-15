@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from forch.utils import get_logger
 
-from forch.proto.shared_constants_pb2 import PortBehavior, DVAState, SessionResult
+from forch.proto.shared_constants_pb2 import PortBehavior, DVAState, TestResult
 from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement
 
 INVALID_VLAN = 0
@@ -41,9 +41,9 @@ class PortStateMachine:
             PortBehavior.Behavior: {
                 PortBehavior.Behavior.deauthenticated: UNAUTHENTICATED
             },
-            SessionResult.ResultCode: {
-                SessionResult.ResultCode.PASSED: OPERATIONAL,
-                SessionResult.ResultCode.FAILED: INFRACTED,
+            TestResult.ResultCode: {
+                TestResult.ResultCode.PASSED: OPERATIONAL,
+                TestResult.ResultCode.FAILED: INFRACTED,
             }
         },
         OPERATIONAL: {
@@ -77,7 +77,7 @@ class PortStateMachine:
 
     def handle_session_result(self, session_result):
         """Handle session result"""
-        self._transition(session_result, SessionResult.ResultCode)
+        self._transition(session_result, TestResult.ResultCode)
 
     def get_current_state(self):
         """Get current state of the port"""
@@ -167,7 +167,7 @@ class PortStateManager:
                 # pylint: disable=no-member
                 self._state_overwrites = {
                     DVAState.State.sequestered: {
-                        SessionResult.ResultCode: test_result_device_states_map
+                        TestResult.ResultCode: test_result_device_states_map
                     }
                 }
             if sequester_config.default_auto_sequestering:
@@ -304,9 +304,9 @@ class PortStateManager:
             # TODO: Remove this conversion when session results are being sent from DAQ
             # pylint: disable=no-member
             if device_behavior.port_behavior == PortBehavior.Behavior.passed:
-                self._handle_session_result(mac_lower, SessionResult.ResultCode.PASSED)
+                self._handle_session_result(mac_lower, TestResult.ResultCode.PASSED)
             elif device_behavior.port_behavior == PortBehavior.Behavior.failed:
-                self._handle_session_result(mac_lower, SessionResult.ResultCode.FAILED)
+                self._handle_session_result(mac_lower, TestResult.ResultCode.FAILED)
 
     def _handle_session_result(self, mac, session_result):
         with self._lock:
@@ -326,7 +326,7 @@ class PortStateManager:
         self._logger.error('Device %s sequestering timedout after %ss.', mac,
                            self._sequester_timeout)
         # pylint: disable=no-member
-        self._handle_session_result(mac, SessionResult.ResultCode.FAILED)
+        self._handle_session_result(mac, TestResult.ResultCode.FAILED)
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
