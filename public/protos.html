@@ -567,6 +567,10 @@
                 </li>
               
                 <li>
+                  <a href="#OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition"><span class="badge">M</span>OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition</a>
+                </li>
+              
+                <li>
                   <a href="#ProcessConfig"><span class="badge">M</span>ProcessConfig</a>
                 </li>
               
@@ -797,6 +801,10 @@
                 </li>
               
                 <li>
+                  <a href="#SessionResult"><span class="badge">M</span>SessionResult</a>
+                </li>
+              
+                <li>
                   <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
@@ -818,6 +826,10 @@
                 </li>
               
                 <li>
+                  <a href="#PortBehavior.AutoSequestering"><span class="badge">E</span>PortBehavior.AutoSequestering</a>
+                </li>
+              
+                <li>
                   <a href="#PortBehavior.Behavior"><span class="badge">E</span>PortBehavior.Behavior</a>
                 </li>
               
@@ -827,6 +839,10 @@
               
                 <li>
                   <a href="#PortType.Type"><span class="badge">E</span>PortType.Type</a>
+                </li>
+              
+                <li>
+                  <a href="#SessionResult.ResultCode"><span class="badge">E</span>SessionResult.ResultCode</a>
                 </li>
               
                 <li>
@@ -2121,6 +2137,13 @@
                 </tr>
               
                 <tr>
+                  <td>assigned_segment</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
                   <td>role</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
@@ -2130,6 +2153,13 @@
                 <tr>
                   <td>port_behavior</td>
                   <td><a href="#PortBehavior.Behavior">PortBehavior.Behavior</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>auto_sequestering</td>
+                  <td><a href="#PortBehavior.AutoSequestering">PortBehavior.AutoSequestering</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -4046,8 +4076,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
                   <td>sequester_segment</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Segment of sequestered devices. Optional. Specify it to avoid conflict with the operational
-segments </p></td>
+                  <td><p>Optional segment of sequestered devices. Specify to avoid conflict with operational segments. </p></td>
                 </tr>
               
                 <tr>
@@ -4072,10 +4101,69 @@ segments </p></td>
                 </tr>
               
                 <tr>
-                  <td>grpc_server_port</td>
+                  <td>service_port</td>
                   <td><a href="#int32">int32</a></td>
                   <td></td>
-                  <td><p>port on which the grpc server receives testing result </p></td>
+                  <td><p>port of server for device results service. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>service_address</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>target server address of results service. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>sequester_timeout_sec</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>DUT will return to operational state if no DeviceReport is received within this timeout. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>default_auto_sequestering</td>
+                  <td><a href="#PortBehavior.AutoSequestering">PortBehavior.AutoSequestering</a></td>
+                  <td></td>
+                  <td><p>Default value for DeviceBehavior.auto_sequestering </p></td>
+                </tr>
+              
+                <tr>
+                  <td>test_result_device_states</td>
+                  <td><a href="#OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition">OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition</a></td>
+                  <td>repeated</td>
+                  <td><p>Specify resulting device states from test results </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition">OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>test_result</td>
+                  <td><a href="#SessionResult.ResultCode">SessionResult.ResultCode</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>device_state</td>
+                  <td><a href="#DVAState.State">DVAState.State</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -5504,6 +5592,13 @@ or to host_path API to list path </p></td>
 
         
       
+        <h3 id="SessionResult">SessionResult</h3>
+        <p>Session result codes.</p>
+
+        
+
+        
+      
         <h3 id="State">State</h3>
         <p>States</p>
 
@@ -5592,6 +5687,13 @@ or to host_path API to list path </p></td>
                 <td><p>infracted</p></td>
               </tr>
             
+              <tr>
+                <td>operational</td>
+                <td>6</td>
+                <td><p>operational
+TODO.</p></td>
+              </tr>
+            
           </tbody>
         </table>
       
@@ -5672,6 +5774,35 @@ or to host_path API to list path </p></td>
                 <td>noact</td>
                 <td>5</td>
                 <td><p>noact: port is up, but not active</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="PortBehavior.AutoSequestering">PortBehavior.AutoSequestering</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>default</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>enabled</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>disabled</td>
+                <td>2</td>
+                <td><p></p></td>
               </tr>
             
           </tbody>
@@ -5783,6 +5914,47 @@ or to host_path API to list path </p></td>
                 <td>other</td>
                 <td>3</td>
                 <td><p>other</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="SessionResult.ResultCode">SessionResult.ResultCode</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>PENDING</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>STARTED</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>ERROR</td>
+                <td>2</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>PASSED</td>
+                <td>3</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>FAILED</td>
+                <td>4</td>
+                <td><p></p></td>
               </tr>
             
           </tbody>

@@ -17,12 +17,13 @@ from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
-from forch.proto.forch_configuration_pb2 import ForchConfig
+from forch.proto.forch_configuration_pb2 import ForchConfig, OrchestrationConfig
 from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
 from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
+from forch.proto.shared_constants_pb2 import DVAState
 
 
-_FORCH_LOG_DEFAULT = '/tmp/forch.log'
+_DEFAULT_FORCH_LOG = '/tmp/forch.log'
 
 
 class UnitTestBase(unittest.TestCase):
@@ -75,7 +76,7 @@ class ForchestratorEventTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._forchestrator = None
 
     def _setup_env(self):
@@ -242,7 +243,7 @@ class FaucetizerTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._faucetizer = None
         self._segments_vlans_file = None
 
@@ -305,7 +306,7 @@ class DeviceReportServerTestBase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._server = None
         self._client = None
 
@@ -330,7 +331,7 @@ class DeviceReportServicerTestBase(unittest.TestCase):
     """Base class for DeviceReportServicer unit test"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
 
     def setUp(self):
         self._on_receiving_result = MagicMock()
@@ -358,7 +359,7 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._faucet_state_collector = None
 
     def setUp(self):
@@ -378,22 +379,24 @@ class FaucetStateCollectorTestBase(UnitTestBase):
 class PortsStateManagerTestBase(UnitTestBase):
     """Base class for PortsStateManager"""
 
-    UNAUTHENTICATED = 'unauthenticated'
-    AUTHENTICATED = 'authenticated'
-    SEQUESTERED = 'sequestered'
-    OPERATIONAL = 'operational'
-    INFRACTED = 'infracted'
+    UNAUTHENTICATED = DVAState.unauthenticated
+    SEQUESTERED = DVAState.sequestered
+    OPERATIONAL = DVAState.operational
+    INFRACTED = DVAState.infracted
     SEQUESTER_SEGMENT = 'TESTING'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment)
+        config = OrchestrationConfig.SequesterConfig(
+            sequester_segment=self.SEQUESTER_SEGMENT,
+            default_auto_sequestering='enabled')
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            sequester_segment=self.SEQUESTER_SEGMENT)
+            sequester_config=config)
         self._received_device_placements = []
         self._received_device_behaviors = []
 
@@ -430,7 +433,7 @@ class ForchestratorTestBase(UnitTestBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _FORCH_LOG_DEFAULT
+        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
         self._forchestrator = None
 
     def setUp(self):

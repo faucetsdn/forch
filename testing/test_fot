@@ -17,6 +17,8 @@ YQ=venv/bin/yq
 
 echo DAQ spot checks
 
+docker exec forch-faux-4 ping -c10 192.168.1.0
+
 # Basic process startup.
 fgrep "Loading base module config" $DAQBASE/inst/cmdrun.log
 
@@ -51,11 +53,21 @@ echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
 monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:01: passed"
 monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
-monitor_daq_log "Remaining target sets: []"
+monitor_daq_log "Target device 9a02571e8f03 test hold running"
 
 report_vlans
 
-cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
+monitor_forch_log "Device 9a:02:57:1e:8f:03 is entering infracted state"
+monitor_forch_log "Device 9a:02:57:1e:8f:04 is entering operational state from unauthenticated state"
 
+docker stop forch-faux-3 # to cause an error so daq terminates
+monitor_daq_log "Remaining target sets: []"
+
+sequester_timeout=$(cat $INST_BASE/forch.log | grep "Device 9a:02:57:1e:8f:03 sequestering timedout" | wc -l)
+echo Device sequestering timeout: $sequester_timeout | tee -a $TEST_RESULTS
+
+cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
+docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less flaky
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
+

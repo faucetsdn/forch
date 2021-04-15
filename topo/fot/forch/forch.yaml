@@ -18,6 +18,13 @@ orchestration:
     vlan_start: 272
     vlan_end: 276
     port_description: TAP
+    sequester_timeout_sec: 360
+    default_auto_sequestering: disabled
+    test_result_device_states:
+      - test_result: FAILED
+        device_state: infracted
+      - test_result: PASSED
+        device_state: operational
 proxy_server:
   targets:
     faucet:

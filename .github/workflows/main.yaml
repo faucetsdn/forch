@@ -47,7 +47,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -67,11 +67,11 @@ jobs:
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup stack
-        run: bin/setup_stack skip-conn-check dhcp fot
+        run: bin/setup_stack devices 4 skip-conn-check dhcp fot
       - name: run integration tests
         run: bin/run_test_set fot
       - name: setup stack
-        run: bin/setup_stack skip-conn-check dhcp fot vxlan
+        run: bin/setup_stack devices 4 skip-conn-check dhcp fot vxlan
       - name: run integration tests
         run: bin/run_test_set fot
       - name: post-run logs

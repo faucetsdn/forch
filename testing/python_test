@@ -24,7 +24,7 @@ CLASS_NAME=$2
 
 TEST_DIR=testing/python_lib
 TEST_SRC=$TEST_NAME.py
-export PYTHONPATH=$ROOT/testing:$ROOT
+export PYTHONPATH=$ROOT/testing:$ROOT:$ROOT/faucet
 
 if [ -z "$VIRTUAL_ENV" -a -f venv/bin/$PYTHON ]; then
     PYTHON=venv/bin/$PYTHON
@@ -32,10 +32,12 @@ fi
 
 cd $ROOT
 
+
 if [ -n "$coverage" ]; then
     $PYTHON erase
 fi
 
+export FORCH_LOG=inst/forch.log
 $PYTHON $EXTARGS $TEST_DIR/$TEST_SRC $CLASS_NAME
 
 if [ -n "$coverage" ]; then
