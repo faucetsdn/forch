@@ -159,7 +159,7 @@ message OrchestrationConfig {
     PortBehavior.AutoSequestering default_auto_sequestering = 8;
 
     message TestResultDeviceStateTransition {
-      SessionResult.ResultCode test_result = 1;
+      TestResult.ResultCode test_result = 1;
       DVAState.State device_state = 2;
     }
 
