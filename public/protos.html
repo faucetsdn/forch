@@ -801,11 +801,11 @@
                 </li>
               
                 <li>
-                  <a href="#SessionResult"><span class="badge">M</span>SessionResult</a>
+                  <a href="#State"><span class="badge">M</span>State</a>
                 </li>
               
                 <li>
-                  <a href="#State"><span class="badge">M</span>State</a>
+                  <a href="#TestResult"><span class="badge">M</span>TestResult</a>
                 </li>
               
               
@@ -842,11 +842,11 @@
                 </li>
               
                 <li>
-                  <a href="#SessionResult.ResultCode"><span class="badge">E</span>SessionResult.ResultCode</a>
+                  <a href="#State.State"><span class="badge">E</span>State.State</a>
                 </li>
               
                 <li>
-                  <a href="#State.State"><span class="badge">E</span>State.State</a>
+                  <a href="#TestResult.ResultCode"><span class="badge">E</span>TestResult.ResultCode</a>
                 </li>
               
               
@@ -4154,7 +4154,7 @@ NB: no value or setting to 0 indicates instant faucetizing </p></td>
               
                 <tr>
                   <td>test_result</td>
-                  <td><a href="#SessionResult.ResultCode">SessionResult.ResultCode</a></td>
+                  <td><a href="#TestResult.ResultCode">TestResult.ResultCode</a></td>
                   <td></td>
                   <td><p> </p></td>
                 </tr>
@@ -5592,15 +5592,15 @@ or to host_path API to list path </p></td>
 
         
       
-        <h3 id="SessionResult">SessionResult</h3>
-        <p>Session result codes.</p>
+        <h3 id="State">State</h3>
+        <p>States</p>
 
         
 
         
       
-        <h3 id="State">State</h3>
-        <p>States</p>
+        <h3 id="TestResult">TestResult</h3>
+        <p>Session result codes.</p>
 
         
 
@@ -5919,47 +5919,6 @@ TODO.</p></td>
           </tbody>
         </table>
       
-        <h3 id="SessionResult.ResultCode">SessionResult.ResultCode</h3>
-        <p></p>
-        <table class="enum-table">
-          <thead>
-            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
-          </thead>
-          <tbody>
-            
-              <tr>
-                <td>PENDING</td>
-                <td>0</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>STARTED</td>
-                <td>1</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>ERROR</td>
-                <td>2</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>PASSED</td>
-                <td>3</td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>FAILED</td>
-                <td>4</td>
-                <td><p></p></td>
-              </tr>
-            
-          </tbody>
-        </table>
-      
         <h3 id="State.State">State.State</h3>
         <p>Enumeration of states</p>
         <table class="enum-table">
@@ -6026,6 +5985,47 @@ TODO.</p></td>
                 <td>up</td>
                 <td>9</td>
                 <td><p>up: up but not in function</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="TestResult.ResultCode">TestResult.ResultCode</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>PENDING</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>STARTED</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>ERROR</td>
+                <td>2</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>PASSED</td>
+                <td>3</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>FAILED</td>
+                <td>4</td>
+                <td><p></p></td>
               </tr>
             
           </tbody>
