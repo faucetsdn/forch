@@ -30,7 +30,7 @@ class PortStateMachine:
     INFRACTED = DVAState.State.infracted
 
     # pylint: disable=no-member
-    _transactions = {
+    _transitions = {
         UNAUTHENTICATED: {
             PortBehavior.Behavior: {
                 PortBehavior.Behavior.cleared: OPERATIONAL,
@@ -108,7 +108,7 @@ class PortStateMachine:
                 else:
                     original[key] = value
             return original
-        return merge(self._TRANSITIONS, state_overwrites)
+        return merge(self._transitions, state_overwrites)
 
     def _handle_current_state(self):
         if self._current_state in STATE_HANDLERS:
