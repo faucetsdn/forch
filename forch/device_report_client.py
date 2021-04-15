@@ -22,8 +22,6 @@ except ImportError as e:
     pass
 
 
-LOGGER = get_logger('devreport')
-
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 DEFAULT_SERVER_PORT = 50051
 
@@ -32,7 +30,8 @@ class DeviceReportClient(DeviceStateReporter):
     """gRPC client to send device result"""
 
     def __init__(self, result_handler, server_address, server_port, unauth_vlan):
-        LOGGER.info('Initializing with unauthenticated vlan %s', unauth_vlan)
+        self._logger = get_logger('devreport')
+        self._logger.info('Initializing with unauthenticated vlan %s', unauth_vlan)
         address = server_address or DEFAULT_SERVER_ADDRESS
         port = server_port or DEFAULT_SERVER_PORT
         channel = grpc.insecure_channel(f'{address}:{port}')
@@ -52,7 +51,7 @@ class DeviceReportClient(DeviceStateReporter):
         """Stop client handler"""
 
     def _connect(self, mac, vlan, assigned):
-        LOGGER.info('Connecting %s to %s/%s', mac, vlan, assigned)
+        self._logger.info('Connecting %s to %s/%s', mac, vlan, assigned)
         session_params = SessionParams()
         session_params.device_mac = mac
         session_params.device_vlan = vlan
@@ -79,15 +78,15 @@ class DeviceReportClient(DeviceStateReporter):
             for progress in progresses:
                 self._convert_and_handle(mac, progress)
         except Exception as e:
-            LOGGER.error('Progress exception: %s', e)
+            self._logger.error('Progress exception: %s', e)
 
     def _process_session_ready(self, mac):
         if mac in self._mac_sessions:
-            LOGGER.info('Ignoring b/c existing session %s', mac)
+            self._logger.info('Ignoring b/c existing session %s', mac)
             return
         device_vlan = self._mac_device_vlan_map.get(mac)
         assigned_vlan = self._mac_assigned_vlan_map.get(mac)
-        LOGGER.info('Device %s ready on %s/%s', mac, device_vlan, assigned_vlan)
+        self._logger.info('Device %s ready on %s/%s', mac, device_vlan, assigned_vlan)
         if device_vlan and assigned_vlan and assigned_vlan != self._unauth_vlan:
             self._mac_sessions[mac] = self._connect(mac, device_vlan, assigned_vlan)
 
