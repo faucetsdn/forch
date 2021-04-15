@@ -8,12 +8,9 @@ from forch.proto.devices_state_pb2 import DevicesState
 from forch.base_classes import DeviceStateReporter
 from forch.utils import get_logger
 
-LOGGER = get_logger('devreport')
-
 try:
     from daq.proto.session_server_pb2 import SessionParams, SessionResult
     from daq.proto.session_server_pb2_grpc import SessionServerStub
-    LOGGER.info('Imported daq dependencies')
 
     PORT_BEHAVIOR_SESSION_RESULT = {
         SessionResult.ResultCode.ERROR: PortBehavior.unknown,
@@ -22,8 +19,10 @@ try:
         SessionResult.ResultCode.FAILED: PortBehavior.failed
     }
 except ImportError as e:
-    LOGGER.error('Error importing daq dependencies: %s', e)
+    pass
 
+
+LOGGER = get_logger('devreport')
 
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 DEFAULT_SERVER_PORT = 50051
