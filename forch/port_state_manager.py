@@ -208,7 +208,7 @@ class PortStateManager:
     def _build_state_callbacks(self):
         callbacks = PortStateMachine.StateCallbacks()
         callbacks.unauthenticated_state = self._handle_unauthenticated_state
-        callbacks.sequester_state =  self._set_port_sequestered
+        callbacks.sequester_state = self._set_port_sequestered
         callbacks.operational_state = self._set_port_operational
         callbacks.infracted_state = self._handle_infracted_state
         return callbacks
