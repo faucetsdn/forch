@@ -68,7 +68,7 @@ class PortStateMachine:
         self._state_callbacks = state_callbacks
         self._logger = get_logger('portsm')
         if state_overwrites:
-            self._transactions = self._resolve_transitions(state_overwrites)
+            self._transitions = self._resolve_transitions(state_overwrites)
         self._handle_current_state()
 
     def handle_port_behavior(self, port_behavior):
@@ -84,7 +84,7 @@ class PortStateMachine:
         return self._current_state
 
     def _transition(self, event, event_type):
-        next_state = self._transactions.get(self._current_state, {}).get(event_type, {}).get(event)
+        next_state = self._transitions.get(self._current_state, {}).get(event_type, {}).get(event)
 
         if not next_state:
             self._logger.warning(
