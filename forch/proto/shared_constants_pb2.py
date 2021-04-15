@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\"\x98\x01\n\x08\x44VAState\"\x8b\x01\n\x05State\x12\x0b\n\x07initial\x10\x00\x12\x13\n\x0funauthenticated\x10\x01\x12\x0f\n\x0bsequestered\x10\x02\x12\x16\n\x12static_operational\x10\x03\x12\x17\n\x13\x64ynamic_operational\x10\x04\x12\r\n\tinfracted\x10\x05\x12\x0f\n\x0boperational\x10\x06\"L\n\x08\x41uthMode\"@\n\x04Mode\x12\x0c\n\x08\x64isabled\x10\x00\x12\x0f\n\x0bstatic_only\x10\x01\x12\x10\n\x0c\x64ynamic_only\x10\x02\x12\x07\n\x03\x61ll\x10\x03\"a\n\x08LacpRole\"U\n\x08LacpRole\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x0e\n\nunselected\x10\x01\x12\x0c\n\x08selected\x10\x02\x12\x0b\n\x07standby\x10\x03\"C\n\x08PortType\"7\n\x04Type\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x61\x63\x63\x65ss\x10\x01\x12\x0b\n\x07testing\x10\x02\x12\t\n\x05other\x10\x03\"\x83\x01\n\rSessionResult\x12\'\n\x04\x63ode\x18\x01 \x01(\x0e\x32\x19.SessionResult.ResultCode\"I\n\nResultCode\x12\x0b\n\x07PENDING\x10\x00\x12\x0b\n\x07STARTED\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\n\n\x06PASSED\x10\x03\x12\n\n\x06\x46\x41ILED\x10\x04\"\xe0\x01\n\x0cPortBehavior\"u\n\x08\x42\x65havior\x12\x0b\n\x07unknown\x10\x00\x12\x11\n\rauthenticated\x10\x01\x12\x0b\n\x07\x63leared\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\n\n\x06passed\x10\x04\x12\n\n\x06\x66\x61iled\x10\x05\x12\x13\n\x0f\x64\x65\x61uthenticated\x10\x06\"\x1d\n\tPortState\x12\x08\n\x04\x64own\x10\x00\x12\x06\n\x02up\x10\x01\":\n\x10\x41utoSequestering\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x0b\n\x07\x65nabled\x10\x01\x12\x0c\n\x08\x64isabled\x10\x02\"\x07\n\x05\x45mptyb\x06proto3')
+  serialized_pb=_b('\n\"forch/proto/shared_constants.proto\"\x8d\x01\n\x05State\"\x83\x01\n\x05State\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x62roken\x10\x01\x12\n\n\x06\x61\x63tive\x10\x02\x12\x0b\n\x07\x64\x61maged\x10\x03\x12\x08\n\x04\x64own\x10\x04\x12\x0b\n\x07healthy\x10\x05\x12\x0c\n\x08inactive\x10\x06\x12\x10\n\x0cinitializing\x10\x07\x12\t\n\x05split\x10\x08\x12\x06\n\x02up\x10\t\"Y\n\tLacpState\"L\n\tLacpState\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x08\n\x04init\x10\x01\x12\n\n\x06\x61\x63tive\x10\x03\x12\t\n\x05noact\x10\x05\"\x98\x01\n\x08\x44VAState\"\x8b\x01\n\x05State\x12\x0b\n\x07initial\x10\x00\x12\x13\n\x0funauthenticated\x10\x01\x12\x0f\n\x0bsequestered\x10\x02\x12\x16\n\x12static_operational\x10\x03\x12\x17\n\x13\x64ynamic_operational\x10\x04\x12\r\n\tinfracted\x10\x05\x12\x0f\n\x0boperational\x10\x06\"L\n\x08\x41uthMode\"@\n\x04Mode\x12\x0c\n\x08\x64isabled\x10\x00\x12\x0f\n\x0bstatic_only\x10\x01\x12\x10\n\x0c\x64ynamic_only\x10\x02\x12\x07\n\x03\x61ll\x10\x03\"a\n\x08LacpRole\"U\n\x08LacpRole\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x11\n\x04none\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x0e\n\nunselected\x10\x01\x12\x0c\n\x08selected\x10\x02\x12\x0b\n\x07standby\x10\x03\"C\n\x08PortType\"7\n\x04Type\x12\x0b\n\x07unknown\x10\x00\x12\n\n\x06\x61\x63\x63\x65ss\x10\x01\x12\x0b\n\x07testing\x10\x02\x12\t\n\x05other\x10\x03\"Z\n\rSessionResult\"I\n\nResultCode\x12\x0b\n\x07PENDING\x10\x00\x12\x0b\n\x07STARTED\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\n\n\x06PASSED\x10\x03\x12\n\n\x06\x46\x41ILED\x10\x04\"\xe0\x01\n\x0cPortBehavior\"u\n\x08\x42\x65havior\x12\x0b\n\x07unknown\x10\x00\x12\x11\n\rauthenticated\x10\x01\x12\x0b\n\x07\x63leared\x10\x02\x12\x0f\n\x0bsequestered\x10\x03\x12\n\n\x06passed\x10\x04\x12\n\n\x06\x66\x61iled\x10\x05\x12\x13\n\x0f\x64\x65\x61uthenticated\x10\x06\"\x1d\n\tPortState\x12\x08\n\x04\x64own\x10\x00\x12\x06\n\x02up\x10\x01\":\n\x10\x41utoSequestering\x12\x0b\n\x07\x64\x65\x66\x61ult\x10\x00\x12\x0b\n\x07\x65nabled\x10\x01\x12\x0c\n\x08\x64isabled\x10\x02\"\x07\n\x05\x45mptyb\x06proto3')
 )
 
 
@@ -277,8 +277,8 @@ _SESSIONRESULT_RESULTCODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=733,
-  serialized_end=806,
+  serialized_start=691,
+  serialized_end=764,
 )
 _sym_db.RegisterEnumDescriptor(_SESSIONRESULT_RESULTCODE)
 
@@ -319,8 +319,8 @@ _PORTBEHAVIOR_BEHAVIOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=825,
-  serialized_end=942,
+  serialized_start=783,
+  serialized_end=900,
 )
 _sym_db.RegisterEnumDescriptor(_PORTBEHAVIOR_BEHAVIOR)
 
@@ -341,8 +341,8 @@ _PORTBEHAVIOR_PORTSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=944,
-  serialized_end=973,
+  serialized_start=902,
+  serialized_end=931,
 )
 _sym_db.RegisterEnumDescriptor(_PORTBEHAVIOR_PORTSTATE)
 
@@ -367,8 +367,8 @@ _PORTBEHAVIOR_AUTOSEQUESTERING = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=975,
-  serialized_end=1033,
+  serialized_start=933,
+  serialized_end=991,
 )
 _sym_db.RegisterEnumDescriptor(_PORTBEHAVIOR_AUTOSEQUESTERING)
 
@@ -530,13 +530,6 @@ _SESSIONRESULT = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
-    _descriptor.FieldDescriptor(
-      name='code', full_name='SessionResult.code', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -550,8 +543,8 @@ _SESSIONRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=675,
-  serialized_end=806,
+  serialized_start=674,
+  serialized_end=764,
 )
 
 
@@ -577,8 +570,8 @@ _PORTBEHAVIOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=809,
-  serialized_end=1033,
+  serialized_start=767,
+  serialized_end=991,
 )
 
 
@@ -601,8 +594,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1035,
-  serialized_end=1042,
+  serialized_start=993,
+  serialized_end=1000,
 )
 
 _STATE_STATE.containing_type = _STATE
@@ -611,7 +604,6 @@ _DVASTATE_STATE.containing_type = _DVASTATE
 _AUTHMODE_MODE.containing_type = _AUTHMODE
 _LACPROLE_LACPROLE.containing_type = _LACPROLE
 _PORTTYPE_TYPE.containing_type = _PORTTYPE
-_SESSIONRESULT.fields_by_name['code'].enum_type = _SESSIONRESULT_RESULTCODE
 _SESSIONRESULT_RESULTCODE.containing_type = _SESSIONRESULT
 _PORTBEHAVIOR_BEHAVIOR.containing_type = _PORTBEHAVIOR
 _PORTBEHAVIOR_PORTSTATE.containing_type = _PORTBEHAVIOR

@@ -172,8 +172,6 @@ message PortType {
  * Session result codes.
  */
 message SessionResult {
-  SessionResult.ResultCode code = 1;
-
   enum ResultCode {
     PENDING = 0;
     STARTED = 1;

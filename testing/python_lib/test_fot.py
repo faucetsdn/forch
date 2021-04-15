@@ -449,8 +449,9 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
         config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
             default_auto_sequestering='enabled',
-            test_result_device_state=[
-                OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition(result="FAILED",
+            test_result_device_states=[
+                OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition(
+                    test_result="FAILED",
                     device_state="operational")
             ])
         self._port_state_manager = PortStateManager(
