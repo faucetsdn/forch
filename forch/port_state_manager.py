@@ -161,7 +161,7 @@ class PortStateManager:
             self._sequester_segment = sequester_config.sequester_segment
             self._sequester_timeout = sequester_config.sequester_timeout_sec
             if sequester_config.test_result_device_states:
-                dict_maps = [(entry.result, entry.device_state)
+                dict_maps = [(entry.test_result, entry.device_state)
                              for entry in sequester_config.test_result_device_states]
                 test_result_device_states_map = dict(dict_maps)
                 # pylint: disable=no-member
