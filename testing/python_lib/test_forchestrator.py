@@ -1,6 +1,6 @@
 """Unit tests for Faucet State Collector"""
 
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 import unittest
 import yaml
 from unit_base import ForchestratorTestBase
@@ -9,6 +9,7 @@ from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
+from forch.proto.system_state_pb2 import SystemState
 
 
 # pylint: disable=protected-access
@@ -52,6 +53,15 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
             lldp_beacon: {max_per_interval: 5, send_interval: 5}"""
         faucet_config = yaml.safe_load(faucet_config_str)
         self.assertFalse(self._forchestrator._validate_config(faucet_config))
+
+    def test_config_error_detail(self):
+        """Test config detail for config errors"""
+        summaries = SystemState.SummarySources()
+        self._forchestrator._faucet_events = Mock()
+        self._forchestrator._get_controller_state = MagicMock(return_value=(2,'test_detail'))
+        self._forchestrator._forch_config_errors['static_behavior_file'] = 'File error'
+        state, detail = self._forchestrator._get_combined_summary(summaries)
+        self.assertTrue('forch' in detail)
 
 
 # pylint: disable=protected-access
