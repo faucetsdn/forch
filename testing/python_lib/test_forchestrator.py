@@ -58,7 +58,7 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
         """Test config detail for config errors"""
         summaries = SystemState.SummarySources()
         self._forchestrator._faucet_events = Mock()
-        self._forchestrator._get_controller_state = MagicMock(return_value=(2,'test_detail'))
+        self._forchestrator._get_controller_state = MagicMock(return_value=(2, 'test_detail'))
         self._forchestrator._forch_config_errors['static_behavior_file'] = 'File error'
         state, detail = self._forchestrator._get_combined_summary(summaries)
         self.assertTrue('forch' in detail)
