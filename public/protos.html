@@ -935,11 +935,23 @@
                 </li>
               
                 <li>
-                  <a href="#SystemState.ConfigSummary.HashesEntry"><span class="badge">M</span>SystemState.ConfigSummary.HashesEntry</a>
+                  <a href="#SystemState.FaucetConfigSummary"><span class="badge">M</span>SystemState.FaucetConfigSummary</a>
                 </li>
               
                 <li>
-                  <a href="#SystemState.ConfigSummary.WarningsEntry"><span class="badge">M</span>SystemState.ConfigSummary.WarningsEntry</a>
+                  <a href="#SystemState.FaucetConfigSummary.HashesEntry"><span class="badge">M</span>SystemState.FaucetConfigSummary.HashesEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.FaucetConfigSummary.WarningsEntry"><span class="badge">M</span>SystemState.FaucetConfigSummary.WarningsEntry</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.ForchConfigSummary"><span class="badge">M</span>SystemState.ForchConfigSummary</a>
+                </li>
+              
+                <li>
+                  <a href="#SystemState.ForchConfigSummary.ErrorsEntry"><span class="badge">M</span>SystemState.ForchConfigSummary.ErrorsEntry</a>
                 </li>
               
                 <li>
@@ -6806,15 +6818,46 @@ TODO.</p></td>
             <tbody>
               
                 <tr>
+                  <td>forch_config</td>
+                  <td><a href="#SystemState.ForchConfigSummary">SystemState.ForchConfigSummary</a></td>
+                  <td></td>
+                  <td><p>Forch config errors </p></td>
+                </tr>
+              
+                <tr>
+                  <td>faucet_config</td>
+                  <td><a href="#SystemState.FaucetConfigSummary">SystemState.FaucetConfigSummary</a></td>
+                  <td></td>
+                  <td><p>Faucet config errors </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.FaucetConfigSummary">SystemState.FaucetConfigSummary</h3>
+        <p>Faucet configuration file summary info</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
                   <td>hashes</td>
-                  <td><a href="#SystemState.ConfigSummary.HashesEntry">SystemState.ConfigSummary.HashesEntry</a></td>
+                  <td><a href="#SystemState.FaucetConfigSummary.HashesEntry">SystemState.FaucetConfigSummary.HashesEntry</a></td>
                   <td>repeated</td>
                   <td><p>Basic config hashes </p></td>
                 </tr>
               
                 <tr>
                   <td>warnings</td>
-                  <td><a href="#SystemState.ConfigSummary.WarningsEntry">SystemState.ConfigSummary.WarningsEntry</a></td>
+                  <td><a href="#SystemState.FaucetConfigSummary.WarningsEntry">SystemState.FaucetConfigSummary.WarningsEntry</a></td>
                   <td>repeated</td>
                   <td><p>Config warnings </p></td>
                 </tr>
@@ -6826,7 +6869,7 @@ TODO.</p></td>
 
         
       
-        <h3 id="SystemState.ConfigSummary.HashesEntry">SystemState.ConfigSummary.HashesEntry</h3>
+        <h3 id="SystemState.FaucetConfigSummary.HashesEntry">SystemState.FaucetConfigSummary.HashesEntry</h3>
         <p></p>
 
         
@@ -6857,7 +6900,62 @@ TODO.</p></td>
 
         
       
-        <h3 id="SystemState.ConfigSummary.WarningsEntry">SystemState.ConfigSummary.WarningsEntry</h3>
+        <h3 id="SystemState.FaucetConfigSummary.WarningsEntry">SystemState.FaucetConfigSummary.WarningsEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.ForchConfigSummary">SystemState.ForchConfigSummary</h3>
+        <p>Forch configuration file summary info</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>errors</td>
+                  <td><a href="#SystemState.ForchConfigSummary.ErrorsEntry">SystemState.ForchConfigSummary.ErrorsEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>Errors while trying to load forch config files </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="SystemState.ForchConfigSummary.ErrorsEntry">SystemState.ForchConfigSummary.ErrorsEntry</h3>
         <p></p>
 
         

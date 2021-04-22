@@ -121,7 +121,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         self._config_errors = {}
         self._system_errors = {}
-        self._faucet_config_summary = SystemState.ConfigSummary()
+        self._faucet_config_summary = SystemState.FaucetConfigSummary()
         self._metrics = None
         self._varz_proxy = None
 
@@ -663,7 +663,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         system_state.site_name = self._config.site.name or 'unknown'
         system_state.controller_name = self._get_controller_name()
         system_state.authentication_mode = self._get_sys_auth_mode()
-        system_state.config_summary.CopyFrom(self._faucet_config_summary)
+        system_state.config_summary.CopyFrom(self._get_config_summary())
         self._distill_summary(system_state.summary_sources, system_state)
         return system_state
 
@@ -707,15 +707,23 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             elif state != State.healthy:
                 has_warning = True
                 details.append(field.name)
+
         if details:
             detail += 'broken subsystems: ' + ', '.join(details)
+
+        config_details = []
+        if self._config_errors:
+            config_details.append('forch')
+
+        if config_details:
+            detail += '. config errors: ' + ', '.join(config_details)
 
         if not self._faucet_events.event_socket_connected:
             has_error = True
             detail += '. Faucet disconnected'
 
         with self._states_lock:
-            for errors in (self._config_errors, self._system_errors):
+            for errors in (self._system_errors):
                 if errors:
                     has_error = True
                     detail += '. ' + '. '.join(errors.values())
@@ -741,6 +749,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         for field, value in states.ListFields():
             value.detail_url = f'{url_base}/?{field.name}'
         return states
+
+    def _get_config_summary(self):
+        config_summary = SystemState.ConfigSummary()
+        config_summary.faucet_config.CopyFrom(self._faucet_config_summary)
+        config_summary.forch_config.errors.update(self._config_errors)
+        return config_summary
 
     def _extract_url_base(self, path):
         slash = path.find('/')
@@ -794,7 +808,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             new_conf_hashes, _, new_dps, top_conf = config_parser.dp_parser(
                 self._behavioral_config_file, 'fconfig')
             config_hash_info = self._get_faucet_config_hash_info(new_conf_hashes)
-            self._faucet_config_summary = SystemState.ConfigSummary()
+            self._faucet_config_summary = SystemState.FaucetConfigSummary()
             for file_name, file_hash in new_conf_hashes.items():
                 self._logger.info('Loaded conf %s as %s', file_name, file_hash)
                 self._faucet_config_summary.hashes[file_name] = file_hash
