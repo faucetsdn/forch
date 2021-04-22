@@ -83,6 +83,25 @@ message SystemState {
    * Configuration file summary info
    */
   message ConfigSummary {
+    // Forch config errors
+    ForchConfigSummary forch_config = 1;
+
+    // Faucet config errors
+    FaucetConfigSummary faucet_config = 2;
+  }
+
+  /*
+   * Forch configuration file summary info
+   */
+  message ForchConfigSummary {
+    // Errors while trying to load forch config files
+    map<string, string> errors = 1;
+  }
+
+  /*
+   * Faucet configuration file summary info
+   */
+  message FaucetConfigSummary {
     // Basic config hashes
     map<string, string> hashes = 1;
 
