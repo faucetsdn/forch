@@ -119,7 +119,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         self._should_ignore_static_behavior = False
         self._should_ignore_auth_result = False
 
-        self._config_errors = {}
+        self._forch_config_errors = {}
         self._system_errors = {}
         self._faucet_config_summary = SystemState.FaucetConfigSummary()
         self._metrics = None
@@ -217,7 +217,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                 with self._states_lock:
                     self._should_ignore_static_behavior = True
                     self._should_ignore_auth_result = True
-                    self._config_errors[TAIL_ACL_CONFIG] = error_msg
+                    self._forch_config_errors[TAIL_ACL_CONFIG] = error_msg
 
             if self._gauge_config_file:
                 self._faucetizer.reload_and_flush_gauge_config(self._gauge_config_file)
@@ -229,7 +229,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
                                  'segments-to-vlans file')
                     self._should_ignore_static_behavior = True
                     self._should_ignore_auth_result = True
-                    self._config_errors[SEGMENTS_VLANS_FILE] = error_msg
+                    self._forch_config_errors[SEGMENTS_VLANS_FILE] = error_msg
                     self._logger.error('%s %s: %s', error_msg, self._segments_vlans_file, error)
 
         if sequester_config.sequester_segment:
@@ -301,12 +301,12 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             msg = f'All auth was disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
             with self._states_lock:
-                self._config_errors[STATIC_BEHAVIORAL_FILE] = msg
+                self._forch_config_errors[STATIC_BEHAVIORAL_FILE] = msg
                 self._should_ignore_auth_result = True
             return
 
         with self._states_lock:
-            self._config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
+            self._forch_config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
             self._should_ignore_auth_result = False
 
         self._logger.info('Authentication resumed')
@@ -690,6 +690,17 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             system_state.system_state_detail = str(e)
             self._logger.exception(e)
 
+    def _get_config_details(self):
+        config_details = []
+        detail = ''
+        if self._forch_config_errors:
+            config_details.append('forch')
+
+        if config_details:
+            detail += '. config errors: ' + ', '.join(config_details)
+
+        return detail
+
     def _get_combined_summary(self, summary):
         controller_state, controller_state_detail = self._get_controller_state()
         if controller_state != State.active:
@@ -711,19 +722,14 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if details:
             detail += 'broken subsystems: ' + ', '.join(details)
 
-        config_details = []
-        if self._config_errors:
-            config_details.append('forch')
-
-        if config_details:
-            detail += '. config errors: ' + ', '.join(config_details)
+        detail += self._get_config_details()
 
         if not self._faucet_events.event_socket_connected:
             has_error = True
             detail += '. Faucet disconnected'
 
         with self._states_lock:
-            for errors in (self._system_errors):
+            for errors in self._system_errors:
                 if errors:
                     has_error = True
                     detail += '. ' + '. '.join(errors.values())
@@ -753,7 +759,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def _get_config_summary(self):
         config_summary = SystemState.ConfigSummary()
         config_summary.faucet_config.CopyFrom(self._faucet_config_summary)
-        config_summary.forch_config.errors.update(self._config_errors)
+        config_summary.forch_config.errors.update(self._forch_config_errors)
         return config_summary
 
     def _extract_url_base(self, path):
@@ -882,7 +888,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def _get_sys_auth_mode(self):
         static_auth_enabled = (self._config.orchestration.static_device_behavior and
                                not self._should_ignore_static_behavior and
-                               not self._config_errors.get(STATIC_BEHAVIORAL_FILE))
+                               not self._forch_config_errors.get(STATIC_BEHAVIORAL_FILE))
         dynamic_auth_enabled = (self._authenticator and not self._should_ignore_auth_result)
         if static_auth_enabled and dynamic_auth_enabled:
             sys_auth_mode = AuthMode.all
