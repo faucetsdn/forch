@@ -143,7 +143,7 @@ class PortStateManager:
 
     # pylint: disable=too-many-arguments
     def __init__(self, device_state_manager=None, varz_updater=None,
-                 device_state_reporter=None, sequester_config=None):
+                 device_state_reporter=None, orch_config=None):
         self._state_machines = {}
         self._auto_sequester = {}
         self._static_device_behaviors = {}
@@ -157,7 +157,9 @@ class PortStateManager:
         self._logger = get_logger('portmgr')
         self._state_callbacks = self._build_state_callbacks()
         self._state_overwrites = {}
-        if sequester_config:
+        self._orch_config = orch_config
+        if orch_config and orch_config.HasField('sequester_config'):
+            sequester_config = orch_config.sequester_config
             self._sequester_segment = sequester_config.sequester_segment
             self._sequester_timeout = sequester_config.sequester_timeout_sec
             if sequester_config.test_result_device_states:
@@ -172,7 +174,6 @@ class PortStateManager:
                 }
             if sequester_config.default_auto_sequestering:
                 self._default_auto_sequestering = sequester_config.default_auto_sequestering
-
 
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
@@ -395,3 +396,28 @@ class PortStateManager:
     def _update_static_vlan_varz(self, mac, vlan):
         if self._varz_updater:
             self._varz_updater.update_static_vlan_varz(mac, vlan)
+
+    def get_dva_state(self, switch, port):
+        """Return the DVA state of the device"""
+        with self._lock:
+            return self._get_dva_state(switch, port)
+
+    def _get_dva_state(self, switch, port):
+        mac = self._placement_to_mac.get((switch, port))
+        if not mac:
+            if self._orch_config and self._orch_config.unauthenticated_vlan:
+                return DVAState.unauthenticated
+            return DVAState.initial
+
+        state_machine = self._state_machines.get(mac)
+        if not mac:
+            self._logger.warning('No state machine found for MAC: %s', mac)
+            return DVAState.initial
+
+        dva_state = state_machine.get_current_state()
+
+        if dva_state == DVAState.operational:
+            static = mac in self._static_device_behaviors
+            return DVAState.static_operational if static else DVAState.dynamic_operational
+
+        return dva_state

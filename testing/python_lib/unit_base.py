@@ -382,6 +382,8 @@ class PortsStateManagerTestBase(UnitTestBase):
     UNAUTHENTICATED = DVAState.unauthenticated
     SEQUESTERED = DVAState.sequestered
     OPERATIONAL = DVAState.operational
+    STATIC_OPERATIONAL = DVAState.static_operational
+    DYNAMIC_OPERATIONAL = DVAState.dynamic_operational
     INFRACTED = DVAState.infracted
     SEQUESTER_SEGMENT = 'TESTING'
 
@@ -409,12 +411,19 @@ class PortsStateManagerTestBase(UnitTestBase):
     def _get_vlan_from_segment(self, segment):
         return
 
-    def _verify_ports_states(self, expected_states):
+    def _verify_ports_states(self, expected_port_states):
         # pylint: disable=protected-access
         ports_states = {
             mac: ptsm.get_current_state()
             for (mac, ptsm) in self._port_state_manager._state_machines.items()}
-        self.assertEqual(ports_states, expected_states)
+        self.assertEqual(ports_states, expected_port_states)
+
+    def _verify_dva_states(self, expected_dva_states):
+        dva_states = {
+            mac: self._port_state_manager.get_dva_state(mac)
+            for mac in self._port_state_manager._state_machines
+        }
+        self.assertEqual(dva_states, expected_dva_states)
 
     def _verify_received_device_placements(self, expected_device_placements):
         self.assertEqual(self._received_device_placements, expected_device_placements)

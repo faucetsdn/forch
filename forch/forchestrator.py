@@ -150,8 +150,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             lambda: self._varz_collector.retry_get_metrics(
                 self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS))
         self._faucet_collector.set_get_dva_state(
-            (lambda switch, port:
-             self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
+            (lambda switch, port: self._port_state_manager.get_dva_state(switch, port)
+             if self._port_state_manager else None))
         self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(
@@ -238,7 +238,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         self._port_state_manager = PortStateManager(
             self._faucetizer, self, self._device_report_handler,
-            sequester_config=sequester_config)
+            orch_config=self._config.orchestration)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
