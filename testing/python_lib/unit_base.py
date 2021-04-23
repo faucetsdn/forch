@@ -423,6 +423,7 @@ class PortsStateManagerTestBase(UnitTestBase):
         self.assertEqual(ports_states, expected_port_states)
 
     def _verify_dva_states(self, expected_dva_states):
+        # pylint: disable=protected-access
         dva_states = {
             mac: self._port_state_manager.get_dva_state(mac)
             for mac in self._port_state_manager._state_machines

@@ -518,7 +518,9 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
         # pylint: disable=invalid-name
         self.INFRACTED = self.OPERATIONAL
 
-    def _receive_testing_results(self, testing_results, expected_device_behaviors):
+
+    def _receive_testing_results(self, testing_results, expected_device_behaviors,
+                                 expected_dva_states):
         for testing_result in testing_results:
             self._port_state_manager.handle_testing_result(
                 self._encapsulate_testing_result(*testing_result))
@@ -537,6 +539,12 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
             ('00:0a:00:00:00:04', 'SEG_D', False)
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
+
+        expected_dva_states.update({
+            '00:0z:00:00:00:03': self.DYNAMIC_OPERATIONAL,
+            '00:0a:00:00:00:04': self.DYNAMIC_OPERATIONAL
+        })
+        self._verify_dva_states(expected_dva_states)
 
 
 class FotSequesterTest(IntegrationTestBase):
