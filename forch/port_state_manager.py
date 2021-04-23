@@ -410,7 +410,7 @@ class PortStateManager:
             return DVAState.initial
 
         state_machine = self._state_machines.get(mac)
-        if not mac:
+        if not state_machine:
             self._logger.warning('No state machine found for MAC: %s', mac)
             return DVAState.initial
 
