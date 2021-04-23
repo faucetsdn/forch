@@ -501,7 +501,7 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
     """Test access port states with overrides"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        config = OrchestrationConfig.SequesterConfig(
+        sequester_config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
             default_auto_sequestering='enabled',
             test_result_device_states=[
@@ -509,9 +509,10 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
                     test_result="FAILED",
                     device_state="operational")
             ])
+        orch_config = OrchestrationConfig(sequester_config=sequester_config)
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            sequester_config=config)
+            orch_config=orch_config)
 
         # All devices that were in infracted would be in operational state
         # pylint: disable=invalid-name

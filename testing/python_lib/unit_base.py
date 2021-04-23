@@ -393,12 +393,16 @@ class PortsStateManagerTestBase(UnitTestBase):
         self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment)
-        config = OrchestrationConfig.SequesterConfig(
+
+        sequester_config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
             default_auto_sequestering='enabled')
+        orch_config = OrchestrationConfig(sequester_config=sequester_config)
+
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            sequester_config=config)
+            orch_config=orch_config)
+
         self._received_device_placements = []
         self._received_device_behaviors = []
 
