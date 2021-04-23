@@ -518,7 +518,6 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
         # pylint: disable=invalid-name
         self.INFRACTED = self.OPERATIONAL
 
-
     def _receive_testing_results(self, testing_results, expected_device_behaviors,
                                  expected_dva_states):
         for testing_result in testing_results:
