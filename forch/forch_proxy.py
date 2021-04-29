@@ -2,13 +2,13 @@
 
 import functools
 import threading
-import requests
+import urllib.request
 
 from forch.http_server import HttpServer
 from forch.utils import get_logger
 
 DEFAULT_PROXY_PORT = 8080
-LOCALHOST = '0.0.0.0'
+DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 
 
 class ForchProxy():
@@ -47,7 +47,7 @@ class ForchProxy():
 
     def _register_pages(self):
         for name, target in self._proxy_config.targets.items():
-            self._register_page(name, LOCALHOST, target.port)
+            self._register_page(name, DEFAULT_SERVER_ADDRESS, target.port)
 
     def _get_proxy_help(self):
         """Display proxy help"""
@@ -62,11 +62,11 @@ class ForchProxy():
         if not url:
             return self._get_proxy_help()
         try:
-            data = requests.get(url)
-        except requests.exceptions.RequestException as e:
-            return "Error retrieving data from url %s: %s" % (url, str(e))
-        return data.content.decode('utf-8')
+            with urllib.request.urlopen(url) as response:
+                return response.read().decode('utf-8')
+        except Exception as e:
+            return 'Error retrieving data from url %s: %s' % (url, str(e))
 
     def _show_error(self, error, path, params):
         """Display errors"""
-        return f"Error creating proxy server: {str(error)}"
+        return f'Error creating proxy server: {str(error)}'
