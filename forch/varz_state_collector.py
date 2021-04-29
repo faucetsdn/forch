@@ -1,9 +1,9 @@
 """Scrape varz from Faucet and Gauge"""
 
 import time
+import urllib.request
 
 import prometheus_client.parser
-import urllib.request
 
 from forch.utils import get_logger, MetricsFetchingError
 
