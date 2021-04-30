@@ -11,7 +11,6 @@ psutil
 pylint==2.7.4
 pytricia
 pyyaml
-requests
 ryu==4.32
 setuptools
 watchdog

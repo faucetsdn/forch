@@ -1,9 +1,9 @@
 """Scrape varz from Faucet and Gauge"""
 
 import time
+import urllib.request
 
 import prometheus_client.parser
-import requests
 
 from forch.utils import get_logger, MetricsFetchingError
 
@@ -18,14 +18,11 @@ class VarzStateCollector:
         """Get a list of target metrics"""
         metric_map = {}
 
-        response = requests.get(endpoint)
-        if response.status_code == requests.status_codes.codes.ok:  # pylint: disable=no-member
-            content = response.content.decode('utf-8', 'strict')
+        with urllib.request.urlopen(endpoint) as response:
+            content = response.read().decode('utf-8', 'strict')
             metrics = prometheus_client.parser.text_string_to_metric_families(content)
             for metric in [m for m in metrics if m.name in target_metrics]:
                 metric_map[metric.name] = metric
-        else:
-            raise Exception(f"Error response code: {response.status_code}")
 
         return metric_map
 
