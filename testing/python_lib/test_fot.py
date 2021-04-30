@@ -238,6 +238,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
     def _process_device_placement(self, mac, device_placement, static=False):
         print(f'Received device placement for device {mac}: {device_placement}, {static}')
         self._received_device_placements.append((mac, device_placement.connected, static))
+        if device_placement.connected:
+            self._device_placements[mac] = device_placement
+        else:
+            self._device_placements.pop(mac)
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
         print(f'Received device behavior for device {mac}: {device_behavior}, {static}')

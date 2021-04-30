@@ -405,6 +405,7 @@ class PortsStateManagerTestBase(UnitTestBase):
 
         self._received_device_placements = []
         self._received_device_behaviors = []
+        self._device_placements = {}
 
     def _process_device_placement(self):
         pass
@@ -423,11 +424,12 @@ class PortsStateManagerTestBase(UnitTestBase):
         self.assertEqual(ports_states, expected_port_states)
 
     def _verify_dva_states(self, expected_dva_states):
-        # pylint: disable=protected-access
-        dva_states = {
-            mac: self._port_state_manager.get_dva_state(mac)
-            for mac in self._port_state_manager._state_machines
-        }
+        dva_states = {}
+        for mac in self._port_state_manager._state_machines:  # pylint: disable=protected-access
+            device_placement = self._device_placements[mac]
+            dva_states[mac] = self._port_state_manage.get_dva_state(
+                device_placement.switch, device_placement.port)
+
         self.assertEqual(dva_states, expected_dva_states)
 
     def _verify_received_device_placements(self, expected_device_placements):
