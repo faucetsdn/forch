@@ -238,6 +238,10 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
     def _process_device_placement(self, mac, device_placement, static=False):
         print(f'Received device placement for device {mac}: {device_placement}, {static}')
         self._received_device_placements.append((mac, device_placement.connected, static))
+        if device_placement.connected:
+            self._device_placements[mac] = device_placement
+        else:
+            self._device_placements.pop(mac)
 
     def _process_device_behavior(self, mac, device_behavior, static=False):
         print(f'Received device behavior for device {mac}: {device_behavior}, {static}')
@@ -294,30 +298,38 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
 
         expected_device_placements = []
         expected_device_behaviors = []
+        expected_dva_states = {}
 
         # load static device placements
-        self._load_static_device_placements(static_device_placements, expected_device_placements)
+        self._load_static_device_placements(
+            static_device_placements, expected_device_placements)
 
         # load static device behaviors
-        self._load_static_device_behaviors(static_device_behaviors)
+        self._load_static_device_behaviors(static_device_behaviors, expected_dva_states)
 
         # devices are learned
-        self._learn_devices(dynamic_device_placements, expected_device_placements)
+        self._learn_devices(
+            dynamic_device_placements, expected_device_placements, expected_dva_states)
 
         # devices are authenticated
-        self._authenticate_devices(authentication_results, expected_device_behaviors)
+        self._authenticate_devices(
+            authentication_results, expected_device_behaviors, expected_dva_states)
 
         # received testing results for devices
-        self._receive_testing_results(testing_results, expected_device_behaviors)
+        self._receive_testing_results(
+            testing_results, expected_device_behaviors, expected_dva_states)
 
         # devices are expired
-        self._expire_devices(expired_device_placements, expected_device_placements)
+        self._expire_devices(
+            expired_device_placements, expected_device_placements, expected_dva_states)
 
         # devices are unauthenticated
-        self._unauthenticate_devices(unauthenticated_devices, expected_device_behaviors)
+        self._unauthenticate_devices(
+            unauthenticated_devices, expected_device_behaviors, expected_dva_states)
 
         # devices are reauthenticated
-        self._reauthenticate_devices(reauthenticated_device, expected_device_behaviors)
+        self._reauthenticate_devices(
+            reauthenticated_device, expected_device_behaviors, expected_dva_states)
 
     def _load_static_device_placements(self, static_device_placements, expected_device_placements):
         for mac, device_placement_map in static_device_placements.items():
@@ -331,7 +343,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         ])
         self._verify_received_device_placements(expected_device_placements)
 
-    def _load_static_device_behaviors(self, static_device_behaviors):
+    def _load_static_device_behaviors(self, static_device_behaviors, expected_dva_states):
         for mac, device_behavior_map in static_device_behaviors.items():
             self._port_state_manager.handle_static_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
@@ -342,7 +354,14 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         self._verify_ports_states(expected_states)
 
-    def _learn_devices(self, dynamic_device_placements, expected_device_placements):
+        expected_dva_states.update({
+            '00:0y:00:00:00:02': self.UNAUTHENTICATED,
+            '00:0z:00:00:00:03': self.UNAUTHENTICATED
+        })
+        self._verify_dva_states(expected_dva_states)
+
+    def _learn_devices(self, dynamic_device_placements, expected_device_placements,
+                       expected_dva_states):
         for mac, device_placement_map in dynamic_device_placements.items():
             self._port_state_manager.handle_device_placement(mac, dict_proto(
                 device_placement_map, DevicePlacement), static=False)
@@ -354,7 +373,15 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         ])
         self._verify_received_device_placements(expected_device_placements)
 
-    def _authenticate_devices(self, authentication_results, expected_device_behaviors):
+        expected_dva_states.update({
+            '00:0x:00:00:00:01': self.STATIC_OPERATIONAL,
+            '00:0a:00:00:00:04': self.UNAUTHENTICATED,
+            '00:0b:00:00:00:05': self.UNAUTHENTICATED
+        })
+        self._verify_dva_states(expected_dva_states)
+
+    def _authenticate_devices(self, authentication_results, expected_device_behaviors,
+                              expected_dva_states):
         for mac, device_behavior_map in authentication_results.items():
             self._port_state_manager.handle_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
@@ -377,7 +404,15 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
-    def _receive_testing_results(self, testing_results, expected_device_behaviors):
+        expected_dva_states.update({
+            '00:0z:00:00:00:03': self.SEQUESTERED,
+            '00:0a:00:00:00:04': self.SEQUESTERED,
+            '00:0b:00:00:00:05': self.SEQUESTERED
+        })
+        self._verify_dva_states(expected_dva_states)
+
+    def _receive_testing_results(self, testing_results, expected_device_behaviors,
+                                 expected_dva_states):
         for testing_result in testing_results:
             self._port_state_manager.handle_testing_result(
                 self._encapsulate_testing_result(*testing_result))
@@ -397,7 +432,14 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
-    def _expire_devices(self, expired_device_placements, expected_device_placements):
+        expected_dva_states.update({
+            '00:0z:00:00:00:03': self.INFRACTED,
+            '00:0a:00:00:00:04': self.DYNAMIC_OPERATIONAL
+        })
+        self._verify_dva_states(expected_dva_states)
+
+    def _expire_devices(self, expired_device_placements, expected_device_placements,
+                        expected_dva_states):
         for expired_device_placement in expired_device_placements:
             mac = None
             switch = expired_device_placement[1][0]
@@ -412,7 +454,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         ])
         self._verify_received_device_placements(expected_device_placements)
 
-    def _unauthenticate_devices(self, unauthenticated_devices, expected_device_behaviors):
+        expected_dva_states.pop('00:0x:00:00:00:01')
+        expected_dva_states.pop('00:0b:00:00:00:05')
+
+        self._verify_dva_states(expected_dva_states)
+
+    def _unauthenticate_devices(self, unauthenticated_devices, expected_device_behaviors,
+                                expected_dva_states):
         for mac in unauthenticated_devices:
             self._port_state_manager.handle_device_behavior(mac, DeviceBehavior())
 
@@ -426,7 +474,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_device_behaviors.extend([('00:0a:00:00:00:04', '', False)])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
-    def _reauthenticate_devices(self, reauthenticated_device, expected_device_behaviors):
+        expected_dva_states.update({
+            '00:0a:00:00:00:04': self.UNAUTHENTICATED
+        })
+        self._verify_dva_states(expected_dva_states)
+
+    def _reauthenticate_devices(self, reauthenticated_device, expected_device_behaviors,
+                                expected_dva_states):
         for mac, device_behavior_map in reauthenticated_device.items():
             self._port_state_manager.handle_device_behavior(
                 mac, dict_proto(device_behavior_map, DeviceBehavior))
@@ -441,12 +495,17 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         expected_device_behaviors.extend([('00:0a:00:00:00:04', 'TESTING', False)])
         self._verify_received_device_behaviors(expected_device_behaviors)
 
+        expected_dva_states.update({
+            '00:0a:00:00:00:04': self.SEQUESTERED
+        })
+        self._verify_dva_states(expected_dva_states)
+
 
 class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
     """Test access port states with overrides"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        config = OrchestrationConfig.SequesterConfig(
+        sequester_config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
             default_auto_sequestering='enabled',
             test_result_device_states=[
@@ -454,15 +513,17 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
                     test_result="FAILED",
                     device_state="operational")
             ])
+        orch_config = OrchestrationConfig(sequester_config=sequester_config)
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            sequester_config=config)
+            orch_config=orch_config)
 
         # All devices that were in infracted would be in operational state
         # pylint: disable=invalid-name
         self.INFRACTED = self.OPERATIONAL
 
-    def _receive_testing_results(self, testing_results, expected_device_behaviors):
+    def _receive_testing_results(self, testing_results, expected_device_behaviors,
+                                 expected_dva_states):
         for testing_result in testing_results:
             self._port_state_manager.handle_testing_result(
                 self._encapsulate_testing_result(*testing_result))
@@ -481,6 +542,12 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
             ('00:0a:00:00:00:04', 'SEG_D', False)
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
+
+        expected_dva_states.update({
+            '00:0z:00:00:00:03': self.DYNAMIC_OPERATIONAL,
+            '00:0a:00:00:00:04': self.DYNAMIC_OPERATIONAL
+        })
+        self._verify_dva_states(expected_dva_states)
 
 
 class FotSequesterTest(IntegrationTestBase):
