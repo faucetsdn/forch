@@ -81,6 +81,8 @@ jobs:
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ startup logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Forch logs
+          cat inst/forch-controller-1/forch.log
 
   test_reconfig:
     runs-on: ubuntu-latest
