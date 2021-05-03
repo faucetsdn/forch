@@ -67,13 +67,13 @@ jobs:
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup stack
-        run: bin/setup_stack devices 4 skip-conn-check dhcp fot
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot
       - name: run integration tests
-        run: bin/run_test_set fot
-      - name: setup stack
-        run: bin/setup_stack devices 4 skip-conn-check dhcp fot vxlan
-      - name: run integration tests
-        run: bin/run_test_set fot
+        run: timeout 20m bin/run_test_set fot
+      - name: setup vxlan stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
+      - name: run vxlan integration tests
+        run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
         run: |

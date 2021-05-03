@@ -521,9 +521,10 @@ function test_varz_value {
 function monitor_log {
     expected=$1
     log=$2
+    echo Monitor $log for $expected
     while true; do
         sleep 1
-        test_done=$(cat $log | fgrep "$expected" || true)
+        test_done=$(cat $log | egrep "$expected" || true)
         if [ -n "$test_done" ]; then
             break
         fi
@@ -532,7 +533,7 @@ function monitor_log {
 
 function monitor_daq_log {
     expected=$1
-    daqlog=$DAQBASE/inst/cmdrun.log
+    daqlog=$DAQ_BASE/inst/cmdrun.log
     monitor_log "$expected" "$daqlog"
 }
 

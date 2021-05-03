@@ -19,6 +19,10 @@ class DeviceStateReporter(abc.ABC):
     """Interface reporting device information"""
 
     @abc.abstractmethod
+    def disconnect(self, mac):
+        """Disconnect a device for reporting"""
+
+    @abc.abstractmethod
     def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
 
@@ -27,5 +31,5 @@ class DeviceStateReporter(abc.ABC):
         """Process faucet port learn events"""
 
     @abc.abstractmethod
-    def process_port_assign(self, mac, assigned):
+    def process_port_assign(self, mac, vlan):
         """Process faucet port vlan assignment"""
