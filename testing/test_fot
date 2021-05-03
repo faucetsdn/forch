@@ -83,7 +83,7 @@ if [[ $sserv_mode == 0 ]]; then
     monitor_daq_log "Remaining target sets: \[9a02571e8f05\]"
     expected_timeouts=0
     # Device 8f:05 doesn't timeout in this mode, so add artificial result for later on.
-    echo "9a02571e8f05: ['9a02571e8f05:hold:DaqException']" >> $DAQ_BASE/inst/result.log
+    echo "9a02571e8f05: ['9a02571e8f05:hold:DaqException']" | sudo tee -a $DAQ_BASE/inst/result.log
 else
     monitor_forch_log "Device 9a:02:57:1e:8f:03 disconnected"
     monitor_daq_log "Remaining target sets: \[\]"
