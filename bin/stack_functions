@@ -521,7 +521,7 @@ function test_varz_value {
 function monitor_log {
     expected=$1
     log=$2
-    echo Monitor $log for $expected
+    echo `date -u +%H:%m:%S` Monitor $log for $expected
     while true; do
         sleep 1
         test_done=$(cat $log | egrep "$expected" || true)
