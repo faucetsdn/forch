@@ -552,6 +552,7 @@ function do_tcpdump {
     iface=$1
     shift
     mkdir -p tcpdump
+    echo Capturing tcpdump to tcpdump/$1.pcap
     sudo tcpdump -U --immediate-mode -Z root -eni $iface -w tcpdump/$1.pcap $@ 2>&1 &
     echo $! >> tcpdump/tcpdump.pids
 }
