@@ -547,3 +547,11 @@ function redact {
     sed -re 's/time [0-9]+ms/XXX/' \
         -re 's/\+[0-9]+ errors/XX errors/'
 }
+
+function do_tcpdump {
+    iface=$1
+    shift
+    mkdir -p tcpdump
+    sudo tcpdump -U --immediate-mode -Z root -eni $iface -w tcpdump/$1.pcap $@ 2>&1 &
+    echo $! >> tcpdump/tcpdump.pids
+}

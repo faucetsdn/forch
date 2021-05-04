@@ -83,7 +83,10 @@ jobs:
           cat inst/forch-controller-1/daq/inst/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
-
+          echo %%%%%%%%%%%%% vxlan raw
+          tcpdump -enr tcpdump/docker0.pcap | fgrep DHCP || true
+          echo %%%%%%%%%%%%% vxlan int
+          tcpdump -enr tcpdump/vxlan_sys_4789.pcap | fgrep DHCP || true
   test_reconfig:
     runs-on: ubuntu-latest
     timeout-minutes: 30
