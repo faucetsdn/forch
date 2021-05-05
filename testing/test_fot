@@ -18,7 +18,7 @@ FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
 
-echo DAQ spot checks
+echo `timestamp` DAQ spot checks
 # faux-1: tests passing, moved to operational
 # faux-2: tests failing, moved to infracted
 # faux-3: device removed, testing cancelled
@@ -68,6 +68,7 @@ monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
 monitor_daq_log "Target device 9a02571e8f03 test hold running"
 monitor_daq_log "Target device 9a02571e8f05 test hold running"
 
+echo `timestamp` stopping forch-faux-3
 docker stop forch-faux-3 # Remove device 3 to generate port-down event.
 
 log_count=$(fgrep "9a:02:57:1e:8f:04" $DAQ_BASE/inst/cmdrun.log | wc -l)
@@ -91,10 +92,12 @@ else
 fi
 
 sequester_timeout=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.log | wc -l)
-echo Found $sequester_timeouts and expected $expected_timeouts
+echo `timestamp` Found $sequester_timeouts and expected $expected_timeouts
 [[ $sequester_timeout == $expected_timeouts ]]
 
 cat $DAQ_BASE/inst/result.log | sort | tee -a $TEST_RESULTS
 docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less flaky
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
+
+echo `timestamp` Done with test_fot

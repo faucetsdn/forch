@@ -4,48 +4,10 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 * * * *'
 
 jobs:
-  test_access:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: compile ovs
-        run: bin/compile_ovs
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: setup stack
-        run: bin/setup_stack local skip-conn-check dva
-      - name: run test
-        run: bin/run_test_set access
-
-  test_base:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: run test
-        run: bin/run_test_set base
-
-  test_fot:
+  test_fot1:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -79,7 +41,7 @@ jobs:
         run: |
           echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
-          echo %%%%%%%%%%%%% DAQ startup logs
+          echo %%%%%%%%%%%%% DAQ logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
@@ -87,9 +49,9 @@ jobs:
           tcpdump -enr tcpdump/docker0.pcap | fgrep DHCP || true
           echo %%%%%%%%%%%%% vxlan int
           tcpdump -enr tcpdump/vxlan_sys_4789.pcap | fgrep DHCP || true
-  test_reconfig:
+  test_fot2:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -98,45 +60,40 @@ jobs:
           python-version: 3.8
       - name: setup base
         run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: compile ovs
-        run: bin/compile_ovs
+      - name: setup faucet and daq
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: |
+          bin/setup_remote faucet
+          bin/setup_remote daq
       - name: build docker
-        run: bin/retry_cmd bin/build_docker
+        run: bin/retry_cmd bin/build_docker controller
+      - name: run python tests
+        run: testing/python_test test_fot
       - name: setup stack
-        run: bin/setup_stack
-      - name: run test
-        run: bin/run_test_set reconfig
-
-  test_stack:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: compile ovs
-        run: bin/compile_ovs
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: setup stack
-        run: bin/setup_stack local dhcp dumptcp
-      - name: run test
-        run: bin/run_test_set stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot
+      - name: run integration tests
+        run: timeout 20m bin/run_test_set fot
+      - name: setup vxlan stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
+      - name: run vxlan integration tests
+        run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
-        run: bin/dump_logs full
-
-  test_scale:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 25
+        run: |
+          echo %%%%%%%%%%%%% Controller startup logs
+          docker logs forch-controller-1
+          echo %%%%%%%%%%%%% DAQ logs
+          cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Forch logs
+          cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% vxlan raw
+          tcpdump -enr tcpdump/docker0.pcap | fgrep DHCP || true
+          echo %%%%%%%%%%%%% vxlan int
+          tcpdump -enr tcpdump/vxlan_sys_4789.pcap | fgrep DHCP || true
+  test_fot3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -145,12 +102,34 @@ jobs:
           python-version: 3.8
       - name: setup base
         run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
+      - name: setup faucet and daq
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: |
+          bin/setup_remote faucet
+          bin/setup_remote daq
       - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: run test
-        run: testing/python_test test_failscale
+        run: bin/retry_cmd bin/build_docker controller
+      - name: run python tests
+        run: testing/python_test test_fot
+      - name: setup stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot
+      - name: run integration tests
+        run: timeout 20m bin/run_test_set fot
+      - name: setup vxlan stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
+      - name: run vxlan integration tests
+        run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
-        run: bin/dump_logs full
+        run: |
+          echo %%%%%%%%%%%%% Controller startup logs
+          docker logs forch-controller-1
+          echo %%%%%%%%%%%%% DAQ logs
+          cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Forch logs
+          cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% vxlan raw
+          tcpdump -enr tcpdump/docker0.pcap | fgrep DHCP || true
+          echo %%%%%%%%%%%%% vxlan int
+          tcpdump -enr tcpdump/vxlan_sys_4789.pcap | fgrep DHCP || true

@@ -7,6 +7,10 @@ export CONTROLLER_NAME=127.0.0.1
 export STABILIZE_SEC=32
 export CONTROLLER_IDS=`sudo ovs-vsctl get-controller t1sw1`
 
+function timestamp {
+    date -u +%H:%M:%S
+}
+
 function preamble_setup {
     if [ -z "$TEST_RESULTS" ]; then
         TEST_SCRIPT=${0##*/}
@@ -391,8 +395,7 @@ function test_forch {
     # Make sure mac addresses are still learned...
     docker exec forch-faux-1 ping -q -c 3 192.168.1.2
 
-    echo Running forch$1 tests | tee -a $TEST_RESULTS
-    echo Current time: $(date)
+    echo `timestamp` Running forch$1 tests | tee -a $TEST_RESULTS
 
     fetch_forch system_state
     fetch_forch dataplane_state
@@ -521,7 +524,7 @@ function test_varz_value {
 function monitor_log {
     expected=$1
     log=$2
-    echo Monitor $log for $expected
+    echo `timestamp` Monitor $log for $expected
     while true; do
         sleep 1
         test_done=$(cat $log | egrep "$expected" || true)
@@ -552,6 +555,7 @@ function do_tcpdump {
     iface=$1
     shift
     mkdir -p tcpdump
+    echo Capturing tcpdump to tcpdump/$1.pcap
     sudo tcpdump -U --immediate-mode -Z root -eni $iface -w tcpdump/$1.pcap $@ 2>&1 &
     echo $! >> tcpdump/tcpdump.pids
 }
