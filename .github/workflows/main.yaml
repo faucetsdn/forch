@@ -43,6 +43,8 @@ jobs:
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Module logs
+          more ./inst/forch-controller-1/daq/inst/run-*/nodes/nmap*/activate.log | cat
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% vxlan raw
@@ -86,7 +88,7 @@ jobs:
           echo %%%%%%%%%%%%% DAQ logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
           echo %%%%%%%%%%%%% Module logs
-          find . -name activate.log
+          more ./inst/forch-controller-1/daq/inst/run-*/nodes/nmap*/activate.log | cat
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% vxlan raw
@@ -129,6 +131,8 @@ jobs:
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Module logs
+          more ./inst/forch-controller-1/daq/inst/run-*/nodes/nmap*/activate.log | cat
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% vxlan raw
