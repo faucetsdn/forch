@@ -85,6 +85,8 @@ jobs:
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Module logs
+          find . -name activate.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% vxlan raw
