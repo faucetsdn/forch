@@ -72,7 +72,7 @@ class DeviceReportClient(DeviceStateReporter):
                 self._mac_sessions.pop(mac)
                 self._logger.info('Device %s disconnected', mac)
             else:
-                self._logger.warning('Disconnecting unconnected device %s', mac)
+                self._logger.warning('Attempt to disconnect unconnected device %s', mac)
 
     def _dp_key(self, dp_name, port):
         return '%s:%s' % (dp_name, port)
