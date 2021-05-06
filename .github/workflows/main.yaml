@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         build: [a, b, c, d, e, f, g, h, i, j]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
