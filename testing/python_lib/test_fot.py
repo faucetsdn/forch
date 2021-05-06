@@ -136,7 +136,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
     def test_requesting_empty_port_events(self):
         """Test behavior of the servicer with no port events."""
 
-        method = self._setup_port_state_server('00:0X:00:00:00:01')
+        stream = self._setup_port_state_server('00:0X:00:00:00:01')
 
         mac_port_behavior = encapsulate_mac_port_behavior('00:0X:00:00:00:01', 'passed')
         print(f'Sending devices state: {mac_port_behavior}')
@@ -146,7 +146,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
             request=mac_port_behavior, timeout=1
         )
 
-        _, code, _ = method.termination()
+        _, code, _ = stream.termination()
         self.assertEqual(code, grpc.StatusCode.OK)
 
     def _setup_port_state_server(self, mac_addr):
@@ -185,7 +185,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
         """Test behavior of the servicer with port events."""
 
         mac_addr = "00:0X:00:00:00:01"
-        method = self._setup_port_state_server(mac_addr)
+        stream = self._setup_port_state_server(mac_addr)
 
         # Prevent initialization race condition.
         time.sleep(2)
@@ -210,25 +210,25 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
         expected_port_changes = filter(lambda changes: changes[1][1] == '1', port_changes)
         count = 0
         for expected in expected_port_changes:
-            response = method.take_response()
+            response = stream.take_response()
             self.assertEqual(type(response), DevicePortEvent)
             self._check_port_change_event(response, expected[1])
             count += 1
         self.assertEqual(count, 7)
 
-        method.termination()
+        stream.termination()
 
     def _report_device_state(self):
         """Test updating device state"""
         mac_addr = "00:0X:00:00:00:01"
         mac_port_behavior = encapsulate_mac_port_behavior(mac_addr, 'passed')
         print(f'Sending devices state: {mac_port_behavior}')
-        method = self._test_server.invoke_unary_unary(
+        stream = self._test_server.invoke_unary_unary(
             DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['ReportDevicesState'],
             invocation_metadata={},
             request=mac_port_behavior, timeout=1
         )
-        _, _, code, _ = method.termination()
+        _, _, code, _ = stream.termination()
         self.assertEqual(code, grpc.StatusCode.OK)
 
 
@@ -601,7 +601,7 @@ class FotContainerTest(IntegrationTestBase):
             timeout=60, docker_host=device_container)
 
         vlan_tcpdump_text = self.tcpdump_helper(
-            'data0', 'vlan 272 and src port 67', packets=2,
+            'data0', 'vlan and src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
             timeout=60, docker_host='forch-controller-1')
 
@@ -609,17 +609,18 @@ class FotContainerTest(IntegrationTestBase):
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
-        # trigger learning event for faux-1 to make it authenticated and sequestered
+        # Trigger learning event for devices to trigger their initial state
         self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False)
+        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False)
 
-        # test DHCP reflection with sequestered device
+        # Test DHCP reflection for sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
-        # test DHCP with unauthenticated device
-        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-5')
-        self.assertFalse(re.search("DHCP.*Reply", device_tcpdump_text))
+        # Test (lack of) DHCP reflection for operational device
+        device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
+        self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
 
