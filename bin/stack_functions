@@ -395,7 +395,8 @@ function test_forch {
     # Make sure mac addresses are still learned...
     docker exec forch-faux-1 ping -q -c 3 192.168.1.2
 
-    echo `timestamp` Running forch$1 tests | tee -a $TEST_RESULTS
+    echo Running forch$1 tests | tee -a $TEST_RESULTS
+    echo Starting test run at `timestamp`
 
     fetch_forch system_state
     fetch_forch dataplane_state
