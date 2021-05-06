@@ -84,11 +84,11 @@ fi
 (sleep $startup_delay; forch/bin/run_forch) &
 
 echo Starting daq, output in daq/inst/cmdrun.log
-stdbuf -i0 -o0 -e0 sudo \
+sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \
     FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
-    stdbuf -i0 -o0 -e0 daq/cmd/start ../$DAQ_BASE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
+    daq/cmd/start ../$DAQ_BASE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
 
 echo Blocking forever...
 tail -f /dev/null

@@ -4,8 +4,6 @@ include: ${DAQ_LIB}/config/system/default.yaml
 
 base_conf: ${DAQ_LIB}/resources/setups/orchestration/base_config.json
 
-mininet_loglevel: debug
-
 switch_setup:
   data_intf: data0
   lo_port: 3984
