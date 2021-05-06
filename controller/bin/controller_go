@@ -84,7 +84,7 @@ fi
 (sleep $startup_delay; forch/bin/run_forch) &
 
 echo Starting daq, output in daq/inst/cmdrun.log
-sudo \
+unbuffer sudo \
     PYTHONPATH=$PYTHONPATH \
     PATH=$DAQ_ROOT/mininet:$PATH \
     FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
