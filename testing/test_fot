@@ -18,9 +18,6 @@ FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
 
-# Add logging for diagnostics
-set -x
-
 echo `timestamp` DAQ spot checks
 # faux-1: tests passing, moved to operational
 # faux-2: tests failing, moved to infracted
@@ -28,18 +25,17 @@ echo `timestamp` DAQ spot checks
 # faux-4: static behavior, no testing triggered
 # faux-5: tests timeout (hold test enabled)
 
-# Show running images
-docker ps
-
 # Test that no-sequester works
-docker exec forch-faux-4 ip addr
 docker exec forch-faux-4 ping -c 10 192.168.1.0
 
 # Ongoing activity faux-5 to keep it learned
-docker exec forch-faux-5 ip addr
 docker exec forch-faux-5 ping -c 1000 192.168.1.0 > /dev/null &
 
+echo Tail of DAQ log
+tail $DAQ_BASE/inst/cmdrun.log || true
+
 # Basic process startup.
+echo Check basic process startup
 fgrep "Loading base module config" $DAQ_BASE/inst/cmdrun.log
 
 # Testing that python path is good.
@@ -52,6 +48,7 @@ cat $DAQ_BASE/inst/daq_run_id.txt
 ls -l $DAQ_BASE/inst/dp_port_acls.yaml
 
 # Check that OVS switch connects properly to managed faucet.
+echo Check for managed faucet
 fgrep "System port 1 on dpid 1 is active True" $DAQ_BASE/inst/cmdrun.log
 
 echo Done with daq startup tests.
@@ -59,9 +56,6 @@ echo Done with daq startup tests.
 # Forch startup checks
 # Check Forch has successfuly started
 fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
-
-# Starting behavioral tests, don't keep the logging...
-set +x
 
 # Waiting for DAQ test to complete
 monitor_daq_log "Setting port set 1 to vlan 27[0-9]"
