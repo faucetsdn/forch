@@ -7,47 +7,13 @@ on:
     - cron: '0 */2 * * *'
 
 jobs:
-  test_access:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: compile ovs
-        run: bin/compile_ovs
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: setup stack
-        run: bin/setup_stack local skip-conn-check dva
-      - name: run test
-        run: bin/run_test_set access
-
-  test_base:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: run test
-        run: bin/run_test_set base
-
   test_fot:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        test: [a, b, c, d, e]
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -70,10 +36,6 @@ jobs:
         run: bin/setup_stack devices 4 skip-conn-check dhcp fot
       - name: run integration tests
         run: timeout 20m bin/run_test_set fot
-      - name: setup stack
-        run: bin/setup_stack devices 4 skip-conn-check dhcp fot vxlan
-      - name: run integration tests
-        run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
         run: |
@@ -83,71 +45,3 @@ jobs:
           cat inst/forch-controller-1/daq/inst/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
-
-  test_reconfig:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: compile ovs
-        run: bin/compile_ovs
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: setup stack
-        run: bin/setup_stack
-      - name: run test
-        run: bin/run_test_set reconfig
-
-  test_stack:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: compile ovs
-        run: bin/compile_ovs
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: setup stack
-        run: bin/setup_stack local dhcp dumptcp
-      - name: run test
-        run: bin/run_test_set stack
-      - name: post-run logs
-        if: ${{ always() }}
-        run: bin/dump_logs full
-
-  test_scale:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: setup base
-        run: bin/setup_base
-      - name: setup faucet
-        run: bin/setup_remote faucet
-      - name: build docker
-        run: bin/retry_cmd bin/build_docker
-      - name: run test
-        run: testing/python_test test_failscale
-      - name: post-run logs
-        if: ${{ always() }}
-        run: bin/dump_logs full
