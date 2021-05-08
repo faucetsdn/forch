@@ -90,6 +90,7 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
                     device.assigned = assigned
                     if not assigned:
                         device.vlan = None
+                        device.port_up = False
                     self._send_device_port_event(device)
                     return
 
