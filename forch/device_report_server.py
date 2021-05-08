@@ -140,6 +140,10 @@ class DeviceReportServer(DeviceStateReporter):
         server_address_port = f'{address or DEFAULT_ADDRESS}:{port or DEFAULT_PORT}'
         self._server.add_insecure_port(server_address_port)
 
+    def disconnect(self, mac):
+        """Process a port disconnect"""
+        self._servicer.process_port_assign(mac, None)
+
     def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
         self._servicer.process_port_state(dp_name, port, state)
@@ -147,10 +151,6 @@ class DeviceReportServer(DeviceStateReporter):
     def process_port_learn(self, dp_name, port, mac, vlan):
         """Process faucet port learn events"""
         self._servicer.process_port_learn(dp_name, port, mac, vlan)
-
-    def disconnect(self, mac):
-        """Process faucet port disconnect"""
-        self._servicer.process_port_assign(mac, None)
 
     def process_port_assign(self, mac, vlan):
         """Process faucet port vlan assignment"""
