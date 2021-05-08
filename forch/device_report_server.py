@@ -88,6 +88,8 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
                 device = self._port_device_mapping.get(mapping)
                 if device.mac == mac:
                     device.assigned = assigned
+                    if not assigned:
+                        device.vlan = None
                     self._send_device_port_event(device)
                     return
 
