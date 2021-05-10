@@ -677,7 +677,7 @@ class FaucetStateCollector:
 
             switch_learned_mac_map = None
             port_type = port_attr['type']
-            if port_type == 'access':
+            if port_type == 'access' or port_type == 'sequester':
                 switch_learned_mac_map = switch_map.setdefault('access_port_macs', {})
             elif port_type == 'stack':
                 switch_learned_mac_map = switch_map.setdefault('stacking_port_macs', {})
