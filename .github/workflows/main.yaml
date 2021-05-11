@@ -66,13 +66,13 @@ jobs:
         run: bin/retry_cmd bin/build_docker controller
       - name: run python tests
         run: testing/python_test test_fot
-      - name: setup stack
+      - name: setup fot stack
         run: bin/setup_stack devices 5 skip-conn-check dhcp fot
-      - name: run integration tests
+      - name: run fot integration tests
         run: timeout 20m bin/run_test_set fot
-      - name: setup stack
+      - name: setup vxlan stack
         run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
-      - name: run integration tests
+      - name: run vxlan integration tests
         run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
