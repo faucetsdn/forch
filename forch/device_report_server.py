@@ -88,6 +88,9 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
                 device = self._port_device_mapping.get(mapping)
                 if device.mac == mac:
                     device.assigned = assigned
+                    if not assigned:
+                        device.vlan = None
+                        device.port_up = False
                     self._send_device_port_event(device)
                     return
 
@@ -138,7 +141,8 @@ class DeviceReportServer(DeviceStateReporter):
         self._server.add_insecure_port(server_address_port)
 
     def disconnect(self, mac):
-        """Disconnect a remote device"""
+        """Process a port disconnect"""
+        self._servicer.process_port_assign(mac, None)
 
     def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
