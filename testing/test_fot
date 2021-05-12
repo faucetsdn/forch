@@ -6,33 +6,50 @@ preamble_setup
 
 function report_vlans {
     $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw1".interfaces."4".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw1".interfaces."5".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
     $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
 }
 
 INST_BASE=inst/forch-controller-1
-DAQBASE=$INST_BASE/daq
+DAQ_BASE=$INST_BASE/daq
 FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
 
-echo DAQ spot checks
+echo `timestamp` DAQ spot checks
+# faux-1: tests passing, moved to operational
+# faux-2: tests failing, moved to infracted
+# faux-3: device removed, testing cancelled
+# faux-4: static behavior, no testing triggered
+# faux-5: tests timeout (hold test enabled)
 
-docker exec forch-faux-4 ping -c10 192.168.1.0
+# Test that no-sequester works
+docker exec forch-faux-4 ping -c 10 192.168.1.0
+
+# Ongoing activity faux-5 to keep it learned
+docker exec forch-faux-5 ping -c 1000 192.168.1.0 > /dev/null &
+
+echo Tail of DAQ log
+tail $DAQ_BASE/inst/cmdrun.log || true
 
 # Basic process startup.
-fgrep "Loading base module config" $DAQBASE/inst/cmdrun.log
+echo Check basic process startup
+fgrep "Loading base module config" $DAQ_BASE/inst/cmdrun.log
 
 # Testing that python path is good.
-ls -l $DAQBASE/inst/daq.pid
+ls -l $DAQ_BASE/inst/daq.pid
 
 # Requires valid config available.
-cat $DAQBASE/inst/daq_run_id.txt
+cat $DAQ_BASE/inst/daq_run_id.txt
 
 # Requiring mininet path.
-ls -l $DAQBASE/inst/dp_port_acls.yaml
+ls -l $DAQ_BASE/inst/dp_port_acls.yaml
 
 # Check that OVS switch connects properly to managed faucet.
-fgrep "System port 1 on dpid 1 is active True" $DAQBASE/inst/cmdrun.log
+echo Check for managed faucet
+fgrep "System port 1 on dpid 1 is active True" $DAQ_BASE/inst/cmdrun.log
 
 echo Done with daq startup tests.
 
@@ -41,8 +58,8 @@ echo Done with daq startup tests.
 fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
 
 # Waiting for DAQ test to complete
-monitor_daq_log "Setting port set 1 to vlan 272"
-monitor_daq_log "Setting port set 2 to vlan 273"
+monitor_daq_log "Setting port set 1 to vlan 27[0-9]"
+monitor_daq_log "Setting port set 2 to vlan 27[0-9]"
 
 docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
 docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
@@ -54,20 +71,38 @@ echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:01: passed"
 monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
 monitor_daq_log "Target device 9a02571e8f03 test hold running"
+monitor_daq_log "Target device 9a02571e8f05 test hold running"
+
+echo `timestamp` stopping forch-faux-3
+docker stop forch-faux-3 # Remove device 3 to generate port-down event.
+
+log_count=$(fgrep "9a:02:57:1e:8f:04" $DAQ_BASE/inst/cmdrun.log | wc -l)
+echo Device 04 log count $log_count | tee -a $TEST_RESULTS
 
 report_vlans
 
-monitor_forch_log "Device 9a:02:57:1e:8f:03 is entering infracted state"
 monitor_forch_log "Device 9a:02:57:1e:8f:04 is entering operational state from unauthenticated state"
 
-docker stop forch-faux-3 # to cause an error so daq terminates
-monitor_daq_log "Remaining target sets: []"
+# Check if it's running in client/server or server/client mode and adjust expectations accordingly.
+sserv_mode=$(fgrep ssserv $DAQ_BASE/inst/cmdrun.log | wc -l)
+if [[ $sserv_mode == 0 ]]; then
+    monitor_daq_log "Remaining target sets: \[9a02571e8f05\]"
+    expected_timeouts=0
+    # Device 8f:05 doesn't timeout in this mode, so add artificial result for later on.
+    echo "9a02571e8f05: ['9a02571e8f05:hold:DaqException']" | sudo tee -a $DAQ_BASE/inst/result.log
+else
+    monitor_forch_log "Device 9a:02:57:1e:8f:03 disconnected"
+    monitor_daq_log "Remaining target sets: \[\]"
+    expected_timeouts=2
+fi
 
-sequester_timeout=$(cat $INST_BASE/forch.log | grep "Device 9a:02:57:1e:8f:03 sequestering timedout" | wc -l)
-echo Device sequestering timeout: $sequester_timeout | tee -a $TEST_RESULTS
+sequester_timeout=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.log | wc -l)
+echo `timestamp` Found $sequester_timeouts and expected $expected_timeouts
+[[ $sequester_timeout == $expected_timeouts ]]
 
-cat $DAQBASE/inst/result.log | sort | tee -a $TEST_RESULTS
+cat $DAQ_BASE/inst/result.log | sort | tee -a $TEST_RESULTS
 docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less flaky
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 
+echo `timestamp` Done with test_fot

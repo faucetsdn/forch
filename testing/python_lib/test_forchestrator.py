@@ -90,9 +90,10 @@ class ForchestratorAuthTestCase(ForchestratorTestBase):
 
         self._forchestrator._authenticator = Authenticator(auth_config, handle_auth_result,
                                                            radius_query_object=Mock())
-        config = OrchestrationConfig.SequesterConfig(sequester_segment='SEQUESTER')
+        sequester_config = OrchestrationConfig.SequesterConfig(sequester_segment='SEQUESTER')
+        orch_config = OrchestrationConfig(sequester_config=sequester_config)
         self._forchestrator._port_state_manager = PortStateManager(
-            Mock(), Mock(), sequester_config=config)
+            Mock(), Mock(), orch_config=orch_config)
 
     def _get_auth_sm_state(self, mac):
         mac_sm = self._forchestrator._authenticator.sessions.get(mac)

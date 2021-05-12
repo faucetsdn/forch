@@ -150,8 +150,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             lambda: self._varz_collector.retry_get_metrics(
                 self._gauge_prom_endpoint, _TARGET_GAUGE_METRICS))
         self._faucet_collector.set_get_dva_state(
-            (lambda switch, port:
-             self._faucetizer.get_dva_state(switch, port) if self._faucetizer else None))
+            (lambda switch, port: self._port_state_manager.get_dva_state(switch, port)
+             if self._port_state_manager else None))
         self._faucet_collector.set_forch_metrics(self._metrics)
         self._faucet_state_scheduler = HeartbeatScheduler(interval_sec=1)
         self._faucet_state_scheduler.add_callback(
@@ -238,7 +238,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         self._port_state_manager = PortStateManager(
             self._faucetizer, self, self._device_report_handler,
-            sequester_config=sequester_config)
+            orch_config=self._config.orchestration)
 
         self._attempt_authenticator_initialise()
         self._process_static_device_placement()
@@ -250,8 +250,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         service_address, service_port = self._get_testing_service_config()
         if service_address:
             unauth_vlan = self._config.orchestration.unauthenticated_vlan
+            self._logger.info('Connecting report client to %s:%s',
+                              service_address, service_port)
             return DeviceReportClient(self._handle_device_result, service_address,
                                       service_port, unauth_vlan)
+        self._logger.info('Starting device report server on %s', service_port)
         return DeviceReportServer(self._handle_device_result, service_port)
 
     def _attempt_authenticator_initialise(self):
@@ -315,7 +318,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
 
     def _handle_device_result(self, device_result):
-        self._port_state_manager.handle_testing_result(device_result)
+        return self._port_state_manager.handle_testing_result(device_result)
 
     def update_device_state_varz(self, mac, state):
         if self._metrics:
@@ -446,8 +449,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._authenticator.process_device_placement(src_mac, device_placement)
         else:
             self._logger.info(
-                'Ignored deauthentication for port %s on switch %s',
-                device_placement.port, device_placement.switch)
+                'Ignored deauthentication for %s on %s:%s',
+                src_mac, device_placement.switch, device_placement.port)
 
     def _handle_auth_result(self, mac, access, segment, role):
         self._faucet_collector.update_radius_result(mac, access, segment, role)

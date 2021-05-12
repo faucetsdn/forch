@@ -88,6 +88,9 @@ class DeviceReportServicer(device_report_pb2_grpc.DeviceReportServicer):
                 device = self._port_device_mapping.get(mapping)
                 if device.mac == mac:
                     device.assigned = assigned
+                    if not assigned:
+                        device.vlan = None
+                        device.port_up = False
                     self._send_device_port_event(device)
                     return
 
@@ -137,6 +140,10 @@ class DeviceReportServer(DeviceStateReporter):
         server_address_port = f'{address or DEFAULT_ADDRESS}:{port or DEFAULT_PORT}'
         self._server.add_insecure_port(server_address_port)
 
+    def disconnect(self, mac):
+        """Process a port disconnect"""
+        self._servicer.process_port_assign(mac, None)
+
     def process_port_state(self, dp_name, port, state):
         """Process faucet port state events"""
         self._servicer.process_port_state(dp_name, port, state)
@@ -145,9 +152,9 @@ class DeviceReportServer(DeviceStateReporter):
         """Process faucet port learn events"""
         self._servicer.process_port_learn(dp_name, port, mac, vlan)
 
-    def process_port_assign(self, mac, assigned):
+    def process_port_assign(self, mac, vlan):
         """Process faucet port vlan assignment"""
-        self._servicer.process_port_assign(mac, assigned)
+        self._servicer.process_port_assign(mac, vlan)
 
     def start(self):
         """Start the server"""
