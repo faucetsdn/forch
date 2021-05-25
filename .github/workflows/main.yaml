@@ -66,14 +66,14 @@ jobs:
         run: bin/retry_cmd bin/build_docker controller
       - name: run python tests
         run: testing/python_test test_fot
-      - name: setup stack
-        run: bin/setup_stack devices 4 skip-conn-check dhcp fot
-      - name: run integration tests
-        run: bin/run_test_set fot
-      - name: setup stack
-        run: bin/setup_stack devices 4 skip-conn-check dhcp fot vxlan
-      - name: run integration tests
-        run: bin/run_test_set fot
+      - name: setup fot stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot
+      - name: run fot integration tests
+        run: timeout 20m bin/run_test_set fot
+      - name: setup vxlan stack
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
+      - name: run vxlan integration tests
+        run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
         run: |
@@ -81,6 +81,8 @@ jobs:
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ startup logs
           cat inst/forch-controller-1/daq/inst/cmdrun.log
+          echo %%%%%%%%%%%%% Forch logs
+          cat inst/forch-controller-1/forch.log
 
   test_reconfig:
     runs-on: ubuntu-latest

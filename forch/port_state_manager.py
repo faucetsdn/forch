@@ -143,7 +143,7 @@ class PortStateManager:
 
     # pylint: disable=too-many-arguments
     def __init__(self, device_state_manager=None, varz_updater=None,
-                 device_state_reporter=None, sequester_config=None):
+                 device_state_reporter=None, orch_config=None):
         self._state_machines = {}
         self._auto_sequester = {}
         self._static_device_behaviors = {}
@@ -157,7 +157,9 @@ class PortStateManager:
         self._logger = get_logger('portmgr')
         self._state_callbacks = self._build_state_callbacks()
         self._state_overwrites = {}
-        if sequester_config:
+        self._orch_config = orch_config
+        if orch_config and orch_config.HasField('sequester_config'):
+            sequester_config = orch_config.sequester_config
             self._sequester_segment = sequester_config.sequester_segment
             self._sequester_timeout = sequester_config.sequester_timeout_sec
             if sequester_config.test_result_device_states:
@@ -170,9 +172,8 @@ class PortStateManager:
                         TestResult.ResultCode: test_result_device_states_map
                     }
                 }
-            if sequester_config.default_auto_sequestering:
-                self._default_auto_sequestering = sequester_config.default_auto_sequestering
-
+            if sequester_config.auto_sequestering:
+                self._default_auto_sequestering = sequester_config.auto_sequestering
 
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
@@ -295,25 +296,40 @@ class PortStateManager:
 
     def handle_testing_result(self, testing_result):
         """Update the state machine for a device according to the testing result"""
-        for mac, device_behavior in testing_result.device_mac_behaviors.items():
-            mac_lower = mac.lower()
-            if mac_lower in self._sequester_timer:
-                self._sequester_timer[mac_lower].cancel()
-                del self._sequester_timer[mac_lower]
+        assert len(testing_result.device_mac_behaviors.items()) == 1, 'only one result allowed'
+        mac, device_behavior = list(testing_result.device_mac_behaviors.items())[0]
+        mac_lower = mac.lower()
+        terminal = self._transition_device_state(mac_lower, device_behavior)
+        if terminal and mac_lower in self._sequester_timer:
+            self._logger.info('Cancelling deivce %s sequester timeout', mac_lower)
+            self._sequester_timer[mac_lower].cancel()
+            del self._sequester_timer[mac_lower]
+        return terminal
 
-            # TODO: Remove this conversion when session results are being sent from DAQ
-            # pylint: disable=no-member
-            if device_behavior.port_behavior == PortBehavior.Behavior.passed:
-                self._handle_session_result(mac_lower, TestResult.ResultCode.PASSED)
-            elif device_behavior.port_behavior == PortBehavior.Behavior.failed:
-                self._handle_session_result(mac_lower, TestResult.ResultCode.FAILED)
+    def _transition_device_state(self, mac_lower, device_behavior):
+        """Process device behavior and return True if this is a terminal state"""
+        # TODO: Remove this conversion when session results are being sent from DAQ
+        # pylint: disable=no-member
+        port_behavior = device_behavior.port_behavior
+        if port_behavior == PortBehavior.Behavior.passed:
+            self._handle_session_result(mac_lower, TestResult.ResultCode.PASSED)
+            return True
+        if port_behavior == PortBehavior.Behavior.failed:
+            self._handle_session_result(mac_lower, TestResult.ResultCode.FAILED)
+            return True
+        if port_behavior == PortBehavior.Behavior.authenticated:
+            pass
+        else:
+            self._logger.warning('Unknown result %s for %s',
+                                 PortBehavior.Behavior.Name(port_behavior), mac_lower)
+        return False
 
     def _handle_session_result(self, mac, session_result):
         with self._lock:
             state_machine = self._state_machines.get(mac)
             if not state_machine:
                 self._logger.error(
-                    'No state machine defined for device %s before receiving testing result', mac)
+                    'No state machine defined for device %s', mac)
                 return
             state_machine.handle_session_result(session_result)
 
@@ -323,10 +339,11 @@ class PortStateManager:
     def _handle_sequestering_timeout(self, mac):
         if mac in self._sequester_timer:
             del self._sequester_timer[mac]
-        self._logger.error('Device %s sequestering timedout after %ss.', mac,
+        self._logger.error('Handle device %s sequester timeout after %ss.', mac,
                            self._sequester_timeout)
         # pylint: disable=no-member
         self._handle_session_result(mac, TestResult.ResultCode.FAILED)
+        self._device_state_reporter.disconnect(mac)
 
     def _set_port_sequestered(self, mac):
         """Set port to sequester vlan"""
@@ -347,7 +364,7 @@ class PortStateManager:
             def handler():
                 self._handle_sequestering_timeout(mac.lower())
             timeout = datetime.now() + timedelta(seconds=self._sequester_timeout)
-            self._logger.info('Setting Device %s sequester timeout at %s', mac, timeout)
+            self._logger.info('Setting device %s sequester timeout at %s', mac, timeout)
             self._sequester_timer[mac.lower()] = threading.Timer(self._sequester_timeout, handler)
             self._sequester_timer[mac.lower()].start()
 
@@ -395,3 +412,28 @@ class PortStateManager:
     def _update_static_vlan_varz(self, mac, vlan):
         if self._varz_updater:
             self._varz_updater.update_static_vlan_varz(mac, vlan)
+
+    def get_dva_state(self, switch, port):
+        """Return the DVA state of the device"""
+        with self._lock:
+            return self._get_dva_state(switch, port)
+
+    def _get_dva_state(self, switch, port):
+        mac = self._placement_to_mac.get((switch, port))
+        if not mac:
+            if self._orch_config and self._orch_config.unauthenticated_vlan:
+                return DVAState.unauthenticated
+            return DVAState.initial
+
+        state_machine = self._state_machines.get(mac)
+        if not state_machine:
+            self._logger.warning('No state machine found for MAC: %s', mac)
+            return DVAState.initial
+
+        dva_state = state_machine.get_current_state()
+
+        if dva_state == DVAState.operational:
+            static = mac in self._static_device_behaviors
+            return DVAState.static_operational if static else DVAState.dynamic_operational
+
+        return dva_state

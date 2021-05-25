@@ -4,6 +4,8 @@
 /test_out/
 /protoc-gen-doc/
 /ovs/
+/tcpdump/
+etc/docker_images.txt
 
 # package build files
 

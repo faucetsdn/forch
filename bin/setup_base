@@ -46,6 +46,8 @@ else
     false
 fi
 
+echo Enabling host access for vxlan tunnel
+sudo iptables -A INPUT -i docker0 -j ACCEPT
 
 echo Adding $USER to docker group...
 sudo groupadd docker || true

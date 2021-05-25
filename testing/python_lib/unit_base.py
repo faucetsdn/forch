@@ -382,6 +382,8 @@ class PortsStateManagerTestBase(UnitTestBase):
     UNAUTHENTICATED = DVAState.unauthenticated
     SEQUESTERED = DVAState.sequestered
     OPERATIONAL = DVAState.operational
+    STATIC_OPERATIONAL = DVAState.static_operational
+    DYNAMIC_OPERATIONAL = DVAState.dynamic_operational
     INFRACTED = DVAState.infracted
     SEQUESTER_SEGMENT = 'TESTING'
 
@@ -391,14 +393,19 @@ class PortsStateManagerTestBase(UnitTestBase):
         self._device_state_manager = CustomizableDeviceStateManager(
             self._process_device_placement, self._process_device_behavior,
             self._get_vlan_from_segment)
-        config = OrchestrationConfig.SequesterConfig(
+
+        sequester_config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
-            default_auto_sequestering='enabled')
+            auto_sequestering='enabled')
+        orch_config = OrchestrationConfig(sequester_config=sequester_config)
+
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
-            sequester_config=config)
+            orch_config=orch_config)
+
         self._received_device_placements = []
         self._received_device_behaviors = []
+        self._device_placements = {}
 
     def _process_device_placement(self):
         pass
@@ -409,12 +416,21 @@ class PortsStateManagerTestBase(UnitTestBase):
     def _get_vlan_from_segment(self, segment):
         return
 
-    def _verify_ports_states(self, expected_states):
+    def _verify_ports_states(self, expected_port_states):
         # pylint: disable=protected-access
         ports_states = {
             mac: ptsm.get_current_state()
             for (mac, ptsm) in self._port_state_manager._state_machines.items()}
-        self.assertEqual(ports_states, expected_states)
+        self.assertEqual(ports_states, expected_port_states)
+
+    def _verify_dva_states(self, expected_dva_states):
+        dva_states = {}
+        for mac in self._port_state_manager._state_machines:  # pylint: disable=protected-access
+            device_placement = self._device_placements[mac]
+            dva_states[mac] = self._port_state_manager.get_dva_state(
+                device_placement.switch, device_placement.port)
+
+        self.assertEqual(dva_states, expected_dva_states)
 
     def _verify_received_device_placements(self, expected_device_placements):
         self.assertEqual(self._received_device_placements, expected_device_placements)

@@ -80,6 +80,7 @@ elif [ -n "$fot" ]; then
     mode=fot
 fi
 
+rm -rf tcpdump # Clean out directory
 source bin/stack_functions
 
 ###########################################################
@@ -169,6 +170,8 @@ if [ -n "$vxlan" ]; then
     ipaddr=$(docker inspect --format="{{ .NetworkSettings.Networks.bridge.IPAddress }}" forch-controller-1)
     echo Connecting vxlan to $ipaddr
     add_vxlan t1sw1 4 $ipaddr
+    do_tcpdump vxlan_sys_4789
+    do_tcpdump docker0 udp port 4789
 elif [ -z "$remote" ]; then
     echo Enabling tap interface cntrl_tap_1
     add_iface t1sw1 4 cntrl_tap_1
@@ -246,12 +249,6 @@ if [ -z "$remote" ]; then
     fi
     echo
 fi
-
-rm -rf tcpdump
-function do_tcpdump {
-    sudo tcpdump -U --immediate-mode -Z root -eni $1 -w tcpdump/$1.pcap 2>&1 &
-    echo $! >> tcpdump/tcpdump.pids
-}
 
 if [ -n "$dumptcp" ]; then
     echo Launching tcpdumps...
