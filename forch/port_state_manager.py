@@ -172,8 +172,8 @@ class PortStateManager:
                         TestResult.ResultCode: test_result_device_states_map
                     }
                 }
-            if sequester_config.default_auto_sequestering:
-                self._default_auto_sequestering = sequester_config.default_auto_sequestering
+            if sequester_config.auto_sequestering:
+                self._default_auto_sequestering = sequester_config.auto_sequestering
 
     def handle_static_device_behavior(self, mac, device_behavior):
         """Add static testing state for a device"""
