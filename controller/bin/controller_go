@@ -66,11 +66,8 @@ if [[ -n $VXLAN_IP ]]; then
     echo Configuring for vxlan ip $VXLAN_IP
     echo switch_setup.vxlan.key=cntrl_tap >> $DAQ_CONFIG
     echo switch_setup.vxlan.remote_ip=$VXLAN_IP >> $DAQ_CONFIG
-
-    yq -i -y .orchestration.sequester_config.service_address=\"127.0.0.1\" $FORCH_CONFIG
     startup_delay=30
 else
-    yq -i -y .device_reporting.server_address=\"127.0.0.1\" $DAQ_BASE
     echo Waiting for data0...
     while ! ip link show data0; do
         sleep 2
