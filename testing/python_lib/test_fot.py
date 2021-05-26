@@ -507,7 +507,7 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
         super().__init__(*args, **kwargs)
         sequester_config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
-            default_auto_sequestering='enabled',
+            auto_sequestering='enabled',
             test_result_device_states=[
                 OrchestrationConfig.SequesterConfig.TestResultDeviceStateTransition(
                     test_result="FAILED",
