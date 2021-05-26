@@ -59,7 +59,10 @@ class IntegrationTestBase(unittest.TestCase):
     @staticmethod
     def tcpdump_helper(*args, **kwargs):
         """Return running TcpdumpHelper instance"""
-        return TcpdumpHelper(*args, **kwargs).execute()
+        tcpdump_helper = TcpdumpHelper(*args, **kwargs)
+        tcpdump_capture = tcpdump_helper.execute()
+        tcpdump_helper.terminate()
+        return tcpdump_capture
 
     def _setup_stack(self):
         options = self.stack_options
