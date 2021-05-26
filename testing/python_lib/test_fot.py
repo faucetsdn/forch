@@ -607,6 +607,18 @@ class FotContainerTest(IntegrationTestBase):
 
         return device_tcpdump_text, vlan_tcpdump_text
 
+    def test_mirroring(self):
+        """Test packet mirroring for FOT setup"""
+        lldp_tcpdump_text = self.tcpdump_helper(
+            'faux-eth0', 'ether proto 0x88cc', packets=2,
+            timeout=60, docker_host='forch-faux-121')
+        print(lldp_tcpdump_text)
+        lacp_tcpdump_text = self.tcpdump_helper(
+            'faux-eth0', 'ether proto 0x8809', packets=2,
+            timeout=60, docker_host='forch-faux-121')
+        print(lacp_tcpdump_text)
+
+
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
         # Trigger learning event for devices to trigger their initial state
