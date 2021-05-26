@@ -30,14 +30,17 @@ DAQ_EVENT_SOCK=/root/daq/inst/faucet_event.sock
 FORCH_CONFIG=$FORCH_CONFIG_DIR/forch.yaml
 export PYTHONPATH=$FORCH_ROOT:$DAQ_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet
 
-DAQ_CONFIG=startup.conf
 DAQ_BASE=bin/daq_config.yaml
+DAQ_CONFIG=startup.conf
+echo > $DAQ_CONFIG
 
 env
 
 no_test=
 if [[ $RUN_MODE == no-test ]]; then
     no_test=-n
+    echo Disabling sequester timeout because no-test mode.
+    sed -i 's/sequester_timeout_sec:.*/sequester_timeout_sec: -1/' $FORCH_CONFIG
 fi
 
 # User might already exist if docker restarted.
@@ -50,7 +53,6 @@ chown kronkiteman -R $DAQ_ROOT
 # Prepare for the daq faucet instance.
 cp bin/daq_config.yaml daq/local/system.yaml
 cp /etc/faucet/ryu.conf daq/inst/
-echo > $DAQ_CONFIG
 
 sudo -u kronkiteman \
     FAUCET_EVENT_SOCK=$FAUCET_EVENT_SOCK \
