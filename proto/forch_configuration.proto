@@ -156,7 +156,7 @@ message OrchestrationConfig {
     int32 sequester_timeout_sec = 7;
 
     // Default value for DeviceBehavior.auto_sequestering
-    PortBehavior.AutoSequestering default_auto_sequestering = 8;
+    PortBehavior.AutoSequestering auto_sequestering = 8;
 
     message TestResultDeviceStateTransition {
       TestResult.ResultCode test_result = 1;

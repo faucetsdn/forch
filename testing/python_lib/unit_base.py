@@ -396,7 +396,7 @@ class PortsStateManagerTestBase(UnitTestBase):
 
         sequester_config = OrchestrationConfig.SequesterConfig(
             sequester_segment=self.SEQUESTER_SEGMENT,
-            default_auto_sequestering='enabled')
+            auto_sequestering='enabled')
         orch_config = OrchestrationConfig(sequester_config=sequester_config)
 
         self._port_state_manager = PortStateManager(
