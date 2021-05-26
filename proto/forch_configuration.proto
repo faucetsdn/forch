@@ -152,7 +152,7 @@ message OrchestrationConfig {
     // target server address of results service.
     string service_address = 6;
 
-    // DUT will return to operational state if no DeviceReport is received within this timeout.
+    // timeout for remote testing service, negative to disable.
     int32 sequester_timeout_sec = 7;
 
     // Default value for DeviceBehavior.auto_sequestering

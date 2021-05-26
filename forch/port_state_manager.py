@@ -162,6 +162,8 @@ class PortStateManager:
             sequester_config = orch_config.sequester_config
             self._sequester_segment = sequester_config.sequester_segment
             self._sequester_timeout = sequester_config.sequester_timeout_sec
+            self._logger.info('Configuring sequestering with segment %s, timeout %ss',
+                              self._sequester_segment, self._sequester_timeout)
             if sequester_config.test_result_device_states:
                 dict_maps = [(entry.test_result, entry.device_state)
                              for entry in sequester_config.test_result_device_states]
@@ -360,7 +362,7 @@ class PortStateManager:
             segment=self._sequester_segment, assigned_segment=operational_behavior.segment)
         self._process_device_behavior(mac, device_behavior, static=False)
         self._update_device_state_varz(mac, DVAState.sequestered)
-        if self._sequester_timeout:
+        if self._sequester_timeout > 0:
             def handler():
                 self._handle_sequestering_timeout(mac.lower())
             timeout = datetime.now() + timedelta(seconds=self._sequester_timeout)
