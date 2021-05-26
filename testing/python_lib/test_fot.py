@@ -36,7 +36,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         port_description: TESTING
     """
 
-    def test_device_states(self):
+    def xtest_device_states(self):
         """test Faucet behavioral config generation at different devices states"""
 
         placements = [
@@ -104,7 +104,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
             for mac, device_behavior in devices_state_map['device_mac_behaviors'].items():
                 self._received_mac_port_behaviors.append((mac, device_behavior['port_behavior']))
 
-    def test_receiving_devices_states(self):
+    def xtest_receiving_devices_states(self):
         """Test behavior of the server when client sends devices states"""
         expected_mac_port_behaviors = [
             ('00:0X:00:00:00:01', 'unknown'),
@@ -133,7 +133,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
 class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
     """Device report servicer test case (With mock grpc services)"""
 
-    def test_requesting_empty_port_events(self):
+    def xtest_requesting_empty_port_events(self):
         """Test behavior of the servicer with no port events."""
 
         stream = self._setup_port_state_server('00:0X:00:00:00:01')
@@ -181,7 +181,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
             print('comparing', response, expected)
             raise e
 
-    def test_requesting_port_events(self):
+    def xtest_requesting_port_events(self):
         """Test behavior of the servicer with port events."""
 
         mac_addr = "00:0X:00:00:00:01"
@@ -261,7 +261,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         return dict_proto(devices_state_map, DevicesState)
 
-    def test_ports_states(self):
+    def xtest_ports_states(self):
         """Test the port states with different signals"""
         static_device_placements = {
             '00:0Y:00:00:00:02': {'switch': 't2sw2', 'port': 1, 'connected': True},
@@ -564,7 +564,7 @@ class FotSequesterTest(IntegrationTestBase):
 class FotConfigTest(FotSequesterTest):
     """Simple config change tests for fot"""
 
-    def test_fot_sequester(self):
+    def xtest_fot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.2.1'))
