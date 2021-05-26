@@ -39,7 +39,8 @@ env
 no_test=
 if [[ $RUN_MODE == no-test ]]; then
     no_test=-n
-    sed -i $FORCH_CONFIG 's/sequester_timeout_sec:.*/sequester_timeout_sec: 0/'
+    echo Disabling sequester timeout because no-test mode.
+    sed -i 's/sequester_timeout_sec:.*/sequester_timeout_sec: 0/' $FORCH_CONFIG
 fi
 
 # User might already exist if docker restarted.
