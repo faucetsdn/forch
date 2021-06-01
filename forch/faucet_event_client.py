@@ -24,7 +24,7 @@ class FaucetEventClient():
         self.config = config
         self.sock = None
         self.buffer = None
-        self._buffer_lock = threading.Lock()
+        self._buffer_lock = threading.RLock()
         self._handlers = {}
         self.previous_state = None
         self._port_debounce_sec = config.port_debounce_sec or self._PORT_DEBOUNCE_SEC
@@ -151,24 +151,32 @@ class FaucetEventClient():
             self._handle_debounce(event, port, active)
             return
         state_key = '%s-%d' % (event['dp_id'], port)
-        if state_key in self._port_timers:
-            self._logger.debug('Port cancel %s', state_key)
-            self._port_timers[state_key].cancel()
-            self._port_timers.pop(state_key)
+        with self._buffer_lock:
+            if state_key in self._port_timers:
+                self._logger.debug('Port cancel %s', state_key)
+                self._port_timers[state_key].cancel()
+                if active:
+                    self._logger.info('Ignoring spurious port down event')
+                    self._port_timers.pop(state_key)
+
             if active:
-                self._logger.info('Ignoring spurious port down event')
-        if active:
-            self._handle_debounce(event, port, active)
-            return
-        self._logger.debug('Port timer %s = %s', state_key, active)
-        timer = threading.Timer(self._port_debounce_sec,
-                                lambda: self._handle_debounce(event, port, active))
-        timer.start()
-        self._port_timers[state_key] = timer
+                self._handle_debounce(event, port, active)
+                return
+
+            self._logger.debug('Port timer %s = %s', state_key, active)
+            timer = threading.Timer(self._port_debounce_sec,
+                                    lambda: self._handle_debounce(event, port, active))
+            timer.start()
+            self._port_timers[state_key] = timer
 
     def _handle_debounce(self, event, port, active):
-        self._logger.debug('Port handle %s-%s as %s', event['dp_id'], port, active)
+        state_key = '%s-%d' % (event['dp_id'], port)
+        with self._buffer_lock:
+            if state_key in self._port_timers:
+                self._port_timers.pop(state_key)
+        self._logger.debug('Port handle %s as %s', state_key, active)
         self._append_event(event, self._make_port_change(port, active), debounced=True)
+
 
     def _merge_event(self, base, event, timestamp=None, debounced=None):
         merged_event = copy.deepcopy(event)
