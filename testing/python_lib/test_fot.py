@@ -589,12 +589,14 @@ class FotContainerTest(IntegrationTestBase):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
-                    self._run_cmd('dhclient -r', docker_container=container)
+                    self._run_cmd('dhclient -r', docker_container=container, capture=True)
                     print('TAPTAP1', self._run_cmd('ip addr', docker_container=container, capture=True))
-                    self._run_cmd('timeout 60s dhclient', docker_container=container)
+                    print(self._run_cmd('date', docker_container=container, capture=True))
+                    self._run_cmd('timeout 60s dhclient', docker_container=container, capture=True)
                     print('TAPTAP2', self._run_cmd('ip addr', docker_container=container, capture=True))
                 except Exception as e:
                     print(e)
+                    print(self._run_cmd('date', docker_container=container, capture=True))
             return run_dhclient
 
         device_tcpdump_text = self.tcpdump_helper(
