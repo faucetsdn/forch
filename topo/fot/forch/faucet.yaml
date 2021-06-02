@@ -13,19 +13,27 @@ dps:
       6:
         description: "to t1sw2 port 6"
         stack: {dp: nz-kiwi-t1sw2, port: 6}
+        acls_in: [mirror-port]
       9:
         description: "to t2sw1 port 50"
         stack: {dp: nz-kiwi-t2sw1, port: 50}
+        acls_in: [mirror-port]
       10:
         description: "to t2sw2 port 50"
         stack: {dp: nz-kiwi-t2sw2, port: 50}
+        acls_in: [mirror-port]
       11:
         description: "to t2sw3 port 50"
         stack: {dp: nz-kiwi-t2sw3, port: 50}
+        acls_in: [mirror-port]
+      12:
+        description: MIRROR
+        output_only: true
       28:
         description: egress
         lacp: 3
         tagged_vlans: [171, 500]
+        acls_in: [mirror-port]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t1sw2:
     dp_id: 178
@@ -41,19 +49,27 @@ dps:
       6:
         description: "to t1sw1 port 6"
         stack: {dp: nz-kiwi-t1sw1, port: 6}
+        acls_in: [mirror-port]
       9:
         description: "to t2sw1 port 52"
         stack: {dp: nz-kiwi-t2sw1, port: 52}
+        acls_in: [mirror-port]
       10:
         description: "to t2sw2 port 52"
         stack: {dp: nz-kiwi-t2sw2, port: 52}
+        acls_in: [mirror-port]
       11:
         description: "to t2sw3 port 52"
         stack: {dp: nz-kiwi-t2sw3, port: 52}
+        acls_in: [mirror-port]
+      12:
+        description: MIRROR
+        output_only: true
       28:
         description: egress
         lacp: 3
         tagged_vlans: [171, 500]
+        acls_in: [mirror-port]
     lldp_beacon: {max_per_interval: 5, send_interval: 5}
   nz-kiwi-t2sw1:
     dp_id: 1295
@@ -122,3 +138,8 @@ acls:
         description: allow all
         actions:
           allow: True
+  mirror-port:
+  - rule:
+      actions:
+        allow: true
+        mirror: 12
