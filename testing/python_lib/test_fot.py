@@ -633,11 +633,13 @@ class FotContainerTest(IntegrationTestBase):
 
         # Test DHCP reflection for sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
+        print('TAPTAP1', device_tcpdump_text)
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
         # Test (lack of) DHCP reflection for operational device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
+        print('TAPTAP2', device_tcpdump_text)
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
