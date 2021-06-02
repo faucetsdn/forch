@@ -587,21 +587,21 @@ class FotContainerTest(IntegrationTestBase):
 
     def _try_dhclient(self, container):
         try:
-            print('TAPTAP1', self._run_cmd('date', docker_container=container, capture=True))
             self._run_cmd('timeout 60s dhclient', docker_container=container, capture=True)
-            print('TAPTAP2', self._run_cmd('ip addr', docker_container=container, capture=True))
+            return False
         except Exception as e:
             print(e)
+        return True
 
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
+                    print('TAPTAP1')
                     self._run_cmd('dhclient -r', docker_container=container, capture=True)
-                    print('TAPTAP1', self._run_cmd('ip addr', docker_container=container, capture=True))
-                    self._try_dhclient(container)
-                    self._try_dhclient(container)
-                    self._try_dhclient(container)
+                    if self._try_dhclient(container):
+                        if self._try_dhclient(container):
+                            self._try_dhclient(container)
                 except Exception as e:
                     print(e)
                     print(self._run_cmd('date', docker_container=container, capture=True))
