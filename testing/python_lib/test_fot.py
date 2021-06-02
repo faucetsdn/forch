@@ -590,9 +590,9 @@ class FotContainerTest(IntegrationTestBase):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    print('TAPTAP1', self._run_cmd('ip addr', docker_container=container))
+                    print('TAPTAP1', self._run_cmd('ip addr', docker_container=container, capture=True))
                     self._run_cmd('timeout 60s dhclient', docker_container=container)
-                    print('TAPTAP2', self._run_cmd('ip addr', docker_container=container))
+                    print('TAPTAP2', self._run_cmd('ip addr', docker_container=container, capture=True))
                 except Exception as e:
                     print(e)
             return run_dhclient
@@ -630,8 +630,8 @@ class FotContainerTest(IntegrationTestBase):
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
         # Trigger learning event for devices to trigger their initial state
-        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False)
-        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False)
+        print(self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False, capture=True))
+        print(self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False, capture=True))
 
         # Test DHCP reflection for sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
