@@ -41,3 +41,5 @@ jobs:
           cat inst/forch-controller-1/daq/inst/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% Faucet Config
+          cat inst/forch-controller-1/faucet_br/faucet/faucet.yaml

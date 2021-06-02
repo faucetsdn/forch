@@ -585,25 +585,12 @@ class FotContainerTest(IntegrationTestBase):
         self.stack_options['dhcp'] = True
         self.stack_options['devices'] = 5
 
-    def _try_dhclient(self, container, count):
-        try:
-            print('TAPTAP%d' % count)
-            self._run_cmd('timeout 60s dhclient', docker_container=container, capture=True)
-            return True
-        except Exception as e:
-            print(e)
-        return False
-
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
-                    self._run_cmd('dhclient -r', docker_container=container, capture=True)
-                    count = 3
-                    while count > 0:
-                        if self._try_dhclient(container, count):
-                            break
-                        count = count - 1
+                    self._run_cmd('dhclient -r', docker_container=container)
+                    self._run_cmd('timeout 60s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
                     print(self._run_cmd('date', docker_container=container, capture=True))
@@ -641,18 +628,16 @@ class FotContainerTest(IntegrationTestBase):
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
         # Trigger learning event for devices to trigger their initial state
-        print(self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False, capture=True))
-        print(self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False, capture=True))
+        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False)
+        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False)
 
         # Test DHCP reflection for sequestered device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
-        print('TAPTAP8', device_tcpdump_text)
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
         # Test (lack of) DHCP reflection for operational device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
-        print('TAPTAP9', device_tcpdump_text)
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
 
