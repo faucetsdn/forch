@@ -590,7 +590,7 @@ class FotContainerTest(IntegrationTestBase):
             def run_dhclient():
                 try:
                     self._run_cmd('dhclient -r', docker_container=container)
-                    self._run_cmd('timeout 60s dhclient', docker_container=container)
+                    self._run_cmd('timeout 120s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
             return run_dhclient
@@ -598,12 +598,12 @@ class FotContainerTest(IntegrationTestBase):
         device_tcpdump_text = self.tcpdump_helper(
             'faux-eth0', 'src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
-            timeout=60, docker_host=device_container)
+            timeout=120, docker_host=device_container)
 
         vlan_tcpdump_text = self.tcpdump_helper(
             'data0', 'vlan and src port 67', packets=2,
             funcs=[dhclient_method(container=device_container)],
-            timeout=60, docker_host='forch-controller-1')
+            timeout=120, docker_host='forch-controller-1')
 
         return device_tcpdump_text, vlan_tcpdump_text
 
