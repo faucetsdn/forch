@@ -10,6 +10,9 @@ jobs:
   test_fot:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      matrix:
+        shard: [a, b, c, d, e]
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
