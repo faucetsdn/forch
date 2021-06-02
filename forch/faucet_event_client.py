@@ -156,8 +156,8 @@ class FaucetEventClient():
                 self._logger.debug('Port cancel %s', state_key)
                 self._port_timers[state_key].cancel()
                 if active:
+                    # Port down events are ignored upon port up while there is a set timer.
                     self._logger.info('Ignoring spurious port down event')
-                    self._port_timers.pop(state_key)
 
             if active:
                 self._handle_debounce(event, port, active)
