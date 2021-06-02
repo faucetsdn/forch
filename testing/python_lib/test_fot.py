@@ -585,23 +585,25 @@ class FotContainerTest(IntegrationTestBase):
         self.stack_options['dhcp'] = True
         self.stack_options['devices'] = 5
 
-    def _try_dhclient(self, container):
+    def _try_dhclient(self, container, count):
         try:
+            print('TAPTAP%d' % count)
             self._run_cmd('timeout 60s dhclient', docker_container=container, capture=True)
-            return False
+            return True
         except Exception as e:
             print(e)
-        return True
+        return False
 
     def _internal_dhcp(self, device_container):
         def dhclient_method(container=None):
             def run_dhclient():
                 try:
-                    print('TAPTAP1')
                     self._run_cmd('dhclient -r', docker_container=container, capture=True)
-                    if self._try_dhclient(container):
-                        if self._try_dhclient(container):
-                            self._try_dhclient(container)
+                    count = 3
+                    while count > 0:
+                        if self._try_dhclient(container, count):
+                            break
+                        count = count - 1
                 except Exception as e:
                     print(e)
                     print(self._run_cmd('date', docker_container=container, capture=True))
