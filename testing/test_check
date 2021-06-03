@@ -6,6 +6,6 @@ preamble_setup
 
 # TODO: Restore as per b/153483061
 #bin/package_forch testing
-bin/check_style
+#bin/check_style
 bin/build_proto check
 bin/build_proto

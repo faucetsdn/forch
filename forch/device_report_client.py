@@ -25,7 +25,7 @@ except ImportError as e:
 
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 DEFAULT_SERVER_PORT = 50051
-CONNECT_TIMEOUT_SEC = 30
+CONNECT_TIMEOUT_SEC = 60
 
 
 class DeviceReportClient(DeviceStateReporter):
