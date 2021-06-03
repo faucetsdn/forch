@@ -500,8 +500,8 @@ class FaucetStateCollector:
                 broken.append(switch_name)
             self._augment_mac_urls(url_base, switch_data)
 
-        result = self._build_switch_state_result(broken,
-                (change_count, last_change, switches_data), switch)
+        result = self._build_switch_state_result(
+                broken, (change_count, last_change, switches_data), switch)
 
         return dict_proto(result, SwitchState)
 
