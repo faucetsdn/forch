@@ -36,7 +36,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         port_description: TESTING
     """
 
-    def xtest_device_states(self):
+    def test_device_states(self):
         """test Faucet behavioral config generation at different devices states"""
 
         placements = [
@@ -104,7 +104,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
             for mac, device_behavior in devices_state_map['device_mac_behaviors'].items():
                 self._received_mac_port_behaviors.append((mac, device_behavior['port_behavior']))
 
-    def xtest_receiving_devices_states(self):
+    def test_receiving_devices_states(self):
         """Test behavior of the server when client sends devices states"""
         expected_mac_port_behaviors = [
             ('00:0X:00:00:00:01', 'unknown'),
@@ -133,7 +133,7 @@ class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
 class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
     """Device report servicer test case (With mock grpc services)"""
 
-    def xtest_requesting_empty_port_events(self):
+    def test_requesting_empty_port_events(self):
         """Test behavior of the servicer with no port events."""
 
         stream = self._setup_port_state_server('00:0X:00:00:00:01')
@@ -181,7 +181,7 @@ class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
             print('comparing', response, expected)
             raise e
 
-    def xtest_requesting_port_events(self):
+    def test_requesting_port_events(self):
         """Test behavior of the servicer with port events."""
 
         mac_addr = "00:0X:00:00:00:01"
@@ -261,7 +261,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         return dict_proto(devices_state_map, DevicesState)
 
-    def xtest_ports_states(self):
+    def test_ports_states(self):
         """Test the port states with different signals"""
         static_device_placements = {
             '00:0Y:00:00:00:02': {'switch': 't2sw2', 'port': 1, 'connected': True},
@@ -564,7 +564,7 @@ class FotSequesterTest(IntegrationTestBase):
 class FotConfigTest(FotSequesterTest):
     """Simple config change tests for fot"""
 
-    def xtest_fot_sequester(self):
+    def test_fot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.2.1'))
@@ -593,7 +593,6 @@ class FotContainerTest(IntegrationTestBase):
                     self._run_cmd('timeout 60s dhclient', docker_container=container)
                 except Exception as e:
                     print(e)
-                    print(self._run_cmd('date', docker_container=container, capture=True))
             return run_dhclient
 
         device_tcpdump_text = self.tcpdump_helper(
@@ -608,7 +607,7 @@ class FotContainerTest(IntegrationTestBase):
 
         return device_tcpdump_text, vlan_tcpdump_text
 
-    def xtest_mirroring(self):
+    def test_mirroring(self):
         """Test packet mirroring for FOT setup"""
         lldp_eth_type = "0x88cc"
         lacp_eth_type = "0x8809"
@@ -624,6 +623,7 @@ class FotContainerTest(IntegrationTestBase):
             faux_interface, eth_type_filter + lacp_eth_type, packets=2,
             timeout=timeout, docker_host=mirror_host)
         self.assertTrue(lacp_eth_type in lacp_tcpdump_text)
+
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
