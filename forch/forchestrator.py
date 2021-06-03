@@ -484,7 +484,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _get_varz_config(self):
         metrics = self._varz_collector.retry_get_metrics(
-                self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
+            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
         varz_hash_info = metrics['faucet_config_hash_info']
         assert len(varz_hash_info.samples) == 1, 'exactly one config hash info not found'
         varz_config_hashes = varz_hash_info.samples[0].labels['hashes']
@@ -874,7 +874,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
     def _get_ryu_config(self):
         metrics = self._varz_collector.retry_get_metrics(
-                self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
+            self._faucet_prom_endpoint, _TARGET_FAUCET_METRICS)
         if 'ryu_config' not in metrics or not metrics['ryu_config'].samples:
             return {
                 'warnings': 'Ryu config is missing'
