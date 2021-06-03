@@ -37,8 +37,7 @@ class DeviceReportClient(DeviceStateReporter):
         port = server_port or DEFAULT_SERVER_PORT
         target = f'{address}:{port}'
         self._logger.info('Using target server %s', target)
-        channel = grpc.insecure_channel(target)
-        self._stub = SessionServerStub(channel)
+        self._channel = grpc.insecure_channel(target)
         self._dp_mac_map = {}
         self._mac_sessions = {}
         self._mac_device_vlan_map = {}
@@ -49,6 +48,8 @@ class DeviceReportClient(DeviceStateReporter):
 
     def start(self):
         """Start the client handler"""
+        grpc.channel_ready_future(self._channel).result(timeout=10)
+        self._stub = SessionServerStub(self._channel)
 
     def stop(self):
         """Stop client handler"""
@@ -90,19 +91,13 @@ class DeviceReportClient(DeviceStateReporter):
         return False
 
     def _process_progress(self, mac, session):
-        should_retry = True
         try:
             for progress in session:
-                should_retry = False
                 if self._convert_and_handle(mac, progress):
                     self._logger.warning('Terminal state reached for %s', mac)
             self._logger.error('Progress complete for %s', mac)
         except Exception as e:
             self._logger.error('Progress exception: %s', e)
-        self.disconnect(mac)
-        if should_retry:
-            self._logger.warning('Retrying connection for %s', mac)
-            self._process_session_ready(mac)
 
     def _process_session_ready(self, mac):
         if mac in self._mac_sessions:

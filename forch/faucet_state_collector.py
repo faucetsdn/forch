@@ -477,7 +477,6 @@ class FaucetStateCollector:
         """get a set of all switches"""
         return self._get_switch_state(switch, port, url_base)
 
-    # pylint: disable=too-many-locals
     def _get_switch_state(self, switch, port, url_base=None):
         """Get switch state impl"""
         switches_data = {}
