@@ -39,6 +39,7 @@ class DeviceReportClient(DeviceStateReporter):
         target = f'{address}:{port}'
         self._logger.info('Using target server %s', target)
         self._channel = grpc.insecure_channel(target)
+        self._stub = None
         self._dp_mac_map = {}
         self._mac_sessions = {}
         self._mac_device_vlan_map = {}
