@@ -554,7 +554,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._restore_states()
             self._faucet_collector.set_state_restored(True)
         except Exception as e:
-            self._logger.error("Cannot restore states or connect to faucet: %s" % str(e))
+            self._logger.error("Cannot restore states or connect to faucet: %s", str(e))
             self._faucet_collector.set_state_restored(False, e)
 
     def main_loop(self):
