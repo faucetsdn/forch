@@ -96,7 +96,7 @@ class DeviceReportClient(DeviceStateReporter):
                 should_retry = False
                 if self._convert_and_handle(mac, progress):
                     self._logger.warning('Terminal state reached for %s', mac)
-                    self.disconnect(mac)
+                    break
             self._logger.error('Progress complete for %s', mac)
         except Exception as e:
             self._logger.error('Progress exception: %s', e)
