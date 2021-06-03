@@ -101,6 +101,7 @@ class DeviceReportClient(DeviceStateReporter):
             self._logger.error('Progress complete for %s', mac)
         except Exception as e:
             self._logger.error('Progress exception: %s', e)
+        self.disconnect(mac)
 
     def _process_session_ready(self, mac):
         if mac in self._mac_sessions:
