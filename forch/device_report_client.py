@@ -25,6 +25,7 @@ except ImportError as e:
 
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 DEFAULT_SERVER_PORT = 50051
+CONNECT_TIMEOUT_SEC = 60
 
 
 class DeviceReportClient(DeviceStateReporter):
@@ -37,8 +38,8 @@ class DeviceReportClient(DeviceStateReporter):
         port = server_port or DEFAULT_SERVER_PORT
         target = f'{address}:{port}'
         self._logger.info('Using target server %s', target)
-        channel = grpc.insecure_channel(target)
-        self._stub = SessionServerStub(channel)
+        self._channel = grpc.insecure_channel(target)
+        self._stub = None
         self._dp_mac_map = {}
         self._mac_sessions = {}
         self._mac_device_vlan_map = {}
@@ -49,6 +50,8 @@ class DeviceReportClient(DeviceStateReporter):
 
     def start(self):
         """Start the client handler"""
+        grpc.channel_ready_future(self._channel).result(timeout=CONNECT_TIMEOUT_SEC)
+        self._stub = SessionServerStub(self._channel)
 
     def stop(self):
         """Stop client handler"""
