@@ -45,7 +45,7 @@ class FaucetEventClient():
 
         retries = self.FAUCET_RETRIES
         while not os.path.exists(sock_path):
-            self._logger.info('Waiting for socket path %s', sock_path)
+            self._logger.debug('Waiting for socket path %s', sock_path)
             assert retries > 0, "Could not find socket path %s" % sock_path
             retries -= 1
             time.sleep(1)
