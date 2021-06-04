@@ -96,10 +96,11 @@ class DeviceReportClient(DeviceStateReporter):
         try:
             for progress in session:
                 if self._convert_and_handle(mac, progress):
-                    self._logger.warning('Terminal state reached for %s', mac)
-            self._logger.error('Progress complete for %s', mac)
+                    break
+            self._logger.info('Progress complete for %s', mac)
         except Exception as e:
             self._logger.error('Progress exception: %s', e)
+        self.disconnect(mac)
 
     def _process_session_ready(self, mac):
         if mac in self._mac_sessions:
