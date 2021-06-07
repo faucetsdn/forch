@@ -31,10 +31,13 @@ FORCH_CONFIG=$FORCH_CONFIG_DIR/forch.yaml
 export PYTHONPATH=$FORCH_ROOT:$DAQ_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet
 
 DAQ_BASE=bin/daq_config.yaml
-DAQ_CONFIG=startup.conf
-echo > $DAQ_CONFIG
+DAQ_CONFIG=startup.yaml
+echo site_description: generated > $DAQ_CONFIG
 
 env
+
+docker_ip=$(ip addr show eth0 | fgrep inet | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p')
+echo Target ip address is $docker_ip
 
 no_test=
 if [[ $RUN_MODE == no-test ]]; then
@@ -65,9 +68,12 @@ echo Starting ovs...
 sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 if [[ -n $VXLAN_IP ]]; then
-    echo Configuring for vxlan ip $VXLAN_IP
-    echo switch_setup.vxlan.key=cntrl_tap >> $DAQ_CONFIG
-    echo switch_setup.vxlan.remote_ip=$VXLAN_IP >> $DAQ_CONFIG
+    # VXLAN_IP is where the switching fabric lives (outside of controller), including endpoint handler.
+    # docker_ip is the IP address of this container, reachable from the outside address.
+    echo Configuring for vxlan ip $VXLAN_IP, server at $docker_ip
+    yq -i -y .orchestration.sequester_config.tunnel_ip=\"$VXLAN_IP\" $FORCH_CONFIG
+    yq -i -y .orchestration.sequester_config.service_address=\"$docker_ip\" $FORCH_CONFIG
+    yq -i -y .switch_setup.endpoint.ip=\"$docker_ip\" $DAQ_CONFIG
 else
     echo Waiting for data0...
     while ! ip link show data0; do
@@ -75,6 +81,9 @@ else
     done
     ifconfig data0 up
 fi
+
+echo Forch config
+cat $FORCH_CONFIG
 
 /usr/bin/gauge_go &
 forch/bin/run_forch &

@@ -37,6 +37,8 @@ from forch.proto.shared_constants_pb2 import State, AuthMode
 from forch.proto.system_state_pb2 import SystemState
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
+_DEFAULT_SERVER_ADDRESS = '127.0.0.1'
+_DEFAULT_SERVER_PORT = 50051
 _DEFAULT_STRUCTURAL_CONFIG = 'faucet.yaml'
 _DEFAULT_BEHAVIORAL_CONFIG = 'faucet.yaml'
 _DEFAULT_FORCH_CONFIG_DIR = '/etc/forch'
@@ -247,15 +249,24 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._faucetizer.flush_behavioral_config(force=True)
 
     def _create_device_report_handler(self):
-        service_address, service_port = self._get_testing_service_config()
-        if service_address:
-            unauth_vlan = self._config.orchestration.unauthenticated_vlan
-            self._logger.info('Connecting report client to %s:%s',
-                              service_address, service_port)
-            return DeviceReportClient(self._handle_device_result, service_address,
-                                      service_port, unauth_vlan)
+        sequester_config = self._config.orchestration.sequester_config
+        if sequester_config.service_address:
+            return self._create_device_report_client()
+        service_port = sequester_config.service_port or _DEFAULT_SERVER_PORT
         self._logger.info('Starting device report server on %s', service_port)
         return DeviceReportServer(self._handle_device_result, service_port)
+
+    def _create_device_report_client(self):
+        sequester_config = self._config.orchestration.sequester_config
+        address = sequester_config.service_address or _DEFAULT_SERVER_ADDRESS
+        port = sequester_config.service_port or _DEFAULT_SERVER_PORT
+        service_target = f'{address}:{port}'
+        unauth_vlan = self._config.orchestration.unauthenticated_vlan
+        tunnel_ip = self._config.orchestration.sequester_config.tunnel_ip or _DEFAULT_SERVER_ADDRESS
+        self._logger.info('Connecting report client to %s, local %s, vlan %s',
+                          service_target, tunnel_ip, unauth_vlan)
+        return DeviceReportClient(self._handle_device_result, service_target,
+                                  unauth_vlan, tunnel_ip)
 
     def _attempt_authenticator_initialise(self):
         orch_config = self._config.orchestration
@@ -373,12 +384,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         config.sequester_segment = config.sequester_segment or DEFAULT_SEQUESTER_SEGMENT
         config.sequester_timeout_sec = config.sequester_timeout_sec or DEFAULT_SEQUESTER_TIMEOUT_SEC
         return config
-
-    def _get_testing_service_config(self):
-        if not self._config.orchestration.HasField('sequester_config'):
-            return None, None
-        sequester_config = self._config.orchestration.sequester_config
-        return sequester_config.service_address, sequester_config.service_port
 
     def _validate_config_files(self):
         if not os.path.exists(self._behavioral_config_file):

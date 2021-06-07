@@ -167,11 +167,9 @@ echo Connecting upstream corp interface...
 add_faux corp 1 0 dnsmasq
 
 if [ -n "$vxlan" ]; then
-    ipaddr=$(docker inspect --format="{{ .NetworkSettings.Networks.bridge.IPAddress }}" forch-controller-1)
-    echo Connecting vxlan to $ipaddr
-    add_vxlan t1sw1 4 $ipaddr
-    do_tcpdump vxlan_sys_4789
-    do_tcpdump docker0 udp port 4789
+    echo Configuring for vxlan and endpoint handler server
+    add_vxlan t1sw1 4
+    bin/endpoint_server 2> inst/endpoint.log &
 elif [ -z "$remote" ]; then
     echo Enabling tap interface cntrl_tap_1
     add_iface t1sw1 4 cntrl_tap_1

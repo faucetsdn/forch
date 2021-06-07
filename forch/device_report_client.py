@@ -3,6 +3,8 @@
 import threading
 import grpc
 
+import forch.endpoint_handler as endpoint_handler
+
 from forch.proto.shared_constants_pb2 import PortBehavior
 from forch.proto.devices_state_pb2 import DevicesState
 from forch.base_classes import DeviceStateReporter
@@ -23,20 +25,16 @@ except ImportError as e:
     pass
 
 
-DEFAULT_SERVER_ADDRESS = '127.0.0.1'
-DEFAULT_SERVER_PORT = 50051
 CONNECT_TIMEOUT_SEC = 60
+LOCAL_ADDRESS = '127.0.0.1'
 
 
 class DeviceReportClient(DeviceStateReporter):
     """gRPC client to send device result"""
 
-    def __init__(self, result_handler, server_address, server_port, unauth_vlan):
+    def __init__(self, result_handler, target, unauth_vlan, tunnel_ip):
         self._logger = get_logger('devreport')
         self._logger.info('Initializing with unauthenticated vlan %s', unauth_vlan)
-        address = server_address or DEFAULT_SERVER_ADDRESS
-        port = server_port or DEFAULT_SERVER_PORT
-        target = f'{address}:{port}'
         self._logger.info('Using target server %s', target)
         self._channel = grpc.insecure_channel(target)
         self._stub = None
@@ -47,6 +45,8 @@ class DeviceReportClient(DeviceStateReporter):
         self._unauth_vlan = unauth_vlan
         self._lock = threading.Lock()
         self._result_handler = result_handler
+        self._tunnel_ip = tunnel_ip
+        self._endpoint_handler = endpoint_handler.EndpointHandler(tunnel_ip) if tunnel_ip else None
 
     def start(self):
         """Start the client handler"""
@@ -62,6 +62,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.device_mac = mac
         session_params.device_vlan = vlan
         session_params.assigned_vlan = assigned
+        session_params.endpoint.ip = self._tunnel_ip
         session = self._stub.StartSession(session_params)
         thread = threading.Thread(target=lambda: self._process_progress(mac, session))
         thread.start()
@@ -81,15 +82,21 @@ class DeviceReportClient(DeviceStateReporter):
         return '%s:%s' % (dp_name, port)
 
     def _convert_and_handle(self, mac, progress):
+        endpoint_ip = progress.endpoint.ip
         result_code = progress.result.code
         if result_code:
             result_name = SessionResult.ResultCode.Name(result_code)
             self._logger.info('Device report %s as %s', mac, result_name)
-            assert not progress.endpoint.ip, 'endpoint.ip and result.code defined'
+            assert not endpoint_ip, 'both endpoint.ip and result.code defined'
             port_behavior = PORT_BEHAVIOR_SESSION_RESULT[result_code]
             devices_state = DevicesState()
             devices_state.device_mac_behaviors[mac].port_behavior = port_behavior
             return self._result_handler(devices_state)
+        if endpoint_ip:
+            self._logger.info('Device report %s endpoint %s (handler=%s)',
+                              mac, endpoint_ip, bool(self._endpoint_handler))
+            if self._endpoint_handler:
+                self._endpoint_handler.process_endpoint(progress.endpoint)
         return False
 
     def _process_progress(self, mac, session):

@@ -114,7 +114,7 @@ class FaucetEventClient():
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
-            raise FaucetEventOrderError('Out-of-sequence event id #%d' % event_id)
+            raise FaucetEventOrderError('Sequence %d != %d' % (self._last_event_id, event_id))
         return True
 
     def _handle_port_change_debounce(self, event, target_event):
