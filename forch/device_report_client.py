@@ -84,10 +84,10 @@ class DeviceReportClient(DeviceStateReporter):
     def _convert_and_handle(self, mac, progress):
         endpoint_ip = progress.endpoint.ip
         result_code = progress.result.code
+        assert not (endpoint_ip and result_code), 'both endpoint.ip and result.code defined'
         if result_code:
             result_name = SessionResult.ResultCode.Name(result_code)
             self._logger.info('Device report %s as %s', mac, result_name)
-            assert not endpoint_ip, 'both endpoint.ip and result.code defined'
             port_behavior = PORT_BEHAVIOR_SESSION_RESULT[result_code]
             devices_state = DevicesState()
             devices_state.device_mac_behaviors[mac].port_behavior = port_behavior
