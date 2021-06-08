@@ -21,7 +21,7 @@ try:
         SessionResult.ResultCode.PASSED: PortBehavior.passed,
         SessionResult.ResultCode.FAILED: PortBehavior.failed
     }
-except ImportError as e:
+except ImportError:
     PORT_BEHAVIOR_SESSION_RESULT = None
 
 

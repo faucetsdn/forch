@@ -22,7 +22,7 @@ try:
     from daq.proto.session_server_pb2 import SessionParams, SessionProgress
     SessionServerServicer = server_grpc.SessionServerServicer
     PROTO_LOADED = True
-except ImportError as e:
+except ImportError:
     PROTO_LOADED = False
     class SessionServerServicer:
         """Dummy class for weak import"""
