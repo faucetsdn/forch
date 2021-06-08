@@ -20,7 +20,7 @@ from forch.utils import get_logger
 try:
     import daq.proto.session_server_pb2_grpc as server_grpc
     from daq.proto.session_server_pb2_grpc.server_grpc import SessionServerServicer
-    from daq.proto.session_server_pb2 import SessionProgress
+    from daq.proto.session_server_pb2 import SessionParams, SessionProgress
 except ImportError:
     class SessionServerServicer:
         """Dummy class for weak import"""
@@ -82,7 +82,7 @@ class EndpointServicer(SessionServerServicer):
     def StartSession(self, request, context):
         """Start a session servicer"""
         endpoint = request.endpoint
-        LOGGER.info('Redirect tunnel to %s', endpoint.ip)
+        self._logger.info('Redirect tunnel to %s', endpoint.ip)
         cmd = VXLAN_CONFIG_CMD + VXLAN_CONFIG_OPTS % (
             endpoint.ip, DEFAULT_VXLAN_VNI, DEFAULT_VXLAN_PORT)
         self._exec(cmd)
