@@ -21,7 +21,7 @@ try:
     import daq.proto.session_server_pb2_grpc as server_grpc
     from daq.proto.session_server_pb2 import SessionResult
     from daq.proto.session_server_pb2_grpc.server_grpc import SessionServerServicer
-except ImportError as e:
+except ImportError:
     class SessionServerServicer:
         """Dummy class for weak import"""
 
@@ -32,6 +32,7 @@ DEFAULT_VXLAN_VNI = 0
 
 VXLAN_CONFIG_CMD = 'sudo ovs-vsctl set interface vxlan type=vxlan '
 VXLAN_CONFIG_OPTS = 'options:remote_ip=%s options:key=%s options:dst_port=%s'
+
 
 class EndpointHandler:
     """Class to handle endpoint updates"""
@@ -48,6 +49,7 @@ class EndpointHandler:
         """Handle an endpoint request"""
         self._logger.info('Process request for %s', endpoint.ip)
         self._stub.ConfigureEndpoint(endpoint)
+
 
 
 class EndpointServicer(SessionServerServicer):
@@ -79,6 +81,7 @@ class EndpointServicer(SessionServerServicer):
 
     def StartSession(self, request, context):
         """Do nothing useful"""
+
 
 class EndpointServer:
     """Endpoint configuration server"""
