@@ -4,10 +4,7 @@ import os
 import shutil
 import tempfile
 import unittest
-from unittest.mock import MagicMock
 import yaml
-import grpc
-from grpc_testing import server_from_dictionary, strict_real_time
 
 from forch.faucetizer import DeviceStateManager, Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
@@ -17,8 +14,6 @@ from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
 from forch.proto.forch_configuration_pb2 import ForchConfig, OrchestrationConfig
-from forch.proto.grpc.device_report_pb2_grpc import DeviceReportStub
-from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
 from forch.proto.shared_constants_pb2 import DVAState
 
 

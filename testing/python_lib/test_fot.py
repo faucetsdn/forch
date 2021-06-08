@@ -10,7 +10,7 @@ import grpc
 from integration_base import IntegrationTestBase
 
 from unit_base import FaucetizerTestBase, PortsStateManagerTestBase
-)
+
 from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto, proto_dict
 
