@@ -1,4 +1,13 @@
-"""Simple endpoint handler for remote OVS switching fabrics."""
+"""Simple endpoint handler for remote OVS switching fabrics.
+
+This setup is used when the network fabric, as implemented by OVS, is not running
+in the same place as forch. In this case, forch can't manipulate OVS directly,
+so an instance of the endpoint handler run on the switching host to change the
+vxlan configuration of the OVS setup. Architecturally, this models the world where
+the vxlan tunnel originates in hardware, and has some API exposed to allow a
+network controller to manipulate the hardware switches.
+
+"""
 
 from concurrent import futures
 import logging
