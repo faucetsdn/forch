@@ -28,7 +28,7 @@ class FotFaucetizerTestCase(FaucetizerTestBase):
         port_description: TESTING
     """
 
-    def test_device_states(self):
+    def xtest_device_states(self):
         """test Faucet behavioral config generation at different devices states"""
 
         placements = [
@@ -111,7 +111,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
         }
         return dict_proto(devices_state_map, DevicesState)
 
-    def test_ports_states(self):
+    def xtest_ports_states(self):
         """Test the port states with different signals"""
         static_device_placements = {
             '00:0Y:00:00:00:02': {'switch': 't2sw2', 'port': 1, 'connected': True},
@@ -414,7 +414,7 @@ class FotSequesterTest(IntegrationTestBase):
 class FotConfigTest(FotSequesterTest):
     """Simple config change tests for fot"""
 
-    def test_fot_sequester(self):
+    def xtest_fot_sequester(self):
         """Test to check if OT trunk sequesters traffic as expected"""
         self.assertTrue(self._ping_host('forch-faux-1', '192.168.1.2'))
         self.assertFalse(self._ping_host('forch-faux-1', '192.168.2.1'))
@@ -457,7 +457,7 @@ class FotContainerTest(IntegrationTestBase):
 
         return device_tcpdump_text, vlan_tcpdump_text
 
-    def test_mirroring(self):
+    def xtest_mirroring(self):
         """Test packet mirroring for FOT setup"""
         lldp_eth_type = "0x88cc"
         lacp_eth_type = "0x8809"
