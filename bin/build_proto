@@ -41,7 +41,6 @@ gen_path=$ROOT/protoc-gen-doc/bin/protoc-gen-doc
 
 mkdir -p build/forch/proto build/proto
 cp $proto_files build/forch/proto/
-cp -r proto/grpc build/forch/proto/
 proto_files2=
 
 mkdir -p build/proto_docs
@@ -57,14 +56,10 @@ done
            $proto_files2
     sed -i'' -e 's/id="\./id="/' -e 's/href="#\./href="#/' protos.html
     sed -i'' -e 's/&lt;/</g' -e 's/&gt;/>/g' protos.html
-
-    $PYTHON -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. forch/proto/grpc/device_report.proto
 )
 
-mkdir -p forch/proto/grpc
+mkdir -p forch/proto
 
 touch forch/proto/__init__.py
-touch forch/proto/grpc/__init__.py
 cp build/forch/proto/*.py forch/proto/
-cp build/forch/proto/grpc/*.py forch/proto/grpc/
 cp build/protos.html public/

@@ -9,7 +9,6 @@ import yaml
 import grpc
 from grpc_testing import server_from_dictionary, strict_real_time
 
-from forch.device_report_server import DeviceReportServer, DeviceReportServicer
 from forch.faucetizer import DeviceStateManager, Faucetizer
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forchestrator import Forchestrator
@@ -298,56 +297,6 @@ class FaucetizerTestBase(UnitTestBase):
         self._faucetizer = None
         self._cleanup_config_files()
 
-
-class DeviceReportServerTestBase(unittest.TestCase):
-    """Base class for DevicesStateServer unit test"""
-    SERVER_ADDRESS = '0.0.0.0'
-    SERVER_PORT = 50051
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
-        self._server = None
-        self._client = None
-
-    def setUp(self):
-        """setup fixture for each test method"""
-        channel = grpc.insecure_channel(f'{self.SERVER_ADDRESS}:{self.SERVER_PORT}')
-        self._client = DeviceReportStub(channel)
-
-        self._server = DeviceReportServer(
-            self._process_devices_state, self.SERVER_ADDRESS, self.SERVER_PORT)
-        self._server.start()
-
-    def _process_devices_state(self, device_state):
-        pass
-
-    def tearDown(self):
-        """cleanup after each test method finishes"""
-        self._server.stop()
-
-
-class DeviceReportServicerTestBase(unittest.TestCase):
-    """Base class for DeviceReportServicer unit test"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        os.environ['FORCH_LOG'] = _DEFAULT_FORCH_LOG
-
-    def setUp(self):
-        self._on_receiving_result = MagicMock()
-        self._servicer = DeviceReportServicer(self._on_receiving_result)
-        servicers = {
-            DESCRIPTOR.services_by_name['DeviceReport']: self._servicer
-        }
-        self._test_server = server_from_dictionary(
-            servicers, strict_real_time())
-        port_learns = [
-            ('name', '1', '00:0X:00:00:00:01', 101),
-            ('name', '2', '00:0Y:00:00:00:02', 102),
-            ('name', '3', '00:0Z:00:00:00:03', 103)
-        ]
-        for port_learn in port_learns:
-            self._servicer.process_port_learn(*port_learn)
 
 class FaucetStateCollectorTestBase(UnitTestBase):
     """Base class for Faucetizer unit tests"""
