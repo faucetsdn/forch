@@ -19,8 +19,8 @@ from forch.utils import get_logger
 
 try:
     import daq.proto.session_server_pb2_grpc as server_grpc
-    from daq.proto.session_server_pb2 import SessionResult
     from daq.proto.session_server_pb2_grpc.server_grpc import SessionServerServicer
+    from daq.proto.session_server_pb2 import SessionProgress
 except ImportError:
     class SessionServerServicer:
         """Dummy class for weak import"""
@@ -33,6 +33,8 @@ DEFAULT_VXLAN_VNI = 0
 VXLAN_CONFIG_CMD = 'sudo ovs-vsctl set interface vxlan type=vxlan '
 VXLAN_CONFIG_OPTS = 'options:remote_ip=%s options:key=%s options:dst_port=%s'
 
+CONNECT_TIMEOUT_SEC = 60
+
 
 class EndpointHandler:
     """Class to handle endpoint updates"""
@@ -44,12 +46,14 @@ class EndpointHandler:
         self._logger.info('Proxy requests to %s', address)
         channel = grpc.insecure_channel(address)
         self._stub = server_grpc.SessionServerStub(channel)
+        grpc.channel_ready_future(channel).result(timeout=CONNECT_TIMEOUT_SEC)
 
     def process_endpoint(self, endpoint):
         """Handle an endpoint request"""
         self._logger.info('Process request for %s', endpoint.ip)
-        self._stub.ConfigureEndpoint(endpoint)
-
+        session_params = SessionParams()
+        session_params.endpoint.CopyFrom(endpoint)
+        self._stub.StartSession(session_params)
 
 
 class EndpointServicer(SessionServerServicer):
@@ -71,16 +75,18 @@ class EndpointServicer(SessionServerServicer):
             raise Exception('Failed subshell execution')
         return process.stdout.decode('utf-8')
 
-    # pylint: disable=invalid-name
-    def ConfigureEndpoint(self, request, context):
-        """Start a session servicer"""
-        cmd = VXLAN_CONFIG_CMD + VXLAN_CONFIG_OPTS % (
-            request.ip, DEFAULT_VXLAN_VNI, DEFAULT_VXLAN_PORT)
-        self._exec(cmd)
-        return SessionResult()
+    def _session_stream(self, request):
+        yield SessionProgress()
 
+    # pylint: disable=invalid-name
     def StartSession(self, request, context):
-        """Do nothing useful"""
+        """Start a session servicer"""
+        endpoint = request.endpoint
+        LOGGER.info('Redirect tunnel to %s', endpoint.ip)
+        cmd = VXLAN_CONFIG_CMD + VXLAN_CONFIG_OPTS % (
+            endpoint.ip, DEFAULT_VXLAN_VNI, DEFAULT_VXLAN_PORT)
+        self._exec(cmd)
+        return self._session_stream(request)
 
 
 class EndpointServer:

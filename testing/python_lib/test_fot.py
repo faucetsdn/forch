@@ -1,25 +1,19 @@
 """Integration test base class for Forch"""
 
 import re
-import threading
 import time
 import unittest
 import yaml
-import grpc
 
 from integration_base import IntegrationTestBase
 
 from unit_base import FaucetizerTestBase, PortsStateManagerTestBase
 
 from forch.port_state_manager import PortStateManager
-from forch.utils import dict_proto, proto_dict
+from forch.utils import dict_proto
 
-from forch.proto.devices_state_pb2 import (
-    DeviceBehavior, DevicePlacement,
-    DevicesState, Device, DevicePortEvent
-)
-from forch.proto.shared_constants_pb2 import Empty, PortBehavior
-from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
+from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement, DevicesState
+
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 class FotFaucetizerTestCase(FaucetizerTestBase):
