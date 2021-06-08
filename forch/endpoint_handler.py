@@ -53,7 +53,9 @@ class EndpointHandler:
         self._logger.info('Process request for %s', endpoint.ip)
         session_params = SessionParams()
         session_params.endpoint.CopyFrom(endpoint)
-        self._stub.StartSession(session_params)
+        for progress in self._stub.StartSession(session_params):
+            self._logger.info('Recevied progress %s', progress)
+        self._logger.info('Done with proxy request')
 
 
 class EndpointServicer(SessionServerServicer):
