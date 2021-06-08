@@ -26,7 +26,6 @@ except ImportError as e:
 
 
 CONNECT_TIMEOUT_SEC = 60
-LOCAL_ADDRESS = '127.0.0.1'
 
 
 class DeviceReportClient(DeviceStateReporter):
