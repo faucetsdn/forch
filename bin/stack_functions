@@ -101,10 +101,8 @@ function add_iface {
 function add_vxlan {
     br=$1
     pt=$2
-    ip=$3
     if=vxlan
-    sudo ovs-vsctl add-port $br $if -- set interface $if ofport_request=$pt -- \
-         set interface $if type=vxlan options:remote_ip=$ip options:key=cntrl_tap
+    sudo ovs-vsctl add-port $br $if -- set interface $if ofport_request=$pt
 }
 
 function add_oeth {
@@ -128,8 +126,8 @@ function add_faux {
     shift 3
     bin/run_faux $fnum $*
     add_iface $switch $port faux-$fnum
+    echo Waiting for IP address...
     for i in `seq 1 20`; do
-        echo Waiting for IP address...
         ip_address=$(docker exec forch-faux-$fnum ip addr show faux-eth0 | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p' || true)
         if [[ -n "$ip_address" ]]; then
             break
