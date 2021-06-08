@@ -22,7 +22,6 @@ try:
         SessionResult.ResultCode.FAILED: PortBehavior.failed
     }
 except ImportError as e:
-    print(e)
     PORT_BEHAVIOR_SESSION_RESULT = None
 
 

@@ -23,7 +23,6 @@ try:
     SessionServerServicer = server_grpc.SessionServerServicer
     PROTO_LOADED = True
 except ImportError as e:
-    print(e)
     PROTO_LOADED = False
     class SessionServerServicer:
         """Dummy class for weak import"""
