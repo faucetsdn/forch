@@ -117,7 +117,8 @@ class DeviceReportClient(DeviceStateReporter):
         assigned_vlan = self._mac_assigned_vlan_map.get(mac)
         self._logger.info('Device %s ready on %s/%s', mac, device_vlan, assigned_vlan)
 
-        if device_vlan and assigned_vlan and device_vlan != self._unauth_vlan:
+        good_device_vlan = device_vlan and device_vlan not in (self._unauth_vlan, assigned_vlan)
+        if assigned_vlan and good_device_vlan:
             self._mac_sessions[mac] = self._connect(mac, device_vlan, assigned_vlan)
 
     def process_port_state(self, dp_name, port, state):
