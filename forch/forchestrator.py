@@ -16,7 +16,6 @@ import forch.faucetizer as faucetizer
 
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
-from forch.device_report_server import DeviceReportServer
 from forch.device_report_client import DeviceReportClient
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
@@ -249,14 +248,6 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._faucetizer.flush_behavioral_config(force=True)
 
     def _create_device_report_handler(self):
-        sequester_config = self._config.orchestration.sequester_config
-        if sequester_config.service_address:
-            return self._create_device_report_client()
-        service_port = sequester_config.service_port or _DEFAULT_SERVER_PORT
-        self._logger.info('Starting device report server on %s', service_port)
-        return DeviceReportServer(self._handle_device_result, service_port)
-
-    def _create_device_report_client(self):
         sequester_config = self._config.orchestration.sequester_config
         address = sequester_config.service_address or _DEFAULT_SERVER_ADDRESS
         port = sequester_config.service_port or _DEFAULT_SERVER_PORT
