@@ -21,7 +21,9 @@ try:
     import daq.proto.session_server_pb2_grpc as server_grpc
     from daq.proto.session_server_pb2_grpc.server_grpc import SessionServerServicer
     from daq.proto.session_server_pb2 import SessionParams, SessionProgress
+    PROTO_LOADED = True
 except ImportError:
+    PROTO_LOADED = False
     class SessionServerServicer:
         """Dummy class for weak import"""
 
@@ -43,7 +45,7 @@ class EndpointHandler:
         self._logger = get_logger('endpproxy')
         server_port = DEFAULT_SERVER_PORT
         address = f'{target_ip}:{server_port}'
-        self._logger.info('Proxy requests to %s', address)
+        self._logger.info('Proxy requests to %s, proto %s', address, PROTO_LOADED)
         channel = grpc.insecure_channel(address)
         self._stub = server_grpc.SessionServerStub(channel)
         grpc.channel_ready_future(channel).result(timeout=CONNECT_TIMEOUT_SEC)

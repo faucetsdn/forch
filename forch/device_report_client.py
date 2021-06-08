@@ -22,7 +22,7 @@ try:
         SessionResult.ResultCode.FAILED: PortBehavior.failed
     }
 except ImportError as e:
-    pass
+    PORT_BEHAVIOR_SESSION_RESULT = None
 
 
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
@@ -35,7 +35,7 @@ class DeviceReportClient(DeviceStateReporter):
     def __init__(self, result_handler, target, unauth_vlan, tunnel_ip):
         self._logger = get_logger('devreport')
         self._logger.info('Initializing with unauthenticated vlan %s', unauth_vlan)
-        self._logger.info('Using target server %s', target)
+        self._logger.info('Using target %s, proto %s', target, bool(PORT_BEHAVIOR_SESSION_RESULT))
         self._channel = grpc.insecure_channel(target)
         self._stub = None
         self._dp_mac_map = {}
