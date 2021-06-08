@@ -24,6 +24,7 @@ try:
     PROTO_LOADED = True
 except ImportError:
     PROTO_LOADED = False
+
     class SessionServerServicer:
         """Dummy class for weak import"""
 
