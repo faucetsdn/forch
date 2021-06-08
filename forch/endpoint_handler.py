@@ -19,10 +19,11 @@ from forch.utils import get_logger
 
 try:
     import daq.proto.session_server_pb2_grpc as server_grpc
-    from daq.proto.session_server_pb2_grpc.server_grpc import SessionServerServicer
-    from daq.proto.session_server_pb2 import SessionParams, SessionProgress
+    from daq.proto.session_server_pb2 import SessionParams, SessionResult
+    SessionServerServicer = server_grpc.SessionServerServicer
     PROTO_LOADED = True
-except ImportError:
+except ImportError as e:
+    print(e)
     PROTO_LOADED = False
     class SessionServerServicer:
         """Dummy class for weak import"""
