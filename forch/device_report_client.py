@@ -25,6 +25,7 @@ except ImportError as e:
     pass
 
 
+DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 CONNECT_TIMEOUT_SEC = 60
 
 
@@ -61,7 +62,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.device_mac = mac
         session_params.device_vlan = vlan
         session_params.assigned_vlan = assigned
-        session_params.endpoint.ip = self._tunnel_ip
+        session_params.endpoint.ip = self._tunnel_ip or DEFAULT_SERVER_ADDRESS
         session = self._stub.StartSession(session_params)
         thread = threading.Thread(target=lambda: self._process_progress(mac, session))
         thread.start()

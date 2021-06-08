@@ -253,7 +253,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         port = sequester_config.service_port or _DEFAULT_SERVER_PORT
         service_target = f'{address}:{port}'
         unauth_vlan = self._config.orchestration.unauthenticated_vlan
-        tunnel_ip = self._config.orchestration.sequester_config.tunnel_ip or _DEFAULT_SERVER_ADDRESS
+        tunnel_ip = self._config.orchestration.sequester_config.tunnel_ip
         self._logger.info('Connecting report client to %s, local %s, vlan %s',
                           service_target, tunnel_ip, unauth_vlan)
         return DeviceReportClient(self._handle_device_result, service_target,
