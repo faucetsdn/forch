@@ -607,14 +607,13 @@ class FotContainerTest(IntegrationTestBase):
 
         return device_tcpdump_text, vlan_tcpdump_text
 
-    def test_mirroring(self):
-        """Test packet mirroring for FOT setup"""
+    def _check_lldp_lacp_mirroring(self):
         lldp_eth_type = "0x88cc"
         lacp_eth_type = "0x8809"
-        faux_interface = "faux-eth0"
+        faux_interface = "eth0"
         timeout = 60
         eth_type_filter = "ether proto "
-        mirror_host = "forch-faux-121"
+        mirror_host = "forch-controller-1"
         lldp_tcpdump_text = self.tcpdump_helper(
             faux_interface, eth_type_filter + lldp_eth_type, packets=2,
             timeout=timeout, docker_host=mirror_host)
@@ -623,6 +622,15 @@ class FotContainerTest(IntegrationTestBase):
             faux_interface, eth_type_filter + lacp_eth_type, packets=2,
             timeout=timeout, docker_host=mirror_host)
         self.assertTrue(lacp_eth_type in lacp_tcpdump_text)
+
+
+    def test_mirroring(self):
+        """Test packet mirroring for FOT setup"""
+        self._check_lldp_lacp_mirroring()
+        # Trigger learning event for devices to trigger their initial state
+        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False)
+        self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False)
+        self._check_lldp_lacp_mirroring()
 
 
     def test_dhcp_reflection(self):
