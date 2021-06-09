@@ -623,7 +623,6 @@ class FotContainerTest(IntegrationTestBase):
             timeout=timeout, docker_host=mirror_host)
         self.assertTrue(lacp_eth_type in lacp_tcpdump_text)
 
-
     def test_mirroring(self):
         """Test packet mirroring for FOT setup"""
         self._check_lldp_lacp_mirroring()
@@ -631,7 +630,6 @@ class FotContainerTest(IntegrationTestBase):
         self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-1', strict=False)
         self._run_cmd('ping -c1 -w2 8.8.8.8', docker_container='forch-faux-5', strict=False)
         self._check_lldp_lacp_mirroring()
-
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""
