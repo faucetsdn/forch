@@ -610,7 +610,7 @@ class FotContainerTest(IntegrationTestBase):
     def _check_lldp_lacp_mirroring(self):
         lldp_eth_type = "0x88cc"
         lacp_eth_type = "0x8809"
-        faux_interface = "eth0"
+        faux_interface = "data0"
         timeout = 60
         eth_type_filter = "ether proto "
         mirror_host = "forch-controller-1"
