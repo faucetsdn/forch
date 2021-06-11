@@ -167,11 +167,9 @@ echo Connecting upstream corp interface...
 add_faux corp 1 0 dnsmasq
 
 if [ -n "$vxlan" ]; then
-    ipaddr=$(docker inspect --format="{{ .NetworkSettings.Networks.bridge.IPAddress }}" forch-controller-1)
-    echo Connecting vxlan to $ipaddr
-    add_vxlan t1sw1 4 $ipaddr
-    do_tcpdump vxlan_sys_4789
-    do_tcpdump docker0 udp port 4789
+    echo Configuring for vxlan and endpoint handler server
+    add_vxlan t1sw1 4
+    bin/endpoint_server 2> inst/endpoint.log &
 elif [ -z "$remote" ]; then
     echo Enabling tap interface cntrl_tap_1
     add_iface t1sw1 4 cntrl_tap_1
@@ -184,6 +182,10 @@ add_faux t2sw1 1 1 $faux_dhcp
 add_faux t2sw2 1 2 $faux_dhcp http
 if [ -n "$fot" ]; then
     add_faux t2sw3 1 3 ping
+    echo Connecting mirror hosts...
+    # 121 and 122 refer to the mirror faux devices 1 and 2 connected to port 12
+    add_faux t1sw1 12 121
+    add_faux t1sw2 12 122
 else
     add_faux t2sw3 1 3
 fi

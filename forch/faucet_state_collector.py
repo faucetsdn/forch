@@ -482,9 +482,13 @@ class FaucetStateCollector:
         switches_data = {}
         broken = []
         change_count = 0
-        last_change = '#n/a'  # Clevery chosen to be sorted less than timestamp.
+        last_change = '#n/a'  # Cleverly chosen to be sorted less than timestamp.
 
-        metrics = self._get_gauge_metrics()
+        try:
+            metrics = self._get_gauge_metrics()
+        except Exception as e:
+            self._logger.error("Error fetching metrics from gauge: %s", str(e))
+            return dict_proto({}, SwitchState)
 
         for switch_name in self.switch_states:
             arg_port = port if switch_name == switch else None
@@ -496,6 +500,13 @@ class FaucetStateCollector:
                 broken.append(switch_name)
             self._augment_mac_urls(url_base, switch_data)
 
+        result = self._build_switch_state_result(
+                broken, (change_count, last_change, switches_data), switch)
+
+        return dict_proto(result, SwitchState)
+
+    def _build_switch_state_result(self, broken, state_tuple, switch):
+        change_count, last_change, switches_data = state_tuple
         if not self.switch_states:
             switch_state = State.broken
             state_detail = 'No switches connected'
@@ -518,7 +529,7 @@ class FaucetStateCollector:
             result['switches'] = {switch: switches_data[switch]}
             result['switches_restrict'] = switch
 
-        return dict_proto(result, SwitchState)
+        return result
 
     def cleanup(self):
         """Clean up internal data"""
@@ -1391,7 +1402,12 @@ class FaucetStateCollector:
             mac_deets['port'] = port
             mac_deets['host_ips'] = list(mac_state.get(MAC_LEARNING_IP, []))
 
-            metrics = self._get_gauge_metrics()
+            try:
+                metrics = self._get_gauge_metrics()
+            except Exception as e:
+                self._logger.error("Error fetching metrics from gauge: %s", str(e))
+                return dict_proto({}, HostList)
+
             self._fill_port_behavior(switch, port, mac_deets, metrics)
 
             if MAC_RADIUS_RESULT in mac_state:

@@ -83,6 +83,8 @@ jobs:
           cat inst/forch-controller-1/daq/inst/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% Endpoint logs
+          cat inst/endpoint.log || true
 
   test_reconfig:
     runs-on: ubuntu-latest

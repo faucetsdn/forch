@@ -3,6 +3,8 @@
 import threading
 import grpc
 
+import forch.endpoint_handler as endpoint_handler
+
 from forch.proto.shared_constants_pb2 import PortBehavior
 from forch.proto.devices_state_pb2 import DevicesState
 from forch.base_classes import DeviceStateReporter
@@ -19,26 +21,23 @@ try:
         SessionResult.ResultCode.PASSED: PortBehavior.passed,
         SessionResult.ResultCode.FAILED: PortBehavior.failed
     }
-except ImportError as e:
-    pass
+except ImportError:
+    PORT_BEHAVIOR_SESSION_RESULT = None
 
 
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
-DEFAULT_SERVER_PORT = 50051
+CONNECT_TIMEOUT_SEC = 60
 
 
 class DeviceReportClient(DeviceStateReporter):
     """gRPC client to send device result"""
 
-    def __init__(self, result_handler, server_address, server_port, unauth_vlan):
+    def __init__(self, result_handler, target, unauth_vlan, tunnel_ip):
         self._logger = get_logger('devreport')
         self._logger.info('Initializing with unauthenticated vlan %s', unauth_vlan)
-        address = server_address or DEFAULT_SERVER_ADDRESS
-        port = server_port or DEFAULT_SERVER_PORT
-        target = f'{address}:{port}'
-        self._logger.info('Using target server %s', target)
-        channel = grpc.insecure_channel(target)
-        self._stub = SessionServerStub(channel)
+        self._logger.info('Using target %s, proto %s', target, bool(PORT_BEHAVIOR_SESSION_RESULT))
+        self._channel = grpc.insecure_channel(target)
+        self._stub = None
         self._dp_mac_map = {}
         self._mac_sessions = {}
         self._mac_device_vlan_map = {}
@@ -46,9 +45,13 @@ class DeviceReportClient(DeviceStateReporter):
         self._unauth_vlan = unauth_vlan
         self._lock = threading.Lock()
         self._result_handler = result_handler
+        self._tunnel_ip = tunnel_ip
+        self._endpoint_handler = endpoint_handler.EndpointHandler(tunnel_ip) if tunnel_ip else None
 
     def start(self):
         """Start the client handler"""
+        grpc.channel_ready_future(self._channel).result(timeout=CONNECT_TIMEOUT_SEC)
+        self._stub = SessionServerStub(self._channel)
 
     def stop(self):
         """Stop client handler"""
@@ -59,6 +62,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.device_mac = mac
         session_params.device_vlan = vlan
         session_params.assigned_vlan = assigned
+        session_params.endpoint.ip = self._tunnel_ip or DEFAULT_SERVER_ADDRESS
         session = self._stub.StartSession(session_params)
         thread = threading.Thread(target=lambda: self._process_progress(mac, session))
         thread.start()
@@ -78,25 +82,32 @@ class DeviceReportClient(DeviceStateReporter):
         return '%s:%s' % (dp_name, port)
 
     def _convert_and_handle(self, mac, progress):
+        endpoint_ip = progress.endpoint.ip
         result_code = progress.result.code
+        assert not (endpoint_ip and result_code), 'both endpoint.ip and result.code defined'
         if result_code:
             result_name = SessionResult.ResultCode.Name(result_code)
             self._logger.info('Device report %s as %s', mac, result_name)
-            assert not progress.endpoint.ip, 'endpoint.ip and result.code defined'
             port_behavior = PORT_BEHAVIOR_SESSION_RESULT[result_code]
             devices_state = DevicesState()
             devices_state.device_mac_behaviors[mac].port_behavior = port_behavior
             return self._result_handler(devices_state)
+        if endpoint_ip:
+            self._logger.info('Device report %s endpoint %s (handler=%s)',
+                              mac, endpoint_ip, bool(self._endpoint_handler))
+            if self._endpoint_handler:
+                self._endpoint_handler.process_endpoint(progress.endpoint)
         return False
 
     def _process_progress(self, mac, session):
         try:
             for progress in session:
                 if self._convert_and_handle(mac, progress):
-                    self._logger.warning('Terminal state reached for %s', mac)
-            self._logger.error('Progress complete for %s', mac)
+                    break
+            self._logger.info('Progress complete for %s', mac)
         except Exception as e:
             self._logger.error('Progress exception: %s', e)
+        self.disconnect(mac)
 
     def _process_session_ready(self, mac):
         if mac in self._mac_sessions:
@@ -106,7 +117,8 @@ class DeviceReportClient(DeviceStateReporter):
         assigned_vlan = self._mac_assigned_vlan_map.get(mac)
         self._logger.info('Device %s ready on %s/%s', mac, device_vlan, assigned_vlan)
 
-        if device_vlan and assigned_vlan and device_vlan != self._unauth_vlan:
+        good_device_vlan = device_vlan and device_vlan not in (self._unauth_vlan, assigned_vlan)
+        if assigned_vlan and good_device_vlan:
             self._mac_sessions[mac] = self._connect(mac, device_vlan, assigned_vlan)
 
     def process_port_state(self, dp_name, port, state):
