@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+cd daq
+
+dts/build_dts
+
+docker tag daqf/dts forch/dts
