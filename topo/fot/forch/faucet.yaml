@@ -121,9 +121,6 @@ dps:
 include: [uniform.yaml]
 version: 2
 vlans:
-  100:
-    acls_in: [uniform_100]
-    description: unauthenticated
   500:
     acls_in: [uniform_500]
     description: INFRA
