@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash -ex
+
+echo Building DAQ DTS container
 
 cd daq
 
