@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-ROOT=$(dirname $0)/..
+ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 local=
 devices=
@@ -145,9 +145,9 @@ bin/run_faucet $local corp 6683
 
 if [[ -n $dts ]]; then
     if [[ $dts == localhost ]]; then
-        docker kill forch-dts || true
+        docker rm -f forch-dts || true
         echo Running local DTS container...
-        DTS_CID=$(docker run -d --name forch-dts -v $ROOT/inst/dts:/root/inst forch/dts)
+        DTS_CID=$(docker run -d --privileged --name forch-dts -v $ROOT/inst/forch-dts:/root/inst forch/dts)
         DTS_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $DTS_CID)
         vxlan="vxlan $DTS_IP"
     else
