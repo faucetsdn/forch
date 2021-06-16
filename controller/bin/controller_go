@@ -89,7 +89,7 @@ cat $FORCH_CONFIG
 /usr/bin/gauge_go &
 forch/bin/run_forch &
 
-if [[ $DTS_IP == localhost ]]; then
+if [[ -z $DTS_IP -o $DTS_IP == localhost ]]; then
     echo Starting daq, output in daq/inst/cmdrun.log
     sudo \
         PYTHONPATH=$PYTHONPATH \
