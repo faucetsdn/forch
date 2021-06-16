@@ -532,6 +532,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
             config_info, _, _ = self._get_faucet_config()
             if config_info['hashes'] != self._last_received_faucet_config_hash:
+                self._logger.error('\n%s\n\n%s\n\n', config_info['hashes'],
+                                   self._last_received_faucet_config_hash)
                 raise Exception(f'Config hash does not match after '
                                 f'{self._config_hash_verification_timeout_sec} seconds')
 
