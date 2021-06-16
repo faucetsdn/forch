@@ -1,12 +1,8 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 echo Building DAQ DTS container
 
-git remote -v
-
 cd daq
-
-git remote -v
 
 dts/build_dts
 
