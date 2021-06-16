@@ -1,9 +1,15 @@
 #!/bin/bash -e
 
-echo Building DAQ DTS container
+echo Building daq dts container.
 
 cd daq
+
+echo Building daqf/dts...
 
 dts/build_dts
 
 docker tag daqf/dts forch/dts
+
+docker images | fgrep /dts
+
+echo Done with dts build.
