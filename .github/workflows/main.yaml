@@ -62,9 +62,10 @@ jobs:
         run: |
           bin/setup_remote faucet
           bin/setup_remote daq
-          bin/build_dts
       - name: build docker
-        run: bin/retry_cmd bin/build_docker controller
+        run: |
+          bin/retry_cmd bin/build_docker controller
+          bin/build_dts
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup fot stack
