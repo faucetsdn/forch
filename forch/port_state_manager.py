@@ -232,6 +232,7 @@ class PortStateManager:
         self._process_device_placement(mac, device_placement, static=static)
 
         if mac not in self._state_machines:
+            self._logger.info('Adding state machine %s', mac)
             self._state_machines[mac] = PortStateMachine(
                 mac, PortStateMachine.UNAUTHENTICATED, self._state_callbacks,
                 state_overwrites=self._state_overwrites)
@@ -253,6 +254,7 @@ class PortStateManager:
 
         self._process_device_placement(eth_src, device_placement, static=False)
         if eth_src in self._state_machines:
+            self._logger.info('Removing state machine %s', eth_src)
             self._state_machines.pop(eth_src)
 
         self._update_device_state_varz(eth_src, DVAState.initial)
