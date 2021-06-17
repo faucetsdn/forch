@@ -86,7 +86,7 @@ jobs:
           echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ startup logs
-          cat inst/forch-controller-1/daq/inst/cmdrun.log
+          cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% Endpoint logs
