@@ -152,7 +152,7 @@ if [[ -n $dts ]]; then
     else
         vxlan="vxlan $dts"
     fi
-    echo Targetting DTS container at $vxlan
+    echo Targeting DTS container at $vxlan
 fi
 
 finst=1
