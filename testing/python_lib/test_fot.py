@@ -645,7 +645,11 @@ class FotContainerTest(IntegrationTestBase):
         # Test (lack of) DHCP reflection for operational device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
-        self.assertFalse(re.search("DHCP.*Reply", vlan_tcpdump_text))
+        allowed_vlan = '171'
+        vlans = re.findall('(?<=vlan )\w+', vlan_tcpdump_text)
+        no_vlan = not re.search("DHCP.*Reply", vlan_tcpdump_text)
+        is_vlan_allowed = all(vlan == allowed_vlan for vlan in vlans)
+        self.assertTrue(no_vlan or is_vlan_allowed)
 
 
 if __name__ == '__main__':
