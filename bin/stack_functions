@@ -535,7 +535,7 @@ function monitor_log {
 
 function monitor_daq_log {
     expected=$1
-    daqlog=$DAQ_BASE/inst/cmdrun.log
+    daqlog=$DAQ_BASE/cmdrun.log
     monitor_log "$expected" "$daqlog"
 }
 

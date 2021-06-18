@@ -5,7 +5,7 @@ source bin/stack_functions
 kill_forch
 
 echo Cleaning docker images...
-for image in forch/faucet forch/faux forch/gauge forch/controller; do
+for image in forch/faucet forch/faux forch/gauge forch/controller forch/dts; do
     echo Cleaning docker image $image...
     images=$(docker ps --filter ancestor=$image -q)
     if [ -n "$images" ]; then
