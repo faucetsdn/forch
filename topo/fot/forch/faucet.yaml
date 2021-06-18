@@ -26,9 +26,6 @@ dps:
         description: "to t2sw3 port 50"
         stack: {dp: nz-kiwi-t2sw3, port: 50}
         acls_in: [mirror-port]
-      12:
-        description: MIRROR
-        output_only: true
       28:
         description: egress
         lacp: 3
@@ -62,9 +59,6 @@ dps:
         description: "to t2sw3 port 52"
         stack: {dp: nz-kiwi-t2sw3, port: 52}
         acls_in: [mirror-port]
-      12:
-        description: MIRROR
-        output_only: true
       28:
         description: egress
         lacp: 3
