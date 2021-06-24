@@ -623,6 +623,13 @@ class FotContainerTest(IntegrationTestBase):
             timeout=timeout, docker_host=mirror_host)
         self.assertTrue(lacp_eth_type in lacp_tcpdump_text)
 
+    def _check_allowed_vlans(self, vlan_tcpdump_text):
+        allowed_vlan = '171'
+        vlans = re.findall(r'(?<=vlan )\w+', vlan_tcpdump_text)
+        no_vlan = not re.search("DHCP.*Reply", vlan_tcpdump_text)
+        is_vlan_allowed = all(vlan == allowed_vlan for vlan in vlans)
+        return no_vlan or is_vlan_allowed
+
     def test_mirroring(self):
         """Test packet mirroring for FOT setup"""
         self._check_lldp_lacp_mirroring()
@@ -641,16 +648,12 @@ class FotContainerTest(IntegrationTestBase):
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-1')
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
         self.assertTrue(re.search("DHCP.*Reply", vlan_tcpdump_text))
+        self.assertFalse(self._check_allowed_vlans(vlan_tcpdump_text))
 
         # Test (lack of) DHCP reflection for operational device
         device_tcpdump_text, vlan_tcpdump_text = self._internal_dhcp('forch-faux-4')
         self.assertTrue(re.search("DHCP.*Reply", device_tcpdump_text))
-        allowed_vlan = '171'
-        vlans = re.findall(r'(?<=vlan )\w+', vlan_tcpdump_text)
-        no_vlan = not re.search("DHCP.*Reply", vlan_tcpdump_text)
-        is_vlan_allowed = all(vlan == allowed_vlan for vlan in vlans)
-        self.assertTrue(no_vlan or is_vlan_allowed)
-        # TODO: Go over need for negative test since assertion above is pretty restrictive
+        self.assertTrue(self._check_allowed_vlans(vlan_tcpdump_text))
 
 
 if __name__ == '__main__':
