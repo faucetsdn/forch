@@ -650,6 +650,7 @@ class FotContainerTest(IntegrationTestBase):
         no_vlan = not re.search("DHCP.*Reply", vlan_tcpdump_text)
         is_vlan_allowed = all(vlan == allowed_vlan for vlan in vlans)
         self.assertTrue(no_vlan or is_vlan_allowed)
+        # TODO: Go over need for negative test since assertion above is pretty restrictive
 
 
 if __name__ == '__main__':
