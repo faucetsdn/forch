@@ -12,8 +12,16 @@ function report_vlans {
     $YQ '.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
 }
 
+if [ -f inst/forch-controller-1/daq/inst/cmdrun.log ]; then
+    DAQ_BASE=inst/forch-controller-1/daq/inst
+elif [ -f inst/forch-dts/cmdrun.log ]; then
+    DAQ_BASE=inst/forch-dts/
+else
+    echo Could not find cmdrun.log file.
+    false
+fi
+
 INST_BASE=inst/forch-controller-1
-DAQ_BASE=$INST_BASE/daq
 FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
@@ -32,24 +40,24 @@ docker exec forch-faux-4 ping -c 10 192.168.1.0
 docker exec forch-faux-5 ping -c 1000 192.168.1.0 > /dev/null &
 
 echo Tail of DAQ log
-tail $DAQ_BASE/inst/cmdrun.log || true
+tail $DAQ_BASE/cmdrun.log || true
 
 # Basic process startup.
 echo Check basic process startup
-fgrep "Loading base module config" $DAQ_BASE/inst/cmdrun.log
+fgrep "Loading base module config" $DAQ_BASE/cmdrun.log
 
 # Testing that python path is good.
-ls -l $DAQ_BASE/inst/daq.pid
+ls -l $DAQ_BASE/daq.pid
 
 # Requires valid config available.
-cat $DAQ_BASE/inst/daq_run_id.txt
+cat $DAQ_BASE/daq_run_id.txt
 
 # Requiring mininet path.
-ls -l $DAQ_BASE/inst/dp_port_acls.yaml
+ls -l $DAQ_BASE/dp_port_acls.yaml
 
 # Check that OVS switch connects properly to managed faucet.
 echo Check for managed faucet
-fgrep "System port 1 on dpid 1 is active True" $DAQ_BASE/inst/cmdrun.log
+fgrep "System port 1 on dpid 1 is active True" $DAQ_BASE/cmdrun.log
 
 echo Done with daq startup tests.
 
@@ -68,15 +76,15 @@ vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
-monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:01: passed"
-monitor_daq_log "Sending device result for device 9a:02:57:1e:8f:02: failed"
+monitor_daq_log "Send device result 9a:02:57:1e:8f:01 passed"
+monitor_daq_log "Send device result 9a:02:57:1e:8f:02 failed"
 monitor_daq_log "Target device 9a02571e8f03 test hold running"
 monitor_daq_log "Target device 9a02571e8f05 test hold running"
 
 echo `timestamp` stopping forch-faux-3
 docker stop forch-faux-3 # Remove device 3 to generate port-down event.
 
-log_count=$(fgrep "9a:02:57:1e:8f:04" $DAQ_BASE/inst/cmdrun.log | wc -l)
+log_count=$(fgrep "9a:02:57:1e:8f:04" $DAQ_BASE/cmdrun.log | wc -l)
 echo Device 04 log count $log_count | tee -a $TEST_RESULTS
 
 report_vlans
@@ -84,12 +92,12 @@ report_vlans
 monitor_forch_log "Device 9a:02:57:1e:8f:04 is entering operational state from unauthenticated state"
 
 # Check if it's running in client/server or server/client mode and adjust expectations accordingly.
-sserv_mode=$(fgrep ssserv $DAQ_BASE/inst/cmdrun.log | wc -l)
+sserv_mode=$(fgrep ssserv $DAQ_BASE/cmdrun.log | wc -l)
 if [[ $sserv_mode == 0 ]]; then
     monitor_daq_log "Remaining target sets: \[9a02571e8f05\]"
     expected_timeouts=0
     # Device 8f:05 doesn't timeout in this mode, so add artificial result for later on.
-    echo "9a02571e8f05: ['9a02571e8f05:hold:DaqException']" | sudo tee -a $DAQ_BASE/inst/result.log
+    echo "9a02571e8f05: ['9a02571e8f05:hold:DaqException']" | sudo tee -a $DAQ_BASE/result.log
 else
     monitor_forch_log "Device 9a:02:57:1e:8f:03 disconnected"
     monitor_daq_log "Remaining target sets: \[\]"
@@ -100,7 +108,7 @@ sequester_timeout=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.
 echo `timestamp` Found $sequester_timeouts and expected $expected_timeouts
 [[ $sequester_timeout == $expected_timeouts ]]
 
-cat $DAQ_BASE/inst/result.log | sort | tee -a $TEST_RESULTS
+cat $DAQ_BASE/result.log | sort | tee -a $TEST_RESULTS
 docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less flaky
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS

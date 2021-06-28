@@ -183,6 +183,9 @@ class Faucetizer(DeviceStateManager):
         return base_file_name + INCLUDE_FILE_SUFFIX + ext
 
     def _validate_and_initialize_config(self):
+        if self._config.unauthenticated_vlan:
+            self._logger.info('Unauthenticated vlan is %s', self._config.unauthenticated_vlan)
+
         if self._sequester_segment:
             starting_vlan = self._config.sequester_config.vlan_start
             ending_vlan = self._config.sequester_config.vlan_end

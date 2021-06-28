@@ -39,8 +39,9 @@ if [ "$1" == "no-test" ]; then
 fi
 
 if [ "$1" == "vxlan" ]; then
-    vxlan=vxlan
-    shift
+    # Argument is target server for vxlan gRPC
+    vxlan=$2
+    shift 2
 fi
 
 if [ -n "$1" ]; then
@@ -119,7 +120,7 @@ docker_envs="--env RUN_MODE=$run_mode"
 
 if [[ -n $vxlan ]]; then
     docker_ip=$(ip addr show docker0 | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p')
-    docker_envs+=" --env VXLAN_IP=$docker_ip"
+    docker_envs+=" --env VXLAN_IP=$docker_ip --env DTS_IP=$vxlan"
 fi
 
 docker_volumes+="\

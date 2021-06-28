@@ -63,7 +63,9 @@ jobs:
           bin/setup_remote faucet
           bin/setup_remote daq
       - name: build docker
-        run: bin/retry_cmd bin/build_docker controller
+        run: |
+          bin/retry_cmd bin/build_docker controller
+          bin/build_dts
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup fot stack
@@ -74,13 +76,17 @@ jobs:
         run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
       - name: run vxlan integration tests
         run: timeout 20m bin/run_test_set fot
+      - name: setup dts
+        run: bin/setup_stack devices 5 skip-conn-check dhcp fot dts localhost
+      - name: run dts integration tests
+        run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
         run: |
           echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ startup logs
-          cat inst/forch-controller-1/daq/inst/cmdrun.log
+          cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% Endpoint logs
