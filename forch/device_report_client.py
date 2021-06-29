@@ -129,7 +129,6 @@ class DeviceReportClient(DeviceStateReporter):
                 break
             try:
                 if not progress or self._convert_and_handle(mac, progress):
-                    print('Progress complete for %s' % mac)
                     self._logger.info('Progress complete for %s', mac)
                     self.disconnect(mac)
             except Exception as e:
