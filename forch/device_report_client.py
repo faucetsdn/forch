@@ -1,5 +1,6 @@
 """Server to handle incoming session requests"""
 
+import sys
 import signal
 import threading
 import multiprocessing as mp
@@ -68,9 +69,10 @@ class DeviceReportClient(DeviceStateReporter):
         if self._progress_q_thread:
             self._progress_q_thread.join()
 
+    # pylint: disable=too-many-arguments
     @classmethod
-    def _connect(cls, mac, vlan, assigned, target, tunnel_ip, progress_q):  # pylint: disable=too-many-arguments
-        channel = grpc.insecure_channel(target)
+    def _connect(cls, mac, vlan, assigned, target, tunnel_ip, progress_q):
+        channel = grpc.insecure_channel(target, options = (('grpc.so_reuseport', 0),))
         grpc.channel_ready_future(channel).result(timeout=CONNECT_TIMEOUT_SEC)
         stub = SessionServerStub(channel)
         session_params = SessionParams()
@@ -79,7 +81,11 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.assigned_vlan = assigned
         session_params.endpoint.ip = tunnel_ip
         session = stub.StartSession(session_params)
-        signal.signal(signal.SIGTERM, lambda: session.cancel())
+        def terminate(*args):
+            session.cancel()
+            progress_q.put((mac, None))
+            sys.exit()
+        signal.signal(signal.SIGTERM, terminate)
         for progress in session:
             progress_q.put((mac, progress))
         progress_q.put((mac, None))
@@ -118,10 +124,11 @@ class DeviceReportClient(DeviceStateReporter):
     def _process_progress_q(self):
         while True:
             mac, progress = self._progress_q.get(block=True)
-            if not mac: # device client shutdown
+            if not mac:  # device client shutdown
                 break
             try:
                 if not progress or self._convert_and_handle(mac, progress):
+                    print('Progress complete for %s' % mac)
                     self._logger.info('Progress complete for %s', mac)
                     self.disconnect(mac)
             except Exception as e:
@@ -138,9 +145,9 @@ class DeviceReportClient(DeviceStateReporter):
         good_device_vlan = device_vlan and device_vlan not in (self._unauth_vlan, assigned_vlan)
         if assigned_vlan and good_device_vlan:
             self._logger.info('Connecting %s to %s/%s', mac, device_vlan, assigned_vlan)
-            self._mac_session_processes[mac] = mp.Process(target=self._connect, args=(mac,
-                device_vlan, assigned_vlan, self._target,
-                self._tunnel_ip or DEFAULT_SERVER_ADDRESS, self._progress_q))
+            args = (mac, device_vlan, assigned_vlan, self._target,
+                    self._tunnel_ip or DEFAULT_SERVER_ADDRESS, self._progress_q)
+            self._mac_session_processes[mac] = mp.Process(target=self._connect, args=args)
             self._mac_session_processes[mac].start()
 
     def process_port_state(self, dp_name, port, state):
