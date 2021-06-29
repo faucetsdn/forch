@@ -72,7 +72,7 @@ class DeviceReportClient(DeviceStateReporter):
     # pylint: disable=too-many-arguments
     @classmethod
     def _connect(cls, mac, vlan, assigned, target, tunnel_ip, progress_q):
-        channel = grpc.insecure_channel(target, options = (('grpc.so_reuseport', 0),))
+        channel = grpc.insecure_channel(target, options=(('grpc.so_reuseport', 0),))
         grpc.channel_ready_future(channel).result(timeout=CONNECT_TIMEOUT_SEC)
         stub = SessionServerStub(channel)
         session_params = SessionParams()
@@ -81,6 +81,7 @@ class DeviceReportClient(DeviceStateReporter):
         session_params.assigned_vlan = assigned
         session_params.endpoint.ip = tunnel_ip
         session = stub.StartSession(session_params)
+
         def terminate(*args):
             session.cancel()
             progress_q.put((mac, None))
