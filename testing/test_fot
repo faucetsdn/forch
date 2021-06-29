@@ -26,6 +26,10 @@ FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
 
+if [ -n "$CI" ]; then
+    sleep 20;
+fi
+
 echo `timestamp` DAQ spot checks
 # faux-1: tests passing, moved to operational
 # faux-2: tests failing, moved to infracted
