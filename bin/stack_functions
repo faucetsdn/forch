@@ -127,7 +127,7 @@ function add_faux {
     bin/run_faux $fnum $*
     add_iface $switch $port faux-$fnum
     echo Waiting for IP address...
-    for i in `seq 1 20`; do
+    for i in `seq 1 30`; do
         ip_address=$(docker exec forch-faux-$fnum ip addr show faux-eth0 | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p' || true)
         if [[ -n "$ip_address" ]]; then
             break
