@@ -26,10 +26,6 @@ FAUCET_BASE=$INST_BASE/faucet
 BEHAVIORAL_CONFIG=$FAUCET_BASE/faucet.yaml
 YQ=venv/bin/yq
 
-if [ -n "$CI" ]; then
-    sleep 20;
-fi
-
 echo `timestamp` DAQ spot checks
 # faux-1: tests passing, moved to operational
 # faux-2: tests failing, moved to infracted
@@ -38,7 +34,9 @@ echo `timestamp` DAQ spot checks
 # faux-5: tests timeout (hold test enabled)
 
 # Test that no-sequester works
-docker exec forch-faux-4 ping -c 20 192.168.1.0
+if [ -z "$CI" ]; then
+    docker exec forch-faux-4 ping -c 10 192.168.1.0
+fi
 
 # Ongoing activity faux-5 to keep it learned
 docker exec forch-faux-5 ping -c 1000 192.168.1.0 > /dev/null &
