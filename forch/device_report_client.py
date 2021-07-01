@@ -55,7 +55,7 @@ class DeviceReportClient(DeviceStateReporter):
 
     def start(self):
         """Start the client handler"""
-        # Context may be set already even though this function is only called once.
+        # Context may be set already
         try:
             mp.set_start_method('spawn')
         except RuntimeError:
@@ -72,8 +72,7 @@ class DeviceReportClient(DeviceStateReporter):
     # pylint: disable=too-many-arguments
     @classmethod
     def _connect(cls, mac, vlan, assigned, target, tunnel_ip, progress_q):
-        channel = grpc.insecure_channel(target, options=(('grpc.so_reuseport', 0),
-                                        ('grpc.use_local_subchannel_pool', 1)))
+        channel = grpc.insecure_channel(target, options=(('grpc.so_reuseport', 0),))
         grpc.channel_ready_future(channel).result(timeout=CONNECT_TIMEOUT_SEC)
         stub = SessionServerStub(channel)
         session_params = SessionParams()

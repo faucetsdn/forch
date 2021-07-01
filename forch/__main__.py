@@ -4,6 +4,7 @@ import argparse
 import functools
 import os
 import sys
+import multiprocessing as mp
 
 import forch.faucet_event_client
 from forch.forchestrator import Forchestrator
@@ -100,4 +101,5 @@ def main():
 
 
 if __name__ == '__main__':
+    mp.set_start_method('spawn')
     main()
