@@ -18,6 +18,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
@@ -39,6 +41,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
@@ -104,6 +108,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
@@ -126,6 +132,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
@@ -151,6 +159,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
