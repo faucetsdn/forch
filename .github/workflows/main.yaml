@@ -98,7 +98,7 @@ jobs:
 
   test_reconfig:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -149,7 +149,7 @@ jobs:
 
   test_scale:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
