@@ -25,8 +25,6 @@ vxlan=
 echo run_controller $@
 cd $ROOT
 
-listen_ip=$(ip addr show docker0 | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p')
-
 if [ "$1" == "local" ]; then
     docker_volumes+=" -v $ROOT/faucet/faucet:/usr/lib/python3.7/site-packages/faucet"
     docker_volumes+=" -v $ROOT/daq/daq:/root/daq/daq"
@@ -43,11 +41,6 @@ fi
 if [ "$1" == "vxlan" ]; then
     # Argument is target server for vxlan gRPC
     vxlan=$2
-    shift 2
-fi
-
-if [ "$1" == "listen" ]; then
-    listen_ip=$2
     shift 2
 fi
 
@@ -126,8 +119,11 @@ forch_port="-p 500$faucet_id:9019"
 docker_envs="--env RUN_MODE=$run_mode"
 
 if [[ -n $vxlan ]]; then
-    echo Using $listen_ip/$vxlan as vxlan endpoints.
-    docker_envs+=" --env VXLAN_IP=$listen_ip --env DTS_IP=$vxlan"
+    # Extract the local src IP address that gets us to the destination.
+    echo ip route get $vxlan sed -nr 's~.*src ([0-9.]+)/.*~\1~p'
+    local_ip=$(ip route get $vxlan | sed -nr 's~.*src ([0-9.]+)/.*~\1~p')
+    echo Using $local_ip/$vxlan as vxlan endpoints.
+    docker_envs+=" --env VXLAN_IP=$local_ip --env DTS_IP=$vxlan"
 fi
 
 docker_volumes+="\
