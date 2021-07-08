@@ -33,7 +33,7 @@ DEFAULT_BIND_ADDRESS = '0.0.0.0'
 DEFAULT_VXLAN_PORT = 4789
 DEFAULT_VXLAN_VNI = 0
 
-VXLAN_CMD_FMT = 'ip link add %s type vxlan id %s remote %s dstport %s nolearning'
+VXLAN_CMD_FMT = 'ip link add %s type vxlan id %s remote %s dstport %s srcport %s %s nolearning'
 
 CONNECT_TIMEOUT_SEC = 60
 
@@ -87,9 +87,12 @@ class EndpointServicer(SessionServerServicer):
         """Start a session servicer"""
         endpoint = request.endpoint
         self._logger.info('Redirect tunnel to %s', endpoint.ip)
-        cmd = VXLAN_CMD_FMT % ('vxlan', DEFAULT_VXLAN_VNI, endpoint.ip, DEFAULT_VXLAN_PORT)
-        self._exec(cmd)
-        self._exec('ip link set vxlan up')
+        self._exec('sudo ip link set vxlan down')
+        self._exec('sudo ip link del vxlan')
+        cmd = VXLAN_CMD_FMT % ('vxlan', DEFAULT_VXLAN_VNI, endpoint.ip,
+                               DEFAULT_VXLAN_PORT, DEFAULT_VXLAN_PORT, DEFAULT_VXLAN_PORT)
+        self._exec('sudo ' + cmd)
+        self._exec('sudo ip link set vxlan up')
         return self._session_stream(request)
 
 
