@@ -90,8 +90,8 @@ class EndpointServicer(SessionServerServicer):
         try:
             self._exec('sudo ip link set vxlan down')
             self._exec('sudo ip link del vxlan')
-        except:
-            pass
+        except Exception as e:
+            self._logger.info('Ignoring exception: %s', str(e)
         cmd = VXLAN_CMD_FMT % ('vxlan', DEFAULT_VXLAN_VNI, endpoint.ip,
                                DEFAULT_VXLAN_PORT, DEFAULT_VXLAN_PORT, DEFAULT_VXLAN_PORT)
         self._exec('sudo ' + cmd)
