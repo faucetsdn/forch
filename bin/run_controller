@@ -120,7 +120,6 @@ docker_envs="--env RUN_MODE=$run_mode"
 
 if [[ -n $vxlan ]]; then
     # Extract the local src IP address that can be used as return address.
-    echo ip route get $vxlan sed -nr 's~.*src ([0-9.]+) .*~\1~p'
     local_ip=$(ip route get $vxlan | sed -nr 's~.*src ([0-9.]+) .*~\1~p')
     echo Using $local_ip/$vxlan as vxlan endpoints.
     docker_envs+=" --env VXLAN_IP=$local_ip --env DTS_IP=$vxlan"
