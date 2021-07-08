@@ -87,8 +87,11 @@ class EndpointServicer(SessionServerServicer):
         """Start a session servicer"""
         endpoint = request.endpoint
         self._logger.info('Redirect tunnel to %s', endpoint.ip)
-        self._exec('sudo ip link set vxlan down')
-        self._exec('sudo ip link del vxlan')
+        try:
+            self._exec('sudo ip link set vxlan down')
+            self._exec('sudo ip link del vxlan')
+        except:
+            pass
         cmd = VXLAN_CMD_FMT % ('vxlan', DEFAULT_VXLAN_VNI, endpoint.ip,
                                DEFAULT_VXLAN_PORT, DEFAULT_VXLAN_PORT, DEFAULT_VXLAN_PORT)
         self._exec('sudo ' + cmd)
