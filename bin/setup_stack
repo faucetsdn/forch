@@ -147,7 +147,7 @@ if [[ -n $dts ]]; then
         docker rm -f forch-dts || true
         echo Running local DTS container...
         VOLUMES="-v $ROOT/inst/forch-dts:/root/inst"
-        VOLUMES+=" -v $ROOT/daq/dts:/dts-config"
+        VOLUMES+=" -v $ROOT/daq/dts:/daq-config/"
         DTS_CID=$(docker run -d --privileged --name forch-dts $VOLUMES forch/dts)
         DTS_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $DTS_CID)
         vxlan="vxlan $DTS_IP"
