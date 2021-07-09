@@ -39,7 +39,7 @@ if [ "$1" == "no-test" ]; then
 fi
 
 if [ "$1" == "vxlan" ]; then
-    # Argument is target server for vxlan gRPC
+    # Argument is target server for vxlan gRPC, or localhost for docker container
     vxlan=$2
     shift 2
 fi
@@ -120,7 +120,11 @@ docker_envs="--env RUN_MODE=$run_mode"
 
 if [[ -n $vxlan ]]; then
     # Extract the local src IP address that can be used as return address.
-    local_ip=$(ip route get $vxlan | sed -nr 's~.*src ([0-9.]+) .*~\1~p')
+    if [ $vxlan == localhost ]; then
+        local_ip=$(ip addr show docker0 | sed -nr 's~.*inet ([0-9.]+)/.*~\1~p')
+    else
+        local_ip=$(ip route get $vxlan | sed -nr 's~.*src ([0-9.]+) .*~\1~p')
+    fi
     echo Using $local_ip/$vxlan as vxlan endpoints.
     docker_envs+=" --env VXLAN_IP=$local_ip --env DTS_IP=$vxlan"
 fi
