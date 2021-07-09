@@ -36,11 +36,13 @@ fi
 
 pip3 install -r etc/requirements.txt
 
-DEF_IFACE=`route -n | egrep '\sUG\s' | awk '{print $8}'`
-if [ -n "$DEF_IFACE" ]; then
-    echo Allowing docker external access through interface $DEF_IFACE...
-    sudo iptables -o docker0 -i $DEF_IFACE -A FORWARD -j ACCEPT
-    sudo iptables -i docker0 -o $DEF_IFACE -A FORWARD -j ACCEPT
+DEF_IFACE=`ip route | fgrep default | awk '{print $5}'`
+if [[ -n $DEF_IFACE ]]; then
+    for IFACE in $DEF_IFACE; do
+        echo Allowing docker external access through interface $IFACE...
+        sudo iptables -o docker0 -i $IFACE -A FORWARD -j ACCEPT
+        sudo iptables -i docker0 -o $IFACE -A FORWARD -j ACCEPT
+    done
 else
     echo No default interface found. If this causes problems, maybe you need ipv4!
     false
