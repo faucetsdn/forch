@@ -153,7 +153,9 @@ if [[ -z $vxlan ]]; then
     docker exec $CONTAINER ip link set data0 up
 fi
 
-docker exec $CONTAINER /root/bin/rename_site_config $CLEAN_MAC_PREFIX
+if [ $CLEAN_MAC_PREFIX != "9a02571e" ]; then
+    docker exec $CONTAINER /root/bin/rename_site_config $CLEAN_MAC_PREFIX
+fi
 
 echo Container $CONTAINER started as $cid
 

@@ -26,9 +26,9 @@ function test_access {
     adesc=access-$1
     echo Starting $adesc test... | tee -a $TEST_RESULTS
     metrics=$(wget localhost:$FAUCET_VARZ_PORT -O- 2>/dev/null)
-    grep 'nz-kiwi-t2sw1' <<< $metrics | grep -F 'vid="100"' | grep -F ' 1.0' | grep -oF "$FAUX_MAC_PREFIX:8f:01" | tee -a $TEST_RESULTS
-    grep 'nz-kiwi-t2sw2' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF "$FAUX_MAC_PREFIX:8f:02" | tee -a $TEST_RESULTS
-    grep 'nz-kiwi-t2sw3' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF "$FAUX_MAC_PREFIX:8f:03" | tee -a $TEST_RESULTS
+    grep 'nz-kiwi-t2sw1' <<< $metrics | grep -F 'vid="100"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:01' | tee -a $TEST_RESULTS
+    grep 'nz-kiwi-t2sw2' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:02' | tee -a $TEST_RESULTS
+    grep 'nz-kiwi-t2sw3' <<< $metrics | grep -F 'vid="300"' | grep -F ' 1.0' | grep -oF '9a:02:57:1e:8f:03' | tee -a $TEST_RESULTS
 }
 
 function test_dva {
@@ -80,16 +80,16 @@ function test_dva {
 
     api_result=$fout_dir/list_hosts.json
     echo "@list_hosts $fdesc" | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:01'.vlan.vlan_id" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:01'.dva_state" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:01'.acls[0].rules[0].description" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:03'.vlan.vlan_id" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:03'.dva_state" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:03'.radius_result.access" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:03'.radius_result.segment" $api_result | tee -a $TEST_RESULTS
-    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:03'.radius_result.role" $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:01".vlan.vlan_id' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:01".dva_state' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:01".acls[0].rules[0].description' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:03".vlan.vlan_id' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:03".dva_state' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.access' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.segment' $api_result | tee -a $TEST_RESULTS
+    jq '.eth_srcs."9a:02:57:1e:8f:03".radius_result.role' $api_result | tee -a $TEST_RESULTS
     if [ -z "$skip_pkt_count" ]; then
-        jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:03'.acls[0].rules[0].packet_count" $api_result | tee -a $TEST_RESULTS
+        jq '.eth_srcs."9a:02:57:1e:8f:03".acls[0].rules[0].packet_count' $api_result | tee -a $TEST_RESULTS
     fi
 }
 
@@ -106,11 +106,11 @@ function test_forch_varz {
     vlan_4096_count=$(grep 'dataplane_packet_count_vlan' <<< $metrics | grep 'vlan="4096"' | awk '{print $2}')
     echo $((${vlan_4096_count%.0} > 40)) | tee -a $TEST_RESULTS
 
-    grep 'device_state' <<< $metrics | grep "$FAUX_MAC_PREFIX:8f:01" | awk '{print $2}' | tee -a $TEST_RESULTS
-    grep 'device_state' <<< $metrics | grep "$FAUX_MAC_PREFIX:8f:02" | awk '{print $2}' | tee -a $TEST_RESULTS
-    grep 'device_state' <<< $metrics | grep "$FAUX_MAC_PREFIX:8f:03" | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'device_state' <<< $metrics | grep '9a:02:57:1e:8f:01' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'device_state' <<< $metrics | grep '9a:02:57:1e:8f:02' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'device_state' <<< $metrics | grep '9a:02:57:1e:8f:03' | awk '{print $2}' | tee -a $TEST_RESULTS
 
-    grep 'static_mac_vlan' <<< $metrics | grep "$FAUX_MAC_PREFIX:8f:01" | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'static_mac_vlan' <<< $metrics | grep '9a:02:57:1e:8f:01' | awk '{print $2}' | tee -a $TEST_RESULTS
 }
 
 echo %%% initial | tee -a $TEST_RESULTS
