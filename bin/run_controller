@@ -153,6 +153,8 @@ if [[ -z $vxlan ]]; then
     docker exec $CONTAINER ip link set data0 up
 fi
 
+docker exec $CONTAINER /root/bin/rename_site_config $CLEAN_MAC_PREFIX
+
 echo Container $CONTAINER started as $cid
 
 while [ ! -e $INSTDIR/$FAUCET_SOCK ]; do

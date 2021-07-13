@@ -119,6 +119,21 @@ function add_oeth {
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
 }
 
+function set_faux_mac_prefix {
+    if [ -z $FAUX_MAC_PREFIX ]; then
+        FAUX_MAC_PREFIX=9a:02:57:1e
+    fi
+
+    correct_mac_prefix=`echo $FAUX_MAC_PREFIX  | egrep '([0-9a-zA-Z]{2}:){3}[0-9a-zA-Z]{2}'`
+    if [ -z $correct_mac_prefix ]; then
+        echo "$FAUX_MAC_PREFIX is an invalid mac prefix. FUAX_MAC_PREFIX should be in the format 'XX:XX:XX:XX'"
+        false
+    fi
+    CLEAN_MAC_PREFIX=`echo $FAUX_MAC_PREFIX | sed 's/://g'`
+    export FAUX_MAC_PREFIX=$FAUX_MAC_PREFIX
+    export CLEAN_MAC_PREFIX=$CLEAN_MAC_PREFIX
+}
+
 function add_faux {
     switch=$1
     port=$2
@@ -405,9 +420,9 @@ function test_forch {
     fetch_forch cpn_state
     fetch_forch process_state
     fetch_forch list_hosts '' 1
-    fetch_forch list_hosts ?eth_src=9a:02:57:1e:8f:01 2
-    fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&eth_dst=9a:02:57:1e:8f:02' 1
-    fetch_forch host_path '?eth_src=9a:02:57:1e:8f:01&to_egress=true' 2
+    fetch_forch list_hosts ?eth_src=$FAUX_MAC_PREFIX:8f:01 2
+    fetch_forch host_path "?eth_src=$FAUX_MAC_PREFIX:8f:01&eth_dst=$FAUX_MAC_PREFIX:8f:02" 1
+    fetch_forch host_path "?eth_src=$FAUX_MAC_PREFIX:8f:01&to_egress=true" 2
 
     echo @system_state$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/system_state.json
@@ -463,9 +478,9 @@ function test_forch {
 
     echo @list_hosts$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts1.json
-    jq '.eth_srcs."9a:02:57:1e:8f:01".url' $api_result | tee -a $TEST_RESULTS
+    jq ".eth_srcs.'$FAUX_MAC_PREFIX:8f:01'.url" $api_result | tee -a $TEST_RESULTS
     api_result=$fout_dir/list_hosts2.json
-    jq '.eth_dsts."9a:02:57:1e:8f:02".url' $api_result | tee -a $TEST_RESULTS
+    jq ".eth_dsts.'$FAUX_MAC_PREFIX:8f:02'.url" $api_result | tee -a $TEST_RESULTS
 
     echo @host_path$fdesc | tee -a $TEST_RESULTS
     api_result=$fout_dir/host_path1.json

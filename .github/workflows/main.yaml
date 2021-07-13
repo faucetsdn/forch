@@ -73,8 +73,12 @@ jobs:
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup fot stack
+        env:
+          FAUX_MAC_PREFIX: 9a:99:57:1e
         run: bin/setup_stack devices 5 skip-conn-check dhcp fot
       - name: run fot integration tests
+        env:
+          FAUX_MAC_PREFIX: 9a:99:57:1e
         run: timeout 20m bin/run_test_set fot
       - name: setup vxlan stack
         run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan

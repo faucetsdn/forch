@@ -89,6 +89,7 @@ fi
 
 rm -rf tcpdump # Clean out directory
 source bin/stack_functions
+set_faux_mac_prefix
 
 ###########################################################
 
@@ -173,6 +174,9 @@ if [ -z "$remote" ]; then
 
     cp topo/$mode/forch/* $container_inst/forch/
     cp topo/$mode/faucet/* $container_inst/faucet/
+
+    find $container_inst/ -name *.yaml -exec sed -i "s/9a:02:57:1e/$FAUX_MAC_PREFIX/" {} \;
+
     docker kill $container || true
 
     if [ -n "$fot" ]; then

@@ -2,13 +2,16 @@
 
 ROOT=$(realpath $(dirname $0)/..)
 postfix=
-intf_mac=9a:02:57:1e:8f:00
 docker_args=
 container_prefix=forch-faux
 image=forch/faux
 net_opt=--net=none
 port_num=0
 
+source bin/stack_functions
+set_faux_mac_prefix
+
+intf_mac=$FAUX_MAC_PREFIX:8f:00
 cd $ROOT
 
 # If the first argument is a number, then it's a port designation.
@@ -22,7 +25,7 @@ if [ $# -gt 0 ] && [ $(($1)) -gt 0 -o "$1" == 0 ]; then
         mac_port_num=$port_num
     fi
     postfix=-$port_num
-    intf_mac=9a:02:57:1e:$(printf %02x $mac_prefix):$(printf %02x $mac_port_num)
+    intf_mac=$FAUX_MAC_PREFIX:$(printf %02x $mac_prefix):$(printf %02x $mac_port_num)
     shift
 fi
 
@@ -40,7 +43,7 @@ if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; 
     docker rm -f $CONTAINER
 fi
 
-docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num"
+docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num -e FAUX_MAC_PREFIX=$FAUX_MAC_PREFIX"
 
 cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS)
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
@@ -49,7 +52,7 @@ intf=faux$postfix
 echo Removing old interface $intf
 sudo ip link del $intf 2>/dev/null || true
 
-echo Adding new interface to $pid...
+echo Adding new interface $intf_mac to $pid...
 sudo ip link add $intf type veth peer name faux-eth0 addr $intf_mac netns $pid
 sudo ip link set $intf up
 
