@@ -120,8 +120,10 @@ function add_oeth {
 }
 
 function set_faux_mac_prefix {
+    export DEFAULT_MAC_PREFIX="9a:02:57:1e"
+    export DEFAULT_CLEAN_MAC_PREFIX="9a02571e"
     if [ -z $FAUX_MAC_PREFIX ]; then
-        FAUX_MAC_PREFIX=9a:02:57:1e
+        FAUX_MAC_PREFIX=$DEFAULT_MAC_PREFIX
     fi
 
     correct_mac_prefix=`echo $FAUX_MAC_PREFIX  | egrep '([0-9a-zA-Z]{2}:){3}[0-9a-zA-Z]{2}'`

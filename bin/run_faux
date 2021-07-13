@@ -43,9 +43,9 @@ if docker container inspect $CONTAINER --format '{{ .Name }}' > /dev/null 2>&1; 
     docker rm -f $CONTAINER
 fi
 
-docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num -e FAUX_MAC_PREFIX=$FAUX_MAC_PREFIX"
+docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num"
 
-cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS)
+cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS faux-mac-prefix=$FAUX_MAC_PREFIX)
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
 
 intf=faux$postfix

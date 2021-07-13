@@ -17,6 +17,7 @@ for option in $*; do
 done
 
 IFACE=faux-eth0
+FAUX_MAC_PREFIX="${options[faux-mac-prefix]}"
 PREFIX=$(($FAUX_NUM/256 + 1))
 SUFFIX=$(($FAUX_NUM%256))
 IPADDR=192.168.$PREFIX.$SUFFIX

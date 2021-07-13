@@ -27,6 +27,11 @@ if [ "$1" == "devices" ]; then
     shift 2
 fi
 
+if [ "$1" == "faux-mac-prefix" ]; then
+    export FAUX_MAC_PREFIX="$2"
+    shift 2
+fi
+
 if [ "$1" == "switches" ]; then
     switches=$2
     shift 2
@@ -175,7 +180,7 @@ if [ -z "$remote" ]; then
     cp topo/$mode/forch/* $container_inst/forch/
     cp topo/$mode/faucet/* $container_inst/faucet/
 
-    find $container_inst/ -name *.yaml -exec sed -i "s/9a:02:57:1e/$FAUX_MAC_PREFIX/" {} \;
+    find $container_inst/ -name *.yaml -exec sed -i "s/$DEFAULT_MAC_PREFIX/$FAUX_MAC_PREFIX/" {} \;
 
     docker kill $container || true
 

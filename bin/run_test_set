@@ -10,18 +10,15 @@ if [ -z "$TEST_SET" ]; then
 fi
 
 echo Running $TEST_SET tests...
-source bin/stack_functions
-set_faux_mac_prefix
 
 OUT_DIR=test_out/
 rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 echo Writing output to $OUT_DIR
 
-GOLDEN_RESULTS=$OUT_DIR/golden_test_$TEST_SET.out
+GOLDEN_RESULTS=etc/test_$TEST_SET.out
 TEST_RESULTS=$OUT_DIR/test_$TEST_SET.out
-sed "s/9a:02:57:1e/$FAUX_MAC_PREFIX/g" etc/test_$TEST_SET.out > $GOLDEN_RESULTS
-sed -i "s/9a02571e/$CLEAN_MAC_PREFIX/g" $GOLDEN_RESULTS
+
 testing/test_${TEST_SET}
 
 pwd
