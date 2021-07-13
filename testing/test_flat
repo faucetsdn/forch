@@ -42,7 +42,7 @@ function test_apis {
 
     # test list_hosts
     for device_num in $(seq 1 $devices); do
-        test_list_hosts $fout_dir/list_hosts.json "9a:02:57:1e:8f:0$device_num" 
+        test_list_hosts $fout_dir/list_hosts.json "9a:02:57:1e:8f:0$device_num"
     done
 
     # test switch_state
