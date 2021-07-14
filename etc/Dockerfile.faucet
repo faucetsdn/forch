@@ -6,6 +6,9 @@ RUN apk add -q tcpdump iptables sudo linux-headers build-base
 
 COPY faucet/ /faucet-src/
 
+# We don't need no stinkin' unit-tests...
+RUN sed -i 's/.*unit.*//' /faucet-src/docker/install-faucet.sh
+
 RUN /faucet-src/docker/install-faucet.sh && rm -rf /faucet-src/.git
 
 # Check for target executable since installer doesn't error out properly.
