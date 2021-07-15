@@ -17,11 +17,13 @@ for option in $*; do
 done
 
 IFACE=faux-eth0
+FAUX_MAC_PREFIX="${options['faux-mac-prefix']}"
 PREFIX=$(($FAUX_NUM/256 + 1))
 SUFFIX=$(($FAUX_NUM%256))
 IPADDR=192.168.$PREFIX.$SUFFIX
 GATEWAY=192.168.1.0
 
+echo $FAUX_MAC_PREFIX
 while ! ip link show $IFACE; do
     sleep 2
 done
@@ -42,7 +44,7 @@ else
     ip route add default via $GATEWAY
 fi
 
-if [ -n "${option[ping]}" ]; then
+if [ -n "${options[ping]}" ]; then
     ping -c 10 $GATEWAY &
 fi
 
@@ -52,8 +54,8 @@ ip route
 if [ -n "${options[dnsmasq]}" ]; then
     echo Configuring dnsmasq...
     echo dhcp-range=192.168.1.10,192.168.1.255 >> /etc/dnsmasq.conf
-    echo dhcp-host=9a:02:57:1e:8f:01,192.168.1.1 >> /etc/dnsmasq.conf
-    echo dhcp-host=9a:02:57:1e:8f:02,192.168.1.2 >> /etc/dnsmasq.conf
+    echo dhcp-host=$FAUX_MAC_PREFIX:8f:01,192.168.1.1 >> /etc/dnsmasq.conf
+    echo dhcp-host=$FAUX_MAC_PREFIX:8f:02,192.168.1.2 >> /etc/dnsmasq.conf
     dnsmasq --log-facility=/tmp/dnsmasq.log --log-dhcp
 fi
 

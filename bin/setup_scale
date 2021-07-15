@@ -40,6 +40,7 @@ if [ -n "$1" ]; then
 fi
 
 source bin/stack_functions
+set_faux_mac_prefix
 
 ###########################################################
 

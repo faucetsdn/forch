@@ -8,9 +8,9 @@ Device 04 log count 0
 275
 100
 274
-9a02571e8f01: []
-9a02571e8f02: []
-9a02571e8f03: ['9a02571e8f03:hold:DaqException']
-9a02571e8f05: ['9a02571e8f05:hold:DaqException']
+9a99571e8f01: []
+9a99571e8f02: []
+9a99571e8f03: ['9a99571e8f03:hold:DaqException']
+9a99571e8f05: ['9a99571e8f05:hold:DaqException']
 5 packets transmitted, 5 received, 0% packet loss, XXX
 5 packets transmitted, 0 received, XX errors, 100% packet loss, XXX
