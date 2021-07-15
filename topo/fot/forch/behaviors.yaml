@@ -8,6 +8,7 @@ device_mac_behaviors:
   "9a:02:57:1e:8f:03":
     segment: INFRA
     auto_sequestering: enabled
+    manual_sequestering_timestamp: "2021-07-15T18:31:12"
   "9a:02:57:1e:8f:04":
     segment: INFRA
   "9a:02:57:1e:8f:05":
