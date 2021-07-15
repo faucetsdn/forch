@@ -17,12 +17,13 @@ for option in $*; do
 done
 
 IFACE=faux-eth0
-FAUX_MAC_PREFIX="${options[faux-mac-prefix]}"
+FAUX_MAC_PREFIX="${options['faux-mac-prefix']}"
 PREFIX=$(($FAUX_NUM/256 + 1))
 SUFFIX=$(($FAUX_NUM%256))
 IPADDR=192.168.$PREFIX.$SUFFIX
 GATEWAY=192.168.1.0
 
+echo $FAUX_MAC_PREFIX
 while ! ip link show $IFACE; do
     sleep 2
 done
@@ -43,7 +44,7 @@ else
     ip route add default via $GATEWAY
 fi
 
-if [ -n "${option[ping]}" ]; then
+if [ -n "${options[ping]}" ]; then
     ping -c 10 $GATEWAY &
 fi
 

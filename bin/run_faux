@@ -28,7 +28,6 @@ if [ $# -gt 0 ] && [ $(($1)) -gt 0 -o "$1" == 0 ]; then
     intf_mac=$FAUX_MAC_PREFIX:$(printf %02x $mac_prefix):$(printf %02x $mac_port_num)
     shift
 fi
-
 FAUX_ARGS="$*"
 
 # Check that image exists so docker doesn't pull down random one from dockerhub
@@ -45,7 +44,7 @@ fi
 
 docker_args="$docker_args -e LOCAL_IF=$realintf -e FAUX_NUM=$port_num"
 
-cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS faux-mac-prefix=$FAUX_MAC_PREFIX)
+cid=$(docker run -d --privileged --name $CONTAINER --hostname $CONTAINER $net_opt $docker_args $image ./start_faux $FAUX_ARGS "faux-mac-prefix=$FAUX_MAC_PREFIX" )
 pid=$(docker inspect --format="{{ .State.Pid }}" $cid)
 
 intf=faux$postfix

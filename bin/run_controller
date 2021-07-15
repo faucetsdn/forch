@@ -116,7 +116,7 @@ if [ -n "$gauge_prom_pt" ]; then
 fi
 
 forch_port="-p 500$faucet_id:9019"
-docker_envs="--env RUN_MODE=$run_mode"
+docker_envs="--env RUN_MODE=$run_mode --env CLEAN_MAC_PREFIX=$CLEAN_MAC_PREFIX"
 
 if [[ -n $vxlan ]]; then
     # Extract the local src IP address that can be used as return address.
@@ -151,10 +151,6 @@ if [[ -z $vxlan ]]; then
     sudo ip link set $tap_intf_name up
     docker exec $CONTAINER ip addr add 192.168.2.$faucet_id dev data0
     docker exec $CONTAINER ip link set data0 up
-fi
-
-if [ $CLEAN_MAC_PREFIX != "$DEFAULT_CLEAN_MAC_PREFIX" ]; then
-    docker exec $CONTAINER /root/bin/rename_site_config $CLEAN_MAC_PREFIX
 fi
 
 echo Container $CONTAINER started as $cid

@@ -83,6 +83,10 @@ else
     ifconfig data0 up
 fi
 
+if [ -n "$CLEAN_MAC_PREFIX" ]; then
+    bin/rename_site_config $CLEAN_MAC_PREFIX
+fi
+
 echo Forch config
 cat $FORCH_CONFIG
 
