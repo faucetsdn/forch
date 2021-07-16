@@ -116,7 +116,7 @@ if [ -n "$gauge_prom_pt" ]; then
 fi
 
 forch_port="-p 500$faucet_id:9019"
-docker_envs="--env RUN_MODE=$run_mode"
+docker_envs="--env RUN_MODE=$run_mode --env CLEAN_MAC_PREFIX=$CLEAN_MAC_PREFIX"
 
 if [[ -n $vxlan ]]; then
     # Extract the local src IP address that can be used as return address.
