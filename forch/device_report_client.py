@@ -142,3 +142,9 @@ class DeviceReportClient(DeviceStateReporter):
         with self._lock:
             self._mac_assigned_vlan_map[mac] = vlan
             self._process_session_ready(mac)
+
+    def process_device_vlan_assign(self, mac, vlan):
+        """Process faucet device vlan assignment"""
+        with self._lock:
+            self._mac_device_vlan_map[mac] = vlan
+            self._process_session_ready(mac)

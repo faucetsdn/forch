@@ -4,6 +4,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest.mock import create_autospec
 import yaml
 
 from forch.faucetizer import DeviceStateManager, Faucetizer
@@ -346,6 +347,7 @@ class PortsStateManagerTestBase(UnitTestBase):
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
             orch_config=orch_config)
+        self._port_state_manager._logger = create_autospec(self._port_state_manager._logger)
 
         self._received_device_placements = []
         self._received_device_behaviors = []

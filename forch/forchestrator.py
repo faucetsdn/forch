@@ -1,5 +1,6 @@
 """Orchestrator component for controlling a Faucet SDN"""
 
+# pylint: disable=too-many-lines,too-many-public-methods
 from datetime import datetime
 import functools
 import os
@@ -26,7 +27,7 @@ from forch.local_state_collector import LocalStateCollector
 from forch.port_state_manager import PortStateManager
 from forch.varz_state_collector import VarzStateCollector
 from forch.utils import (
-    get_logger, proto_dict, yaml_proto, FaucetEventOrderError, MetricsFetchingError)
+    get_logger, proto_dict, yaml_content_proto, FaucetEventOrderError, MetricsFetchingError)
 
 from forch.__version__ import __version__
 
@@ -273,16 +274,32 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not placement_file_name:
             return
         placement_file_path = os.path.join(self._forch_config_dir, placement_file_name)
-        self._reload_static_device_placement(placement_file_path)
+        with open(placement_file_path, 'r') as fd:
+            content = fd.read()
+            self._reload_static_device_placement(placement_file_path, content)
         self._config_file_watcher.register_file_callback(
             placement_file_path, self._reload_static_device_placement)
 
-    def _reload_static_device_placement(self, file_path):
-        if self._faucetizer:
-            self._faucetizer.clear_static_placements()
-        devices_state = yaml_proto(file_path, DevicesState)
-        for eth_src, device_placement in devices_state.device_mac_placements.items():
+    def _reload_static_device_placement(self, file_path, new, current=None):
+        new_mac_placements = yaml_content_proto(new, DevicesState).device_mac_placements
+        current_macs = set()
+        if current:
+            current_mac_placements = yaml_content_proto(current, DevicesState).device_mac_placements
+            current_macs = set(current_mac_placements)
+        for eth_src, device_placement in new_mac_placements.items():
+            if eth_src in current_macs:
+                current_macs.remove(eth_src)
+                current_placement = current_mac_placements[current_macs]
+                if current_placement.SerializeToString() == device_placement.SerializeToString():
+                    continue
+            if self._faucetizer:
+                self._faucetizer.clear_static_placement(eth_src)
             self._process_device_placement(eth_src, device_placement, static=True)
+
+        # Remove macs that're deleted
+        if self._faucetizer:
+            for mac in current_macs:
+                self._faucetizer.clear_static_placement(mac)
 
     def _process_static_device_behavior(self):
         if self._should_ignore_static_behavior:
@@ -292,23 +309,34 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not behaviors_file_name:
             return
         behaviors_file_path = os.path.join(self._forch_config_dir, behaviors_file_name)
-        self._reload_static_device_behavior(behaviors_file_path)
+        with open(behaviors_file_path, 'r') as fd:
+            content = fd.read()
+            self._reload_static_device_behavior(behaviors_file_path, content)
         self._config_file_watcher.register_file_callback(
             behaviors_file_path, self._reload_static_device_behavior)
 
-    def _reload_static_device_behavior(self, file_path):
-        self._port_state_manager.clear_static_device_behaviors()
-
+    def _reload_static_device_behavior(self, file_path, new, current=None):
         try:
             self._logger.info('Reading static device behavior file: %s', file_path)
-            devices_state = yaml_proto(file_path, DevicesState)
+            mac_hehaviors = yaml_content_proto(new, DevicesState).device_mac_behaviors
         except Exception as error:
             msg = f'All auth was disabled: could not load static behavior file {file_path}'
             self._logger.error('%s: %s', msg, error)
+            self._port_state_manager.clear_static_device_behaviors()
             with self._states_lock:
                 self._forch_config_errors[STATIC_BEHAVIORAL_FILE] = msg
                 self._should_ignore_auth_result = True
             return
+
+        current_macs = set()
+        if current:
+            try:
+                current_mac_hehaviors = yaml_content_proto(current,
+                    DevicesState).device_mac_behaviors
+                current_macs = set(current_mac_hehaviors)
+            except Exception:
+                # Ignore any exceptions with the last content
+                pass
 
         with self._states_lock:
             self._forch_config_errors.pop(STATIC_BEHAVIORAL_FILE, None)
@@ -316,8 +344,16 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
 
         self._logger.info('Authentication resumed')
 
-        for mac, device_behavior in devices_state.device_mac_behaviors.items():
+        for mac, device_behavior in mac_hehaviors.items():
+            if mac in current_macs:
+                current_macs.remove(mac)
+                current_behavior = current_mac_hehaviors[mac]
+                if current_behavior.SerializeToString() == device_behavior.SerializeToString():
+                    continue
             self._port_state_manager.handle_static_device_behavior(mac, device_behavior)
+
+        for mac in current_macs:
+            self._port_state_manager.clear_static_device_behavior(mac)
 
     def _handle_device_result(self, device_result):
         return self._port_state_manager.handle_testing_result(device_result)
@@ -329,6 +365,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
     def update_static_vlan_varz(self, mac, vlan):
         if self._metrics:
             self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
+
+    def update_device_testing_vlan(self, mac, vlan):
+        """Updates device testing vlan in device report handler"""
+        if self._device_report_handler:
+            self._device_report_handler.process_device_vlan_assign(mac, vlan)
 
     def _calculate_orchestration_config(self):
         orch_config = self._config.orchestration
@@ -396,6 +437,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             orch_config, self._structural_config_file, self._behavioral_config_file, self,
             sequester_segment)
 
+        callback_adapter = lambda fn: lambda file_path, new, current: fn(file_path)
+
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
 
@@ -405,14 +448,17 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             self._faucetize_scheduler.add_callback(update_write_faucet_config)
         else:
             self._config_file_watcher.register_file_callback(
-                self._structural_config_file, self._faucetizer.reload_structural_config)
+                self._structural_config_file,
+                callback_adapter(self._faucetizer.reload_structural_config))
             if self._gauge_config_file:
                 self._config_file_watcher.register_file_callback(
-                    self._gauge_config_file, self._faucetizer.reload_and_flush_gauge_config)
+                    self._gauge_config_file,
+                    callback_adapter(self._faucetizer.reload_and_flush_gauge_config))
 
         if self._segments_vlans_file:
             self._config_file_watcher.register_file_callback(
-                self._segments_vlans_file, self._faucetizer.reload_segments_to_vlans)
+                self._segments_vlans_file,
+                callback_adapter(self._faucetizer.reload_segments_to_vlans))
 
     def _initialize_gauge_metrics_scheduler(self, interval_sec):
         get_gauge_metrics = (

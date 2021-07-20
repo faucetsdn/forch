@@ -1,19 +1,21 @@
 """Integration test base class for Forch"""
 
+import datetime
 import re
 import time
 import unittest
+from unittest.mock import create_autospec
 import yaml
 
-from integration_base import IntegrationTestBase
+import dateutil.tz
 
+from integration_base import IntegrationTestBase
 from unit_base import FaucetizerTestBase, PortsStateManagerTestBase
 
 from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 
 from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement, DevicesState
-
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 class FotFaucetizerTestCase(FaucetizerTestBase):
@@ -122,9 +124,16 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0A:00:00:00:04': {'switch': 't2sw4', 'port': 4, 'connected': True},
             '00:0b:00:00:00:05': {'switch': 't2sw5', 'port': 5, 'connected': True}
         }
+        scheduled_ts = datetime.datetime.now() + datetime.timedelta(seconds=2)
         static_device_behaviors = {
-            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'auto_sequestering': 'disabled'},
-            '00:0Y:00:00:00:02': {'auto_sequestering': 'disabled'}
+            # not a datetime
+            '00:0x:00:00:00:01': {'segment': 'SEG_A', 'auto_sequestering': 'disabled',
+                                  'scheduled_sequestering_timestamp': 'apple'},
+            # Past datetime. Noop
+            '00:0Y:00:00:00:02': {'auto_sequestering': 'disabled',
+                                  'scheduled_sequestering_timestamp': '2000-01-01T00:00:00'},
+            '00:0B:00:00:00:05': {'auto_sequestering': 'disabled',
+                                  'scheduled_sequestering_timestamp': scheduled_ts.isoformat()}
         }
         authentication_results = {
             '00:0X:00:00:00:01': {'segment': 'SEG_X'},
@@ -133,8 +142,6 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0B:00:00:00:05': {'segment': 'SEG_E'}
         }
         testing_results = [
-            ('00:0X:00:00:00:01', 'failed'),
-            ('00:0y:00:00:00:02', 'passed'),
             ('00:0Z:00:00:00:03', 'failed'),
             ('00:0A:00:00:00:04', 'passed')
         ]
@@ -209,6 +216,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0z:00:00:00:03': self.UNAUTHENTICATED
         })
         self._verify_dva_states(expected_dva_states)
+        # pylint: disable=protected-access
+        self._port_state_manager._logger.error.assert_called_once_with(
+            'Failed to parse scheduled sequestering timestamp: %s.', 'apple')
+        self._port_state_manager._logger.warning.assert_called_once_with(
+            'Ignoring past sequester timestamp %s for device %s.',
+            datetime.datetime(2000, 1, 1, 0, 0, tzinfo=dateutil.tz.tzlocal()),
+            '00:0y:00:00:00:02')
 
     def _learn_devices(self, dynamic_device_placements, expected_device_placements,
                        expected_dva_states):
@@ -241,8 +255,13 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             '00:0y:00:00:00:02': self.UNAUTHENTICATED,
             '00:0z:00:00:00:03': self.SEQUESTERED,
             '00:0a:00:00:00:04': self.SEQUESTERED,
-            '00:0b:00:00:00:05': self.SEQUESTERED
+            '00:0b:00:00:00:05': self.OPERATIONAL
         }
+        self._verify_ports_states(expected_states)
+
+        # Device 00:0b:00:00:00:05 should be sequestered after 2s
+        time.sleep(2)
+        expected_states['00:0b:00:00:00:05'] = self.SEQUESTERED
         self._verify_ports_states(expected_states)
 
         expected_device_behaviors.extend([
@@ -250,6 +269,7 @@ class FotPortStatesTestCase(PortsStateManagerTestBase):
             ('00:0x:00:00:00:01', 'SEG_A', True),
             ('00:0z:00:00:00:03', 'TESTING', False),
             ('00:0a:00:00:00:04', 'TESTING', False),
+            ('00:0b:00:00:00:05', 'SEG_E', False),
             ('00:0b:00:00:00:05', 'TESTING', False)
         ])
         self._verify_received_device_behaviors(expected_device_behaviors)
@@ -367,6 +387,7 @@ class FotPortStatesTestCaseWithStateMachineOverride(FotPortStatesTestCase):
         self._port_state_manager = PortStateManager(
             device_state_manager=self._device_state_manager,
             orch_config=orch_config)
+        self._port_state_manager._logger = create_autospec(self._port_state_manager._logger)
 
         # All devices that were in infracted would be in operational state
         # pylint: disable=invalid-name

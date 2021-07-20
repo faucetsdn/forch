@@ -2,12 +2,20 @@
 
 import hashlib
 import os
+from dataclasses import dataclass
+from typing import Callable
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from forch.utils import get_logger
 
+@dataclass
+class FileData:
+    """Watched file data wrapper"""
+    content: str
+    hash: str
+    callback: Callable
 
 class FileChangeWatcher:
     """Watch file changes in a directory"""
@@ -29,9 +37,8 @@ class FileChangeWatcher:
 
     def register_file_callback(self, file_path, file_change_callback):
         """Register a file handler"""
-        file_data = self._watched_files.setdefault(file_path, {})
-        file_data['hash'] = self._get_file_hash(file_path)
-        file_data['callback'] = file_change_callback
+        content, _ = self._get_file_data(file_path)
+        self._watched_files[file_path] = FileData(content, hash, file_change_callback)
 
     def unregister_file_callback(self, file_path):
         """Unregister the handler for a file"""
@@ -47,22 +54,22 @@ class FileChangeWatcher:
         if not file_data:
             return
 
-        new_hash = self._get_file_hash(file_path)
-        if new_hash == file_data['hash']:
+        new_content, new_hash = self._get_file_data(file_path)
+        if new_hash == file_data.hash:
             return
-        file_data['hash'] = new_hash
 
         self._logger.info('File "%s" changed. Executing callback', file_path)
+        file_data.callback(file_path, new_content, file_data.content)
+        file_data.hash = new_hash
+        file_data.content = new_content
 
-        file_data['callback'](file_path)
-
-    def _get_file_hash(self, file_path):
+    def _get_file_data(self, file_path):
         if not os.path.exists(file_path):
             return None
 
         with open(file_path) as file:
             content = file.read()
-            return hashlib.sha256(content.encode('utf-8')).hexdigest()
+            return content, hashlib.sha256(content.encode('utf-8')).hexdigest()
 
 
 class FileChangeHandler(FileSystemEventHandler):
