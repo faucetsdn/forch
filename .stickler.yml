@@ -11,6 +11,7 @@ linters:
       - 'W1618'
       - 'W1619'
       - 'E1601'
+      - 'E701'
 files:
   ignore:
     - 'forch/proto/*'
