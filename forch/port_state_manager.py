@@ -205,6 +205,7 @@ class PortStateManager:
                     parsed = parsed.replace(tzinfo=local_tz)
                 if parsed >= datetime.now(local_tz):
                     time_diff = parsed - datetime.now(local_tz)
+
                     def handler():
                         self._handle_scheduled_sequstering(mac_lower)
                     timer = threading.Timer(time_diff.seconds, handler)

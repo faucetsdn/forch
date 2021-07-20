@@ -10,6 +10,7 @@ from watchdog.events import FileSystemEventHandler
 
 from forch.utils import get_logger
 
+
 @dataclass
 class FileData:
     """Watched file data wrapper"""

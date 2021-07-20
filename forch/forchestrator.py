@@ -331,8 +331,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         current_macs = set()
         if current:
             try:
-                current_mac_hehaviors = yaml_content_proto(current,
-                    DevicesState).device_mac_behaviors
+                device_states = yaml_content_proto(current, DevicesState)
+                current_mac_hehaviors = device_states.device_mac_behaviors
                 current_macs = set(current_mac_hehaviors)
             except Exception:
                 # Ignore any exceptions with the last content
@@ -437,7 +437,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             orch_config, self._structural_config_file, self._behavioral_config_file, self,
             sequester_segment)
 
-        callback_adapter = lambda fn: lambda file_path, new, current: fn(file_path)
+        def callback_adapter(fn):
+            return lambda file_path, new, current: fn(file_path)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)
