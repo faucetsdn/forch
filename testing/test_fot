@@ -30,11 +30,14 @@ echo `timestamp` DAQ spot checks
 # faux-1: tests passing, moved to operational
 # faux-2: tests failing, moved to infracted
 # faux-3: device removed, testing cancelled
-# faux-4: static behavior, no testing triggered
+# faux-4: static behavior, scheduled testing in 20s
 # faux-5: tests timeout (hold test enabled)
 
 # Test that no-sequester works
 docker exec forch-faux-4 ping -c 10 192.168.1.0
+# Schedule testing for faux-4 in 20s
+timestamp=`python3 -c "import datetime; print((datetime.datetime.now() + datetime.timedelta(seconds=20)).isoformat())"`
+docker exec forch-controller-1 bash -c "sed -i \"s/REPLACE_WITH_TIMESTAMP/$timestamp/\" /etc/forch/behaviors.yaml && touch /etc/forch/behaviors.yaml"
 
 # Ongoing activity faux-5 to keep it learned
 docker exec forch-faux-5 ping -c 1000 192.168.1.0 > /dev/null &
@@ -84,9 +87,6 @@ monitor_daq_log "Target device 9a99571e8f05 test hold running"
 echo `timestamp` stopping forch-faux-3
 docker stop forch-faux-3 # Remove device 3 to generate port-down event.
 
-log_count=$(fgrep "9a:99:57:1e:8f:04" $DAQ_BASE/cmdrun.log | wc -l)
-echo Device 04 log count $log_count | tee -a $TEST_RESULTS
-
 report_vlans
 
 monitor_forch_log "Device 9a:99:57:1e:8f:04 is entering operational state from unauthenticated state"
@@ -104,9 +104,9 @@ else
     expected_timeouts=2
 fi
 
-sequester_timeout=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.log | wc -l)
+sequester_timeouts=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.log | wc -l)
 echo `timestamp` Found $sequester_timeouts and expected $expected_timeouts
-[[ $sequester_timeout == $expected_timeouts ]]
+[[ $sequester_timeouts == $expected_timeouts ]]
 
 cat $DAQ_BASE/result.log | sort | tee -a $TEST_RESULTS
 docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less flaky

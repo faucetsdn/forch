@@ -3,7 +3,7 @@ aab2863d4ab506ff4790df644cfcf8f4f70e97bc  proto/building_schema.proto
 a25e80c06dc7630cf1babf5161feb3e43aa90181  proto/cpn_config.proto
 3f1365cdc6f9268230ee009999e4dba254b33c12  proto/cpn_state.proto
 33f81938e634f1996f1e46b4295ebecfb4b7cb41  proto/dataplane_state.proto
-5a7580e0f5d54013a6df1332429afc5b1b12f117  proto/devices_state.proto
+840a9aa98c6b6f9b23a15cdb05bceca29bf5ccb6  proto/devices_state.proto
 08747ea4b72ca28356b0c299c0849875250c4936  proto/faucet_configuration.proto
 fe58840d1085033761d788e70aef9174472bc6d5  proto/faucet_event.proto
 de40904bfd80b5063478058caecc1ffa0ee6ebe3  proto/forch_configuration.proto

@@ -31,6 +31,8 @@ message DeviceBehavior {
     PortBehavior.Behavior port_behavior = 3;
     PortBehavior.AutoSequestering auto_sequestering = 4;
   }
+  // ISO8601 timestamp string for scheduled sequestering
+  string scheduled_sequestering_timestamp = 6;
 }
 
 message SegmentsToVlans {

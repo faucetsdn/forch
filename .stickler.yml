@@ -1,16 +1,15 @@
 ---
 linters:
   flake8:
+    ignore: E701
     python: 3
     max-line-length: 100
   pep8:
+    ignore: E701
     python: 3
     max-line-length: 100
   py3k:
-    ignore:
-      - 'W1618'
-      - 'W1619'
-      - 'E1601'
+    ignore: W1618, W1619, E1601, E701
 files:
   ignore:
     - 'forch/proto/*'
