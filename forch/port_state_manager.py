@@ -192,28 +192,11 @@ class PortStateManager:
             self._auto_sequester[mac_lower] = auto_sequester
             if device_behavior.segment:
                 self.handle_device_behavior(mac_lower, device_behavior, static=True)
-            sequester_scheduled = self._scheduled_sequester_timer.get(mac_lower)
-            if device_behavior.scheduled_sequestering_timestamp and not sequester_scheduled:
-                try:
-                    parsed = dateutil.parser.parse(device_behavior.scheduled_sequestering_timestamp)
-                except dateutil.parser.ParserError:
-                    self._logger.error("Failed to parse scheduled sequestering timestamp: %s.",
-                                       device_behavior.scheduled_sequestering_timestamp)
-                    return
-                local_tz = dateutil.tz.tzlocal()
-                if not parsed.tzinfo:
-                    parsed = parsed.replace(tzinfo=local_tz)
-                if parsed >= datetime.now(local_tz):
-                    time_diff = parsed - datetime.now(local_tz)
-
-                    def handler():
-                        self._handle_scheduled_sequstering(mac_lower)
-                    timer = threading.Timer(time_diff.seconds, handler)
-                    timer.start()
-                    self._scheduled_sequester_timer[mac_lower] = timer
-                else:
-                    self._logger.warning("Ignoring past sequester timestamp %s for device %s.",
-                                         parsed, mac_lower)
+            scheduled_sequester = self._scheduled_sequester_timer.get(mac_lower)
+            if device_behavior.scheduled_sequestering_timestamp:
+                if scheduled_sequester:
+                    scheduled_sequester.cancel()
+                self._schedule_device_sequester(device_behavior, mac_lower)
 
     def handle_device_behavior(self, mac, device_behavior, static=False):
         """Handle authentication result"""
@@ -241,6 +224,29 @@ class PortStateManager:
         callbacks.operational_state = self._set_port_operational
         callbacks.infracted_state = self._handle_infracted_state
         return callbacks
+
+    def _schedule_device_sequester(self, device_behavior, mac):
+        """Device sequestering may not occur if system is not operational"""
+        try:
+            parsed = dateutil.parser.parse(device_behavior.scheduled_sequestering_timestamp)
+        except dateutil.parser.ParserError:
+            self._logger.error("Failed to parse scheduled sequestering timestamp: %s.",
+                                device_behavior.scheduled_sequestering_timestamp)
+            return
+        local_tz = dateutil.tz.tzlocal()
+        if not parsed.tzinfo:
+            parsed = parsed.replace(tzinfo=local_tz)
+        if parsed >= datetime.now(local_tz):
+            time_diff = parsed - datetime.now(local_tz)
+
+            def handler():
+                self._handle_scheduled_sequstering(mac)
+            timer = threading.Timer(time_diff.seconds, handler)
+            timer.start()
+            self._scheduled_sequester_timer[mac] = timer
+        else:
+            self._logger.warning("Ignoring past sequester timestamp %s for device %s.",
+                                    parsed, mac)
 
     def _handle_learned_device(self, mac, device_placement, static=False):
         old_mac = self._placement_to_mac.get((device_placement.switch, device_placement.port))
@@ -386,12 +392,6 @@ class PortStateManager:
         """Set port to sequester vlan"""
         operational_behavior = (
             self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
-
-        if self._device_state_reporter:
-            assert operational_behavior, f'No operational device behavior available for {mac}'
-            operational_vlan = self._get_vlan_from_segment(operational_behavior.segment)
-            assert operational_vlan, f'No operational vlan available for device {mac}'
-            self._device_state_reporter.process_port_assign(mac, operational_vlan)
 
         device_behavior = DeviceBehavior(
             segment=self._sequester_segment, assigned_segment=operational_behavior.segment)

@@ -137,14 +137,9 @@ class DeviceReportClient(DeviceStateReporter):
             self._dp_mac_map[dp_key] = mac
             self._process_session_ready(mac)
 
-    def process_port_assign(self, mac, vlan):
+    def process_port_assign(self, mac, device_vlan, assigned_vlan):
         """Process faucet port vlan assignment"""
         with self._lock:
-            self._mac_assigned_vlan_map[mac] = vlan
-            self._process_session_ready(mac)
-
-    def process_device_vlan_assign(self, mac, vlan):
-        """Process faucet device vlan assignment"""
-        with self._lock:
-            self._mac_device_vlan_map[mac] = vlan
+            self._mac_device_vlan_map[mac] = device_vlan
+            self._mac_assigned_vlan_map[mac] = assigned_vlan
             self._process_session_ready(mac)

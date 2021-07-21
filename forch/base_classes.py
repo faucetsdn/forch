@@ -31,5 +31,5 @@ class DeviceStateReporter(abc.ABC):
         """Process faucet port learn events"""
 
     @abc.abstractmethod
-    def process_port_assign(self, mac, vlan):
+    def process_port_assign(self, mac, device_vlan, assigned_vlan):
         """Process faucet port vlan assignment"""

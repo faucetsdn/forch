@@ -366,10 +366,10 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if self._metrics:
             self._metrics.update_var('static_mac_vlan', labels=[mac], value=vlan)
 
-    def update_device_testing_vlan(self, mac, vlan):
+    def update_device_testing_vlans(self, mac, device_vlan, assigned_vlan):
         """Updates device testing vlan in device report handler"""
         if self._device_report_handler:
-            self._device_report_handler.process_device_vlan_assign(mac, vlan)
+            self._device_report_handler.process_port_assign(mac, device_vlan, assigned_vlan)
 
     def _calculate_orchestration_config(self):
         orch_config = self._config.orchestration

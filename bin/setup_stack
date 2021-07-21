@@ -158,6 +158,11 @@ if [[ -n $dts ]]; then
         DTS_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $DTS_CID)
         vxlan="vxlan $DTS_IP"
         sudo cp -a controller/site_config inst/forch-dts/
+        if [ "$DEFAULT_CLEAN_MAC_PREFIX" != "$CLEAN_MAC_PREFIX" ]; then
+            for f in `find inst/forch-dts/ -name "$DEFAULT_CLEAN_MAC_PREFIX*"`; do
+                cp -r $f `echo $f | sed -e "s/$DEFAULT_CLEAN_MAC_PREFIX/$CLEAN_MAC_PREFIX/g"`
+            done
+        fi
     else
         vxlan="vxlan $dts"
     fi

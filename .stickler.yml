@@ -3,9 +3,13 @@ linters:
   flake8:
     python: 3
     max-line-length: 100
+    ignore:
+      - 'E701'
   pep8:
     python: 3
     max-line-length: 100
+    ignore:
+      - 'E701'
   py3k:
     ignore:
       - 'W1618'
