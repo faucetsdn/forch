@@ -437,8 +437,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
             orch_config, self._structural_config_file, self._behavioral_config_file, self,
             sequester_segment)
 
-        def callback_adapter(fn):
-            return lambda file_path, new, current: fn(file_path)
+        def callback_adapter(func):
+            return lambda file_path, new, current: func(file_path)
 
         if orch_config.faucetize_interval_sec:
             self._faucetize_scheduler = HeartbeatScheduler(orch_config.faucetize_interval_sec)

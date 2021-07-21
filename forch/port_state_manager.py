@@ -231,7 +231,7 @@ class PortStateManager:
             parsed = dateutil.parser.parse(device_behavior.scheduled_sequestering_timestamp)
         except dateutil.parser.ParserError:
             self._logger.error("Failed to parse scheduled sequestering timestamp: %s.",
-                                device_behavior.scheduled_sequestering_timestamp)
+                               device_behavior.scheduled_sequestering_timestamp)
             return
         local_tz = dateutil.tz.tzlocal()
         if not parsed.tzinfo:
@@ -246,7 +246,7 @@ class PortStateManager:
             self._scheduled_sequester_timer[mac] = timer
         else:
             self._logger.warning("Ignoring past sequester timestamp %s for device %s.",
-                                    parsed, mac)
+                                 parsed, mac)
 
     def _handle_learned_device(self, mac, device_placement, static=False):
         old_mac = self._placement_to_mac.get((device_placement.switch, device_placement.port))
