@@ -367,7 +367,8 @@ class Faucetizer(DeviceStateManager):
                 if all((device_vlan != old_device_vlan, dva_state == DVAState.sequestered,
                         self._orchestration_manager)):
                     self._orchestration_manager.update_device_testing_vlans(mac,
-                        device_vlan, assigned_vlan)
+                                                                            device_vlan,
+                                                                            assigned_vlan)
 
         self._finalize_host_ports_config(
             behavioral_faucet_config, new_testing_device_vlans, list(assigned_vlans))
