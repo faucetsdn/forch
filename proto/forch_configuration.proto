@@ -152,6 +152,9 @@ message OrchestrationConfig {
     // target server address of results service.
     string service_address = 6;
 
+    // local ip address for data-plane tunnels.
+    string tunnel_ip = 10;
+
     // timeout for remote testing service, negative to disable.
     int32 sequester_timeout_sec = 7;
 

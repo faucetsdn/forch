@@ -1,27 +1,19 @@
 """Integration test base class for Forch"""
 
 import re
-import threading
 import time
 import unittest
 import yaml
-import grpc
 
 from integration_base import IntegrationTestBase
 
-from unit_base import (
-    DeviceReportServerTestBase, DeviceReportServicerTestBase, FaucetizerTestBase,
-    PortsStateManagerTestBase
-)
-from forch.port_state_manager import PortStateManager
-from forch.utils import dict_proto, proto_dict
+from unit_base import FaucetizerTestBase, PortsStateManagerTestBase
 
-from forch.proto.devices_state_pb2 import (
-    DeviceBehavior, DevicePlacement,
-    DevicesState, Device, DevicePortEvent
-)
-from forch.proto.shared_constants_pb2 import Empty, PortBehavior
-from forch.proto.grpc.device_report_pb2 import DESCRIPTOR
+from forch.port_state_manager import PortStateManager
+from forch.utils import dict_proto
+
+from forch.proto.devices_state_pb2 import DeviceBehavior, DevicePlacement, DevicesState
+
 from forch.proto.forch_configuration_pb2 import OrchestrationConfig
 
 class FotFaucetizerTestCase(FaucetizerTestBase):
@@ -88,148 +80,6 @@ def encapsulate_mac_port_behavior(mac, port_behavior):
         }
     }
     return dict_proto(devices_state_map, DevicesState)
-
-
-class FotDeviceReportServerTestCase(DeviceReportServerTestBase):
-    """Device report server test case"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._lock = threading.Lock()
-        self._received_mac_port_behaviors = []
-
-    def _process_devices_state(self, devices_state):
-        devices_state_map = proto_dict(devices_state, including_default_value_fields=True)
-        with self._lock:
-            for mac, device_behavior in devices_state_map['device_mac_behaviors'].items():
-                self._received_mac_port_behaviors.append((mac, device_behavior['port_behavior']))
-
-    def test_receiving_devices_states(self):
-        """Test behavior of the server when client sends devices states"""
-        expected_mac_port_behaviors = [
-            ('00:0X:00:00:00:01', 'unknown'),
-            ('00:0Y:00:00:00:02', 'passed'),
-            ('00:0Z:00:00:00:03', 'cleared'),
-            ('00:0A:00:00:00:04', 'passed'),
-            ('00:0B:00:00:00:05', 'unknown')
-        ]
-
-        future_responses = []
-        for mac_port_behavior in expected_mac_port_behaviors:
-            print(f'Sending devices state: {mac_port_behavior}')
-            future_response = self._client.ReportDevicesState.future(
-                encapsulate_mac_port_behavior(*mac_port_behavior))
-            future_responses.append(future_response)
-
-        for future_response in future_responses:
-            self.assertEqual(type(future_response.result()), Empty)
-
-        sorted_received_behaviors = sorted(self._received_mac_port_behaviors)
-        sorted_expected_behaviors = sorted(expected_mac_port_behaviors)
-
-        self.assertEqual(sorted_received_behaviors, sorted_expected_behaviors)
-
-
-class FotDeviceReportServicerTestCase(DeviceReportServicerTestBase):
-    """Device report servicer test case (With mock grpc services)"""
-
-    def test_requesting_empty_port_events(self):
-        """Test behavior of the servicer with no port events."""
-
-        stream = self._setup_port_state_server('00:0X:00:00:00:01')
-
-        mac_port_behavior = encapsulate_mac_port_behavior('00:0X:00:00:00:01', 'passed')
-        print(f'Sending devices state: {mac_port_behavior}')
-        self._test_server.invoke_unary_unary(
-            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['ReportDevicesState'],
-            invocation_metadata={},
-            request=mac_port_behavior, timeout=1
-        )
-
-        _, code, _ = stream.termination()
-        self.assertEqual(code, grpc.StatusCode.OK)
-
-    def _setup_port_state_server(self, mac_addr):
-        device = Device(mac=mac_addr)
-        return self._test_server.invoke_unary_stream(
-            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['GetPortState'],
-            invocation_metadata={},
-            request=device, timeout=1
-        )
-
-    def _send_port_change_event(self, kind, args):
-        dp_name, port, mac, state, vlan, assigned = args
-        if kind == 'port':
-            self._servicer.process_port_state(dp_name, port, state)
-        elif kind == 'lern':
-            self._servicer.process_port_learn(dp_name, port, mac, vlan)
-        elif kind == 'asgn':
-            self._servicer.process_port_assign(mac, assigned)
-        elif kind == 'none':
-            pass
-        else:
-            assert False, 'unknown event kind %s' % kind
-
-    def _check_port_change_event(self, response, expected):
-        try:
-            _, _, _, state, vlan, assigned = expected
-            port_state = PortBehavior.PortState.up if state else PortBehavior.PortState.down
-            self.assertEqual(response.state, port_state)
-            self.assertEqual(response.device_vlan, vlan)
-            self.assertEqual(response.assigned_vlan, assigned)
-        except Exception as e:
-            print('comparing', response, expected)
-            raise e
-
-    def test_requesting_port_events(self):
-        """Test behavior of the servicer with port events."""
-
-        mac_addr = "00:0X:00:00:00:01"
-        stream = self._setup_port_state_server(mac_addr)
-
-        # Prevent initialization race condition.
-        time.sleep(2)
-
-        port_changes = [
-            ('none', ('name', '1', mac_addr, True, 101, 0)),
-            ('port', ('name', '1', mac_addr, False, 0, 0)),
-            ('lern', ('name', '1', mac_addr, True, 102, 0)),
-            ('asgn', ('name', '1', mac_addr, True, 102, 103)),
-            ('port', ('name', '1', mac_addr, True, 102, 103)),
-            ('port', ('name', '2', None, True, 103, 0)),
-            ('port', ('name', '5', None, False, 103, 0)),
-            ('port', ('name', '1', mac_addr, False, 0, 0)),
-            ('port', ('name', '1', mac_addr, True, 0, 0)),
-        ]
-        for port_change in port_changes:
-            self._send_port_change_event(port_change[0], port_change[1])
-
-        # For some reason this is required to cause the streaming RPC to terminate cleanly.
-        self._report_device_state()
-
-        expected_port_changes = filter(lambda changes: changes[1][1] == '1', port_changes)
-        count = 0
-        for expected in expected_port_changes:
-            response = stream.take_response()
-            self.assertEqual(type(response), DevicePortEvent)
-            self._check_port_change_event(response, expected[1])
-            count += 1
-        self.assertEqual(count, 7)
-
-        stream.termination()
-
-    def _report_device_state(self):
-        """Test updating device state"""
-        mac_addr = "00:0X:00:00:00:01"
-        mac_port_behavior = encapsulate_mac_port_behavior(mac_addr, 'passed')
-        print(f'Sending devices state: {mac_port_behavior}')
-        stream = self._test_server.invoke_unary_unary(
-            DESCRIPTOR.services_by_name['DeviceReport'].methods_by_name['ReportDevicesState'],
-            invocation_metadata={},
-            request=mac_port_behavior, timeout=1
-        )
-        _, _, code, _ = stream.termination()
-        self.assertEqual(code, grpc.StatusCode.OK)
 
 
 class FotPortStatesTestCase(PortsStateManagerTestBase):
@@ -606,6 +456,24 @@ class FotContainerTest(IntegrationTestBase):
             timeout=60, docker_host='forch-controller-1')
 
         return device_tcpdump_text, vlan_tcpdump_text
+
+    def test_mirroring(self):
+        """Test packet mirroring for FOT setup"""
+        lldp_eth_type = "0x88cc"
+        lacp_eth_type = "0x8809"
+        faux_interface = "faux-eth0"
+        timeout = 60
+        eth_type_filter = "ether proto "
+        mirror_host = "forch-faux-121"
+        lldp_tcpdump_text = self.tcpdump_helper(
+            faux_interface, eth_type_filter + lldp_eth_type, packets=2,
+            timeout=timeout, docker_host=mirror_host)
+        self.assertTrue(lldp_eth_type in lldp_tcpdump_text)
+        lacp_tcpdump_text = self.tcpdump_helper(
+            faux_interface, eth_type_filter + lacp_eth_type, packets=2,
+            timeout=timeout, docker_host=mirror_host)
+        self.assertTrue(lacp_eth_type in lacp_tcpdump_text)
+
 
     def test_dhcp_reflection(self):
         """Test to check DHCP reflection when on test VLAN"""

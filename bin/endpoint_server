@@ -1,0 +1,19 @@
+#!/bin/bash
+
+oldpid=$(sudo netstat -nlpa | fgrep 50111 | awk '{print $7}')
+
+if [[ -n $oldpid && $oldpid != '-' ]]; then
+  pid=${oldpid%/*}
+  echo Kill older server pid $pid
+  kill $pid
+fi
+
+if [ -d venv ]; then
+    echo Activating venv...
+    source venv/bin/activate
+fi
+
+echo endpoint server ip configuraiton
+ip addr show docker0
+
+PYTHONPATH=$PWD:$PWD/daq python3 forch/endpoint_handler.py
