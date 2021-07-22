@@ -18,6 +18,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
@@ -39,6 +41,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
@@ -63,16 +67,22 @@ jobs:
           bin/setup_remote faucet
           bin/setup_remote daq
       - name: build docker
-        run: bin/retry_cmd bin/build_docker controller
+        run: |
+          bin/retry_cmd bin/build_docker controller
+          bin/build_dts
       - name: run python tests
         run: testing/python_test test_fot
       - name: setup fot stack
-        run: bin/setup_stack devices 5 skip-conn-check dhcp fot
+        run: bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot
       - name: run fot integration tests
         run: timeout 20m bin/run_test_set fot
       - name: setup vxlan stack
-        run: bin/setup_stack devices 5 skip-conn-check dhcp fot vxlan
+        run: bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot vxlan
       - name: run vxlan integration tests
+        run: timeout 20m bin/run_test_set fot
+      - name: setup dts
+        run: bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot dts localhost
+      - name: run dts integration tests
         run: timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
@@ -80,7 +90,7 @@ jobs:
           echo %%%%%%%%%%%%% Controller startup logs
           docker logs forch-controller-1
           echo %%%%%%%%%%%%% DAQ startup logs
-          cat inst/forch-controller-1/daq/inst/cmdrun.log
+          cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% Endpoint logs
@@ -98,6 +108,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
@@ -120,6 +132,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: compile ovs
         run: bin/compile_ovs
@@ -145,6 +159,8 @@ jobs:
       - name: setup base
         run: bin/setup_base
       - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker

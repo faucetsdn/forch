@@ -183,6 +183,9 @@ class Faucetizer(DeviceStateManager):
         return base_file_name + INCLUDE_FILE_SUFFIX + ext
 
     def _validate_and_initialize_config(self):
+        if self._config.unauthenticated_vlan:
+            self._logger.info('Unauthenticated vlan is %s', self._config.unauthenticated_vlan)
+
         if self._sequester_segment:
             starting_vlan = self._config.sequester_config.vlan_start
             ending_vlan = self._config.sequester_config.vlan_end
@@ -287,6 +290,7 @@ class Faucetizer(DeviceStateManager):
 
         if dva_state:
             self._update_vlan_state(device_placement.switch, device_placement.port, dva_state)
+        return dva_state
 
     def _update_vlans_config(self, behavioral_faucet_config):
         vlans_config = behavioral_faucet_config.setdefault('vlans', {})
@@ -359,7 +363,12 @@ class Faucetizer(DeviceStateManager):
                 if assigned_vlan:
                     assigned_vlans.add(assigned_vlan)
 
-                self._update_device_dva_state(mac, device_placement, device_behavior)
+                dva_state = self._update_device_dva_state(mac, device_placement, device_behavior)
+                if all((device_vlan != old_device_vlan, dva_state == DVAState.sequestered,
+                        self._orchestration_manager)):
+                    self._orchestration_manager.update_device_testing_vlans(mac,
+                                                                            device_vlan,
+                                                                            assigned_vlan)
 
         self._finalize_host_ports_config(
             behavioral_faucet_config, new_testing_device_vlans, list(assigned_vlans))
@@ -434,13 +443,9 @@ class Faucetizer(DeviceStateManager):
 
         self.flush_behavioral_config()
 
-    def clear_static_placements(self):
-        """Remove all static placements in memory"""
-        self._static_devices.ClearField('device_mac_placements')
-
-    def clear_static_behaviors(self):
-        """Remove all static behaviors in memory"""
-        self._static_devices.ClearField('device_mac_behaviors')
+    def clear_static_placement(self, mac):
+        """Remove static placement for devices with mac if exists"""
+        self._static_devices.device_mac_placements.pop(mac.lower(), None)
 
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-ROOT=$(dirname $0)/..
+ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
 local=
 devices=
@@ -9,6 +9,7 @@ skip_conn_check=
 no_clean=
 faux_dhcp=
 fot=
+dts=
 vxlan=
 no_test=
 remote=
@@ -23,6 +24,11 @@ fi
 
 if [ "$1" == "devices" ]; then
     devices=$2
+    shift 2
+fi
+
+if [ "$1" == "faux-mac-prefix" ]; then
+    export FAUX_MAC_PREFIX="$2"
     shift 2
 fi
 
@@ -64,8 +70,14 @@ if [ "$1" == "fot" ]; then
 fi
 
 if [ "$1" == "vxlan" ]; then
-    vxlan=vxlan
+    vxlan="vxlan localhost"
     shift
+fi
+
+if [ "$1" == "dts" ]; then
+    # Argument is target address of dts server
+    dts="$2"
+    shift 2
 fi
 
 if [ "$1" == "dumptcp" ]; then
@@ -82,6 +94,7 @@ fi
 
 rm -rf tcpdump # Clean out directory
 source bin/stack_functions
+set_faux_mac_prefix
 
 ###########################################################
 
@@ -135,6 +148,27 @@ docker kill forch-faucet-corp || true
 sudo modprobe bonding
 bin/run_faucet $local corp 6683
 
+if [[ -n $dts ]]; then
+    if [[ $dts == localhost ]]; then
+        docker rm -f forch-dts || true
+        echo Running local DTS container...
+        VOLUMES="-v $ROOT/inst/forch-dts:/root/inst"
+        VOLUMES+=" -v $ROOT/daq/dts:/daq-config/"
+        DTS_CID=$(docker run -d --privileged --name forch-dts $VOLUMES forch/dts)
+        DTS_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $DTS_CID)
+        vxlan="vxlan $DTS_IP"
+        sudo cp -a controller/site_config inst/forch-dts/
+        if [ "$DEFAULT_CLEAN_MAC_PREFIX" != "$CLEAN_MAC_PREFIX" ]; then
+            for f in `find inst/forch-dts/ -name "$DEFAULT_CLEAN_MAC_PREFIX*"`; do
+                cp -r $f `echo $f | sed -e "s/$DEFAULT_CLEAN_MAC_PREFIX/$CLEAN_MAC_PREFIX/g"`
+            done
+        fi
+    else
+        vxlan="vxlan $dts"
+    fi
+    echo Targeting DTS container at $vxlan
+fi
+
 finst=1
 if [ -z "$remote" ]; then
     if [ -n "$fot" ]; then
@@ -150,6 +184,9 @@ if [ -z "$remote" ]; then
 
     cp topo/$mode/forch/* $container_inst/forch/
     cp topo/$mode/faucet/* $container_inst/faucet/
+
+    find $container_inst/ -name *.yaml -exec sed -i "s/$DEFAULT_MAC_PREFIX/$FAUX_MAC_PREFIX/" {} \;
+
     docker kill $container || true
 
     if [ -n "$fot" ]; then
@@ -169,6 +206,10 @@ add_faux corp 1 0 dnsmasq
 if [ -n "$vxlan" ]; then
     echo Configuring for vxlan and endpoint handler server
     add_vxlan t1sw1 4
+    if [[ -z $skip_conn_check ]]; then
+        echo Connection check incompatible with vxlan: will wait forever.
+        false
+    fi
     bin/endpoint_server 2> inst/endpoint.log &
 elif [ -z "$remote" ]; then
     echo Enabling tap interface cntrl_tap_1
@@ -182,10 +223,6 @@ add_faux t2sw1 1 1 $faux_dhcp
 add_faux t2sw2 1 2 $faux_dhcp http
 if [ -n "$fot" ]; then
     add_faux t2sw3 1 3 ping
-    echo Connecting mirror hosts...
-    # 121 and 122 refer to the mirror faux devices 1 and 2 connected to port 12
-    add_faux t1sw1 12 121
-    add_faux t1sw2 12 122
 else
     add_faux t2sw3 1 3
 fi

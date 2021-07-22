@@ -119,6 +119,23 @@ function add_oeth {
     sudo ovs-vsctl add-port $br_a $iface_a -- set interface $iface_a ofport_request=$pt_a
 }
 
+function set_faux_mac_prefix {
+    export DEFAULT_MAC_PREFIX="9a:02:57:1e"
+    export DEFAULT_CLEAN_MAC_PREFIX="9a02571e"
+    if [ -z $FAUX_MAC_PREFIX ]; then
+        FAUX_MAC_PREFIX=$DEFAULT_MAC_PREFIX
+    fi
+
+    correct_mac_prefix=`echo $FAUX_MAC_PREFIX  | egrep '([0-9a-zA-Z]{2}:){3}[0-9a-zA-Z]{2}'`
+    if [ -z $correct_mac_prefix ]; then
+        echo "$FAUX_MAC_PREFIX is an invalid mac prefix. FAUX_MAC_PREFIX should be in the format 'XX:XX:XX:XX'"
+        false
+    fi
+    CLEAN_MAC_PREFIX=`echo $FAUX_MAC_PREFIX | sed 's/://g'`
+    export FAUX_MAC_PREFIX=$FAUX_MAC_PREFIX
+    export CLEAN_MAC_PREFIX=$CLEAN_MAC_PREFIX
+}
+
 function add_faux {
     switch=$1
     port=$2
@@ -535,7 +552,7 @@ function monitor_log {
 
 function monitor_daq_log {
     expected=$1
-    daqlog=$DAQ_BASE/inst/cmdrun.log
+    daqlog=$DAQ_BASE/cmdrun.log
     monitor_log "$expected" "$daqlog"
 }
 

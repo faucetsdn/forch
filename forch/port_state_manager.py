@@ -2,6 +2,8 @@
 
 import threading
 from datetime import datetime, timedelta
+import dateutil.parser
+import dateutil.tz
 
 from forch.utils import get_logger
 
@@ -49,7 +51,8 @@ class PortStateMachine:
         OPERATIONAL: {
             PortBehavior.Behavior: {
                 PortBehavior.Behavior.cleared: OPERATIONAL,
-                PortBehavior.Behavior.deauthenticated: UNAUTHENTICATED
+                PortBehavior.Behavior.deauthenticated: UNAUTHENTICATED,
+                PortBehavior.Behavior.sequestered: SEQUESTERED
             }
         },
     }
@@ -153,6 +156,7 @@ class PortStateManager:
         self._device_state_reporter = device_state_reporter
         self._placement_to_mac = {}
         self._sequester_timer = {}
+        self._scheduled_sequester_timer = {}
         self._lock = threading.RLock()
         self._logger = get_logger('portmgr')
         self._state_callbacks = self._build_state_callbacks()
@@ -188,6 +192,11 @@ class PortStateManager:
             self._auto_sequester[mac_lower] = auto_sequester
             if device_behavior.segment:
                 self.handle_device_behavior(mac_lower, device_behavior, static=True)
+            scheduled_sequester = self._scheduled_sequester_timer.get(mac_lower)
+            if device_behavior.scheduled_sequestering_timestamp:
+                if scheduled_sequester:
+                    scheduled_sequester.cancel()
+                self._schedule_device_sequester(device_behavior, mac_lower)
 
     def handle_device_behavior(self, mac, device_behavior, static=False):
         """Handle authentication result"""
@@ -216,6 +225,29 @@ class PortStateManager:
         callbacks.infracted_state = self._handle_infracted_state
         return callbacks
 
+    def _schedule_device_sequester(self, device_behavior, mac):
+        """Device sequestering may not occur if system is not operational"""
+        try:
+            parsed = dateutil.parser.parse(device_behavior.scheduled_sequestering_timestamp)
+        except dateutil.parser.ParserError:
+            self._logger.error("Failed to parse scheduled sequestering timestamp: %s.",
+                               device_behavior.scheduled_sequestering_timestamp)
+            return
+        local_tz = dateutil.tz.tzlocal()
+        if not parsed.tzinfo:
+            parsed = parsed.replace(tzinfo=local_tz)
+        if parsed >= datetime.now(local_tz):
+            time_diff = parsed - datetime.now(local_tz)
+
+            def handler():
+                self._handle_scheduled_sequstering(mac)
+            timer = threading.Timer(time_diff.seconds, handler)
+            timer.start()
+            self._scheduled_sequester_timer[mac] = timer
+        else:
+            self._logger.warning("Ignoring past sequester timestamp %s for device %s.",
+                                 parsed, mac)
+
     def _handle_learned_device(self, mac, device_placement, static=False):
         old_mac = self._placement_to_mac.get((device_placement.switch, device_placement.port))
         stale_mac = old_mac if old_mac and old_mac != mac else None
@@ -232,6 +264,7 @@ class PortStateManager:
         self._process_device_placement(mac, device_placement, static=static)
 
         if mac not in self._state_machines:
+            self._logger.info('Adding state machine %s', mac)
             self._state_machines[mac] = PortStateMachine(
                 mac, PortStateMachine.UNAUTHENTICATED, self._state_callbacks,
                 state_overwrites=self._state_overwrites)
@@ -253,6 +286,7 @@ class PortStateManager:
 
         self._process_device_placement(eth_src, device_placement, static=False)
         if eth_src in self._state_machines:
+            self._logger.info('Removing state machine %s', eth_src)
             self._state_machines.pop(eth_src)
 
         self._update_device_state_varz(eth_src, DVAState.initial)
@@ -338,6 +372,13 @@ class PortStateManager:
     def _handle_unauthenticated_state(self, mac):
         self._update_device_state_varz(mac, DVAState.unauthenticated)
 
+    def _handle_scheduled_sequstering(self, mac):
+        if mac in self._scheduled_sequester_timer:
+            del self._scheduled_sequester_timer[mac]
+        self._logger.info('Handle scheduled sequester for device %s.', mac)
+        if mac in self._state_machines:
+            self._state_machines[mac].handle_port_behavior(PortBehavior.sequestered)
+
     def _handle_sequestering_timeout(self, mac):
         if mac in self._sequester_timer:
             del self._sequester_timer[mac]
@@ -351,12 +392,6 @@ class PortStateManager:
         """Set port to sequester vlan"""
         operational_behavior = (
             self._static_device_behaviors.get(mac) or self._dynamic_device_behaviors.get(mac))
-
-        if self._device_state_reporter:
-            assert operational_behavior, f'No operational device behavior available for {mac}'
-            operational_vlan = self._get_vlan_from_segment(operational_behavior.segment)
-            assert operational_vlan, f'No operational vlan available for device {mac}'
-            self._device_state_reporter.process_port_assign(mac, operational_vlan)
 
         device_behavior = DeviceBehavior(
             segment=self._sequester_segment, assigned_segment=operational_behavior.segment)
@@ -391,8 +426,16 @@ class PortStateManager:
         with self._lock:
             macs = list(self._static_device_behaviors.keys())
             for mac in macs:
-                self._update_static_vlan_varz(mac, INVALID_VLAN)
-                self._handle_deauthenticated_device(mac, static=True)
+                self.clear_static_device_behavior(mac)
+
+    def clear_static_device_behavior(self, mac):
+        """Remove static device behaviors for mac"""
+        mac = mac.lower()
+        if mac not in self._static_device_behaviors:
+            return
+        with self._lock:
+            self._update_static_vlan_varz(mac, INVALID_VLAN)
+            self._handle_deauthenticated_device(mac, static=True)
 
     def _process_device_placement(self, mac, device_placement, static=False):
         if self._device_state_manager:

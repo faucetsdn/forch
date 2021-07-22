@@ -69,10 +69,11 @@ sudo /usr/share/openvswitch/scripts/ovs-ctl start
 
 if [[ -n $VXLAN_IP ]]; then
     # VXLAN_IP is where the switching fabric lives (outside of controller), including endpoint handler.
+    # DTS_IP is the address of the testing server (or localhost if to run locally).
     # docker_ip is the IP address of this container, reachable from the outside address.
-    echo Configuring for vxlan ip $VXLAN_IP, server at $docker_ip
+    echo Configuring for vxlan ip $VXLAN_IP, dts ${DTS_IP?}, endpoint $docker_ip
     yq -i -y .orchestration.sequester_config.tunnel_ip=\"$VXLAN_IP\" $FORCH_CONFIG
-    yq -i -y .orchestration.sequester_config.service_address=\"$docker_ip\" $FORCH_CONFIG
+    yq -i -y .orchestration.sequester_config.service_address=\"$DTS_IP\" $FORCH_CONFIG
     yq -i -y .switch_setup.endpoint.ip=\"$docker_ip\" $DAQ_CONFIG
 else
     echo Waiting for data0...
@@ -82,18 +83,24 @@ else
     ifconfig data0 up
 fi
 
+if [ -n "$CLEAN_MAC_PREFIX" ]; then
+    bin/rename_site_config $CLEAN_MAC_PREFIX
+fi
+
 echo Forch config
 cat $FORCH_CONFIG
 
 /usr/bin/gauge_go &
 forch/bin/run_forch &
 
-echo Starting daq, output in daq/inst/cmdrun.log
-sudo \
-    PYTHONPATH=$PYTHONPATH \
-    PATH=$DAQ_ROOT/mininet:$PATH \
-    FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
-    daq/cmd/start ../$DAQ_BASE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
+if [[ -z $DTS_IP || $DTS_IP == localhost ]]; then
+    echo Starting daq, output in daq/inst/cmdrun.log
+    sudo \
+        PYTHONPATH=$PYTHONPATH \
+        PATH=$DAQ_ROOT/mininet:$PATH \
+        FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
+        daq/cmd/start ../$DAQ_BASE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
+fi
 
 echo Blocking forever...
 tail -f /dev/null

@@ -1,0 +1,7 @@
+{
+    "modules": {
+        "acquire": {
+            "timeout_sec": 120 
+        }
+    }
+}

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+default_mac_prefix="9a02571e"
+
+if [ "$1" != $default_mac_prefix ]; then
+    for f in `find /site/mac_addrs/ -name "$default_mac_prefix*"`; do
+        cp -r $f `echo $f | sed -e "s/$default_mac_prefix/$1/g"`
+    done
+fi
