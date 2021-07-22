@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
@@ -40,6 +40,10 @@ else
     echo git clone $TARGET_REPO $TARGET
     git clone $TARGET_REPO $TARGET
 fi
+
+(cd $TARGET
+ git describe
+)
 
 echo Switching $TARGET to version $TARGET_VERSION
 (cd $TARGET
