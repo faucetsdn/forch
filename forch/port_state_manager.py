@@ -192,7 +192,7 @@ class PortStateManager:
             self._auto_sequester[mac_lower] = auto_sequester
             if device_behavior.segment:
                 self.handle_device_behavior(mac_lower, device_behavior, static=True)
-            scheduled_sequester = self._scheduled_sequester_timer.get(mac_lower)
+            scheduled_sequester = self._scheduled_sequester_timer.pop(mac_lower, None)
             if scheduled_sequester:
                 scheduled_sequester.cancel()
             if device_behavior.scheduled_sequestering_timestamp:
