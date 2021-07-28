@@ -8,7 +8,7 @@ pbr>=1.9
 prometheus_client==0.8.0
 protobuf
 psutil
-pylint==2.7.4
+pylint==2.9.6
 pytricia
 pyyaml
 ryu==4.32
