@@ -1,4 +1,5 @@
 {
+  "rebaseWhen": "never",
   "separateMajorMinor": false,
   "schedule": [
     "after 10pm every weekday",
