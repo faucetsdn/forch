@@ -513,6 +513,10 @@ function start_radius_server {
     docker-compose -f ./radius_server/docker-compose.yaml up -d --build
 }
 
+function start_wrong_radius_server {
+    docker-compose -f ./radius_server/docker-compose-wrong.yaml up -d --build
+}
+
 function stop_and_cleanup_radius {
     docker stop radius_server_1 || true && docker rm radius_server_1 || true
 }
