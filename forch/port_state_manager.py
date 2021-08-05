@@ -337,7 +337,7 @@ class PortStateManager:
         mac_lower = mac.lower()
         terminal = self._transition_device_state(mac_lower, device_behavior)
         if terminal and mac_lower in self._sequester_timer:
-            self._logger.info('Cancelling deivce %s sequester timeout', mac_lower)
+            self._logger.info('Cancelling device %s sequester timeout', mac_lower)
             self._sequester_timer[mac_lower].cancel()
             del self._sequester_timer[mac_lower]
         return terminal
