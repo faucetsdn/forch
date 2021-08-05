@@ -192,10 +192,10 @@ class PortStateManager:
             self._auto_sequester[mac_lower] = auto_sequester
             if device_behavior.segment:
                 self.handle_device_behavior(mac_lower, device_behavior, static=True)
-            scheduled_sequester = self._scheduled_sequester_timer.get(mac_lower)
+            scheduled_sequester = self._scheduled_sequester_timer.pop(mac_lower, None)
+            if scheduled_sequester:
+                scheduled_sequester.cancel()
             if device_behavior.scheduled_sequestering_timestamp:
-                if scheduled_sequester:
-                    scheduled_sequester.cancel()
                 self._schedule_device_sequester(device_behavior, mac_lower)
 
     def handle_device_behavior(self, mac, device_behavior, static=False):
@@ -337,7 +337,7 @@ class PortStateManager:
         mac_lower = mac.lower()
         terminal = self._transition_device_state(mac_lower, device_behavior)
         if terminal and mac_lower in self._sequester_timer:
-            self._logger.info('Cancelling deivce %s sequester timeout', mac_lower)
+            self._logger.info('Cancelling device %s sequester timeout', mac_lower)
             self._sequester_timer[mac_lower].cancel()
             del self._sequester_timer[mac_lower]
         return terminal
