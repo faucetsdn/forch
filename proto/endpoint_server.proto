@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "forch/proto/shared_constants.proto";
+
+/*
+ * Tunnel endpoint params.
+ */
+ message Endpoint {
+    // IP address of tunnel endpoint.
+    string ip = 1;
+  
+    // UDP port for tunnel.
+    int32 port = 2;
+  
+    // Tunnel key index.
+    int32 vni = 3;
+
+    // Port on t1 switch
+    int32 tap_port = 4;
+  }
+
+/*
+ * Device testing session server endpoint.
+ */
+ service EndpointServer {
+     // Configure Vxlan interface
+    rpc ConfigureInterface(Endpoint) returns (Empty) {}
+    rpc CleanupInterface(Endpoint) returns (Empty) {}
+  }

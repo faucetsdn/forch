@@ -110,7 +110,7 @@ class FaucetEventClient():
         assert self._last_event_id, '_last_event_id undefined, check for initialization errors'
         event_id = int(event['event_id'])
         if event_id <= self._last_event_id:
-            self._logger.debug('Outdated faucet event #%d', event_id)
+            self._logger.info('Outdated faucet event #%d', event_id)
             return False
         self._last_event_id += 1
         if event_id != self._last_event_id:
@@ -157,7 +157,8 @@ class FaucetEventClient():
                 self._port_timers[state_key].cancel()
                 if active:
                     # Port down events are ignored upon port up while there is a set timer.
-                    self._logger.info('Ignoring spurious port down event')
+                    self._logger.info('Ignoring spurious port down event for %s: %s',
+                                      event['dp_name'], port)
 
             if active:
                 self._handle_debounce(event, port, active)

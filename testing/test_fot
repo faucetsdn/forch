@@ -34,7 +34,7 @@ echo `timestamp` DAQ spot checks
 # faux-5: tests timeout (hold test enabled)
 
 # Test that no-sequester works
-docker exec forch-faux-4 ping -c 10 192.168.1.0
+docker exec forch-faux-4 ping -c 50 192.168.1.0
 # Schedule testing for faux-4 in 20s
 timestamp=`python3 -c "import datetime; print((datetime.datetime.now() + datetime.timedelta(seconds=20)).isoformat())"`
 docker exec forch-controller-1 bash -c "sed -i \"s/REPLACE_WITH_TIMESTAMP/$timestamp/\" /etc/forch/behaviors.yaml && touch /etc/forch/behaviors.yaml"

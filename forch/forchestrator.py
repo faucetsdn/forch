@@ -18,6 +18,7 @@ import forch.faucetizer as faucetizer
 from forch.authenticator import Authenticator
 from forch.cpn_state_collector import CPNStateCollector
 from forch.device_report_client import DeviceReportClient
+from forch.endpoint_handler import EndpointHandler
 from forch.file_change_watcher import FileChangeWatcher
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.forch_metrics import ForchMetrics, VarzUpdater
@@ -257,8 +258,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         tunnel_ip = self._config.orchestration.sequester_config.tunnel_ip
         self._logger.info('Connecting report client to %s, local %s, vlan %s',
                           service_target, tunnel_ip, unauth_vlan)
+        endpoint_handler = None
+        if tunnel_ip:
+            endpoint_handler = EndpointHandler(tunnel_ip, self._structural_config_file)
         return DeviceReportClient(self._handle_device_result, service_target,
-                                  unauth_vlan, tunnel_ip)
+                                  unauth_vlan, tunnel_ip, endpoint_handler=endpoint_handler)
 
     def _attempt_authenticator_initialise(self):
         orch_config = self._config.orchestration
