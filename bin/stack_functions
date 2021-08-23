@@ -513,6 +513,10 @@ function start_radius_server {
     docker-compose -f ./radius_server/docker-compose.yaml up -d --build
 }
 
+function start_wrong_radius_server {
+    docker-compose -f ./radius_server/docker-compose-wrong.yaml up -d --build
+}
+
 function stop_and_cleanup_radius {
     docker stop radius_server_1 || true && docker rm radius_server_1 || true
 }
@@ -523,9 +527,15 @@ function validate_radius_varz {
                    grep -v 'HELP\|TYPE' | awk '{print $2}')
     responses=$(wget 0.0.0.0:8302 -O- | grep radius_query_responses_total | \
                     grep -v 'HELP\|TYPE' | awk '{print $2}')
+    accepts=$(wget 0.0.0.0:8302 -O- | grep radius_query_accepts_total | \
+                    grep -v 'HELP\|TYPE' | awk '{print $2}')
+    rejects=$(wget 0.0.0.0:8302 -O- | grep radius_query_rejects_total | \
+                    grep -v 'HELP\|TYPE' | awk '{print $2}')
     timeouts=${timeouts%.0}
     responses=${responses%.0}
-    echo Radius results $((timeouts > 0)) $((responses > 0)) | tee -a $TEST_RESULTS
+    accepts=${accepts%.0}
+    rejects=${rejects%.0}
+    echo Radius results $((timeouts > 0)) $((responses > 0)) $((accepts > 0)) $((rejects > 0)) | tee -a $TEST_RESULTS
 }
 
 function test_varz_value {
