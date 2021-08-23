@@ -18,7 +18,7 @@ filter_rule   Cleartext-Password := "micrøphøne"
 	NAS-Filter-Rule = "deny in tcp from any to any"
 
 # MAB Examples for integration tests
-9a02571e8f03 Cleartext-Password := '9a02571e8f03'
+9a02571e8f03 Cleartext-Password := '9a02571e8f04'
     Tunnel-Type = VLAN,
     Tunnel-Medium-Type = IEEE-802,
     Tunnel-Private-Group-Id = "BOS",
