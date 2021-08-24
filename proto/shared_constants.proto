@@ -35,7 +35,7 @@ message State {
     // initializing: in intialization after start
     initializing = 7;
 
-    // split: controller master but can not reach peer controller
+    // split: controller primary but can not reach peer controller
     split = 8;
 
     // up: up but not in function
