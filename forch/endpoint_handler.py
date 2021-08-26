@@ -114,6 +114,7 @@ class EndpointHandler:
             self._stub.CleanupInterface(session_endpoint)
             self._logger.info('Done with proxy request')
 
+
 class EndpointServicer(server_grpc.EndpointServerServicer):
     """gRPC servicer to receive devices state"""
 
