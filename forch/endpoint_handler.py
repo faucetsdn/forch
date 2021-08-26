@@ -27,9 +27,15 @@ DEFAULT_BIND_ADDRESS = '0.0.0.0'
 DEFAULT_VXLAN_PORT = 4789
 BASE_T1SW_PORT = 29
 VXLAN_CMD_FMT = 'ip link add %s type vxlan id %s remote %s dstport %s srcport %s %s nolearning'
+
+# TODO: This switch value should be configurable
 T1_SW1 = 'nz-kiwi-t1sw1'
 CONNECT_TIMEOUT_SEC = 60
-
+# 'TAP' description is needed by forch to append test vlans.
+TAP_PORT_CONFIG = {
+    'description': 'TAP',
+    'tagged_vlans': [171]
+}
 
 class EndpointHandler:
     """Class to handle endpoint updates"""
@@ -37,9 +43,9 @@ class EndpointHandler:
     def __init__(self, target_ip, structural_config_file):
         self._logger = get_logger('endpproxy')
         self._lock = threading.RLock()
-        self._mac_t1sw1_port = {}
-        self._freed_t1sw_ports = set()
-        self._next_t1sw_port = BASE_T1SW_PORT
+        self._mac_tap_port = {}
+        self._freed_tap_ports = set()
+        self._next_tap_port = BASE_T1SW_PORT
         self._structural_config_file = structural_config_file
         server_port = DEFAULT_SERVER_PORT
         address = f'{target_ip}:{server_port}'
@@ -48,31 +54,28 @@ class EndpointHandler:
         self._stub = server_grpc.EndpointServerStub(channel)
         grpc.channel_ready_future(channel).result(timeout=CONNECT_TIMEOUT_SEC)
 
-    def _allocate_t1sw_port(self, mac):
+    def _allocate_tap_port(self, mac):
         with self._lock:
-            if mac in self._mac_t1sw1_port:
-                return self._mac_t1sw1_port[mac]
-            if self._freed_t1sw_ports:
-                t1sw_port = max(self._freed_t1sw_ports)
-                self._freed_t1sw_ports.remove(t1sw_port)
+            if mac in self._mac_tap_port:
+                return self._mac_tap_port[mac]
+            if self._freed_tap_ports:
+                tap_port = max(self._freed_tap_ports)
+                self._freed_tap_ports.remove(tap_port)
             else:
-                t1sw_port = self._next_t1sw_port
-                self._next_t1sw_port += 1
-            self._mac_t1sw1_port[mac] = t1sw_port
+                tap_port = self._next_tap_port
+                self._next_tap_port += 1
+            self._mac_tap_port[mac] = tap_port
             with open(self._structural_config_file, 'r') as file:
                 structural_config = yaml.safe_load(file)
-                structural_config['dps'][T1_SW1]['interfaces'][t1sw_port] = {
-                    'description': 'TAP',
-                    'tagged_vlans': [171]
-                }
+                structural_config['dps'][T1_SW1]['interfaces'][tap_port] = TAP_PORT_CONFIG
             with open(self._structural_config_file, 'w') as file:
                 yaml.dump(structural_config, file)
-            return t1sw_port
+            return tap_port
 
     def process_endpoint(self, endpoint, mac):
         """Handle an endpoint request"""
         self._logger.info('Process request for %s', endpoint.ip)
-        t1sw_port = self._allocate_t1sw_port(mac)
+        t1sw_port = self._allocate_tap_port(mac)
         session_endpoint = Endpoint()
         session_endpoint.ip = endpoint.ip
         session_endpoint.port = endpoint.port
@@ -82,25 +85,30 @@ class EndpointHandler:
         self._stub.ConfigureInterface(session_endpoint)
         self._logger.info('Done with proxy request')
 
-    def free_endpoint(self, mac: str):
+    def _deallocate_tap_port(self, freed_port):
         with self._lock:
-            self._logger.info('Process request to free endpoint for %s', mac)
-            freed_port = self._mac_t1sw1_port.pop(mac, None)
-            if not freed_port:
-                return
-            self._freed_t1sw_ports.add(freed_port)
+            self._freed_tap_ports.add(freed_port)
             with open(self._structural_config_file, 'r') as file:
                 structural_config = yaml.safe_load(file)
                 self._logger.info(structural_config)
                 structural_config['dps'][T1_SW1]['interfaces'].pop(freed_port, None)
             with open(self._structural_config_file, 'w') as file:
                 yaml.dump(structural_config, file)
-            # Move next_t1sw_port counter forward if possible
-            port_range = list(range(freed_port, self._next_t1sw_port))
-            all_free = all([port in self._freed_t1sw_ports for port in port_range])
+
+    def free_endpoint(self, mac: str):
+        """Cleanup endpoint resources."""
+        with self._lock:
+            self._logger.info('Process request to free endpoint for %s', mac)
+            freed_port = self._mac_tap_port.pop(mac, None)
+            if not freed_port:
+                return
+            self._deallocate_tap_port(freed_port)
+            # Move next_tap_port counter forward if possible
+            port_range = list(range(freed_port, self._next_tap_port))
+            all_free = all((port in self._freed_tap_ports for port in port_range))
             if all_free:
-                self._next_t1sw_port = freed_port
-                self._freed_t1sw_ports -= set(port_range)
+                self._next_tap_port = freed_port
+                self._freed_tap_ports -= set(port_range)
             session_endpoint = Endpoint()
             session_endpoint.tap_port = freed_port
             self._stub.CleanupInterface(session_endpoint)

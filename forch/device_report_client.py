@@ -26,7 +26,7 @@ except ImportError:
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 CONNECT_TIMEOUT_SEC = 60
 
-
+# pylint: disable=too-many-arguments
 class DeviceReportClient(DeviceStateReporter):
     """gRPC client to send device result"""
 

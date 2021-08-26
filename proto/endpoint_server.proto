@@ -15,7 +15,7 @@ import "forch/proto/shared_constants.proto";
     // Tunnel key index.
     int32 vni = 3;
 
-    // Port on t1 switch
+    // Egress port on switch
     int32 tap_port = 4;
   }
 
@@ -23,7 +23,6 @@ import "forch/proto/shared_constants.proto";
  * Device testing session server endpoint.
  */
  service EndpointServer {
-     // Configure Vxlan interface
     rpc ConfigureInterface(Endpoint) returns (Empty) {}
     rpc CleanupInterface(Endpoint) returns (Empty) {}
   }
