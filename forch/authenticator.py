@@ -115,8 +115,12 @@ class Authenticator:
             return
         with self._sessions_lock:
             if code == radius_query.ACCEPT:
+                if self._metrics:
+                    self._metrics.inc_var('radius_query_accepts')
                 self.sessions[src_mac].received_radius_accept(segment, role)
             else:
+                if self._metrics:
+                    self._metrics.inc_var('radius_query_rejects')
                 self.sessions[src_mac].received_radius_reject()
 
     def process_session_result(self, src_mac, access, segment=None, role=None):

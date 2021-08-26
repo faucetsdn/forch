@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 15 * * *'
 
 jobs:
   test_access:
@@ -67,6 +67,8 @@ jobs:
           bin/setup_remote faucet
           bin/setup_remote daq
       - name: build docker
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
         run: |
           bin/retry_cmd bin/build_docker controller
           bin/build_dts

@@ -13,6 +13,6 @@ de40904bfd80b5063478058caecc1ffa0ee6ebe3  proto/forch_configuration.proto
 83e8f50c6a8b53bc2c65d98c5b0f2fe45ad6adbc  proto/network_metric_state.proto
 db4d1bf4d1b4ac1a575853833ecbd9571d784203  proto/path_node.proto
 255a8c039f0487faa2632df22efff854285c6297  proto/process_state.proto
-f3c31d93d78223bb3b05a86a92ecaa5563d56693  proto/shared_constants.proto
+36ab66f7c688822694a9abb0fb1588e6f5bd0f3f  proto/shared_constants.proto
 f2907589bfb18d4b1622b9d658899c11b56d3b86  proto/switch_state.proto
 989e22bfd0863f9171eebc728658c6926ce420ef  proto/system_state.proto
