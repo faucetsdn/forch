@@ -393,6 +393,25 @@
         
           
           <li>
+            <a href="#forch%2fproto%2fendpoint_server.proto">forch/proto/endpoint_server.proto</a>
+            <ul>
+              
+                <li>
+                  <a href="#Endpoint"><span class="badge">M</span>Endpoint</a>
+                </li>
+              
+              
+              
+              
+                <li>
+                  <a href="#EndpointServer"><span class="badge">S</span>EndpointServer</a>
+                </li>
+              
+            </ul>
+          </li>
+        
+          
+          <li>
             <a href="#forch%2fproto%2ffaucet_configuration.proto">forch/proto/faucet_configuration.proto</a>
             <ul>
               
@@ -2420,6 +2439,91 @@
       
 
       
+    
+      
+      <div class="file-heading">
+        <h2 id="forch/proto/endpoint_server.proto">forch/proto/endpoint_server.proto</h2><a href="#title">Top</a>
+      </div>
+      <p></p>
+
+      
+        <h3 id="Endpoint">Endpoint</h3>
+        <p>Tunnel endpoint params.</p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>ip</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>IP address of tunnel endpoint. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>UDP port for tunnel. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>vni</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Tunnel key index. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>tap_port</td>
+                  <td><a href="#int32">int32</a></td>
+                  <td></td>
+                  <td><p>Egress port on switch </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+
+      
+
+      
+
+      
+        <h3 id="EndpointServer">EndpointServer</h3>
+        <p>Device testing session server endpoint.</p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Method Name</td><td>Request Type</td><td>Response Type</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>ConfigureInterface</td>
+                <td><a href="#Endpoint">.Endpoint</a></td>
+                <td><a href="#Empty">.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>CleanupInterface</td>
+                <td><a href="#Endpoint">.Endpoint</a></td>
+                <td><a href="#Empty">.Empty</a></td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+
+        
     
       
       <div class="file-heading">

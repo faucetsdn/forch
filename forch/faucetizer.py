@@ -400,9 +400,11 @@ class Faucetizer(DeviceStateManager):
         """Reload structural config from file"""
         structural_config_file = structural_config_file or self._structural_config_file
         self._logger.info('Reading structural config file: %s', structural_config_file)
-        with open(structural_config_file) as file:
-            structural_config = yaml.safe_load(file)
-            self._process_structural_config(structural_config)
+        with self._lock:
+            with open(structural_config_file) as file:
+                structural_config = yaml.safe_load(file)
+                if structural_config:
+                    self._process_structural_config(structural_config)
 
     def reload_and_flush_gauge_config(self, gauge_config_file):
         """Reload gauge config file and rewrite to faucet config directory"""

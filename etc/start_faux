@@ -45,7 +45,7 @@ else
 fi
 
 if [ -n "${options[ping]}" ]; then
-    ping -c 10 $GATEWAY &
+    ping -c 30 $GATEWAY &
 fi
 
 ip addr
