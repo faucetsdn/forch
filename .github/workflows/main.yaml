@@ -98,7 +98,9 @@ jobs:
           echo %%%%%%%%%%%%% Endpoint logs
           cat inst/endpoint.log || true
           echo %%%%%%%%%%%%% sec_interface
+          find inst -name sec_interface.yaml
           cat inst/forch-controller-1/daq/inst/sec_interface.yaml || cat inst/forch-dts/sec_interface.yaml
+          echo %%%%%%%%%%%%% done
 
   test_reconfig:
     runs-on: ubuntu-latest
