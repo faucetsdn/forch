@@ -74,6 +74,7 @@ _TARGET_GAUGE_METRICS = (
 )
 
 STATIC_BEHAVIORAL_FILE = 'static_behavior_file'
+STATIC_PLACEMENT_FILE = 'static_placement_file'
 SEGMENTS_VLANS_FILE = 'segments_vlans_file'
 TAIL_ACL_CONFIG = 'tail_acl_config'
 DEFAULT_SEQUESTER_SEGMENT = 'SEQUESTER'
@@ -278,14 +279,28 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not placement_file_name:
             return
         placement_file_path = os.path.join(self._forch_config_dir, placement_file_name)
-        with open(placement_file_path, 'r') as fd:
-            content = fd.read()
-            self._reload_static_device_placement(placement_file_path, content)
+        content = None
+        if os.path.isfile(placement_file_path):
+            with open(placement_file_path, 'r') as fd:
+                content = fd.read()
+        self._reload_static_device_placement(placement_file_path, content)
         self._config_file_watcher.register_file_callback(
             placement_file_path, self._reload_static_device_placement)
 
     def _reload_static_device_placement(self, file_path, new, current=None):
-        new_mac_placements = yaml_content_proto(new, DevicesState).device_mac_placements
+        try:
+            self._logger.info('Reading static device placement file: %s', file_path)
+            new_mac_placements = yaml_content_proto(new, DevicesState).device_mac_placements
+        except Exception as error:
+            msg = f'All auth was disabled: could not load static placement file {file_path}'
+            self._logger.error('%s: %s', msg, error)
+            if self._faucetizer:
+                self._faucetizer.clear_static_placements()
+            with self._states_lock:
+                self._forch_config_errors[STATIC_PLACEMENT_FILE] = msg
+                self._should_ignore_auth_result = True
+            return
+
         current_macs = set()
         if current:
             current_mac_placements = yaml_content_proto(current, DevicesState).device_mac_placements
@@ -313,9 +328,11 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not behaviors_file_name:
             return
         behaviors_file_path = os.path.join(self._forch_config_dir, behaviors_file_name)
-        with open(behaviors_file_path, 'r') as fd:
-            content = fd.read()
-            self._reload_static_device_behavior(behaviors_file_path, content)
+        content = None
+        if os.path.isfile(behaviors_file_path):
+            with open(behaviors_file_path, 'r') as fd:
+                content = fd.read()
+        self._reload_static_device_behavior(behaviors_file_path, content)
         self._config_file_watcher.register_file_callback(
             behaviors_file_path, self._reload_static_device_behavior)
 
