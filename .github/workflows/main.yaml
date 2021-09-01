@@ -97,6 +97,8 @@ jobs:
           cat inst/forch-controller-1/forch.log
           echo %%%%%%%%%%%%% Endpoint logs
           cat inst/endpoint.log || true
+          echo %%%%%%%%%%%%% sec_interface
+          cat inst/forch-controller-1/daq/inst/sec_interface.yaml || cat inst/forch-dts/sec_interface.yaml
 
   test_reconfig:
     runs-on: ubuntu-latest
