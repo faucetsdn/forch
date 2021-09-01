@@ -13,7 +13,7 @@ from forch.authenticator import Authenticator
 from forch.faucet_state_collector import FaucetStateCollector
 from forch.faucetizer import Faucetizer
 from forch.forchestrator import (Forchestrator, STATIC_BEHAVIORAL_FILE, STATIC_PLACEMENT_FILE,
-  SEGMENTS_VLANS_FILE)
+                                 SEGMENTS_VLANS_FILE)
 from forch.file_change_watcher import FileChangeWatcher
 from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
@@ -63,8 +63,8 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
             lldp_beacon: {max_per_interval: 5, send_interval: 5}"""
         faucet_config = yaml.safe_load(faucet_config_str)
         self.assertEqual(self._forchestrator._validate_config(faucet_config),
-        [('nz-kiwi-t1sw1:04', 'misconfigured interface config: 0 0 0 0 0'),
-        ('nz-kiwi-t1sw1:05', 'misconfigured interface config: 0 0 0 0 0')])
+                         [('nz-kiwi-t1sw1:04', 'misconfigured interface config: 0 0 0 0 0'),
+                         ('nz-kiwi-t1sw1:05', 'misconfigured interface config: 0 0 0 0 0')])
 
     def test_config_error_detail(self):
         """Test config detail for config errors"""
