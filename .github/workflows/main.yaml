@@ -46,6 +46,14 @@ jobs:
         run: bin/setup_remote faucet
       - name: build docker
         run: bin/retry_cmd bin/build_docker
+      - name: run python tests - test_forchestrator
+        run: testing/python_test test_forchestrator
+      - name: run python tests - test_faucetizer
+        run: testing/python_test test_faucetizer
+      - name: run python tests - test_faucet_state_collector
+        run: testing/python_test test_faucet_state_collector
+      - name: run python tests - test_event
+        run: testing/python_test test_event
       - name: run test
         run: bin/run_test_set base
 

@@ -2,13 +2,23 @@
 
 from unittest.mock import Mock, MagicMock
 import unittest
+from unittest.mock import patch
+import os
+import tempfile
+
 import yaml
+
 from unit_base import ForchestratorTestBase
 from forch.authenticator import Authenticator
+from forch.faucet_state_collector import FaucetStateCollector
+from forch.faucetizer import Faucetizer
+from forch.forchestrator import (Forchestrator, STATIC_BEHAVIORAL_FILE, STATIC_PLACEMENT_FILE,
+  SEGMENTS_VLANS_FILE)
+from forch.file_change_watcher import FileChangeWatcher
 from forch.port_state_manager import PortStateManager
 from forch.utils import dict_proto
 from forch.proto.devices_state_pb2 import DevicePlacement, DeviceBehavior
-from forch.proto.forch_configuration_pb2 import OrchestrationConfig
+from forch.proto.forch_configuration_pb2 import ForchConfig, OrchestrationConfig
 from forch.proto.system_state_pb2 import SystemState
 
 
@@ -52,7 +62,9 @@ class ForchestratorUnitTestCase(ForchestratorTestBase):
                 tagged_vlans: [171]
             lldp_beacon: {max_per_interval: 5, send_interval: 5}"""
         faucet_config = yaml.safe_load(faucet_config_str)
-        self.assertFalse(self._forchestrator._validate_config(faucet_config))
+        self.assertEqual(self._forchestrator._validate_config(faucet_config),
+        [('nz-kiwi-t1sw1:04', 'misconfigured interface config: 0 0 0 0 0'),
+        ('nz-kiwi-t1sw1:05', 'misconfigured interface config: 0 0 0 0 0')])
 
     def test_config_error_detail(self):
         """Test config detail for config errors"""
@@ -111,11 +123,72 @@ class ForchestratorAuthTestCase(ForchestratorTestBase):
         self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), 'Authorized')
         device_placement = DevicePlacement(switch='switch', port=1, connected=False)
         self._forchestrator._process_device_placement('00:11:22:33:44:55',
-                                                      device_placement, expired_vlan=200)
-        self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), 'Authorized')
-        self._forchestrator._process_device_placement('00:11:22:33:44:55',
-                                                      device_placement, expired_vlan=100)
+                                                      device_placement)
         self.assertEqual(self._get_auth_sm_state('00:11:22:33:44:55'), None)
+
+
+# pylint: disable=protected-access
+class ForchestratorMissingDVAFilesTestCase(unittest.TestCase):
+    """Test case for forchestrator with missing DVA files."""
+    _DEFAULT_FORCH_LOG = '/tmp/forch.log'
+
+    FORCH_CONFIG = """
+    orchestration:
+      %s
+      structural_config_file: faucet.yaml
+      sequester_config:
+        vlan_start: 272
+        vlan_end: 276
+        port_description: TAP
+        auto_sequestering: disabled
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        os.environ['FORCH_LOG'] = self._DEFAULT_FORCH_LOG
+        os.environ['FORCH_CONFIG_DIR'] = tempfile.mkdtemp()
+        self._forchestrator = None
+
+    @patch.object(Faucetizer, 'flush_behavioral_config', return_value=None)
+    @patch.object(Faucetizer, 'tail_acl_config_valid', return_value=True)
+    def setup(self, config, *args):
+        """setup fixture for each test method"""
+        forch_config = dict_proto(yaml.safe_load(config), ForchConfig)
+        self._forchestrator = Forchestrator(forch_config)
+        self._forchestrator._faucet_collector = FaucetStateCollector(
+            self._forchestrator._config, is_faucetizer_enabled=True)
+        self._forchestrator._should_enable_faucetizer = True
+        with open(os.path.join(os.environ['FORCH_CONFIG_DIR'], 'faucet.yaml'), 'w') as fd:
+            fd.write('segments_to_vlans:')
+        self._forchestrator._config_file_watcher = FileChangeWatcher(
+            os.environ['FORCH_CONFIG_DIR'])
+        self._forchestrator._calculate_orchestration_config()
+        self._forchestrator._initialize_orchestration()
+
+    @patch.object(Faucetizer, 'reload_segments_to_vlans', return_value=None)
+    def test_missing_static_device_behavior_file(self, *args):
+        """Test a missing static_device_behavior file won't crash forch"""
+        addon = """static_device_behavior: missing_file.yaml
+      segments_vlans_file: segments_vlans.yaml"""
+        self.setup(self.FORCH_CONFIG % addon)
+        self.assertTrue(self._forchestrator._should_ignore_auth_result)
+        self.assertIsNotNone(self._forchestrator._forch_config_errors.get(STATIC_BEHAVIORAL_FILE))
+
+    def test_missing_static_device_placement_file(self):
+        """Test a missing static_device_placement file won't crash forch"""
+        addon = """static_device_placement: missing_file.yaml
+      segments_vlans_file: missing_file.yaml"""
+        self.setup(self.FORCH_CONFIG % addon)
+        self.assertTrue(self._forchestrator._should_ignore_auth_result)
+        self.assertIsNotNone(self._forchestrator._forch_config_errors.get(STATIC_PLACEMENT_FILE))
+
+    def test_missing_segments_vlan_file(self):
+        """Test a missing segments_vlan file won't crash forch"""
+        addon = """segments_vlans_file: missing_file.yaml"""
+        self.setup(self.FORCH_CONFIG % addon)
+        self.assertTrue(self._forchestrator._should_ignore_auth_result)
+        self.assertTrue(self._forchestrator._should_ignore_static_behavior)
+        self.assertIsNotNone(self._forchestrator._forch_config_errors.get(SEGMENTS_VLANS_FILE))
 
 
 if __name__ == '__main__':
