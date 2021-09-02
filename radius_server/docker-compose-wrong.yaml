@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+    freeradius:
+        build:
+            context: .
+            dockerfile: Dockerfile.freeradius
+        container_name: radius_server_1
+        image: 'forch/freeradius:latest'
+        network_mode: bridge
+        volumes:
+            - "./freeradius/users_wrong:/etc/freeradius/3.0/users:ro"
+            - "./freeradius/dictionary:/etc/freeradius/3.0/dictionary:ro"
+            - "./freeradius/macs:/etc/freeradius/3.0/macs:ro"
+            - "./freeradius/certs:/etc/freeradius/3.0/certs"
+            - "./freeradius/sites-enabled:/etc/freeradius/3.0/sites-enabled"
+            - "./freeradius/eap.conf:/etc/freeradius/3.0/eap.conf:ro"
+            - "./freeradius/radiusd.conf:/etc/freeradius/3.0/radiusd.conf:ro"

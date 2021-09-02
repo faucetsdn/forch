@@ -3,8 +3,6 @@
 import threading
 import grpc
 
-import forch.endpoint_handler as endpoint_handler
-
 from forch.proto.shared_constants_pb2 import PortBehavior
 from forch.proto.devices_state_pb2 import DevicesState
 from forch.base_classes import DeviceStateReporter
@@ -28,11 +26,11 @@ except ImportError:
 DEFAULT_SERVER_ADDRESS = '127.0.0.1'
 CONNECT_TIMEOUT_SEC = 60
 
-
+# pylint: disable=too-many-arguments
 class DeviceReportClient(DeviceStateReporter):
     """gRPC client to send device result"""
 
-    def __init__(self, result_handler, target, unauth_vlan, tunnel_ip):
+    def __init__(self, result_handler, target, unauth_vlan, tunnel_ip, endpoint_handler=None):
         self._logger = get_logger('devreport')
         self._logger.info('Initializing with unauthenticated vlan %s', unauth_vlan)
         self._logger.info('Using target %s, proto %s', target, bool(PORT_BEHAVIOR_SESSION_RESULT))
@@ -46,7 +44,7 @@ class DeviceReportClient(DeviceStateReporter):
         self._lock = threading.Lock()
         self._result_handler = result_handler
         self._tunnel_ip = tunnel_ip
-        self._endpoint_handler = endpoint_handler.EndpointHandler(tunnel_ip) if tunnel_ip else None
+        self._endpoint_handler = endpoint_handler
 
     def start(self):
         """Start the client handler"""
@@ -74,6 +72,8 @@ class DeviceReportClient(DeviceStateReporter):
             if session:
                 session.cancel()
                 self._mac_sessions.pop(mac)
+                if self._endpoint_handler:
+                    self._endpoint_handler.free_endpoint(mac)
                 self._logger.info('Device %s disconnected', mac)
             else:
                 self._logger.warning('Attempt to disconnect unconnected device %s', mac)
@@ -96,7 +96,7 @@ class DeviceReportClient(DeviceStateReporter):
             self._logger.info('Device report %s endpoint %s (handler=%s)',
                               mac, endpoint_ip, bool(self._endpoint_handler))
             if self._endpoint_handler:
-                self._endpoint_handler.process_endpoint(progress.endpoint)
+                self._endpoint_handler.process_endpoint(progress.endpoint, mac)
         return False
 
     def _process_progress(self, mac, session):

@@ -205,7 +205,6 @@ add_faux corp 1 0 dnsmasq
 
 if [ -n "$vxlan" ]; then
     echo Configuring for vxlan and endpoint handler server
-    add_vxlan t1sw1 4
     if [[ -z $skip_conn_check ]]; then
         echo Connection check incompatible with vxlan: will wait forever.
         false

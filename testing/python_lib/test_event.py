@@ -66,7 +66,7 @@ class FaucetEventOrderTestCase(ForchestratorEventTestBase):
 
         try:
             self._forchestrator.main_loop()
-        except MetricsFetchingError as error:
+        except Exception as error:
             # Forchestrator.restore_states() will raise VarzFetchingError as Faucet prometheus
             # client is not enabled, and thus this error implies restore_states() is called.
             print(f'Expected error during restoring states: {error}')
