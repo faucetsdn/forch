@@ -113,4 +113,7 @@ docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less fl
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 
+# Check to make sure allocated interfaces are cleaned up properly.
+fgrep "Configured topology with" $DAQ_BASE/sec_interface.yaml | tee -a $TEST_RESULTS
+
 echo `timestamp` Done with test_fot
