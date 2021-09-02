@@ -449,6 +449,11 @@ class Faucetizer(DeviceStateManager):
         """Remove static placement for devices with mac if exists"""
         self._static_devices.device_mac_placements.pop(mac.lower(), None)
 
+    def clear_static_placements(self):
+        """Remove all static placement"""
+        for mac in self._static_devices.device_mac_placements:
+            self.clear_static_placement(mac)
+
     def flush_behavioral_config(self, force=False):
         """Generate and write behavioral config to file"""
         if not force and self._config.faucetize_interval_sec:
