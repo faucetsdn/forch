@@ -38,8 +38,8 @@ class FileChangeWatcher:
 
     def register_file_callback(self, file_path, file_change_callback):
         """Register a file handler"""
-        content, _ = self._get_file_data(file_path)
-        self._watched_files[file_path] = FileData(content, hash, file_change_callback)
+        content, content_hash = self._get_file_data(file_path)
+        self._watched_files[file_path] = FileData(content, content_hash, file_change_callback)
 
     def unregister_file_callback(self, file_path):
         """Unregister the handler for a file"""
@@ -66,7 +66,7 @@ class FileChangeWatcher:
 
     def _get_file_data(self, file_path):
         if not os.path.exists(file_path):
-            return None
+            return None, None
 
         with open(file_path) as file:
             content = file.read()

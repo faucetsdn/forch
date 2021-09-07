@@ -79,6 +79,10 @@ class ForchMetrics():
                       'No. of RADIUS query timeouts in state machine', Counter)
         self._add_var('radius_query_responses',
                       'No. of RADIUS query responses received from server', Counter)
+        self._add_var('radius_query_accepts',
+                      'No. of RADIUS query accepts received from server', Counter)
+        self._add_var('radius_query_rejects',
+                      'No. of RADIUS query rejects received from server', Counter)
         self._add_var('process_state', 'Current process state', Gauge, labels=['process'])
 
         learned_l2_port_help_text = 'learned port of l2 entries'

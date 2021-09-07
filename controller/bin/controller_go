@@ -31,6 +31,7 @@ FORCH_CONFIG=$FORCH_CONFIG_DIR/forch.yaml
 export PYTHONPATH=$FORCH_ROOT:$DAQ_ROOT:$FAUCET_ROOT:$DAQ_ROOT/mininet
 
 DAQ_BASE=bin/daq_config.yaml
+DAQ_OVERRIDE=
 DAQ_CONFIG=startup.yaml
 echo site_description: generated > $DAQ_CONFIG
 
@@ -76,6 +77,7 @@ if [[ -n $VXLAN_IP ]]; then
     yq -i -y .orchestration.sequester_config.service_address=\"$DTS_IP\" $FORCH_CONFIG
     yq -i -y .switch_setup.endpoint.ip=\"$docker_ip\" $DAQ_CONFIG
 else
+    DAQ_OVERRIDE=../bin/daq_config_override.yaml
     echo Waiting for data0...
     while ! ip link show data0; do
         sleep 2
@@ -99,7 +101,7 @@ if [[ -z $DTS_IP || $DTS_IP == localhost ]]; then
         PYTHONPATH=$PYTHONPATH \
         PATH=$DAQ_ROOT/mininet:$PATH \
         FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
-        daq/cmd/start ../$DAQ_BASE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
+        daq/cmd/start ../$DAQ_BASE $DAQ_OVERRIDE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
 fi
 
 echo Blocking forever...
