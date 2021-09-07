@@ -43,15 +43,15 @@ jobs:
       - name: post-run logs
         if: ${{ always() }}
         run: |
-          echo %%%%%%%%%%%%% Controller startup logs
+          echo %%%%%%%%%%%%% Controller log
           docker logs forch-controller-1
-          echo %%%%%%%%%%%%% DAQ startup logs
+          echo %%%%%%%%%%%%% DAQ log
           cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
-          echo %%%%%%%%%%%%% Forch logs
+          echo %%%%%%%%%%%%% Forch log
           cat inst/forch-controller-1/forch.log
-          echo %%%%%%%%%%%%% Faucet logs
+          echo %%%%%%%%%%%%% Faucet log
           cat inst/forch-controller-1/faucet.log
-          echo %%%%%%%%%%%%% Endpoint logs
+          echo %%%%%%%%%%%%% Endpoint log
           cat inst/endpoint.log || true
-          echo %%%%%%%%%%%%% Log line length
+          echo %%%%%%%%%%%%% Log line lengths
           (cd inst/forch-controller-1; wc -l faucet.log forch.log daq/inst/cmdrun.log)
