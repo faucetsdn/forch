@@ -45,5 +45,7 @@ jobs:
           cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
           echo %%%%%%%%%%%%% Forch logs
           cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% Faucet logs
+          cat inst/forch-controller-1/faucet.log
           echo %%%%%%%%%%%%% Endpoint logs
           cat inst/endpoint.log || true
