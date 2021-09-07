@@ -91,16 +91,16 @@ report_vlans
 
 monitor_forch_log "Device 9a:99:57:1e:8f:04 is entering operational state from unauthenticated state"
 
-monitor_daq_log "Remaining target sets: \[9a99571e8f05\]"
-
 # Check if it's running in client/server or server/client mode and adjust expectations accordingly.
 sserv_mode=$(fgrep ssserv $DAQ_BASE/cmdrun.log | wc -l)
 if [[ $sserv_mode == 0 ]]; then
+    monitor_daq_log "Remaining target sets: \[9a99571e8f05\]"
     expected_timeouts=0
     # Device 8f:05 doesn't timeout in this mode, so add artificial result for later on.
     echo "9a99571e8f05: ['9a99571e8f05:hold:DaqException']" | sudo tee -a $DAQ_BASE/result.log
 else
     monitor_forch_log "Device 9a:99:57:1e:8f:03 disconnected"
+    monitor_daq_log "Remaining target sets: \[\]"
     expected_timeouts=2
 fi
 
