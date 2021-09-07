@@ -18,7 +18,7 @@ orchestration:
     vlan_start: 272
     vlan_end: 276
     port_description: TAP
-    sequester_timeout_sec: 3600
+    sequester_timeout_sec: 360
     auto_sequestering: disabled
     service_address: 127.0.0.1
     test_result_device_states:
