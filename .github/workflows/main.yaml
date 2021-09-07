@@ -53,3 +53,5 @@ jobs:
           cat inst/forch-controller-1/faucet.log
           echo %%%%%%%%%%%%% Endpoint logs
           cat inst/endpoint.log || true
+          echo %%%%%%%%%%%%% Log line length
+          (cd inst/forch-controller-1; wc -l faucet.log forch.log daq/inst/cmdrun.log)
