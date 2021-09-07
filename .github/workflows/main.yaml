@@ -10,6 +10,10 @@ jobs:
   test_fot:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [fot1, fot2, fot3, fot4, fot5]
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
