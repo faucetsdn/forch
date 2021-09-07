@@ -114,6 +114,12 @@ docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | 
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 
 # Check to make sure allocated interfaces are cleaned up properly.
-fgrep "Configured topology with" $DAQ_BASE/sec_interface.yaml | tee -a $TEST_RESULTS
+fgrep "Configured topology with" $DAQ_BASE/cmdrun.log | tee -a $TEST_RESULTS
+
+faucet_lc=$(wc -l $INST_BASE/faucet.log)
+forch_lc=$(wc -l $INST_BASE/forch.log)
+daq_lc=$(wc -l $DAQ_BASE/cmdrun.log)
+echo Log line lengths: faucet $faucet_lc forch $forch_lc daq $daq_lc
+echo Log line lengths: $((faucet_lc < 4000)) $((forch_lc < 2000)) $((daq_lc < 1500)) | tee -a $TEST_RESULTS
 
 echo `timestamp` Done with test_fot
