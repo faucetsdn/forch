@@ -113,6 +113,8 @@ docker exec forch-faux-1 ping -c 5 192.168.1.0  > /dev/null # Make tests less fl
 docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 
+echo Checking remaining vxlan interfaces
+docker exec forch-controller-1 ip link | fgrep vxlan
 # Check to make sure allocated interfaces are cleaned up properly.
 fgrep "Configured topology with" $DAQ_BASE/cmdrun.log | tail -n 1 | sed 's/.*INFO/X/' | tee -a $TEST_RESULTS
 
