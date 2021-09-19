@@ -116,8 +116,8 @@ docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | 
 # Check to make sure allocated interfaces are cleaned up properly.
 fgrep "Configured topology with" $DAQ_BASE/cmdrun.log | tail -n 1 | sed 's/.*INFO/X/' | tee -a $TEST_RESULTS
 
-echo Checking remaining vxlan interfaces
-docker exec forch-controller-1 ip link | fgrep vxlan
+echo Remaining vxlan interfaces:
+docker exec forch-controller-1 ip link | fgrep vxlan | tee -a $TEST_RESULT
 
 faucet_lc=$(cat $INST_BASE/faucet.log | wc -l)
 forch_lc=$(cat $INST_BASE/forch.log | wc -l)
