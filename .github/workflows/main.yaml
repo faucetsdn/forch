@@ -59,7 +59,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -84,15 +84,15 @@ jobs:
       - name: run fot integration tests
         run: |
           bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot
-          timeout 10m bin/run_test_set fot
+          timeout 20m bin/run_test_set fot
       - name: run vxlan integration tests
         run: |
           bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot vxlan
-          timeout 10m bin/run_test_set fot
+          timeout 20m bin/run_test_set fot
       - name: run dts integration tests
         run: |
           bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot dts localhost
-          timeout 10m bin/run_test_set fot
+          timeout 20m bin/run_test_set fot
       - name: post-run logs
         if: ${{ always() }}
         run: |
