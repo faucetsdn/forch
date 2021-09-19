@@ -123,8 +123,7 @@ faucet_lc=$(cat $INST_BASE/faucet.log | wc -l)
 forch_lc=$(cat $INST_BASE/forch.log | wc -l)
 daq_lc=$(cat $DAQ_BASE/cmdrun.log | wc -l)
 echo Log line lengths: faucet $faucet_lc forch $forch_lc daq $daq_lc
-
-# TODO: Actually validate this with tests to detect learning loops. Currently very flaky.
-echo Log line lengths: $((faucet_lc < 4500)) $((forch_lc < 2000)) $((daq_lc < 1500))
+# TODO: Tighten these bounds so they effectivly catch log spamming due to (e.g.) learning loops.
+echo Log line lengths: $((faucet_lc < 5500)) $((forch_lc < 2500)) $((daq_lc < 1500)) | tee -a $TEST_RESULT
 
 echo `timestamp` Done with test_fot
