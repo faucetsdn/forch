@@ -109,8 +109,8 @@ jobs:
           cat inst/forch-controller-1/faucet.log
           echo %%%%%%%%%%%%% Endpoint log
           cat inst/endpoint.log || true
-          echo %%%%%%%%%%%%% Log line lengths
-          (cd inst/forch-controller-1; wc -l faucet.log forch.log daq/inst/cmdrun.log)
+          echo %%%%%%%%%%%%% Log lengths
+          find inst -name \*.log | fgrep -v nodes/ | xargs wc -l
 
   test_reconfig:
     runs-on: ubuntu-latest
