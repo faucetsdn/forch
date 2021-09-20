@@ -82,17 +82,11 @@ jobs:
       - name: run python tests
         run: testing/python_test test_fot
       - name: run fot integration tests
-        run: |
-          bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot
-          timeout 15m bin/run_test_set fot
+        run: bin/run_fot_test
       - name: run vxlan integration tests
-        run: |
-          bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot vxlan
-          timeout 15m bin/run_test_set fot
+        run: bin/run_fot_test vxlan
       - name: run dts integration tests
-        run: |
-          bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot dts localhost
-          timeout 15m bin/run_test_set fot
+        run: bin/run_fot_test dts localhost
       - name: post-run logs
         if: ${{ always() }}
         run: |
