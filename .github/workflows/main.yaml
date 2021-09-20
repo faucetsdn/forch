@@ -59,7 +59,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 80
     strategy:
       fail-fast: false
       matrix:
@@ -82,11 +82,11 @@ jobs:
       - name: run python tests
         run: testing/python_test test_fot
       - name: run fot integration tests
-        run: bin/run_fot_test
+        run: bin/retry_cmd bin/run_fot_test
       - name: run vxlan integration tests
-        run: bin/run_fot_test vxlan
+        run: bin/retry_cmd bin/run_fot_test vxlan
       - name: run dts integration tests
-        run: bin/run_fot_test dts localhost
+        run: bin/retry_cmd bin/run_fot_test dts localhost
       - name: post-run logs
         if: ${{ always() }}
         run: |
