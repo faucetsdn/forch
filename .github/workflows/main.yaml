@@ -59,11 +59,44 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 80
-    strategy:
-      fail-fast: false
-      matrix:
-        build: [fot1, fot2, fot3, fot4, fot5]
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup forch
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: |
+          bin/setup_base
+          bin/setup_remote faucet
+          bin/setup_remote daq
+          bin/retry_cmd bin/build_docker controller
+      - name: run python tests
+        run: testing/python_test test_fot
+      - name: run fot integration tests
+        run: bin/retry_cmd bin/run_fot_test
+      - name: post-run logs
+        if: ${{ always() }}
+        run: |
+          echo %%%%%%%%%%%%% Controller log
+          docker logs forch-controller-1
+          echo %%%%%%%%%%%%% DAQ log
+          cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
+          echo %%%%%%%%%%%%% Forch log
+          cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% Faucet log
+          cat inst/forch-controller-1/faucet.log
+          echo %%%%%%%%%%%%% Endpoint log
+          cat inst/endpoint.log || true
+          echo %%%%%%%%%%%%% Log lengths
+          find inst -name \*.log | fgrep -v nodes/ | xargs wc -l
+
+  test_vxlan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -79,10 +112,6 @@ jobs:
           bin/setup_remote daq
           bin/retry_cmd bin/build_docker controller
           bin/build_dts
-      - name: run python tests
-        run: testing/python_test test_fot
-      - name: run fot integration tests
-        run: bin/retry_cmd bin/run_fot_test
       - name: run vxlan integration tests
         run: bin/retry_cmd bin/run_fot_test vxlan
       - name: run dts integration tests
