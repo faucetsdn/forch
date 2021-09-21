@@ -59,7 +59,7 @@ jobs:
 
   test_fot:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -96,7 +96,7 @@ jobs:
 
   test_vxlan:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
