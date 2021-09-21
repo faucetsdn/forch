@@ -14,4 +14,5 @@ Starting Forchestrator
 9a99571e8f05: ['9a99571e8f05:hold:DaqException']
 5 packets transmitted, 5 received, 0% packet loss, XXX
 5 packets transmitted, 0 received, XX errors, 100% packet loss, XXX
+X    Configured topology with 1 interfaces: [1]
 Log line lengths: 1 1 1

@@ -35,8 +35,8 @@ echo `timestamp` DAQ spot checks
 
 # Test that no-sequester works
 docker exec forch-faux-4 ping -c 10 192.168.1.0
-# Schedule testing for faux-4 in 20s
-timestamp=`python3 -c "import datetime; print((datetime.datetime.now() + datetime.timedelta(seconds=20)).isoformat())"`
+# Test scheduled testing for faux-4
+timestamp=`python3 -c "import datetime; print((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)).isoformat())"`
 docker exec forch-controller-1 bash -c "sed -i \"s/REPLACE_WITH_TIMESTAMP/$timestamp/\" /etc/forch/behaviors.yaml && touch /etc/forch/behaviors.yaml"
 
 # Ongoing activity faux-5 to keep it learned
@@ -114,12 +114,16 @@ docker exec forch-faux-1 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | 
 docker exec forch-faux-2 ping -c 5 192.168.1.0 | fgrep "packet loss" | redact | tee -a $TEST_RESULTS
 
 # Check to make sure allocated interfaces are cleaned up properly.
-fgrep "Configured topology with" $DAQ_BASE/cmdrun.log | tee -a $TEST_RESULTS
+fgrep "Configured topology with" $DAQ_BASE/cmdrun.log | tail -n 1 | sed 's/.*INFO/X/' | tee -a $TEST_RESULTS
+
+echo Remaining vxlan interfaces:
+docker exec forch-controller-1 ip link | fgrep vxlan | tee -a $TEST_RESULT
 
 faucet_lc=$(cat $INST_BASE/faucet.log | wc -l)
 forch_lc=$(cat $INST_BASE/forch.log | wc -l)
 daq_lc=$(cat $DAQ_BASE/cmdrun.log | wc -l)
 echo Log line lengths: faucet $faucet_lc forch $forch_lc daq $daq_lc
-echo Log line lengths: $((faucet_lc < 4500)) $((forch_lc < 2000)) $((daq_lc < 1500)) | tee -a $TEST_RESULTS
+# TODO: Tighten these bounds so they effectivly catch log spamming due to (e.g.) learning loops.
+echo Log line lengths: $((faucet_lc < 8000)) $((forch_lc < 4000)) $((daq_lc < 2000)) | tee -a $TEST_RESULTS
 
 echo `timestamp` Done with test_fot

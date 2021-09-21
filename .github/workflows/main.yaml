@@ -7,13 +7,8 @@ on:
     - cron: '0 15 * * *'
 
 jobs:
-  test_fot:
+  test_access:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        build: [fot1, fot2, fot3, fot4, fot5]
     steps:
       - uses: actions/checkout@v2
       - name: Set up python 3.8
@@ -22,24 +17,67 @@ jobs:
           python-version: 3.8
       - name: setup base
         run: bin/setup_base
-      - name: setup faucet and daq
+      - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: bin/setup_remote faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack local skip-conn-check dva
+      - name: run test
+        run: bin/run_test_set access
+
+  test_base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: bin/setup_remote faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: run python tests - test_forchestrator
+        run: testing/python_test test_forchestrator
+      - name: run python tests - test_faucetizer
+        run: testing/python_test test_faucetizer
+      - name: run python tests - test_faucet_state_collector
+        run: testing/python_test test_faucet_state_collector
+      - name: run python tests - test_event
+        run: testing/python_test test_event
+      - name: run test
+        run: bin/run_test_set base
+
+  test_fot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup forch
         env:
           GIT_URL: ${{ secrets.GIT_URL }}
         run: |
+          bin/setup_base
           bin/setup_remote faucet
           bin/setup_remote daq
-      - name: build docker
-        env:
-          GIT_URL: ${{ secrets.GIT_URL }}
-        run: |
           bin/retry_cmd bin/build_docker controller
-          bin/build_dts
       - name: run python tests
         run: testing/python_test test_fot
-      - name: setup fot stack
-        run: bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot
       - name: run fot integration tests
-        run: timeout 10m bin/run_test_set fot
+        run: bin/retry_cmd bin/run_fot_test
       - name: post-run logs
         if: ${{ always() }}
         run: |
@@ -53,5 +91,117 @@ jobs:
           cat inst/forch-controller-1/faucet.log
           echo %%%%%%%%%%%%% Endpoint log
           cat inst/endpoint.log || true
-          echo %%%%%%%%%%%%% Log line lengths
-          (cd inst/forch-controller-1; wc -l faucet.log forch.log daq/inst/cmdrun.log)
+          echo %%%%%%%%%%%%% Log lengths
+          find inst -name \*.log | fgrep -v nodes/ | xargs wc -l
+
+  test_vxlan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup forch
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: |
+          bin/setup_base
+          bin/setup_remote faucet
+          bin/setup_remote daq
+          bin/retry_cmd bin/build_docker controller
+          bin/build_dts
+      - name: run vxlan integration tests
+        run: bin/retry_cmd bin/run_fot_test vxlan
+      - name: run dts integration tests
+        run: bin/retry_cmd bin/run_fot_test dts localhost
+      - name: post-run logs
+        if: ${{ always() }}
+        run: |
+          echo %%%%%%%%%%%%% Controller log
+          docker logs forch-controller-1
+          echo %%%%%%%%%%%%% DAQ log
+          cat inst/forch-controller-1/daq/inst/cmdrun.log || cat inst/forch-dts/cmdrun.log
+          echo %%%%%%%%%%%%% Forch log
+          cat inst/forch-controller-1/forch.log
+          echo %%%%%%%%%%%%% Faucet log
+          cat inst/forch-controller-1/faucet.log
+          echo %%%%%%%%%%%%% Endpoint log
+          cat inst/endpoint.log || true
+          echo %%%%%%%%%%%%% Log lengths
+          find inst -name \*.log | fgrep -v nodes/ | xargs wc -l
+
+  test_reconfig:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: bin/setup_remote faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack
+      - name: run test
+        run: bin/run_test_set reconfig
+
+  test_stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: bin/setup_remote faucet
+      - name: compile ovs
+        run: bin/compile_ovs
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: setup stack
+        run: bin/setup_stack local dhcp dumptcp
+      - name: run test
+        run: bin/run_test_set stack
+      - name: post-run logs
+        if: ${{ always() }}
+        run: bin/dump_logs full
+
+  test_scale:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: setup base
+        run: bin/setup_base
+      - name: setup faucet
+        env:
+          GIT_URL: ${{ secrets.GIT_URL }}
+        run: bin/setup_remote faucet
+      - name: build docker
+        run: bin/retry_cmd bin/build_docker
+      - name: run test
+        run: testing/python_test test_failscale
+      - name: post-run logs
+        if: ${{ always() }}
+        run: bin/dump_logs full
