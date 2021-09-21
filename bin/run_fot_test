@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+echo Starting fot test run $@
+
+bin/setup_stack devices 5 faux-mac-prefix "9a:99:57:1e" skip-conn-check dhcp fot $@
+
+timeout 15m bin/run_test_set fot
+
+echo Done with successful fot test run.
