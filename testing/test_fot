@@ -39,6 +39,9 @@ docker exec forch-faux-4 ping -c 10 192.168.1.0
 timestamp=`python3 -c "import datetime; print((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=20)).isoformat())"`
 docker exec forch-controller-1 bash -c "sed -i \"s/REPLACE_WITH_TIMESTAMP/$timestamp/\" /etc/forch/behaviors.yaml && touch /etc/forch/behaviors.yaml"
 
+vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."4".native_vlan' $BEHAVIORAL_CONFIG)
+echo 8f:04 vlan $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
+
 # Ongoing activity faux-5 to keep it learned
 docker exec forch-faux-5 ping -c 1000 192.168.1.0 > /dev/null &
 
@@ -64,10 +67,6 @@ fgrep "System port 1 on dpid 1 is active True" $DAQ_BASE/cmdrun.log
 
 echo Done with daq startup tests.
 
-# Forch startup checks
-# Check Forch has successfuly started
-fgrep -o "Starting Forchestrator" $INST_BASE/forch.log | tee -a $TEST_RESULTS
-
 # Waiting for DAQ test to complete
 monitor_daq_log "Setting port set 1 to vlan 27[0-9]"
 monitor_daq_log "Setting port set 2 to vlan 27[0-9]"
@@ -76,9 +75,9 @@ docker exec forch-faux-1 ip addr show faux-eth0 | grep inet
 docker exec forch-faux-2 ip addr show faux-eth0 | grep inet
 
 vlan=$($YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG)
-echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
-echo $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
+echo 8f:01 vlan $(( (vlan > 271) + (vlan > 276) )) | tee -a $TEST_RESULTS
 
+monitor_forch_log "Device 9a:99:57:1e:8f:04 is entering sequestered state from operational state"
 monitor_daq_log "Send device result 9a:99:57:1e:8f:01 passed"
 monitor_daq_log "Send device result 9a:99:57:1e:8f:02 failed"
 monitor_daq_log "Target device 9a99571e8f03 test hold running"
@@ -87,9 +86,7 @@ monitor_daq_log "Target device 9a99571e8f05 test hold running"
 echo `timestamp` stopping forch-faux-3
 docker stop forch-faux-3 # Remove device 3 to generate port-down event.
 
-report_vlans
-
-monitor_forch_log "Device 9a:99:57:1e:8f:04 is entering operational state from unauthenticated state"
+monitor_forch_log "Device report 9a:99:57:1e:8f:04 as PASSED"
 
 # Check if it's running in client/server or server/client mode and adjust expectations accordingly.
 sserv_mode=$(fgrep ssserv $DAQ_BASE/cmdrun.log | wc -l)
@@ -103,6 +100,9 @@ else
     monitor_daq_log "Remaining target sets: \[\]"
     expected_timeouts=2
 fi
+
+date -u
+report_vlans
 
 sequester_timeouts=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.log | wc -l)
 echo `timestamp` Found $sequester_timeouts and expected $expected_timeouts
@@ -124,6 +124,6 @@ forch_lc=$(cat $INST_BASE/forch.log | wc -l)
 daq_lc=$(cat $DAQ_BASE/cmdrun.log | wc -l)
 echo Log line lengths: faucet $faucet_lc forch $forch_lc daq $daq_lc
 # TODO: Tighten these bounds so they effectivly catch log spamming due to (e.g.) learning loops.
-echo Log line lengths: $((faucet_lc < 8000)) $((forch_lc < 4000)) $((daq_lc < 2000)) | tee -a $TEST_RESULTS
+echo Log line lengths: $((faucet_lc < 9000)) $((forch_lc < 5000)) $((daq_lc < 3000)) | tee -a $TEST_RESULTS
 
 echo `timestamp` Done with test_fot
