@@ -1,12 +1,11 @@
 testing/test_fot
-Starting Forchestrator
-1
-1
+8f:04 vlan 0
+8f:01 vlan 1
 171
-276
-275
+171
 100
-274
+100
+100
 9a99571e8f01: []
 9a99571e8f02: []
 9a99571e8f03: ['9a99571e8f03:hold:DaqException']
@@ -14,3 +13,5 @@ Starting Forchestrator
 9a99571e8f05: ['9a99571e8f05:hold:DaqException']
 5 packets transmitted, 5 received, 0% packet loss, XXX
 5 packets transmitted, 0 received, XX errors, 100% packet loss, XXX
+X    Configured topology with 1 interfaces: [1]
+Log line lengths: 1 1 1
