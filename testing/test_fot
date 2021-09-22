@@ -6,6 +6,7 @@ preamble_setup
 
 function report_vlans {
     $YQ '.dps."nz-kiwi-t2sw1".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
+    $YQ '.dps."nz-kiwi-t2sw1".interfaces."4".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
     $YQ '.dps."nz-kiwi-t2sw1".interfaces."5".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
     $YQ '.dps."nz-kiwi-t2sw2".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
     $YQ '.dps."nz-kiwi-t2sw3".interfaces."1".native_vlan' $BEHAVIORAL_CONFIG | tee -a $TEST_RESULTS
@@ -87,9 +88,6 @@ docker stop forch-faux-3 # Remove device 3 to generate port-down event.
 
 monitor_forch_log "Device report 9a:99:57:1e:8f:04 as PASSED"
 
-date -u
-report_vlans
-
 # Check if it's running in client/server or server/client mode and adjust expectations accordingly.
 sserv_mode=$(fgrep ssserv $DAQ_BASE/cmdrun.log | wc -l)
 if [[ $sserv_mode == 0 ]]; then
@@ -102,6 +100,9 @@ else
     monitor_daq_log "Remaining target sets: \[\]"
     expected_timeouts=2
 fi
+
+date -u
+report_vlans
 
 sequester_timeouts=$(egrep "Handle device .* sequester timeout" $INST_BASE/forch.log | wc -l)
 echo `timestamp` Found $sequester_timeouts and expected $expected_timeouts
