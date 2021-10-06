@@ -1,8 +1,9 @@
-forch (0.16) UNRELEASED; urgency=medium
+forch (0.64.2) UNRELEASED; urgency=medium
 
   * New upstream release
+  * New upstream release 0.64.2
 
- -- Anurag Porripireddi <anuragprdi@google.com>  Mon, 09 Dec 2019 18:23:48 +0000
+ -- Anurag Porripireddi <anuragprdi@google.com>  Tue, 05 Oct 2021 17:35:42 -0700
 
 forch (0.1.1) unstable; urgency=medium
 
