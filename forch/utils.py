@@ -61,7 +61,7 @@ def yaml_proto(file_name, proto_func):
 
 def yaml_content_proto(content, proto_func):
     """Load a yaml formatted str into a proto object"""
-    file_dict = yaml.load(content)
+    file_dict = yaml.safe_load(content)
     return json_format.ParseDict(file_dict, proto_func())
 
 
