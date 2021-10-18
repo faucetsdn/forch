@@ -201,6 +201,9 @@ message PortBehavior {
 
     // deauthenticated
     deauthenticated = 6;
+    
+    // Manual sequestered
+    manual_sequestered = 7;
   }
   
   enum PortState {

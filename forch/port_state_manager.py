@@ -52,7 +52,7 @@ class PortStateMachine:
             PortBehavior.Behavior: {
                 PortBehavior.Behavior.cleared: OPERATIONAL,
                 PortBehavior.Behavior.deauthenticated: UNAUTHENTICATED,
-                PortBehavior.Behavior.sequestered: SEQUESTERED
+                PortBehavior.Behavior.manual_sequestered: SEQUESTERED
             }
         },
     }
@@ -377,7 +377,7 @@ class PortStateManager:
             del self._scheduled_sequester_timer[mac]
         self._logger.info('Handle scheduled sequester for device %s.', mac)
         if mac in self._state_machines:
-            self._state_machines[mac].handle_port_behavior(PortBehavior.sequestered)
+            self._state_machines[mac].handle_port_behavior(PortBehavior.manual_sequestered)
 
     def _handle_sequestering_timeout(self, mac):
         if mac in self._sequester_timer:
