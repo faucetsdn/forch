@@ -966,14 +966,14 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         else:
             sys_auth_mode = AuthMode.disabled
 
-        return AuthMode.Mode.Name(sys_auth_mode)
+        return sys_auth_mode
 
     def update_initialization_varz(self):
         """Update Forch initialization Varz"""
         if not self._metrics:
             return
 
-        sys_auth_mode = self._get_sys_auth_mode()
+        sys_auth_mode = AuthMode.Mode.Name(self._get_sys_auth_mode())
         self._metrics.update_var('system_initialization', {'auth_mode': sys_auth_mode})
 
     def cleanup(self):
