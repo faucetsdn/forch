@@ -50,6 +50,8 @@ Starting varz-vlan-assigned test...
 3.0
 4.0
 4.0
+auth_mode="all"
+
 200.0
 %%% port-down
 Starting dva-port-down tests
@@ -90,6 +92,8 @@ Starting varz-port-down test...
 3.0
 4.0
 0.0
+auth_mode="all"
+
 200.0
 %%% port-up
 Starting dva-port-up tests
@@ -132,6 +136,8 @@ Starting varz-port-up test...
 3.0
 4.0
 4.0
+auth_mode="all"
+
 200.0
 %%% mac-flipped
 Starting dva-mac-flipped tests
@@ -174,6 +180,8 @@ Starting varz-mac-flipped test...
 3.0
 4.0
 0.0
+auth_mode="all"
+
 200.0
 %%% negative
 Radius results 0 1 1 1

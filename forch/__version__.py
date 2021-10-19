@@ -1,3 +1,3 @@
 """Forch version file"""
 
-__version__ = 'UNDEFINED'
+__version__ = '0.65.1'

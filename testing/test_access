@@ -109,6 +109,7 @@ function test_forch_varz {
     grep 'device_state' <<< $metrics | grep '9a:02:57:1e:8f:01' | awk '{print $2}' | tee -a $TEST_RESULTS
     grep 'device_state' <<< $metrics | grep '9a:02:57:1e:8f:02' | awk '{print $2}' | tee -a $TEST_RESULTS
     grep 'device_state' <<< $metrics | grep '9a:02:57:1e:8f:03' | awk '{print $2}' | tee -a $TEST_RESULTS
+    grep 'system_initialization' <<< $metrics | awk -vRS="}" -vFS="{" '{print $2}' | tee -a $TEST_RESULTS
 
     grep 'static_mac_vlan' <<< $metrics | grep '9a:02:57:1e:8f:01' | awk '{print $2}' | tee -a $TEST_RESULTS
 }

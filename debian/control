@@ -24,7 +24,7 @@ Vcs-Browser: https://github.com/faucetsdn/forch
 Package: python3-forch
 Architecture: all
 Depends: python3-all (>= 3.8),
-         python3-faucet (= 1.9.54.2),
+         python3-faucet (= 1.9.55.3),
          python3-grpcio,
          python3-netaddr,
          python3-networkx,
@@ -32,7 +32,7 @@ Depends: python3-all (>= 3.8),
          python3-protobuf,
          python3-psutil,
          python3-watchdog,
-         python3-yaml,
+         python3-yaml (>= 5.4.1), python3-yaml (<< 6.0),
 Description: The Faucet Orchestrator for controlling and monitoring a faucet network.
 
 Package: forch

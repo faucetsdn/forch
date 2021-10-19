@@ -973,8 +973,8 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         if not self._metrics:
             return
 
-        sys_auth_mode = self._get_sys_auth_mode()
-        self._metrics.update_var('system_initialization', self._initialized, [sys_auth_mode])
+        sys_auth_mode = AuthMode.Mode.Name(self._get_sys_auth_mode())
+        self._metrics.update_var('system_initialization', {'auth_mode': sys_auth_mode})
 
     def cleanup(self):
         """Clean up relevant internal data in all collectors"""

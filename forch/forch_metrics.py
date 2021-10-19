@@ -115,8 +115,7 @@ class ForchMetrics():
             labels=['mac'])
 
         self._add_var(
-            'system_initialization', 'Initialization state of the system', Gauge,
-            labels=['auth_mode'])
+            'system_initialization', 'Initialization state of the system', Info)
 
     def get_metrics(self, path, params):
         """Return metric list in printable form"""
