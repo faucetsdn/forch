@@ -10,7 +10,7 @@ protobuf
 psutil
 pylint==2.7.4
 pytricia
-pyyaml
+pyyaml>=5.4.1,<6.0
 ryu==4.32
 setuptools
 watchdog
