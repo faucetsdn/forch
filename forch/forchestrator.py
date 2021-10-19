@@ -868,7 +868,7 @@ class Forchestrator(VarzUpdater, OrchestrationManager):
         return State.active, None
 
     def _get_faucet_config_hash_info(self, new_conf_hashes):
-        # Code_ taken from faucet/valves_manager.py parse_configs.
+        # Code taken from faucet/valves_manager.py parse_configs.
         new_present_conf_hashes = [
             (conf_file, conf_hash) for conf_file, conf_hash in sorted(new_conf_hashes.items())
             if conf_hash is not None]
