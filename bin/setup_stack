@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 ROOT=$(realpath $(dirname $0)/..)
 cd $ROOT
@@ -251,6 +251,12 @@ echo Letting system settle...
 sleep 20
 
 if [ -z "$skip_conn_check" ]; then
+
+    if [[ -z $ip_faux_1 || -z $ip_faux_2 || -z $ip_faux_3 ]]; then
+        echo Missing required faux ip addresses.
+        false
+    fi
+
     echo Starting connection warm-up...
     # Do faux-1 synchronously to prevent race condition with vid assignment.
     docker exec forch-faux-1 ping -q -c 10 $ip_faux_3 || true

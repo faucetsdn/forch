@@ -197,7 +197,6 @@ class FaucetConfigGenerator():
             CORP_DP_ID, tagged_vlans=[setup_vlan], access_ports=1, access_port_start=1,
             native_vlan=setup_vlan, egress_port=CORP_EGRESS_PORT)
         dps[switch] = self._build_datapath_config(CORP_DP_ID, interfaces)
-
         return FaucetConfig(dps=dps, version=2)
 
 
@@ -246,7 +245,18 @@ def main(argv):
     else:
         raise Exception('Unkown topology type: %s' % topo_type)
 
+    print('faucet_config', faucet_config)
+    print(faucet_config.dps['corp'].interfaces[1])
     config_map = proto_dict(faucet_config)
+
+    # proto_dict converstaion converts int keys to strings, which causes problems with faucet.
+    interfaces = config_map['dps']['corp']['interfaces']
+    int_interfaces = {}
+    for interface in interfaces:
+        int_interfaces[int(interface)] = interfaces[interface]
+    config_map['dps']['corp']['interfaces'] = int_interfaces
+    print('config_map', config_map)
+
     with open(filepath, 'w') as config_file:
         yaml.dump(config_map, config_file)
 
