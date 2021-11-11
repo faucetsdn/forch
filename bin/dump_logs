@@ -12,6 +12,9 @@ else
     tail -n 100 inst/forch-faucet-1/faucet.log
 fi
 
+echo Dumping inst/forch-faucet-1/faucet/faucet.yaml
+cat inst/forch-faucet-1/faucet/faucet.yaml
+
 ip link | fgrep sw
 
 switches=`sudo ovs-vsctl show | fgrep Bridge | awk '{print $2}' | sort` 2>&1
