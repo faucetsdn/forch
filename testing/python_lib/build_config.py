@@ -204,10 +204,7 @@ class FaucetConfigGenerator():
 
 def cleanup_keys(map_in):
     """proto_dict converts int keys to strings, which isn't always semantically correct"""
-    map_out = {}
-    for key in map_in:
-        map_out[int(key)] = map_in[key]
-    return map_out
+    return dict(iter((int(k), v) for k, v in map_in.items()))
 
 
 def cleanup_config(config_map):
