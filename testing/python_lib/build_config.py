@@ -209,8 +209,10 @@ def cleanup_keys(map_in):
 
 
 def cleanup_config(config_map):
+    """cleanup the necessary dict entries"""
     for dp_id in config_map['dps']:
-        config_map['dps'][dp_id]['interfaces'] = cleanup_keys(config_map['dps'][dp_id]['interfaces'])
+        bad_map = config_map['dps'][dp_id]['interfaces']
+        config_map['dps'][dp_id]['interfaces'] = cleanup_keys(bad_map)
     if 'vlans' in config_map:
         config_map['vlans'] = cleanup_keys(config_map['vlans'])
     return config_map
