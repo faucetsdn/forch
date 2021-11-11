@@ -208,6 +208,14 @@ def cleanup_keys(map_in):
     return map_out
 
 
+def cleanup_config(config_map):
+    for dp_id in config_map['dps']:
+        config_map['dps'][dp_id]['interfaces'] = cleanup_keys(config_map['dps'][dp_id]['interfaces'])
+    if 'vlans' in config_map:
+        config_map['vlans'] = cleanup_keys(config_map['vlans'])
+    return config_map
+
+
 def main(argv):
     """main method for standalone run"""
     config_generator = FaucetConfigGenerator()
@@ -253,12 +261,7 @@ def main(argv):
     else:
         raise Exception('Unkown topology type: %s' % topo_type)
 
-    config_map = proto_dict(faucet_config)
-
-    for dp in config_map['dps']:
-        config_map['dps'][dp]['interfaces'] = cleanup_keys(config_map['dps'][dp]['interfaces'])
-    if 'vlans' in config_map:
-        config_map['vlans'] = cleanup_keys(config_map['vlans'])
+    config_map = cleanup_config(proto_dict(faucet_config))
 
     with open(filepath, 'w') as config_file:
         yaml.dump(config_map, config_file)
