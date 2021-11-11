@@ -203,7 +203,7 @@ class FaucetConfigGenerator():
 
 
 def cleanup_keys(map_in):
-    """proto_dict converstaion converts int keys to strings, which causes problems with faucet."""
+    """proto_dict converts int keys to strings, which isn't always semantically correct"""
     map_out = {}
     for key in map_in:
         map_out[int(key)] = map_in[key]
@@ -211,7 +211,7 @@ def cleanup_keys(map_in):
 
 
 def cleanup_config(config_map):
-    """cleanup the necessary dict entries"""
+    """cleanup the necessary dict entries for a faucet config"""
     for dp_id in config_map['dps']:
         bad_map = config_map['dps'][dp_id]['interfaces']
         config_map['dps'][dp_id]['interfaces'] = cleanup_keys(bad_map)
