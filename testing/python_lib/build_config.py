@@ -200,16 +200,12 @@ class FaucetConfigGenerator():
         return FaucetConfig(dps=dps, version=2)
 
 
-def cleanup_interfaces(config_map):
+def cleanup_keys(map_in):
     """proto_dict converstaion converts int keys to strings, which causes problems with faucet."""
-    dp_map = config_map['dps']
-    for dp_name in dp_map:
-        interfaces = dp_map[dp_name]['interfaces']
-        int_interfaces = {}
-        for interface in interfaces:
-            int_interfaces[int(interface)] = interfaces[interface]
-        dp_map[dp_name]['interfaces'] = int_interfaces
-    return config_map
+    map_out = {}
+    for key in map_in:
+        map_out[int(key)] = map_in[key]
+    return map_out
 
 
 def main(argv):
@@ -257,7 +253,12 @@ def main(argv):
     else:
         raise Exception('Unkown topology type: %s' % topo_type)
 
-    config_map = cleanup_interfaces(proto_dict(faucet_config))
+    config_map = proto_dict(faucet_config)
+
+    for dp in config_map['dps']:
+        config_map['dps'][dp]['interfaces'] = cleanup_keys(config_map['dps'][dp]['interfaces'])
+    if 'vlans' in config_map:
+        config_map['vlans'] = cleanup_keys(config_map['vlans'])
 
     with open(filepath, 'w') as config_file:
         yaml.dump(config_map, config_file)
