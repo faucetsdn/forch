@@ -168,6 +168,7 @@ class FaucetConfigGenerator():
                 port_acl='uniform_acl', lacp=True)
             dps[dp_name] = self._build_datapath_config(
                 T2_DP_ID_START + dp_index, interfaces, self._generate_dp_mac(T2_DP, dp_index))
+
         return FaucetConfig(dps=dps, version=2, include=['uniform.yaml'], vlans=vlans)
 
     def create_flat_faucet_config(self, num_switches, num_access_ports):
@@ -197,6 +198,7 @@ class FaucetConfigGenerator():
             CORP_DP_ID, tagged_vlans=[setup_vlan], access_ports=1, access_port_start=1,
             native_vlan=setup_vlan, egress_port=CORP_EGRESS_PORT)
         dps[switch] = self._build_datapath_config(CORP_DP_ID, interfaces)
+
         return FaucetConfig(dps=dps, version=2)
 
 
