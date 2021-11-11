@@ -202,11 +202,13 @@ class FaucetConfigGenerator():
 
 def cleanup_interfaces(config_map):
     """proto_dict converstaion converts int keys to strings, which causes problems with faucet."""
-    interfaces = config_map['dps']['corp']['interfaces']
-    int_interfaces = {}
-    for interface in interfaces:
-        int_interfaces[int(interface)] = interfaces[interface]
-    config_map['dps']['corp']['interfaces'] = int_interfaces
+    dp_map = config_map['dps']
+    for dp_name in dp_map:
+        interfaces = dp_map[dp_name]['interfaces']
+        int_interfaces = {}
+        for interface in interfaces:
+            int_interfaces[int(interface)] = interfaces[interface]
+        dp_map[dp_name]['interfaces'] = int_interfaces
     return config_map
 
 
