@@ -17,6 +17,3 @@ acls:
       actions:
         output:
           ports: [5, 6]
-vlans:
-  171:
-    description: testing vlan
