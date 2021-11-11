@@ -4,7 +4,7 @@ import time
 import yaml
 
 from integration_base import IntegrationTestBase
-from build_config import FaucetConfigGenerator
+from build_config import FaucetConfigGenerator, cleanup_config
 
 from forch.utils import proto_dict
 
@@ -20,8 +20,9 @@ class FailScaleConfigTest(IntegrationTestBase):
         self.sim_setup_cmd = 'bin/setup_scale'
         self.config_path = '/tmp/scale_config'
 
-        config = proto_dict(
-            FaucetConfigGenerator().create_scale_faucet_config(2, self.switches, self.devices))
+        config = cleanup_config(proto_dict(
+            FaucetConfigGenerator().create_scale_faucet_config(2, self.switches, self.devices)))
+
         with open(self.config_path, 'w') as config_file:
             yaml.dump(config, config_file)
 
