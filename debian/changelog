@@ -1,8 +1,12 @@
-forch (0.65.1) UNRELEASED; urgency=medium
+forch (0.66.1) UNRELEASED; urgency=medium
 
+  [ Anurag Porripireddi ]
   * New upstream release 0.65.1
 
- -- Anurag Porripireddi <anuragprdi@google.com>  Tue, 19 Oct 2021 14:23:27 -0700
+  [ Trevor Pering ]
+  * New upstream release 0.66.1
+
+ -- Trevor Pering <peringknife@google.com>  Fri, 12 Nov 2021 14:51:14 -0800
 
 forch (0.1.1) unstable; urgency=medium
 
