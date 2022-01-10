@@ -2,9 +2,16 @@
 
 set -uo pipefail
 
+# Some OS versions (e.g. Debian) don't always have site-packages in the
+# default search path, which is the default place where packages are installed.
+# Rather, install faucet into the distribution path so it will be always available.
+INST_DIR=`pip3 show pip | fgrep Location: | sed -e 's/Location: //'`
+echo Installing faucet into $INST_DIR
+
 APK="apt-get -qqy"
 BUILDDEPS="gcc python3-dev musl-dev parallel"
-PIP3="pip3 -q --no-cache-dir install --upgrade"
+PIP3_BASE="pip3 -q --no-cache-dir install --upgrade"
+PIP3="$PIP3_BASE -t $INST_DIR"
 FROOT="/root/faucet"
 
 dir=$(dirname "$0")
@@ -13,6 +20,10 @@ ${APK} install git ${BUILDDEPS}
 "${dir}/retry_cmd" "${PIP3} pip"
 "${dir}/retry_cmd" "${PIP3} setuptools"
 "${dir}/retry_cmd" "${PIP3} -r ${FROOT}/requirements.txt"
+
+# Installing faucet to the alternate install directory doesn't handle the bin/
+# files properly, so do the normal install as well for those.
+${PIP3_BASE} ${FROOT}
 ${PIP3} ${FROOT}
 
 for i in ${BUILDDEPS} ; do
