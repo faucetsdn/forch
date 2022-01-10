@@ -1,4 +1,4 @@
-forch (0.66.1) UNRELEASED; urgency=medium
+forch (0.67.1) UNRELEASED; urgency=medium
 
   [ Anurag Porripireddi ]
   * New upstream release 0.65.1
@@ -6,7 +6,10 @@ forch (0.66.1) UNRELEASED; urgency=medium
   [ Trevor Pering ]
   * New upstream release 0.66.1
 
- -- Trevor Pering <peringknife@google.com>  Fri, 12 Nov 2021 14:51:14 -0800
+  [ Haoli Du ]
+  * New upstream release 0.67.1
+
+ -- Haoli Du <haolidu@google.com>  Mon, 10 Jan 2022 23:26:30 +0000
 
 forch (0.1.1) unstable; urgency=medium
 
