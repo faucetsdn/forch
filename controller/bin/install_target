@@ -6,6 +6,7 @@ if [[ -z $1 ]]; then
 fi
 
 FROOT=$1
+dir=$(dirname "$0")
 
 if [[ -f ${FROOT}/requirements.txt ]]; then
     REQUIREMENTS=${FROOT}/requirements.txt
@@ -15,23 +16,23 @@ fi
 
 set -uo pipefail
 
+APK="apt-get -qqy"
+BUILDDEPS="gcc python3-dev musl-dev parallel"
+${APK} install git ${BUILDDEPS}
+
+PIP3_BASE="pip3 -q --no-cache-dir install --upgrade"
+${dir}/retry_cmd "${PIP3_BASE} pip"
+
 # Some OS versions (e.g. Debian) don't always have site-packages in the
 # default search path, which is the default place where packages are installed.
 # Rather, install target into the distribution path so it will be always available.
 INST_DIR=`pip3 show pip | fgrep Location: | sed -e 's/Location: //'`
 echo Installing $FROOT into $INST_DIR
 
-APK="apt-get -qqy"
-BUILDDEPS="gcc python3-dev musl-dev parallel"
-PIP3_BASE="pip3 -q --no-cache-dir install --upgrade"
 PIP3="$PIP3_BASE -t $INST_DIR"
 
-dir=$(dirname "$0")
-
-${APK} install git ${BUILDDEPS}
-"${dir}/retry_cmd" "${PIP3} pip"
-"${dir}/retry_cmd" "${PIP3} setuptools"
-"${dir}/retry_cmd" "${PIP3} -r ${REQUIREMENTS}"
+${dir}/retry_cmd "${PIP3} setuptools"
+${dir}/retry_cmd "${PIP3} -r ${REQUIREMENTS}"
 
 # Installing target to the alternate install directory doesn't handle the bin/
 # files properly, so do the normal install as well for those.
