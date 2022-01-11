@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# The target install doesn't install the executable, so do that separately.
+pip3 install yq
+
 bin/install_target /root/forch
 
 # Sanity check

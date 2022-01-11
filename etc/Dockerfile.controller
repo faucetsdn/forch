@@ -24,9 +24,6 @@ RUN $AG update && $AG install ash iptables sudo openvswitch-switch openvswitch-c
 
 RUN update-alternatives --install /usr/bin/python3 python /usr/bin/python3.8 2
 
-RUN curl -o /usr/local/bin/yq -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-RUN chmod +x /usr/local/bin/yq
-
 COPY controller/bin bin/
 
 COPY faucet/ faucet/
