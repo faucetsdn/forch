@@ -14,6 +14,9 @@ else
     REQUIREMENTS=${FROOT}/etc/requirements.txt
 fi
 
+echo TAPTAP python path:
+python3 -c "import sys; print(sys.path)"
+
 set -uo pipefail
 
 APK="apt-get -qqy"
