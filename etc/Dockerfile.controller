@@ -28,13 +28,13 @@ RUN update-alternatives --install /usr/bin/python3 python /usr/bin/python3.8 2
 COPY controller/bin/ bin/
 
 COPY faucet/ faucet/
-RUN bin/install_faucet && rm -rf faucet/.git
+RUN bin/install_faucet
 
 COPY . forch/
-RUN rm -rf forch/venv && bin/install_forch && rm -rf forch/.git
+RUN rm -rf forch/venv && bin/install_forch
 
 COPY daq/ daq/
-RUN daq/bin/setup_dev simple && rm -rf daq/.git
+RUN daq/bin/setup_dev simple
 
 COPY controller/site_config /site
 
