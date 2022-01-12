@@ -1,5 +1,7 @@
 #!/bin/bash -ex
 
+set -uo pipefail
+
 if [[ -z $1 ]]; then
     echo Usage: $0 [target]
     false
@@ -14,11 +16,6 @@ else
     REQUIREMENTS=${FROOT}/etc/requirements.txt
 fi
 
-echo TAPTAP python path:
-python3 -c "import sys; print(sys.path)"
-
-set -uo pipefail
-
 APK="apt-get -qqy"
 BUILDDEPS="gcc python3-dev musl-dev parallel"
 ${APK} install git ${BUILDDEPS}
@@ -31,14 +28,13 @@ ${dir}/retry_cmd "${PIP3_BASE} pip"
 # Rather, install target into the distribution path so it will be always available.
 INST_DIR=`pip3 show pip | fgrep Location: | sed -e 's/Location: //'`
 echo Installing $FROOT into $INST_DIR
-
-PIP3="$PIP3_BASE" # -t $INST_DIR
+PIP3="$PIP3_BASE -t $INST_DIR"
 
 ${dir}/retry_cmd "${PIP3} setuptools"
 ${dir}/retry_cmd "${PIP3} -r ${REQUIREMENTS}"
 
 # Installing target to the alternate install directory doesn't handle the bin/
-# files properly, so do the normal install as well for those.
+# files, so first do the normal install and then replace/move with the new target.
 ${PIP3_BASE} ${FROOT}
 ${PIP3} ${FROOT}
 
