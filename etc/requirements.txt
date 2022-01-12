@@ -1,4 +1,5 @@
 coverage
+eventlet==0.25.1
 grpcio
 grpcio-testing
 grpcio-tools

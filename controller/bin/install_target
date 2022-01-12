@@ -1,0 +1,43 @@
+#!/bin/bash -e
+
+set -uo pipefail
+
+if [[ -z $1 ]]; then
+    echo Usage: $0 [target]
+    false
+fi
+
+FROOT=$1
+dir=$(dirname "$0")
+
+if [[ -f ${FROOT}/requirements.txt ]]; then
+    REQUIREMENTS=${FROOT}/requirements.txt
+else
+    REQUIREMENTS=${FROOT}/etc/requirements.txt
+fi
+
+APK="apt-get -qqy"
+BUILDDEPS="gcc python3-dev musl-dev parallel"
+${APK} install git ${BUILDDEPS}
+
+PIP3_BASE="pip3 -q --no-cache-dir install --upgrade"
+${dir}/retry_cmd "${PIP3_BASE} pip"
+
+# Some OS versions (e.g. Debian) don't always have site-packages in the
+# default search path, which is the default place where packages are installed.
+# Rather, install target into the distribution path so it will be always available.
+INST_DIR=`pip3 show pip | fgrep Location: | sed -e 's/Location: //'`
+echo Installing $FROOT into $INST_DIR
+PIP3="$PIP3_BASE -t $INST_DIR"
+
+${dir}/retry_cmd "${PIP3} setuptools"
+${dir}/retry_cmd "${PIP3} -r ${REQUIREMENTS}"
+
+# Installing target to the alternate install directory doesn't handle the bin/
+# files, so first do the normal install and then replace/move with the new target.
+${PIP3_BASE} ${FROOT}
+${PIP3} ${FROOT}
+
+for i in ${BUILDDEPS} ; do
+    ${APK} remove "$i"
+done

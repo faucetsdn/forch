@@ -1,29 +1,9 @@
 #!/bin/bash -e
 
-set -uo pipefail
+# The target install doesn't install the executable, so do that separately.
+pip3 install yq
 
-APK="apt-get -yqq"
-BUILDDEPS="gcc g++ python3-dev musl-dev parallel"
-TESTDEPS="bitstring pytest wheel virtualenv"
-PIP3="pip3 --no-cache-dir install --upgrade"
-FROOT="/root/forch"
-
-dir=$(dirname "$0")
-
-${APK} install git ${BUILDDEPS}
-${PIP3} pip
-${PIP3} setuptools
-${PIP3} setuptools ${TESTDEPS}
-${PIP3} -r ${FROOT}/etc/requirements.txt
-git init ${FROOT}
-${PIP3} ${FROOT}
-
-cp ${FROOT}/controller/bin/gauge_go /usr/bin/
-
-pip3 uninstall -y ${TESTDEPS} || exit 1
-for i in ${BUILDDEPS} ; do
-    ${APK} remove "$i" || exit 1
-done
+bin/install_target /root/forch
 
 # Sanity check
 forch -V

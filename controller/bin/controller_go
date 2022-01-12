@@ -89,12 +89,6 @@ if [ -n "$CLEAN_MAC_PREFIX" ]; then
     bin/rename_site_config $CLEAN_MAC_PREFIX
 fi
 
-echo Forch config
-cat $FORCH_CONFIG
-
-/usr/bin/gauge_go &
-forch/bin/run_forch &
-
 if [[ -z $DTS_IP || $DTS_IP == localhost ]]; then
     echo Starting daq, output in daq/inst/cmdrun.log
     sudo \
@@ -102,7 +96,15 @@ if [[ -z $DTS_IP || $DTS_IP == localhost ]]; then
         PATH=$DAQ_ROOT/mininet:$PATH \
         FAUCET_EVENT_SOCK=$DAQ_EVENT_SOCK \
         daq/cmd/start ../$DAQ_BASE $DAQ_OVERRIDE ../$DAQ_CONFIG -k $no_test > daq/inst/cmdrun.log 2>&1 &
+    sleep 2 # Handle race-condition with forch starting for grpc connection.
 fi
+
+echo Forch config
+cat $FORCH_CONFIG
+
+/usr/bin/gauge_go &
+forch/bin/run_forch &
+
 
 echo Blocking forever...
 tail -f /dev/null
