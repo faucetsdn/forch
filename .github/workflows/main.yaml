@@ -111,6 +111,7 @@ jobs:
           bin/setup_remote faucet
           bin/setup_remote daq
           bin/retry_cmd bin/build_docker controller
+          cat build/docker_controller.log
           bin/build_dts
       - name: run vxlan integration tests
         run: bin/retry_cmd bin/run_fot_test vxlan
