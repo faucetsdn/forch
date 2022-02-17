@@ -309,7 +309,7 @@ function test_stack {
     pcount52=$(tcpdump -en -r $t2sw1p52_pcap vlan | wc -l) 2>/dev/null
     pcount_total=$((pcount50 + pcount52))
     echo $desc pcap count is $pcount6a $pcound6i $pcount50 $pcount52 $pcount_total
-    echo pcap sane $((pcount6a > 10)) $((pcount6i > 10)) $((pcount6a < 180)) \
+    echo pcap valid $((pcount6a > 10)) $((pcount6i > 10)) $((pcount6a < 180)) \
          $((pcount_total > 80)) $((pcount_total < 160)) | tee -a $TEST_RESULTS
 
     bcount1e=$(tcpdump -en -r $t1sw1p28_pcap ether broadcast| wc -l) 2>/dev/null
